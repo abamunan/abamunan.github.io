@@ -50,14 +50,33 @@ a { text-decoration: none; transition: var(--trans); }
 
 /* ── BODY ──────────────────────────────────────────────────── */
 body {
-    background: var(--main-bg);
-    background-attachment: fixed;
     color: var(--text-main);
     font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-    transition: background-color .5s ease, color .3s ease;
+    transition: color .3s ease;
     line-height: 1.6;
     font-size: 14px;
     -webkit-font-smoothing: antialiased;
+}
+
+/* Animated gradient background — lives on a fixed pseudo-element behind
+   <body> rather than as body's own `background` + `animation`. An animated
+   `filter` (which the meshDrift keyframes below drive) creates a new
+   containing block for any `position: fixed` descendant of the element
+   it's on. With the filter on body itself, EVERY fixed element on EVERY
+   page (bottom nav bars, toasts, etc.) stopped resolving `top/left/right/
+   bottom` against the real screen and started resolving them against
+   body's full scrollable height instead — on a tall page that pins a
+   fixed bar to what looks like the very end of the document instead of
+   the visible viewport. Moving background + animation here keeps the
+   exact same visual (a full-viewport gradient that slowly breathes
+   through hue-rotate/saturate) without body ever having `filter`. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--main-bg);
     animation: meshDrift 22s ease-in-out infinite alternate;
 }
 
@@ -71,8 +90,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body { animation: none; }
+    body::before { animation: none; }
 }
+
 
 /* ── BACKGROUND BLOBS ──────────────────────────────────────── */
 .blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
