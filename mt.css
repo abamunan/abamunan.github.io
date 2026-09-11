@@ -1059,15 +1059,38 @@
       to   { transform: translateY(0); }
     }
 
-    /* Bottom nav — pinned to the true bottom edge, including the safe
-       area on notched phones (this app runs standalone via "Add to Home
-       Screen", so there's no browser chrome to fall back on). Still the
-       same plain CSS position:fixed as before (see the note in mt.js on
-       why a JS visualViewport-based fix was tried and reverted) — this
-       only adds the safe-area padding on top of that, nothing that could
-       reintroduce the old jitter-on-scroll bug. */
-    .bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
-    body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+    /* Bottom nav — floating pill, mobile only (desktop keeps its own
+       sidebar rules further down, untouched). Still the same plain CSS
+       position:fixed as before (see the note in mt.js on why a JS
+       visualViewport-based fix was tried and reverted) — only the shape
+       and offsets changed, nothing that could reintroduce the old
+       jitter-on-scroll bug. The safe-area inset is folded straight into
+       `bottom` so the pill floats clear of the home-indicator gesture
+       bar on notched phones, instead of stretching the bar's own padding
+       to cover it. */
+    .bottom-nav {
+      left: 14px; right: 14px;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      border: 1px solid var(--card-border);
+      border-radius: 26px;
+      padding: 4px 4px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.18), 0 2px 10px rgba(0,0,0,0.08);
+    }
+    /* Old top-edge indicator line doesn't read well on a floating pill —
+       replaced by the accent chip behind the active icon below. */
+    .bnav-btn.active::before { opacity: 0; }
+    .bnav-btn .icon {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 12px;
+      transition: background var(--trans), box-shadow var(--trans);
+    }
+    .bnav-btn.active .icon {
+      background: var(--accent);
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    body { padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+    .toast { bottom: calc(102px + env(safe-area-inset-bottom, 0px)); }
   }
 
   /* ══════════════════════════════════════════════════════════════════
