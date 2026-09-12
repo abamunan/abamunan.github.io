@@ -63,10 +63,10 @@
      animated rainbow mesh with a still navy-to-maroon wash. */
   .mt-app::before {
     animation: none;
-    background: linear-gradient(160deg, #CBDAEA 0%, #ECD9CE 100%);
+    background: #FFFFFF;
   }
   [data-theme="dark"] .mt-app::before {
-    background: linear-gradient(160deg, #122336 0%, #2A1714 100%);
+    background: #0A0A0A;
   }
 
   /* ── SPLASH SCREEN ──────────────────────────────────────────── */
