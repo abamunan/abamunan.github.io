@@ -1230,15 +1230,15 @@ function calcMonthUpTo(y,m,upToDay){
 
 // ─── CHARTS (bar + pie, theme-aware) ───────────────────────────────────────────
 const chartInstances={};
-const CAT_PALETTE=['#1B3A5C','#7A2E2E','#4A6C8C','#A85C5C','#2F4A66','#8C4646','#5C7A96','#B37A7A','#264257','#6B3535','#7691AB','#96625E','#3D5A78','#9C5252','#3B5F4F','#6F4E37','#8A9BA8','#845C5C','#41576E'];
+const CAT_PALETTE=['#1B3A5C','#7A2E2E','#1F6F5C','#B5651D','#4B3F72','#5C7A29','#A6373C','#2E5C8A','#8C6D1F','#3D6B57','#944E63','#345E7C','#6B4423','#4A5859','#9C4A2E','#2F4858','#6E4B3A','#7D3C5C','#3A6B6B'];
 
 function chartColors(){
   const cs=getComputedStyle(document.documentElement);
   return {
     text:(cs.getPropertyValue('--text-main')||'#1a1a2e').trim()||'#1a1a2e',
     grid:(cs.getPropertyValue('--card-border')||'rgba(0,0,0,0.1)').trim()||'rgba(0,0,0,0.1)',
-    exp:(cs.getPropertyValue('--danger')||'#dc2626').trim()||'#dc2626',
-    inc:(cs.getPropertyValue('--accent2')||'#16a34a').trim()||'#16a34a',
+    exp:(cs.getPropertyValue('--danger')||'#B23A3A').trim()||'#B23A3A',
+    inc:(cs.getPropertyValue('--accent2')||'#1E8449').trim()||'#1E8449',
     cardBg:(cs.getPropertyValue('--card-bg')||'#fff').trim()||'#fff'
   };
 }
@@ -1409,7 +1409,7 @@ function openCategoryDetail(fieldId){
   const avg=count?total/count:0;
   const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
   const accentVar=isInc?'var(--accent2)':'var(--danger)';
-  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
 
   const rows=entries.map(e=>{
     const dt=new Date(curYear,curMonth,e.day);
@@ -1467,7 +1467,7 @@ function openCategoryDetailYear(fieldId){
   const avg=count?total/count:0;
   const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
   const accentVar=isInc?'var(--accent2)':'var(--danger)';
-  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
 
   const rows=entries.map(e=>{
     const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
@@ -1533,7 +1533,7 @@ function openDayQuickView(y,m,d){
       <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
     </div>`;
   }).join('');
-  const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  const netGlow=net>=0?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
   const dateStr=new Date(y,m,d).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('dayQuickViewTitle').innerHTML=`<i class="fas fa-calendar-day"></i> Day ${d}`;
   document.getElementById('dayQuickViewSub').textContent=dateStr+(isActiveDay?' — currently open for editing':'');
@@ -1567,7 +1567,7 @@ function openMonthQuickView(m){
     const isInc=INCOME_FIELDS.some(x=>x.id===f.id);
     return `<div class="breakdown-row"><span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span></div>`;
   }).join('');
-  const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
+  const netGlow=net>=0?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
   document.getElementById('monthQuickViewTitle').innerHTML=`<i class="fas fa-calendar"></i> ${MONTHS[m]}`;
   document.getElementById('monthQuickViewSub').textContent=`${curYear} — ${daily.length} days recorded`;
   document.getElementById('monthQuickViewBody').innerHTML=`
