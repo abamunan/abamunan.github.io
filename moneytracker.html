@@ -11,7 +11,7 @@
      The only real way to get a no-address-bar, app-like window is via
      "Add to Home Screen": these tags + manifest tell the OS to launch
      it standalone/fullscreen when opened from that home-screen icon. ── -->
-<meta name="theme-color" content="#0284c7">
+<meta name="theme-color" content="#1B3A5C">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,7 +25,7 @@
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <link rel="stylesheet" href="mt.css">
 </head>
-<body>
+<body class="mt-app">
 
 <!-- ── SPLASH SCREEN — shown while Firebase auth/data loads ──────────
      Progress bar is wired to the real load steps in initApp() below
@@ -34,7 +34,7 @@
 <div id="mtSplash" class="mt-splash">
   <div class="mt-splash-inner">
     <dotlottie-wc id="mtSplashLottie" speed="1" mode="forward" loop autoplay style="width:170px;height:170px;"></dotlottie-wc>
-    <div class="mt-splash-title">💰 Money Tracker</div>
+    <div class="mt-splash-title"><i class="fas fa-wallet"></i> Money Tracker</div>
     <div class="mt-splash-progress-track">
       <div class="mt-splash-progress-bar" id="mtSplashBar"></div>
     </div>
@@ -43,13 +43,13 @@
 </div>
 
 <div class="topbar">
-  <button class="menu-toggle-btn" id="menuToggleBtn" onclick="toggleNavDrawer()" title="Menu">☰</button>
-  <div class="topbar-title">💰 Money Tracker</div>
+  <button class="menu-toggle-btn" id="menuToggleBtn" onclick="toggleNavDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
+  <div class="topbar-title"><i class="fas fa-wallet"></i> Money Tracker</div>
   <div class="topbar-right">
-    <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
-    <button class="settings-btn" onclick="openSearch()" title="Search">🔍</button>
-    <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
-    <a class="settings-btn home-btn" href="index.html" title="Home">🏠</a>
+    <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+    <button class="settings-btn" onclick="openSearch()" title="Search"><i class="fas fa-magnifying-glass"></i></button>
+    <button class="settings-btn" onclick="openSettings()" title="Settings"><i class="fas fa-gear"></i></button>
+    <a class="settings-btn home-btn" href="index.html" title="Home"><i class="fas fa-house"></i></a>
   </div>
 </div>
 
@@ -76,21 +76,21 @@
       <p id="daySubtitle"></p>
     </div>
     <div class="day-lock-bar" id="dayLockBar" onclick="toggleDayLock()">
-      <span id="dayLockIcon">🔓</span>
+      <i id="dayLockIcon" class="fas fa-lock-open"></i>
       <span id="dayLockText">Unlocked — tap to lock</span>
     </div>
     <div id="dayEntryArea">
     <div class="day-cards-grid">
     <div class="section-card">
-      <div class="section-head expense">💸 EXPENSES</div>
+      <div class="section-head expense"><i class="fas fa-arrow-trend-down"></i> Expenses</div>
       <div id="expenseFieldsContainer"></div>
-      <div class="add-cat-link" onclick="openAddFieldModal('expense')">➕ Add / Remove categories</div>
+      <div class="add-cat-link" onclick="openAddFieldModal('expense')"><i class="fas fa-plus"></i> Add / Remove categories</div>
       <div class="total-row exp"><span>Total Expense</span><span id="totalExp">৳ 0</span></div>
     </div>
     <div class="section-card">
-      <div class="section-head income">💵 INCOME</div>
+      <div class="section-head income"><i class="fas fa-arrow-trend-up"></i> Income</div>
       <div id="incomeFieldsContainer"></div>
-      <div class="add-cat-link" onclick="openAddFieldModal('income')">➕ Add / Remove income sources</div>
+      <div class="add-cat-link" onclick="openAddFieldModal('income')"><i class="fas fa-plus"></i> Add / Remove income sources</div>
       <div class="total-row inc"><span>Total Income</span><span id="totalInc">৳ 0</span></div>
     </div>
     </div>
@@ -98,9 +98,9 @@
       <div class="net-label">Daily Balance (Income − Expense)</div>
       <div class="net-amount" id="netAmount">৳ 0</div>
     </div>
-    <button class="btn-primary" id="saveDayBtn" onclick="saveDay()">✅ Save</button>
+    <button class="btn-primary" id="saveDayBtn" onclick="saveDay()"><i class="fas fa-check"></i> Save</button>
     </div>
-    <button class="btn-outline" onclick="exportDayPDF()">📄 Export Today as PDF</button>
+    <button class="btn-outline" onclick="exportDayPDF()"><i class="fas fa-file-pdf"></i> Export Today as PDF</button>
   </div>
 </div>
 
@@ -123,8 +123,8 @@
     <div class="section-title">Accounts</div>
     <div id="accountListSummary"></div>
     <div class="export-row">
-      <button class="btn-excel" onclick="exportMonthExcel()">📊 Excel</button>
-      <button class="btn-pdf" onclick="exportMonthPDF()">📄 PDF</button>
+      <button class="btn-excel" onclick="exportMonthExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+      <button class="btn-pdf" onclick="exportMonthPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
     </div>
     </div>
     <div>
@@ -171,8 +171,8 @@
     <div class="section-title">Accounts</div>
     <div id="accountListSummaryYear"></div>
     <div class="export-row">
-      <button class="btn-excel" onclick="exportYearExcel()">📊 Excel</button>
-      <button class="btn-pdf" onclick="exportYearPDF()">📄 PDF</button>
+      <button class="btn-excel" onclick="exportYearExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+      <button class="btn-pdf" onclick="exportYearPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
     </div>
     </div>
     <div>
@@ -239,8 +239,8 @@
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>⚙️ Settings</h3>
-      <button class="modal-close" onclick="closeSettings()">✕</button>
+      <h3><i class="fas fa-gear"></i> Settings</h3>
+      <button class="modal-close" onclick="closeSettings()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
@@ -251,28 +251,28 @@
     </div>
     <div class="modal-body">
       <div class="settings-pane active" id="pane-categories">
-        <div class="settings-sub">💸 Expense Categories</div>
+        <div class="settings-sub"><i class="fas fa-arrow-trend-down"></i> Expense Categories</div>
         <div id="catListExpense"></div>
         <div class="add-cat-row">
           <input type="text" id="newExpIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
           <input type="text" id="newExpLabel" class="cat-label-input" placeholder="New category name" maxlength="30">
-          <button class="cat-add-btn" onclick="addCategory('expense')" title="Add">➕</button>
+          <button class="cat-add-btn" onclick="addCategory('expense')" title="Add"><i class="fas fa-plus"></i></button>
         </div>
-        <div class="settings-sub" style="margin-top:18px">💵 Income Sources</div>
+        <div class="settings-sub" style="margin-top:18px"><i class="fas fa-arrow-trend-up"></i> Income Sources</div>
         <div id="catListIncome"></div>
         <div class="add-cat-row">
           <input type="text" id="newIncIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
           <input type="text" id="newIncLabel" class="cat-label-input" placeholder="New income source" maxlength="30">
-          <button class="cat-add-btn" onclick="addCategory('income')" title="Add">➕</button>
+          <button class="cat-add-btn" onclick="addCategory('income')" title="Add"><i class="fas fa-plus"></i></button>
         </div>
       </div>
       <div class="settings-pane" id="pane-accounts">
-        <div class="settings-sub">💳 Balances are now automatic — set an Opening balance here once per account. From then on it updates itself from income and expenses (pick the account per entry — expenses default to Cash), plus Add/Transfer in Monthly Summary.</div>
+        <div class="settings-sub"><i class="fas fa-credit-card"></i> Balances are now automatic — set an Opening balance here once per account. From then on it updates itself from income and expenses (pick the account per entry — expenses default to Cash), plus Add/Transfer in Monthly Summary.</div>
         <div id="accountList"></div>
         <div class="add-cat-row">
           <input type="text" id="newAcctIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
           <input type="text" id="newAcctLabel" class="cat-label-input" placeholder="New account name" maxlength="30">
-          <button class="cat-add-btn" onclick="addAccount()" title="Add">➕</button>
+          <button class="cat-add-btn" onclick="addAccount()" title="Add"><i class="fas fa-plus"></i></button>
         </div>
       </div>
       <div class="settings-pane" id="pane-budgets">
@@ -282,19 +282,19 @@
       <div class="settings-pane" id="pane-goal">
         <div class="settings-sub">Set a savings target — progress tracks total budgeted (Budgets tab) minus what you've spent in those categories this month</div>
         <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
-        <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()">💾 Save Goal</button>
+        <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()"><i class="fas fa-floppy-disk"></i> Save Goal</button>
       </div>
       <div class="settings-pane" id="pane-backup">
         <div class="settings-sub">Download everything — categories, accounts, debts, and every day you've recorded — as one file you can restore from later</div>
-        <button class="btn-primary" onclick="exportAllDataJSON()">⬇️ Download Full Backup (JSON)</button>
+        <button class="btn-primary" onclick="exportAllDataJSON()"><i class="fas fa-download"></i> Download Full Backup (JSON)</button>
         <label class="btn-primary" style="display:block;text-align:center;margin-top:10px;cursor:pointer;box-sizing:border-box">
-          ⬆️ Restore From Backup
+          <i class="fas fa-upload"></i> Restore From Backup
           <input type="file" accept=".json,application/json" style="display:none" onchange="importAllDataJSON(this)">
         </label>
         <div class="settings-sub" style="margin-top:22px">Export every entry as a spreadsheet-friendly CSV file — one row per transaction, works in Excel/Sheets</div>
-        <button class="btn-primary" onclick="exportAllDataCSV()">📄 Export All Data (CSV)</button>
-        <div class="settings-sub" style="margin-top:22px;color:var(--danger)">⚠️ Permanently erase every day recorded, plus categories, accounts, budgets, goal, ledger and debts — on this device and in the cloud. Make sure you've downloaded a backup first.</div>
-        <button class="btn-danger" onclick="openRemoveDataModal()">🗑️ Remove All Data</button>
+        <button class="btn-primary" onclick="exportAllDataCSV()"><i class="fas fa-file-csv"></i> Export All Data (CSV)</button>
+        <div class="settings-sub" style="margin-top:22px;color:var(--danger)"><i class="fas fa-triangle-exclamation"></i> Permanently erase every day recorded, plus categories, accounts, budgets, goal, ledger and debts — on this device and in the cloud. Make sure you've downloaded a backup first.</div>
+        <button class="btn-danger" onclick="openRemoveDataModal()"><i class="fas fa-trash"></i> Remove All Data</button>
       </div>
     </div>
   </div>
@@ -303,12 +303,12 @@
 <div class="modal-overlay center" id="removeDataModal">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
-      <h3>🗑️ Remove All Data</h3>
-      <button class="modal-close" onclick="closeRemoveDataModal()">✕</button>
+      <h3><i class="fas fa-trash"></i> Remove All Data</h3>
+      <button class="modal-close" onclick="closeRemoveDataModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="rd-stage" id="rdStage1">
-        <div class="rd-warning-box">⚠️ <strong>This cannot be undone.</strong><br>This will permanently delete every day you've recorded, all categories, accounts, budgets, the savings goal, ledger entries, and debts/loans — both on this device and in your cloud backup.</div>
+        <div class="rd-warning-box"><i class="fas fa-triangle-exclamation"></i> <strong>This cannot be undone.</strong><br>This will permanently delete every day you've recorded, all categories, accounts, budgets, the savings goal, ledger entries, and debts/loans — both on this device and in your cloud backup.</div>
         <div class="rd-btn-row">
           <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
           <button class="btn-danger" onclick="rdShowStage(2)">Agreed</button>
@@ -318,7 +318,7 @@
         <div class="rd-warning-box">You've agreed to permanently erase all stored data. Tap Delete below to continue.</div>
         <div class="rd-btn-row">
           <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
-          <button class="btn-danger" onclick="rdShowStage(3)">🗑️ Delete</button>
+          <button class="btn-danger" onclick="rdShowStage(3)"><i class="fas fa-trash"></i> Delete</button>
         </div>
       </div>
       <div class="rd-stage" id="rdStage3" style="display:none">
@@ -335,8 +335,8 @@
 <div class="modal-overlay" id="searchModal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>🔍 Search</h3>
-      <button class="modal-close" onclick="closeSearch()">✕</button>
+      <h3><i class="fas fa-magnifying-glass"></i> Search</h3>
+      <button class="modal-close" onclick="closeSearch()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, categories…" oninput="performSearch()">
@@ -348,13 +348,13 @@
 <div class="modal-overlay" id="addFieldModal">
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
-      <h3 id="addFieldModalTitle">➕ Add Category</h3>
-      <button class="modal-close" onclick="closeAddFieldModal()">✕</button>
+      <h3 id="addFieldModalTitle"><i class="fas fa-plus"></i> Add Category</h3>
+      <button class="modal-close" onclick="closeAddFieldModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <div class="add-field-hint">⭐ pin to always show it, or use + / − to show it just for today</div>
+      <div class="add-field-hint"><i class="fas fa-star"></i> pin to always show it, or use + / − to show it just for today</div>
       <div id="addFieldList"></div>
-      <div class="add-cat-link" style="margin-top:10px;border-bottom:none" onclick="closeAddFieldModal();openSettings('categories')">⚙️ Rename / create / delete categories</div>
+      <div class="add-cat-link" style="margin-top:10px;border-bottom:none" onclick="closeAddFieldModal();openSettings('categories')"><i class="fas fa-gear"></i> Rename / create / delete categories</div>
     </div>
   </div>
 </div>
@@ -362,8 +362,8 @@
 <div class="modal-overlay" id="debtsModal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>🤝 Debts &amp; Loans</h3>
-      <button class="modal-close" onclick="closeDebtsModal()">✕</button>
+      <h3><i class="fas fa-handshake"></i> Debts &amp; Loans</h3>
+      <button class="modal-close" onclick="closeDebtsModal()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="debt-summary-strip">
       <div class="debt-sum-box owe"><span class="debt-sum-label">You Owe</span><span class="debt-sum-val" id="debtSumOwe">৳ 0</span></div>
@@ -384,7 +384,7 @@
           </div>
           <div class="debt-add-row">
             <input type="date" id="newDebtDateB" class="debt-input">
-            <button class="cat-add-btn" onclick="addDebt('borrowed')" title="Add">➕</button>
+            <button class="cat-add-btn" onclick="addDebt('borrowed')" title="Add"><i class="fas fa-plus"></i></button>
           </div>
         </div>
         <div id="debtListBorrowed"></div>
@@ -399,7 +399,7 @@
           </div>
           <div class="debt-add-row">
             <input type="date" id="newDebtDateL" class="debt-input">
-            <button class="cat-add-btn" onclick="addDebt('lent')" title="Add">➕</button>
+            <button class="cat-add-btn" onclick="addDebt('lent')" title="Add"><i class="fas fa-plus"></i></button>
           </div>
         </div>
         <div id="debtListLent"></div>
@@ -415,7 +415,7 @@
         <h3 id="categoryDetailTitle" style="margin-bottom:2px">🍳 Category</h3>
         <div id="categoryDetailSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeCategoryDetail()">✕</button>
+      <button class="modal-close" onclick="closeCategoryDetail()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="categoryDetailBody"></div>
   </div>
@@ -425,10 +425,10 @@
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
       <div>
-        <h3 id="dayQuickViewTitle" style="margin-bottom:2px">📅 Day</h3>
+        <h3 id="dayQuickViewTitle" style="margin-bottom:2px"><i class="fas fa-calendar-day"></i> Day</h3>
         <div id="dayQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeDayQuickView()">✕</button>
+      <button class="modal-close" onclick="closeDayQuickView()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="dayQuickViewBody"></div>
   </div>
@@ -438,10 +438,10 @@
   <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
       <div>
-        <h3 id="monthQuickViewTitle" style="margin-bottom:2px">📆 Month</h3>
+        <h3 id="monthQuickViewTitle" style="margin-bottom:2px"><i class="fas fa-calendar"></i> Month</h3>
         <div id="monthQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeMonthQuickView()">✕</button>
+      <button class="modal-close" onclick="closeMonthQuickView()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="monthQuickViewBody"></div>
   </div>
@@ -455,7 +455,7 @@
         <h3 id="acctHistoryTitle" style="margin-bottom:2px">💵 Cash</h3>
         <div style="font-size:0.68rem;color:var(--text-soft);font-weight:500">All-time transaction history</div>
       </div>
-      <button class="modal-close" onclick="closeAcctHistory()">✕</button>
+      <button class="modal-close" onclick="closeAcctHistory()"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="ah-stat-hero">

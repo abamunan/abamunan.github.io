@@ -26,7 +26,7 @@ function toggleFullscreen(){
       || document.documentElement.msRequestFullscreen;
     if (req) {
       req.call(document.documentElement).then(()=>{
-        if(btn) btn.textContent = '⛶';
+        if(btn){ const ic=btn.querySelector('i'); if(ic) ic.className='fas fa-expand'; }
       }).catch(()=>{
         showToast('Fullscreen not supported on this browser');
       });
@@ -643,7 +643,7 @@ function addCategory(type){
   iconEl.value=''; labelEl.value='';
   refreshAfterCategoryChange();
   renderSettingsLists();
-  showToast('Category added ✓');
+  showToast('Category added');
 }
 
 function deleteCategory(id){
@@ -676,7 +676,7 @@ function updateAccountField(id,key,value){
   saveSettingsRemote();
   renderSettingsLists();
   renderAccountListSummary();
-  showToast('Account updated ✓');
+  showToast('Account updated');
 }
 function addAccount(){
   const iconEl=document.getElementById('newAcctIcon');
@@ -690,7 +690,7 @@ function addAccount(){
   iconEl.value=''; labelEl.value='';
   renderSettingsLists();
   renderAccountListSummary();
-  showToast('Account added ✓');
+  showToast('Account added');
 }
 function deleteAccount(id){
   if(ACCOUNTS.length<=1){ showToast('At least one account is required','error'); return; }
@@ -713,7 +713,7 @@ function deleteAccount(id){
 function catRowHTML(f){
   const pinned=!!f.pinned;
   const pinTitle=pinned?'Shown in Day view every day — tap to unpin':'Hidden by default — tap to always show in Day view';
-  return `<div class="cat-row"><button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPin('${f.id}')" title="${pinTitle}">${pinned?'⭐':'☆'}</button><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete">🗑</button></div>`;
+  return `<div class="cat-row"><button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPin('${f.id}')" title="${pinTitle}"><i class="fas fa-star"></i></button><input class="cat-icon-input" value="${escHtml(f.icon)}" onchange="updateCategoryField('${f.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(f.label)}" onchange="updateCategoryField('${f.id}','label',this.value)"><button class="cat-del-btn" onclick="deleteCategory('${f.id}')" title="Delete"><i class="fas fa-trash"></i></button></div>`;
 }
 function toggleCategoryPin(id){
   const f=EXPENSE_FIELDS.find(x=>x.id===id)||INCOME_FIELDS.find(x=>x.id===id);
@@ -722,14 +722,14 @@ function toggleCategoryPin(id){
   saveSettingsRemote();
   refreshAfterCategoryChange();
   renderSettingsLists();
-  showToast(f.pinned?'Pinned — shown every day ✓':'Unpinned — hidden unless used');
+  showToast(f.pinned?'Pinned — shown every day':'Unpinned — hidden unless used');
 }
 function budgetRowHTML(f){
   const val=f.budget||'';
   return `<div class="cat-row"><span class="field-icon">${f.icon}</span><span class="field-label">${escHtml(f.label)}</span><input class="field-input" type="number" min="0" placeholder="0" value="${val}" onchange="updateCategoryField('${f.id}','budget',this.value)"></div>`;
 }
 function accountRowHTML(a){
-  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="Opening" value="${a.opening||0}" onchange="updateAccountField('${a.id}','opening',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete">🗑</button></div>`;
+  return `<div class="cat-row"><input class="cat-icon-input" value="${escHtml(a.icon)}" onchange="updateAccountField('${a.id}','icon',this.value)"><input class="cat-label-input" value="${escHtml(a.label)}" onchange="updateAccountField('${a.id}','label',this.value)"><input class="field-input" type="number" style="width:92px" placeholder="Opening" value="${a.opening||0}" onchange="updateAccountField('${a.id}','opening',this.value)"><button class="cat-del-btn" onclick="deleteAccount('${a.id}')" title="Delete"><i class="fas fa-trash"></i></button></div>`;
 }
 // Cheap signature over exactly what catRowHTML/budgetRowHTML/accountRowHTML
 // read, so a redundant re-open of Settings (nothing edited since last time)
@@ -769,7 +769,7 @@ function showSettingsTab(tab){
 function saveGoal(){
   SAVINGS_GOAL=Math.max(0,parseFloat(document.getElementById('goalInput').value)||0);
   saveSettingsRemote();
-  showToast('Goal saved ✓');
+  showToast('Goal saved');
   if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
 }
 
@@ -817,7 +817,7 @@ function openAddFieldModal(type){
   const data=collectDayData(); // live snapshot, incl. anything being typed right now
   setDayLocal(curYear,curMonth,currentDay,data);
   const fields=type==='expense'?EXPENSE_FIELDS:INCOME_FIELDS;
-  document.getElementById('addFieldModalTitle').textContent=type==='expense'?'📋 Manage Expense Categories':'📋 Manage Income Sources';
+  document.getElementById('addFieldModalTitle').innerHTML=type==='expense'?'<i class="fas fa-list"></i> Manage Expense Categories':'<i class="fas fa-list"></i> Manage Income Sources';
   const list=document.getElementById('addFieldList');
   if(list) list.innerHTML=fields.map(f=>dayCatRowHTML(f,data)).join('');
   document.getElementById('addFieldModal').classList.add('open');
@@ -830,17 +830,17 @@ function dayCatRowHTML(f,data){
   const pinned=!!f.pinned;
   const forced=fieldForcedShown(f,data);
   const manuallyShown=!!data['shown_'+f.id];
-  const pinBtn=`<button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPinFromDay('${f.id}')" title="${pinned?'Unpin — stop showing every day':'Pin — show every day'}">${pinned?'⭐':'☆'}</button>`;
+  const pinBtn=`<button class="cat-pin-btn${pinned?' pinned':''}" onclick="toggleCategoryPinFromDay('${f.id}')" title="${pinned?'Unpin — stop showing every day':'Pin — show every day'}"><i class="fas fa-star"></i></button>`;
   const line1=`<span class="field-icon">${f.icon}</span><span class="cat-label-static">${escHtml(f.label)}</span>${pinBtn}`;
   if(pinned) return `<div class="cat-row">${line1}<span class="day-shown-badge">Always shown</span></div>`;
   if(forced) return `<div class="cat-row">${line1}<span class="day-shown-badge">Shown (has data)</span></div>`;
-  if(manuallyShown) return `<div class="cat-row">${line1}<button class="day-remove-btn" onclick="removeFieldForToday('${f.id}')">➖ Remove</button></div>`;
+  if(manuallyShown) return `<div class="cat-row">${line1}<button class="day-remove-btn" onclick="removeFieldForToday('${f.id}')"><i class="fas fa-minus"></i> Remove</button></div>`;
   // Not shown yet — let them type the amount right here and add it in one step
   return `<div class="cat-row cat-row-stack">
     <div class="cat-row-line1">${line1}</div>
     <div class="day-quickadd-row">
       <input type="number" class="debt-input" id="quickAmt_${f.id}" placeholder="Amount" min="0" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addFieldForToday('${f.id}')}">
-      <button class="day-add-btn" onclick="addFieldForToday('${f.id}')">➕ Add</button>
+      <button class="day-add-btn" onclick="addFieldForToday('${f.id}')"><i class="fas fa-plus"></i> Add</button>
     </div>
   </div>`;
 }
@@ -959,13 +959,13 @@ function scheduleAutoSave(){
 }
 
 async function saveDay(){
-  if(isDayLocked(curYear,curMonth,currentDay)){ showToast('Day is locked 🔒','error'); return; }
+  if(isDayLocked(curYear,curMonth,currentDay)){ showToast('Day is locked','error'); return; }
   clearTimeout(autoSaveTimer);
   const data=collectDayData();
   showToast('Saving…');
   await setDay(curYear,curMonth,currentDay,data);
   renderDayBtns();
-  showToast('Saved ✓');
+  showToast('Saved');
 }
 
 // Tap-to-toggle, no password. Locking captures whatever's currently in the
@@ -979,7 +979,7 @@ async function toggleDayLock(){
   await setDay(curYear,curMonth,currentDay,data);
   applyDayLockUI();
   renderDayBtns();
-  showToast(data.locked?'Day locked 🔒':'Day unlocked 🔓');
+  showToast(data.locked?'Day locked':'Day unlocked');
 }
 
 function applyDayLockUI(){
@@ -992,7 +992,7 @@ function applyDayLockUI(){
   if(!bar||!area) return;
   bar.classList.toggle('locked',locked);
   area.classList.toggle('locked',locked);
-  icon.textContent=locked?'🔒':'🔓';
+  icon.className=locked?'fas fa-lock':'fas fa-lock-open';
   text.textContent=locked?'Locked — tap to unlock':'Unlocked — tap to lock';
   if(saveBtn) saveBtn.disabled=locked;
 }
@@ -1143,7 +1143,7 @@ function searchResultRowHTML(r){
       <span class="sr-icon">${r.field.icon}</span>
       <div class="sr-main">
         <div class="sr-label-line"><span>${escHtml(r.field.label)}</span><span class="sr-amt ${amtClass}">${fmt(r.amount)}</span></div>
-        ${r.note?`<div class="sr-note">📝 ${escHtml(r.note)}</div>`:''}
+        ${r.note?`<div class="sr-note"><i class="fas fa-note-sticky"></i> ${escHtml(r.note)}</div>`:''}
         <div class="sr-date">${dateStr}</div>
       </div>
     </div>`;
@@ -1230,7 +1230,7 @@ function calcMonthUpTo(y,m,upToDay){
 
 // ─── CHARTS (bar + pie, theme-aware) ───────────────────────────────────────────
 const chartInstances={};
-const CAT_PALETTE=['#0284c7','#16a34a','#dc2626','#d97706','#7c3aed','#db2777','#0d9488','#ca8a04','#4f46e5','#059669','#e11d48','#0891b2','#65a30d','#c026d3','#ea580c','#2563eb','#0e7490','#9333ea','#b45309'];
+const CAT_PALETTE=['#1B3A5C','#7A2E2E','#4A6C8C','#A85C5C','#2F4A66','#8C4646','#5C7A96','#B37A7A','#264257','#6B3535','#7691AB','#96625E','#3D5A78','#9C5252','#3B5F4F','#6F4E37','#8A9BA8','#845C5C','#41576E'];
 
 function chartColors(){
   const cs=getComputedStyle(document.documentElement);
@@ -1259,7 +1259,7 @@ function setChartEmpty(id,show,msg){
     empty.className='chart-empty';
     canvas.parentElement.appendChild(empty);
   }
-  if(msg) empty.textContent=msg;
+  if(msg) empty.innerHTML=msg;
   empty.style.display=show?'flex':'none';
   canvas.style.display=show?'none':'block';
 }
@@ -1268,7 +1268,7 @@ function renderBarChart(id,labels,expData){
   const ctx=document.getElementById(id);
   destroyChart(id);
   if(!ctx) return;
-  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'<i class="fas fa-triangle-exclamation"></i> Chart library failed to load — check your internet connection'); return; }
   if(!labels.length||!expData.some(v=>v>0)){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
   setChartEmpty(id,false);
   const c=chartColors();
@@ -1292,7 +1292,7 @@ function renderAreaChart(id,labels,expData){
   const ctx=document.getElementById(id);
   destroyChart(id);
   if(!ctx) return;
-  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'<i class="fas fa-triangle-exclamation"></i> Chart library failed to load — check your internet connection'); return; }
   if(!labels.length||!expData.some(v=>v>0)){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
   setChartEmpty(id,false);
   const c=chartColors();
@@ -1326,7 +1326,7 @@ function renderPieChart(id,catTotals){
   const ctx=document.getElementById(id);
   destroyChart(id);
   if(!ctx) return;
-  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'<i class="fas fa-triangle-exclamation"></i> Chart library failed to load — check your internet connection'); return; }
   const entries=EXPENSE_FIELDS.map((f,i)=>({label:f.label,val:catTotals[f.id]||0,color:CAT_PALETTE[i%CAT_PALETTE.length]})).filter(e=>e.val>0);
   if(!entries.length){ setChartEmpty(id,true,'No expense data yet for this period'); return; }
   setChartEmpty(id,false);
@@ -1424,7 +1424,7 @@ function openCategoryDetail(fieldId){
       <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
     </div>`;
   }).join('');
-  const listBody=rows||`<div class="cd-empty">🗒️ No entries logged for ${escHtml(f.label)} in ${MONTHS[curMonth]}</div>`;
+  const listBody=rows||`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${MONTHS[curMonth]}</div>`;
 
   document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
   document.getElementById('categoryDetailSub').textContent=`${MONTHS[curMonth]} ${curYear} activity`;
@@ -1480,7 +1480,7 @@ function openCategoryDetailYear(fieldId){
       <div class="cd-note"><span class="cd-dash">—</span></div>
     </div>`;
   }).join('');
-  const listBody=rows||`<div class="cd-empty">🗒️ No entries logged for ${escHtml(f.label)} in ${curYear}</div>`;
+  const listBody=rows||`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${curYear}</div>`;
 
   document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
   document.getElementById('categoryDetailSub').textContent=`${curYear} activity`;
@@ -1535,7 +1535,7 @@ function openDayQuickView(y,m,d){
   }).join('');
   const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
   const dateStr=new Date(y,m,d).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('dayQuickViewTitle').textContent=`📅 Day ${d}`;
+  document.getElementById('dayQuickViewTitle').innerHTML=`<i class="fas fa-calendar-day"></i> Day ${d}`;
   document.getElementById('dayQuickViewSub').textContent=dateStr+(isActiveDay?' — currently open for editing':'');
   document.getElementById('dayQuickViewBody').innerHTML=`
     <div class="cd-stats">
@@ -1548,9 +1548,9 @@ function openDayQuickView(y,m,d){
     </div>
     <div class="cd-panel">
       <div class="cd-panel-head"><span>Entries</span><span class="cd-panel-count">${entries.length}</span></div>
-      <div class="cd-list">${rows||`<div class="cd-empty">🗒️ No entries logged for this day</div>`}</div>
+      <div class="cd-list">${rows||`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for this day</div>`}</div>
     </div>
-    <button class="btn-primary" style="margin-top:14px" onclick="closeDayQuickView();switchView('day');selectDay(${d})">✏️ Edit this day</button>
+    <button class="btn-primary" style="margin-top:14px" onclick="closeDayQuickView();switchView('day');selectDay(${d})"><i class="fas fa-pen"></i> Edit this day</button>
   `;
   document.getElementById('dayQuickViewModal').classList.add('open');
 }
@@ -1568,7 +1568,7 @@ function openMonthQuickView(m){
     return `<div class="breakdown-row"><span class="br-left"><span>${f.icon}</span><span>${escHtml(f.label)}</span></span><span class="br-val ${isInc?'inc':'exp'}">${fmt(catTotals[f.id])}</span></div>`;
   }).join('');
   const netGlow=net>=0?'var(--accent2-glow)':'rgba(220,38,38,0.14)';
-  document.getElementById('monthQuickViewTitle').textContent=`📆 ${MONTHS[m]}`;
+  document.getElementById('monthQuickViewTitle').innerHTML=`<i class="fas fa-calendar"></i> ${MONTHS[m]}`;
   document.getElementById('monthQuickViewSub').textContent=`${curYear} — ${daily.length} days recorded`;
   document.getElementById('monthQuickViewBody').innerHTML=`
     <div class="cd-stats">
@@ -1580,7 +1580,7 @@ function openMonthQuickView(m){
       <div class="cd-stat"><div class="cd-stat-label">Income</div><div class="cd-stat-val" style="color:var(--accent2)">${fmt(totalInc)}</div></div>
     </div>
     ${rows||'<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No data yet</div>'}
-    <button class="btn-primary" style="margin-top:14px" onclick="closeMonthQuickView();openSummaryFromQuickView(${m})">📊 Open full Summary</button>
+    <button class="btn-primary" style="margin-top:14px" onclick="closeMonthQuickView();openSummaryFromQuickView(${m})"><i class="fas fa-chart-column"></i> Open full Summary</button>
   `;
   document.getElementById('monthQuickViewModal').classList.add('open');
 }
@@ -1616,7 +1616,7 @@ function renderSavingsGoalCard(catTotals){
   const container=document.getElementById('goalCardContainer');
   if(!container) return;
   if(!SAVINGS_GOAL||SAVINGS_GOAL<=0){
-    container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')">🎯 No savings goal set yet — tap to create one</div>`;
+    container.innerHTML=`<div class="goal-card empty" onclick="openSettings('goal')"><i class="fas fa-bullseye"></i> No savings goal set yet — tap to create one</div>`;
     return;
   }
   const totalDaysInMonth=daysInMonth(curYear,curMonth);
@@ -1634,7 +1634,7 @@ function renderSavingsGoalCard(catTotals){
   }
   const pct=Math.max(0,Math.min(100,(saved/SAVINGS_GOAL)*100));
   container.innerHTML=`<div class="goal-card">
-    <div class="goal-head"><span>🎯 Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal">✏️</span></div>
+    <div class="goal-head"><span><i class="fas fa-bullseye"></i> Savings Goal — ${MONTHS[curMonth]}</span><span class="goal-edit" onclick="openSettings('goal')" title="Edit goal"><i class="fas fa-pen"></i></span></div>
     <div class="goal-amounts"><span class="goal-saved${saved<0?' neg':''}">${fmt(saved)}</span><span class="goal-of">of ${fmt(SAVINGS_GOAL)} target</span></div>
     <div class="goal-bar-track"><div class="goal-bar-fill" style="transform:scaleX(${pct/100})"></div></div>
     <div class="goal-pct">${pct.toFixed(0)}% reached</div>
@@ -1650,7 +1650,7 @@ function renderAccountListSummary(containerId){
   const container=document.getElementById(containerId);
   if(!container) return;
   if(!ACCOUNTS.length){
-    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet — add one in ⚙️ Settings → Accounts</div>';
+    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No accounts yet — add one in <i class="fas fa-gear"></i> Settings → Accounts</div>';
     return;
   }
   const balances=computeAccountBalances();
@@ -1661,7 +1661,7 @@ function renderAccountListSummary(containerId){
   const hasControls=containerId==='accountListSummary';
   const rows=ACCOUNTS.map(a=>{
     const bal=balances[a.id]||0;
-    const actions=hasControls?`<button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','add')" title="Add balance">➕</button><button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','transfer')" title="Transfer">⇄</button>`:'';
+    const actions=hasControls?`<button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','add')" title="Add balance"><i class="fas fa-plus"></i></button><button class="acct-mini-btn" onclick="event.stopPropagation();toggleAcctPanel('${a.id}','transfer')" title="Transfer"><i class="fas fa-right-left"></i></button>`:'';
     const panel=hasControls?`<div class="acct-panel" id="acctpanel_${a.id}"></div>`:'';
     const rowAttrs=` class="account-row ah-clickable" onclick="openAcctHistory('${a.id}')"`;
     return `<div${rowAttrs}>
@@ -1686,10 +1686,10 @@ function toggleAcctPanel(id,mode){
   if(wasOpenSameMode) return;
   panel.dataset.mode=mode;
   if(mode==='add'){
-    panel.innerHTML=`<input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="addamt_${id}"><button class="acct-panel-btn" onclick="confirmAddBalance('${id}')">Add</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')">✕</button>`;
+    panel.innerHTML=`<input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="addamt_${id}"><button class="acct-panel-btn" onclick="confirmAddBalance('${id}')">Add</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')"><i class="fas fa-xmark"></i></button>`;
   } else {
     const opts=ACCOUNTS.filter(a=>a.id!==id).map(a=>`<option value="${a.id}">${a.icon} ${escHtml(a.label)}</option>`).join('');
-    panel.innerHTML=`<select class="acct-panel-select" id="transto_${id}">${opts}</select><input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="transamt_${id}"><button class="acct-panel-btn" onclick="confirmTransfer('${id}')">Send</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')">✕</button>`;
+    panel.innerHTML=`<select class="acct-panel-select" id="transto_${id}">${opts}</select><input class="acct-panel-input" type="number" min="0" inputmode="decimal" placeholder="Amount" id="transamt_${id}"><button class="acct-panel-btn" onclick="confirmTransfer('${id}')">Send</button><button class="acct-panel-btn cancel" onclick="closeAcctPanel('${id}')"><i class="fas fa-xmark"></i></button>`;
   }
   panel.classList.add('open');
   document.getElementById(mode==='add'?'addamt_'+id:'transamt_'+id)?.focus();
@@ -1706,7 +1706,7 @@ function confirmAddBalance(id){
   saveLedgerRemote();
   closeAcctPanel(id);
   renderAccountListSummary();
-  showToast('Balance added ✓');
+  showToast('Balance added');
 }
 function confirmTransfer(id){
   const toId=document.getElementById('transto_'+id)?.value;
@@ -1717,7 +1717,7 @@ function confirmTransfer(id){
   saveLedgerRemote();
   closeAcctPanel(id);
   renderAccountListSummary();
-  showToast('Transferred ✓');
+  showToast('Transferred');
 }
 
 // ─── ACCOUNT TRANSACTION HISTORY (tap Cash/bKash/Card/Total in Monthly Summary) ─
@@ -1759,16 +1759,16 @@ function buildAccountLedger(accountId){
     if(ev.type==='add'){
       if(combined||ev.accountId===accountId){
         const acct=ACCOUNTS.find(a=>a.id===ev.accountId);
-        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'➕',label:combined?`Balance added — ${acct?acct.label:'account'}`:'Balance added',note:''});
+        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'<i class="fas fa-plus"></i>',label:combined?`Balance added — ${acct?acct.label:'account'}`:'Balance added',note:''});
       }
     } else if(ev.type==='transfer' && !combined){
       if(ev.fromId===accountId){
         const to=ACCOUNTS.find(a=>a.id===ev.toId);
-        entries.push({dt,hasTime:true,sign:-1,amount:ev.amount,icon:'⇄',label:`Transfer to ${to?to.label:'account'}`,note:''});
+        entries.push({dt,hasTime:true,sign:-1,amount:ev.amount,icon:'<i class="fas fa-right-left"></i>',label:`Transfer to ${to?to.label:'account'}`,note:''});
       }
       if(ev.toId===accountId){
         const from=ACCOUNTS.find(a=>a.id===ev.fromId);
-        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'⇄',label:`Transfer from ${from?from.label:'account'}`,note:''});
+        entries.push({dt,hasTime:true,sign:1,amount:ev.amount,icon:'<i class="fas fa-right-left"></i>',label:`Transfer from ${from?from.label:'account'}`,note:''});
       }
     }
     // combined view: transfers between two of the user's own accounts are
@@ -1779,9 +1779,9 @@ function buildAccountLedger(accountId){
     if(!(combined||dbt.accountId===accountId)) return;
     const dt=dbt.date?new Date(dbt.date+'T12:00:00'):new Date();
     if(dbt.type==='lent'){
-      entries.push({dt,hasTime:false,sign:-1,amount:dbt.amount,icon:'📤',label:`Lent to ${dbt.person}`,note:dbt.note||''});
+      entries.push({dt,hasTime:false,sign:-1,amount:dbt.amount,icon:'<i class="fas fa-arrow-up-from-bracket"></i>',label:`Lent to ${dbt.person}`,note:dbt.note||''});
     } else {
-      entries.push({dt,hasTime:false,sign:1,amount:dbt.amount,icon:'📥',label:`Borrowed from ${dbt.person}`,note:dbt.note||''});
+      entries.push({dt,hasTime:false,sign:1,amount:dbt.amount,icon:'<i class="fas fa-arrow-down-to-bracket"></i>',label:`Borrowed from ${dbt.person}`,note:dbt.note||''});
     }
   });
   entries.sort((a,b)=>a.dt-b.dt);
@@ -1802,7 +1802,7 @@ function openAcctHistory(accountId){
   const currentBal=combined?ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0):(balances[accountId]||0);
   ahFullList=buildAccountLedger(accountId).reverse();
   ahShowingAll=false;
-  document.getElementById('acctHistoryTitle').textContent=combined?'💰 Total Balance':`${acct.icon} ${acct.label}`;
+  document.getElementById('acctHistoryTitle').innerHTML=combined?'<i class="fas fa-wallet"></i> Total Balance':`${escHtml(acct.icon)} ${escHtml(acct.label)}`;
   const balEl=document.getElementById('ahCurrentBalance');
   balEl.textContent=fmt(currentBal);
   balEl.className='ah-stat-val'+(currentBal<0?' neg':'');
@@ -1824,10 +1824,10 @@ function renderAcctHistoryList(){
         <span class="ah-date">${dateStr}${timeStr?', '+timeStr:''}</span>
         <span class="ah-bal">Bal ${fmt(e.balanceAfter)}</span>
       </div>
-      ${e.note?`<div class="ah-note">📝 ${escHtml(e.note)}</div>`:''}
+      ${e.note?`<div class="ah-note"><i class="fas fa-note-sticky"></i> ${escHtml(e.note)}</div>`:''}
     </div>`;
   }).join('');
-  document.getElementById('ahList').innerHTML=rows||'<div class="cd-empty">🗒️ No transactions yet</div>';
+  document.getElementById('ahList').innerHTML=rows||'<div class="cd-empty"><i class="fas fa-clipboard"></i> No transactions yet</div>';
   document.getElementById('ahCount').textContent=ahFullList.length?(ahShowingAll?`${ahFullList.length} total`:`Latest ${Math.min(AH_PAGE_SIZE,ahFullList.length)} of ${ahFullList.length}`):'';
   const btn=document.getElementById('ahLoadAllBtn');
   if(!ahShowingAll&&ahFullList.length>AH_PAGE_SIZE){
@@ -1855,7 +1855,7 @@ function renderDebtsSummary(containerId){
   const container=document.getElementById(containerId);
   if(!container) return;
   if(!DEBTS.length){
-    container.innerHTML=`<div class="debt-summary-card" onclick="openDebtsModal()">🤝 No debts or loans yet — tap to add one</div>`;
+    container.innerHTML=`<div class="debt-summary-card" onclick="openDebtsModal()"><i class="fas fa-handshake"></i> No debts or loans yet — tap to add one</div>`;
     return;
   }
   const {owe,receive}=computeDebtTotals();
@@ -1893,10 +1893,10 @@ function debtRowHTML(d){
   const acctTag=acct?`<span class="debt-acct">${acct.icon} ${escHtml(acct.label)}</span>`:'';
   return `<div class="debt-row${d.settled?' settled':''}">
     <div class="debt-row-main"><span class="debt-person">${escHtml(d.person)}</span><span class="debt-amount">${fmt(d.amount)}</span></div>
-    <div class="debt-row-sub"><span class="debt-date">${dateStr}</span>${acctTag}${d.note?`<span class="debt-note">📝 ${escHtml(d.note)}</span>`:''}</div>
+    <div class="debt-row-sub"><span class="debt-date">${dateStr}</span>${acctTag}${d.note?`<span class="debt-note"><i class="fas fa-note-sticky"></i> ${escHtml(d.note)}</span>`:''}</div>
     <div class="debt-row-actions">
       <label class="debt-check"><input type="checkbox" ${d.settled?'checked':''} onchange="toggleDebtSettled('${d.id}')">${checkLabel}</label>
-      <button class="cat-del-btn" onclick="deleteDebt('${d.id}')" title="Delete">🗑</button>
+      <button class="cat-del-btn" onclick="deleteDebt('${d.id}')" title="Delete"><i class="fas fa-trash"></i></button>
     </div>
   </div>`;
 }
@@ -1938,7 +1938,7 @@ function addDebt(type){
   if(personEl) personEl.value='';
   if(amountEl) amountEl.value='';
   refreshDebtDisplays();
-  showToast(type==='borrowed'?'Added — you owe this ✓':'Added — they owe you ✓');
+  showToast(type==='borrowed'?'Added — you owe this':'Added — they owe you');
 }
 function toggleDebtSettled(id){
   const d=DEBTS.find(x=>x.id===id);
@@ -1963,7 +1963,7 @@ function renderBudgetAlertBanner(catTotals){
   const overList=EXPENSE_FIELDS.filter(f=>f.budget>0 && (catTotals[f.id]||0)>f.budget);
   if(!overList.length){ container.innerHTML=''; return; }
   const rows=overList.map(f=>`<div class="budget-alert-row"><span>${f.icon} ${escHtml(f.label)}</span><span class="budget-alert-amt">${fmt(catTotals[f.id]||0)} / ${fmt(f.budget)}</span></div>`).join('');
-  container.innerHTML=`<div class="budget-alert-banner"><div class="budget-alert-head">⚠️ Over Budget This Month</div>${rows}</div>`;
+  container.innerHTML=`<div class="budget-alert-banner"><div class="budget-alert-head"><i class="fas fa-triangle-exclamation"></i> Over Budget This Month</div>${rows}</div>`;
 }
 // Fires once per category per session when a Day-view entry pushes it over its
 // monthly budget — resets so it can fire again if the total dips back under.
@@ -1976,7 +1976,7 @@ function checkBudgetAlert(fieldId){
   if(used>f.budget){
     if(!budgetAlertedIds.has(fieldId)){
       budgetAlertedIds.add(fieldId);
-      showToast(`⚠️ Over budget: ${f.icon} ${f.label} — ${fmt(used)} / ${fmt(f.budget)}`, true);
+      showToast(`Over budget: ${f.icon} ${f.label} — ${fmt(used)} / ${fmt(f.budget)}`, true);
     }
   } else {
     budgetAlertedIds.delete(fieldId);
@@ -1987,7 +1987,7 @@ function renderBudgets(catTotals){
   if(!container) return;
   const withBudget=EXPENSE_FIELDS.filter(f=>f.budget>0);
   if(!withBudget.length){
-    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No budgets set yet — add one in ⚙️ Settings → Budgets</div>';
+    container.innerHTML='<div style="color:var(--muted);text-align:center;padding:14px;font-size:0.82rem">No budgets set yet — add one in <i class="fas fa-gear"></i> Settings → Budgets</div>';
     return;
   }
   const totalDaysInMonth=daysInMonth(curYear,curMonth);
@@ -2018,7 +2018,7 @@ function renderComparisonChart(id,labels,curVals,prevVals,curLabel,prevLabel){
   const ctx=document.getElementById(id);
   destroyChart(id);
   if(!ctx) return;
-  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'⚠️ Chart library failed to load — check your internet connection'); return; }
+  if(typeof Chart==='undefined'){ setChartEmpty(id,true,'<i class="fas fa-triangle-exclamation"></i> Chart library failed to load — check your internet connection'); return; }
   if(!labels.length){ setChartEmpty(id,true,'Not enough data yet to compare months'); return; }
   setChartEmpty(id,false);
   const c=chartColors();
@@ -2269,7 +2269,7 @@ function renderIncomeConcentrationCard(catTotals,totalInc){
   const top=entries[0];
   const share=((top.val/totalInc)*100).toFixed(0);
   card.innerHTML=`<div class="ins-card-title">Income Concentration</div>
-    <div class="ins-card-row"><span class="icr-left"><span>💼</span><span>Active income sources</span></span><span class="icr-right">${entries.length}</span></div>
+    <div class="ins-card-row"><span class="icr-left"><span><i class="fas fa-briefcase"></i></span><span>Active income sources</span></span><span class="icr-right">${entries.length}</span></div>
     <div class="ins-card-row"><span class="icr-left"><span>${top.f.icon}</span><span>Top source: ${escHtml(top.f.label)}</span></span><span class="icr-right">${share}%</span></div>`;
 }
 
@@ -2309,7 +2309,7 @@ function renderComparisonSection(catTotals,totalExp){
     const top=topEntries[0];
     const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
     topCard.innerHTML=`<div class="top-cat-card">
-      <div class="top-cat-label">🔥 Top Spending Category</div>
+      <div class="top-cat-label"><i class="fas fa-fire"></i> Top Spending Category</div>
       <div class="top-cat-main"><span class="top-cat-icon">${top.f.icon}</span><span class="top-cat-name">${escHtml(top.f.label)}</span><span class="top-cat-amt">${fmt(top.val)}</span></div>
       <div class="top-cat-share">${share}% of this month's expense</div>
     </div>`;
@@ -2400,7 +2400,7 @@ function renderRollingTrend(){
   const ctx=document.getElementById('rollingTrendChart');
   destroyChart('rollingTrendChart');
   if(!ctx){ /* no-op */ }
-  else if(typeof Chart==='undefined'){ setChartEmpty('rollingTrendChart',true,'⚠️ Chart library failed to load — check your internet connection'); }
+  else if(typeof Chart==='undefined'){ setChartEmpty('rollingTrendChart',true,'<i class="fas fa-triangle-exclamation"></i> Chart library failed to load — check your internet connection'); }
   else {
     setChartEmpty('rollingTrendChart',false);
     const c=chartColors();
@@ -2647,8 +2647,8 @@ function exportDayPDF(){
       });
       rows+=`<tr class="subtotal"><td colspan="2">Total Income</td><td class="num inc">${inc.toLocaleString('en-IN')}</td><td></td></tr>`;
       rows+=`<tr class="grand"><td colspan="2">Net Balance</td><td class="num ${net>=0?'inc':'exp'}">${net.toLocaleString('en-IN')}</td><td></td></tr>`;
-      printHTML(pdfStyle()+`<h1>💰 Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${rows}</table>`, printWin);
-      showToast('PDF ready ✓');
+      printHTML(pdfStyle()+`<h1>Money Tracker — Day ${currentDay}</h1><div class="sub">${new Date(curYear,curMonth,currentDay).toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th><th>Note</th></tr>${rows}</table>`, printWin);
+      showToast('PDF ready');
     }catch(err){
       console.error('Day PDF export failed:',err);
       showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
@@ -2705,7 +2705,7 @@ function exportMonthPDF(){
       if(topEntries.length){
         const top=topEntries[0];
         const share=totalExp>0?((top.val/totalExp)*100).toFixed(0):0;
-        insightsHtml+=`<div class="insight-box">🔥 <strong>Top Spending Category:</strong> ${top.f.icon} ${escHtml(top.f.label)} — ${top.val.toLocaleString('en-IN')} (${share}% of this month's expense)</div>`;
+        insightsHtml+=`<div class="insight-box"><strong>Top Spending Category:</strong> ${top.f.icon} ${escHtml(top.f.label)} — ${top.val.toLocaleString('en-IN')} (${share}% of this month's expense)</div>`;
       }
       const changes=[];
       ALL_FIELDS.forEach(f=>{
@@ -2739,7 +2739,7 @@ function exportMonthPDF(){
         canvasImg('categoryPieChart','Category Breakdown');
 
       printHTML(pdfStyle()+`
-        <h1>💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}</h1>
+        <h1>Money Tracker — ${MONTHS[curMonth]} ${curYear}</h1>
         <div class="sub">Monthly Report | Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
         <div class="overview">
           <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${totalExp.toLocaleString('en-IN')}</div></div>
@@ -2755,7 +2755,7 @@ function exportMonthPDF(){
         <table><tr><th>Day</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${dayRows}</table>
         <div class="sh">Day by Day (Detailed — non-zero fields only)</div>
         ${dayDetailHtml}`, printWin);
-      showToast('PDF ready ✓');
+      showToast('PDF ready');
     }catch(err){
       console.error('Month PDF export failed:',err);
       showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
@@ -2787,7 +2787,7 @@ function exportYearPDF(){
       INCOME_FIELDS.forEach(f=>{if(yrCat[f.id]) catRows+=`<tr><td>${f.icon} ${escHtml(f.label)}</td><td>Income</td><td class="num inc">${yrCat[f.id].toLocaleString('en-IN')}</td></tr>`;});
       const chartsHtml=canvasImg('yearlyBarChart','Monthly Trend')+canvasImg('yearlyPieChart','Category Breakdown (Full Year)');
       printHTML(pdfStyle()+`
-        <h1>💰 Money Tracker — ${curYear} Annual Report</h1>
+        <h1>Money Tracker — ${curYear} Annual Report</h1>
         <div class="sub">Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}</div>
         <div class="overview">
           <div class="ov"><div class="ol">Total Expense</div><div class="ov-val exp">${yrExp.toLocaleString('en-IN')}</div></div>
@@ -2799,7 +2799,7 @@ function exportYearPDF(){
         <table><tr><th>Month</th><th class="num">Expense</th><th class="num">Income</th><th class="num">Net</th></tr>${mRows}</table>
         <div class="sh">Category Breakdown (Full Year)</div>
         <table><tr><th>Category</th><th>Type</th><th class="num">Amount (৳)</th></tr>${catRows}</table>`, printWin);
-      showToast('PDF ready ✓');
+      showToast('PDF ready');
     }catch(err){
       console.error('Year PDF export failed:',err);
       showToast(err&&err.message==='popup-blocked'?'Popup blocked — allow popups to export PDF':'PDF export failed — check console','error');
@@ -2904,7 +2904,7 @@ async function exportMonthExcel(){
     const ws=wb.addWorksheet('Monthly Report',{views:[{state:'frozen',ySplit:2}]});
 
     let r=1;
-    r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${MONTHS[curMonth]} ${curYear}`,{bg:XL_NAVY,size:14,height:26});
+    r=xlBanner(ws,r,lastCol,`Money Tracker — ${MONTHS[curMonth]} ${curYear}`,{bg:XL_NAVY,size:14,height:26});
     r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
     r++;
 
@@ -2941,7 +2941,7 @@ async function exportMonthExcel(){
     xlColWidths(ws,[14,...EXPENSE_FIELDS.map(()=>12),13,...INCOME_FIELDS.map(()=>12),13,13]);
 
     await downloadWorkbook(wb,`MoneyTracker_${MONTHS[curMonth]}_${curYear}.xlsx`);
-    showToast('Excel exported ✓');
+    showToast('Excel exported');
   }catch(err){
     console.error('Month Excel export failed:',err);
     showToast('Excel export failed — check console','error');
@@ -2972,7 +2972,7 @@ async function exportYearExcel(){
     const ws=wb.addWorksheet('Annual Report',{views:[{state:'frozen',ySplit:2}]});
 
     let r=1;
-    r=xlBanner(ws,r,lastCol,`💰 Money Tracker — ${curYear} Annual Report`,{bg:XL_NAVY,size:14,height:26});
+    r=xlBanner(ws,r,lastCol,`Money Tracker — ${curYear} Annual Report`,{bg:XL_NAVY,size:14,height:26});
     r=xlSubtitle(ws,r,lastCol,`Generated: ${new Date().toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'})}`);
     r++;
 
@@ -2999,7 +2999,7 @@ async function exportYearExcel(){
     xlColWidths(ws,[20,16,16,16]);
 
     await downloadWorkbook(wb,`MoneyTracker_${curYear}_Annual.xlsx`);
-    showToast('Excel exported ✓');
+    showToast('Excel exported');
   }catch(err){
     console.error('Year Excel export failed:',err);
     showToast('Excel export failed — check console','error');
@@ -3132,7 +3132,7 @@ function exportAllDataJSON(){
         goal:SAVINGS_GOAL, accounts:ACCOUNTS, ledger:LEDGER, debts:DEBTS, days
       };
       downloadBlob(JSON.stringify(payload,null,2), 'application/json', `money-tracker-backup-${new Date().toISOString().slice(0,10)}.json`);
-      showToast('Backup downloaded ✓');
+      showToast('Backup downloaded');
     }catch(err){
       console.error('Backup export failed:',err);
       showToast('Backup export failed — check console','error');
@@ -3193,7 +3193,7 @@ async function importAllDataJSON(fileInput){
     if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
     if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
     if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
-    showToast('Backup restored ✓');
+    showToast('Backup restored');
     closeSettings();
   }catch(err){
     console.error('Restore failed:',err);
@@ -3223,7 +3223,7 @@ function exportAllDataCSV(){
       });
       const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
       downloadBlob(csv, 'text/csv;charset=utf-8', `money-tracker-export-${new Date().toISOString().slice(0,10)}.csv`);
-      showToast('CSV exported ✓');
+      showToast('CSV exported');
     }catch(err){
       console.error('CSV export failed:',err);
       showToast('CSV export failed — check console','error');
@@ -3301,7 +3301,7 @@ async function confirmRemoveAllData(){
 
     closeRemoveDataModal();
     closeSettings();
-    showToast('All data deleted ✓');
+    showToast('All data deleted');
   }catch(err){
     console.error('Remove all data failed:',err);
     showToast('Something went wrong — check console','error');
