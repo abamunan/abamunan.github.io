@@ -270,11 +270,13 @@ body::before {
 /* Injected by footer.js — styles live here so theme works globally */
 footer.site-footer {
     position: relative; z-index: 1;
-    margin-top: 60px;
+    margin: 60px auto 0;
+    max-width: 480px;
     background: #0f172a;
     color: #cbd5e1;
     text-align: center;
-    padding: 48px 20px 36px;
+    padding: 40px 20px 30px;
+    border-radius: 20px 20px 0 0;
     transition: background var(--trans), color var(--trans);
     width: 100%;
 }

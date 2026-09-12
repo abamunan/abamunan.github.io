@@ -11,7 +11,7 @@
     const footerHTML = `
 <footer class="site-footer">
     <div class="footer-divider"></div>
-    <div class="footer-dev">Developed By</div>
+    <div class="footer-dev">Powered by</div>
     <div class="footer-name">Abdullah All <span>Munan</span></div>
     <div class="footer-socials">
         <a href="mailto:allmunanabdullah@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
