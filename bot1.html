@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger to Telegram Bot - Complete Implementation Guide</title>
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-purple: #c084fc;
+            --border-color: #334155;
+            --code-bg: #090d16;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 32px 16px;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-blue);
+        }
+
+        h1 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        .badge-human {
+            background-color: #065f46;
+            color: #6ee7b7;
+            border: 1px solid #047857;
+        }
+
+        .badge-ai {
+            background-color: #581c87;
+            color: #e9d5ff;
+            border: 1px solid #6b21a8;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #0284c7;
+            color: white;
+        }
+
+        code, pre {
+            font-family: "Courier New", Courier, monospace;
+            background-color: var(--code-bg);
+            border-radius: 6px;
+        }
+
+        code {
+            padding: 2px 6px;
+            color: var(--accent-green);
+        }
+
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            white-space: pre;
+        }
+
+        pre code {
+            padding: 0;
+            color: #f1f5f9;
+        }
+
+        ol, ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        #downloadBtn {
+            padding: 10px 18px;
+            border: 1px solid var(--accent-blue);
+            border-radius: 6px;
+            background: var(--accent-blue);
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #downloadBtn:hover {
+            opacity: 0.85;
+        }
+
+        #downloadBtn:focus-visible {
+            outline: 3px solid white;
+            outline-offset: 3px;
+        }
+
+        .motto {
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 24px 12px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            h2 {
+                font-size: 1.35rem;
+            }
+
+            .toolbar {
+                justify-content: stretch;
+            }
+
+            #downloadBtn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="toolbar">
+            <button id="downloadBtn" type="button">
+                ⬇️ Download HTML
+            </button>
+        </div>
+
+        <header>
+            <h1>Messenger to Telegram Bot: End-to-End Technical Blueprint</h1>
+
+            <p>
+                This document contains the complete technical architecture, codebases, configuration instructions, and cloud deployment steps to route messages from a Facebook Messenger Group to a Telegram Group for 0$ total cost.
+            </p>
+        </header>
+
+        <section class="card">
+            <h2>Architecture &amp; Division of Responsibilities</h2>
+
+            <p>
+                Because automated user accounts are outside Meta's official API framework, tasks are split strictly between human environment setup and AI automated processing engine execution.
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task Phase</th>
+                            <th>Description</th>
+                            <th>Executed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Credentials &amp; API Setup</td>
+                            <td>Telegram Bot token acquisition, Telegram Chat ID extraction, Messenger Thread ID resolution.</td>
+                            <td><span class="badge badge-human">Human Task</span></td>
+                        </tr>
+                        <tr>
+                            <td>Session Authorization</td>
+                            <td>Extracting browser cookies (<code>appstate.json</code>) to authenticate as a Facebook user.</td>
+                            <td><span class="badge badge-human">Human Task</span></td>
+                        </tr>
+                        <tr>
+                            <td>Core Message Engine</td>
+                            <td>MQTT continuous socket listening, event payload handling, attachments extraction, Sender Name resolution.</td>
+                            <td><span class="badge badge-ai">AI Engine Code</span></td>
+                        </tr>
+                        <tr>
+                            <td>Dispatch Engine</td>
+                            <td>Formatting markdown captions and executing HTTP API calls to Telegram server endpoints.</td>
+                            <td><span class="badge badge-ai">AI Engine Code</span></td>
+                        </tr>
+                        <tr>
+                            <td>Deployment &amp; Hosting</td>
+                            <td>Repository initialization, pushing to GitHub, configuring environment variables on Koyeb/Render for 24/7 runtime.</td>
+                            <td><span class="badge badge-human">Human Task</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>Phase 1: Environment &amp; Credential Setup <span class="badge badge-human">Human Task</span></h2>
+
+            <article class="card">
+                <h3>1. Telegram Bot &amp; Group Configuration</h3>
+
+                <ol>
+                    <li>Open Telegram and search for <code>@BotFather</code>.</li>
+                    <li>Send command <code>/newbot</code>, follow prompts to choose a Name and Username.</li>
+                    <li>Save the generated <strong>HTTP API Token</strong> (e.g., <code>7123456789:AAF...</code>).</li>
+                    <li>Create target Telegram Group, add your new Bot as a member, and grant it <strong>Admin Privileges</strong>.</li>
+                    <li>Add <code>@raw_data_bot</code> to the group to inspect payload data, locate <code>"chat": {"id": -100XXXXXXXXXX}</code>, copy this exact Chat ID including the minus sign, then kick <code>@raw_data_bot</code>.</li>
+                </ol>
+
+                <h3>2. Messenger Credentials Extraction</h3>
+
+                <ol>
+                    <li>Open target Facebook Messenger group in desktop browser (e.g., <code>https://www.messenger.com/t/987654321098/</code>).</li>
+                    <li>Copy the tail end numerical sequence (<code>987654321098</code>). This is your <strong>Messenger Thread ID</strong>.</li>
+                    <li>Install browser extension <strong>c3c-fbstate</strong> (or EditThisCookie) in Chrome.</li>
+                    <li>With active Facebook session open, click extension -&gt; Export session state.</li>
+                    <li>Save output file as <code>appstate.json</code>.</li>
+                </ol>
+            </article>
+        </section>
+
+        <section>
+            <h2>Phase 2: Codebase Structure <span class="badge badge-ai">AI Engine Code</span></h2>
+
+            <article class="card">
+                <p>Save these two files inside your project root folder alongside your generated <code>appstate.json</code>.</p>
+
+                <h3>File 1: <code>package.json</code></h3>
+
+                <pre><code>{
+  "name": "messenger-telegram-forwarder",
+  "version": "1.0.0",
+  "description": "24/7 Messenger to Telegram forwarding bot engine",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@dongdev/fca-unofficial": "^1.3.12",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}</code></pre>
+
+                <h3>File 2: <code>index.js</code></h3>
+
+                <pre><code>const login = require("@dongdev/fca-unofficial");
+const TelegramBot = require("node-telegram-bot-api");
+const fs = require("fs");
+const path = require("path");
+
+// Environment configurations
+const CONFIG = {
+  TELEGRAM_TOKEN: process.env.TELEGRAM_TOKEN || "YOUR_TELEGRAM_BOT_TOKEN",
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || "YOUR_TELEGRAM_GROUP_CHAT_ID",
+  TARGET_FB_THREAD_ID: process.env.TARGET_FB_THREAD_ID || "YOUR_MESSENGER_THREAD_ID",
+  APPSTATE_PATH: path.join(__dirname, "appstate.json")
+};
+
+// Validate runtime AppState presence
+if (!fs.existsSync(CONFIG.APPSTATE_PATH)) {
+  console.error("❌ Fatal Error: appstate.json missing from root execution context!");
+  process.exit(1);
+}
+
+// Initialize Telegram Bot Instance
+const tgBot = new TelegramBot(CONFIG.TELEGRAM_TOKEN, { polling: false });
+
+// Read Facebook Cookie Credentials
+const appState = JSON.parse(fs.readFileSync(CONFIG.APPSTATE_PATH, "utf8"));
+const userNameCache = new Map();
+
+/**
+ * Resolves Sender ID to human-readable full name with memory caching
+ */
+async function getSenderName(api, senderID) {
+  if (userNameCache.has(senderID)) {
+    return userNameCache.get(senderID);
+  }
+  return new Promise((resolve) => {
+    api.getUserInfo(senderID, (err, ret) => {
+      if (err || !ret[senderID]) {
+        resolve("Unknown User");
+      } else {
+        const name = ret[senderID].name || "Unknown User";
+        userNameCache.set(senderID, name);
+        resolve(name);
+      }
+    });
+  });
+}
+
+// Main Messenger MQTT Socket Initialization
+login({ appState }, (err, api) => {
+  if (err) {
+    console.error("❌ Auth Error: Facebook Session Invalid or Expired.", err);
+    process.exit(1);
+  }
+
+  api.setOptions({
+    listenEvents: true,
+    selfListen: false,
+    logLevel: "silent"
+  });
+
+  console.log("✅ Facebook Engine Online. Listening to Thread:", CONFIG.TARGET_FB_THREAD_ID);
+
+  api.listenMqtt(async (err, message) => {
+    if (err) {
+      console.error("⚠️ MQTT Socket Error:", err);
+      return;
+    }
+
+    // Filter incoming payload for target thread ID and valid message types
+    if (message.threadID === CONFIG.TARGET_FB_THREAD_ID && message.type === "message") {
+      try {
+        const senderName = await getSenderName(api, message.senderID);
+        const textContent = message.body || "";
+
+        let formattedCaption = `👤 *${senderName}*\n`;
+        if (textContent) {
+          formattedCaption += `💬 ${textContent}`;
+        }
+
+        // Send Text-only payload
+        if (textContent && (!message.attachments || message.attachments.length === 0)) {
+          await tgBot.sendMessage(CONFIG.TELEGRAM_CHAT_ID, formattedCaption, { parse_mode: "Markdown" });
+        }
+
+        // Process attachments array (Photos, Videos, Audio, Documents)
+        if (message.attachments && message.attachments.length > 0) {
+          for (let i = 0; i < message.attachments.length; i++) {
+            const att = message.attachments[i];
+            const caption = i === 0 ? formattedCaption : "";
+
+            if (att.type === "photo") {
+              await tgBot.sendPhoto(CONFIG.TELEGRAM_CHAT_ID, att.largePreviewUrl || att.url, { caption, parse_mode: "Markdown" });
+            } else if (att.type === "video") {
+              await tgBot.sendVideo(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+            } else if (att.type === "audio") {
+              await tgBot.sendVoice(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+            } else if (att.type === "file") {
+              await tgBot.sendDocument(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+            }
+          }
+        }
+      } catch (dispatchError) {
+        console.error("❌ Forwarding Exception Failed:", dispatchError.message);
+      }
+    }
+  });
+});</code></pre>
+            </article>
+        </section>
+
+        <section>
+            <h2>Phase 3: Deployment &amp; Maintenance <span class="badge badge-human">Human Task</span></h2>
+
+            <article class="card">
+                <h3>1. Local Testing</h3>
+
+                <pre><code># Open terminal inside project directory
+npm install
+npm start</code></pre>
+
+                <h3>2. 24/7 Cloud Hosting Deployment (Free)</h3>
+
+                <ol>
+                    <li>Create a new <strong>Private GitHub Repository</strong> and push your files (Make sure NOT to make <code>appstate.json</code> public if repo is public).</li>
+                    <li>Sign up at <strong>Koyeb.com</strong> or <strong>Render.com</strong>.</li>
+                    <li>Connect your GitHub repository and select <code>Node.js</code> environment.</li>
+                    <li>Specify build command: <code>npm install</code> and start command: <code>node index.js</code>.</li>
+                    <li>Deploy instance. The cloud platform will run your bot continuous 24/7 without needing your PC to stay active.</li>
+                </ol>
+
+                <h3>3. Ongoing Maintenance Cycle</h3>
+
+                <p>
+                    Because session tokens expire periodically due to Meta security updates, perform this routine every 1-3 months:
+                </p>
+
+                <ul>
+                    <li>If bot stops receiving messages, re-extract fresh session cookies via Chrome extension.</li>
+                    <li>Replace contents of <code>appstate.json</code> in your project folder/cloud environment and trigger app restart.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section>
+            <h2>Context &amp; Technical Decisions Summary</h2>
+
+            <article class="card">
+                <p>Here is the contextual flow and key technical decisions established in our chat:</p>
+
+                <ul>
+                    <li><strong>Core Goal:</strong> You want to build a system that automatically forwards messages from a specific Facebook Messenger group to a Telegram group.</li>
+
+                    <li><strong>Feasibility &amp; Constraints:</strong> We established that this is fully possible using open-source libraries (<code>@dongdev/fca-unofficial</code> for Messenger listening and <code>node-telegram-bot-api</code> for Telegram sending). Official Meta Graph APIs do not allow reading personal group messages, so browser cookies (<code>appstate.json</code>) are used instead.</li>
+
+                    <li><strong>Pricing &amp; Cloud Execution:</strong> The entire project can be built and run 100% free of charge without paid APIs or paid hosting (using platforms like Koyeb or Render for 24/7 uptime without keeping your local PC powered on).</li>
+
+                    <li>
+                        <strong>Division of Responsibilities:</strong>
+
+                        <ul>
+                            <li>
+                                <span class="badge badge-ai">AI Scope</span>
+                                Generating the complete engine codebase (<code>index.js</code>, <code>package.json</code>), setting up media/text forwarding logic, sender name resolution, and exporting the setup documentation as a downloadable <code>.md</code> file.
+                            </li>
+
+                            <li>
+                                <span class="badge badge-human">Developer (Your) Scope</span>
+                                Creating the Telegram Bot via <code>@BotFather</code>, getting the Telegram Group Chat ID, extracting your Facebook <code>appstate.json</code> cookies, and putting the files together to run or deploy.
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <footer class="motto">
+            <!-- Motto: Knowledge & Creation Zone. -->
+            Knowledge &amp; Creation Zone — Learn, Build, and Create with Purpose.
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            const downloadButton = document.getElementById("downloadBtn");
+
+            downloadButton.addEventListener("click", function () {
+                const clone = document.documentElement.cloneNode(true);
+                const button = clone.querySelector("#downloadBtn");
+
+                if (button) {
+                    button.closest(".toolbar").remove();
+                }
+
+                const htmlContent =
+                    "<!DOCTYPE html>\n" +
+                    clone.outerHTML;
+
+                const blob = new Blob([htmlContent], {
+                    type: "text/html;charset=utf-8"
+                });
+
+                const downloadUrl = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+
+                link.href = downloadUrl;
+                link.download = "messenger-telegram-guide.html";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                URL.revokeObjectURL(downloadUrl);
+            });
+        })();
+    </script>
+</body>
+</html>

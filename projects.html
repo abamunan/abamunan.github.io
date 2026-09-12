@@ -79,6 +79,16 @@
         .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
         .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
         .project-btn:hover { background:#0284c7; transform:translateX(2px); }
+        .project-card { position:relative; }
+        .project-badge-upcoming {
+            position:absolute; top:14px; right:14px;
+            font-size:.58rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+            color:#B45309; background:rgba(180,83,9,.1); border:1px solid rgba(180,83,9,.3);
+            border-radius:20px; padding:3px 9px;
+        }
+        [data-theme="dark"] .project-badge-upcoming { color:#fbbf24; background:rgba(251,191,36,.1); border-color:rgba(251,191,36,.3); }
+        .project-btn.project-btn-muted { background:var(--card-bg); color:var(--text-muted); border:1.5px solid var(--card-border); }
+        .project-btn.project-btn-muted:hover { background:var(--card-bg); color:var(--text-muted); transform:none; }
 
         @media (max-width:768px) {
             .projects-grid { grid-template-columns:1fr; }
@@ -181,6 +191,24 @@
                     <span class="project-tag">Utility</span>
                 </div>
                 <a href="drive-folder-fetch.html" class="project-btn">Fetch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+            </div>
+
+            <div class="project-card" style="animation-delay:.40s">
+                <span class="project-badge-upcoming">Upcoming</span>
+                <div class="project-card-top">
+                    <div class="project-icon" style="background:linear-gradient(135deg,#64748b,#94a3b8)">
+                        <i class="fa-solid fa-right-left"></i>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-name" role="heading" aria-level="2">Chat Bridge</div>
+                        <div class="project-desc">A personal message-forwarding bridge between two chat platforms. Still in the workshop — details up once it's further along.</div>
+                    </div>
+                </div>
+                <div class="project-tags">
+                    <span class="project-tag">Automation</span>
+                    <span class="project-tag">In Progress</span>
+                </div>
+                <a href="bot1.html" class="project-btn project-btn-muted">Coming Soon <i class="fas fa-hourglass-half" style="font-size:.6rem;"></i></a>
             </div>
 
         </div>
