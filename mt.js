@@ -916,7 +916,7 @@ function sortEntriesByMode(arr,mode,amountFn,dateFn){
   return copy;
 }
 function sortSelectHTML(handlerName,selectedMode){
-  const opts=[['last','Newest first'],['first','Oldest first'],['dec','Amount: high to low'],['inc','Amount: low to high']];
+  const opts=[['first','Oldest first'],['last','Newest first'],['dec','Amount: high to low'],['inc','Amount: low to high']];
   return `<div class="cd-sort-bar"><span>Sort</span><select onchange="${handlerName}(this.value)">${opts.map(([v,l])=>`<option value="${v}"${v===selectedMode?' selected':''}>${l}</option>`).join('')}</select></div>`;
 }
 
@@ -932,6 +932,7 @@ function updateTotals(){
 
 function collectDayData(){
   const data={};
+  const existing=getDay(curYear,curMonth,currentDay); // to diff against, so unchanged fields keep their original input-time stamp
   const active=document.activeElement;
   ALL_FIELDS.forEach(f=>{
     const el=document.getElementById('f_'+f.id);
@@ -944,7 +945,16 @@ function collectDayData(){
       // expression first becomes valid, then "00" gets appended to 152 → 15200).
       if(resolved!==null&&el!==active) el.value=resolved;
     }
-    data[f.id]=resolved!==null?resolved:(parseFloat(el?.value)||0);
+    const newVal=resolved!==null?resolved:(parseFloat(el?.value)||0);
+    data[f.id]=newVal;
+    // Stamp exactly when this field's amount was typed in (ms — second-level
+    // precision and beyond), so Day view / Account History / Category Detail
+    // can order by real input time instead of just which day it's attributed
+    // to. Unchanged from what's already saved → keep the original stamp;
+    // changed or newly entered → stamp now.
+    if(newVal){
+      data['ts_'+f.id]=(newVal===existing[f.id]&&existing['ts_'+f.id])?existing['ts_'+f.id]:Date.now();
+    }
     const noteEl=document.getElementById('note_'+f.id);
     const noteVal=noteEl?noteEl.value.trim():'';
     if(noteVal) data['note_'+f.id]=noteVal;
@@ -1417,7 +1427,7 @@ function renderCategoryDetailList(){
   if(!_cdState) return;
   const{entries,mode,accentVar,emptyHtml}=_cdState;
   const maxAmt=entries.length?Math.max(...entries.map(e=>e.amount)):0;
-  const sorted=sortEntriesByMode(entries,cdSortMode,e=>e.amount,e=>mode==='month'?e.day:e.m);
+  const sorted=sortEntriesByMode(entries,cdSortMode,e=>e.amount,e=>mode==='month'?(e.ts||new Date(curYear,curMonth,e.day,12,0,0).getTime()):e.m);
   const rows=sorted.map(e=>{
     const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
     if(mode==='month'){
@@ -1454,7 +1464,7 @@ function openCategoryDetail(fieldId){
     const data=getDay(curYear,curMonth,d);
     const v=data[f.id]||0;
     if(!v) continue;
-    entries.push({day:d,amount:v,note:data['note_'+f.id]||''});
+    entries.push({day:d,amount:v,note:data['note_'+f.id]||'',ts:data['ts_'+f.id]||0});
   }
   const total=entries.reduce((s,e)=>s+e.amount,0);
   const count=entries.length;
@@ -1549,8 +1559,12 @@ function openDayQuickView(y,m,d){
     const amt=data[f.id]||0;
     const note=data['note_'+f.id]||'';
     if(amt<=0&&!note) return;
-    entries.push({f,amt,note,isInc:INCOME_FIELDS.some(x=>x.id===f.id)});
+    entries.push({f,amt,note,isInc:INCOME_FIELDS.some(x=>x.id===f.id),ts:data['ts_'+f.id]||0});
   });
+  // Order by actual input time (earliest first). Fields never re-saved since
+  // this tracking was added have no ts yet — they keep their original,
+  // stable relative order at the front until next edited.
+  entries.sort((a,b)=>a.ts-b.ts);
   const maxAmt=entries.length?Math.max(...entries.map(e=>e.amt)):0;
   const rows=entries.map(e=>{
     const barPct=maxAmt?Math.max(6,Math.round((e.amt/maxAmt)*100)):0;
@@ -1766,13 +1780,14 @@ function buildAccountLedger(accountId){
   const entries=[];
   const defAcct=defaultExpenseAccountId();
   getAllDayEntriesCached().forEach(({y,m:mo,d,data})=>{
-    const dt=new Date(y,mo,d,12,0,0); // no per-entry clock time is stored — noon keeps sort/DST stable
+    const noonDt=new Date(y,mo,d,12,0,0); // fallback for entries never re-saved since input-time tracking was added
     EXPENSE_FIELDS.forEach(f=>{
       const amt=data[f.id];
       if(amt>0){
         const acctId=data['acct_'+f.id]||defAcct;
         if(combined||acctId===accountId){
-          entries.push({dt,hasTime:false,sign:-1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
+          const ts=data['ts_'+f.id];
+          entries.push({dt:ts?new Date(ts):noonDt,hasTime:!!ts,sign:-1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
         }
       }
     });
@@ -1781,7 +1796,8 @@ function buildAccountLedger(accountId){
       if(amt>0){
         const acctId=data['acct_'+f.id]||defAcct;
         if(combined||acctId===accountId){
-          entries.push({dt,hasTime:false,sign:1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
+          const ts=data['ts_'+f.id];
+          entries.push({dt:ts?new Date(ts):noonDt,hasTime:!!ts,sign:1,amount:amt,icon:f.icon,label:f.label,note:data['note_'+f.id]||''});
         }
       }
     });
@@ -1824,7 +1840,7 @@ function buildAccountLedger(accountId){
 
 let ahFullList=[]; // currently-open account's transactions, master list (unsorted display-wise)
 let ahShowingAll=false;
-let ahSortMode='last'; // default matches the original newest-first behavior
+let ahSortMode='first'; // default: oldest entered first, newest last — consistent across all lists
 const AH_PAGE_SIZE=50;
 
 function openAcctHistory(accountId){
@@ -1835,7 +1851,7 @@ function openAcctHistory(accountId){
   const currentBal=combined?ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0):(balances[accountId]||0);
   ahFullList=buildAccountLedger(accountId).reverse();
   ahShowingAll=false;
-  ahSortMode='last';
+  ahSortMode='first';
   document.getElementById('acctHistoryTitle').innerHTML=combined?'<i class="fas fa-wallet"></i> Total Balance':`${escHtml(acct.icon)} ${escHtml(acct.label)}`;
   const balEl=document.getElementById('ahCurrentBalance');
   balEl.textContent=fmt(currentBal);
