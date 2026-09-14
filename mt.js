@@ -901,6 +901,25 @@ function fmt(n,sign=false){
   return '৳ '+abs;
 }
 
+// ─── SHARED SORT HELPER (view-only expense/income lists) ───────────────────
+// mode: 'inc' = amount low→high, 'dec' = amount high→low,
+//       'first' = oldest date first, 'last' = newest date first.
+// amountFn/dateFn pull the comparable values out of each entry so the same
+// helper works across Account History, Category Detail (month), and
+// Category Detail (year), whose entry shapes all differ slightly.
+function sortEntriesByMode(arr,mode,amountFn,dateFn){
+  const copy=arr.slice();
+  if(mode==='inc') copy.sort((a,b)=>amountFn(a)-amountFn(b));
+  else if(mode==='dec') copy.sort((a,b)=>amountFn(b)-amountFn(a));
+  else if(mode==='first') copy.sort((a,b)=>dateFn(a)-dateFn(b));
+  else copy.sort((a,b)=>dateFn(b)-dateFn(a)); // 'last'
+  return copy;
+}
+function sortSelectHTML(handlerName,selectedMode){
+  const opts=[['last','Newest first'],['first','Oldest first'],['dec','Amount: high to low'],['inc','Amount: low to high']];
+  return `<div class="cd-sort-bar"><span>Sort</span><select onchange="${handlerName}(this.value)">${opts.map(([v,l])=>`<option value="${v}"${v===selectedMode?' selected':''}>${l}</option>`).join('')}</select></div>`;
+}
+
 function updateTotals(){
   const exp=EXPENSE_FIELDS.reduce((s,f)=>s+getVal('f_'+f.id),0);
   const inc=INCOME_FIELDS.reduce((s,f)=>s+getVal('f_'+f.id),0);
@@ -1392,6 +1411,39 @@ function renderSummary(){
 // Triggered by clicking a category row in the Summary breakdown list. Walks every
 // day of the currently viewed month, pulls out that one category's amount + note
 // wherever it was entered, and lays it out as a simple read-only table.
+let cdSortMode='first'; // default matches original chronological order
+let _cdState=null; // {entries, mode:'month'|'year', accentVar, emptyHtml} for the currently-open popup
+function renderCategoryDetailList(){
+  if(!_cdState) return;
+  const{entries,mode,accentVar,emptyHtml}=_cdState;
+  const maxAmt=entries.length?Math.max(...entries.map(e=>e.amount)):0;
+  const sorted=sortEntriesByMode(entries,cdSortMode,e=>e.amount,e=>mode==='month'?e.day:e.m);
+  const rows=sorted.map(e=>{
+    const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
+    if(mode==='month'){
+      const dt=new Date(curYear,curMonth,e.day);
+      const weekday=dt.toLocaleDateString('en-US',{weekday:'short'});
+      return `<div class="cd-row">
+        <div class="cd-date"><span class="cd-date-num">${e.day}</span><span class="cd-date-dow">${weekday}</span></div>
+        <div class="cd-amt">
+          <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
+          <span class="cd-amt-val">${fmt(e.amount)}</span>
+        </div>
+        <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
+      </div>`;
+    }
+    return `<div class="cd-row">
+      <div class="cd-date"><span class="cd-date-num" style="font-size:0.82rem">${MONTHS[e.m].slice(0,3)}</span></div>
+      <div class="cd-amt">
+        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
+        <span class="cd-amt-val">${fmt(e.amount)}</span>
+      </div>
+      <div class="cd-note"><span class="cd-dash">—</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('categoryDetailList').innerHTML=rows||emptyHtml;
+}
+function setCdSortMode(mode){ cdSortMode=mode; renderCategoryDetailList(); }
 function openCategoryDetail(fieldId){
   const f=ALL_FIELDS.find(x=>x.id===fieldId);
   if(!f) return;
@@ -1407,24 +1459,11 @@ function openCategoryDetail(fieldId){
   const total=entries.reduce((s,e)=>s+e.amount,0);
   const count=entries.length;
   const avg=count?total/count:0;
-  const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
   const accentVar=isInc?'var(--accent2)':'var(--danger)';
   const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
 
-  const rows=entries.map(e=>{
-    const dt=new Date(curYear,curMonth,e.day);
-    const weekday=dt.toLocaleDateString('en-US',{weekday:'short'});
-    const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
-    return `<div class="cd-row">
-      <div class="cd-date"><span class="cd-date-num">${e.day}</span><span class="cd-date-dow">${weekday}</span></div>
-      <div class="cd-amt">
-        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
-        <span class="cd-amt-val">${fmt(e.amount)}</span>
-      </div>
-      <div class="cd-note">${e.note?escHtml(e.note):'<span class="cd-dash">—</span>'}</div>
-    </div>`;
-  }).join('');
-  const listBody=rows||`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${MONTHS[curMonth]}</div>`;
+  cdSortMode='first';
+  _cdState={entries,mode:'month',accentVar,emptyHtml:`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${MONTHS[curMonth]}</div>`};
 
   document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
   document.getElementById('categoryDetailSub').textContent=`${MONTHS[curMonth]} ${curYear} activity`;
@@ -1439,10 +1478,12 @@ function openCategoryDetail(fieldId){
     </div>
     <div class="cd-panel">
       <div class="cd-panel-head"><span>Daily breakdown</span><span class="cd-panel-count">${count} ${count===1?'entry':'entries'}</span></div>
-      <div class="cd-list" style="--cd-accent:${accentVar}">${listBody}</div>
+      ${sortSelectHTML('setCdSortMode',cdSortMode)}
+      <div class="cd-list" id="categoryDetailList" style="--cd-accent:${accentVar}"></div>
     </div>
   `;
   document.getElementById('categoryDetailModal').classList.add('open');
+  renderCategoryDetailList();
 }
 function closeCategoryDetail(){ document.getElementById('categoryDetailModal').classList.remove('open'); }
 
@@ -1465,22 +1506,11 @@ function openCategoryDetailYear(fieldId){
   const total=entries.reduce((s,e)=>s+e.amount,0);
   const count=entries.length;
   const avg=count?total/count:0;
-  const maxAmt=count?Math.max(...entries.map(e=>e.amount)):0;
   const accentVar=isInc?'var(--accent2)':'var(--danger)';
   const accentGlowVar=isInc?'var(--accent2-glow)':'rgba(178,58,58,0.14)';
 
-  const rows=entries.map(e=>{
-    const barPct=maxAmt?Math.max(6,Math.round((e.amount/maxAmt)*100)):0;
-    return `<div class="cd-row">
-      <div class="cd-date"><span class="cd-date-num" style="font-size:0.82rem">${MONTHS[e.m].slice(0,3)}</span></div>
-      <div class="cd-amt">
-        <div class="cd-amt-track"><div class="cd-amt-fill" style="width:${barPct}%"></div></div>
-        <span class="cd-amt-val">${fmt(e.amount)}</span>
-      </div>
-      <div class="cd-note"><span class="cd-dash">—</span></div>
-    </div>`;
-  }).join('');
-  const listBody=rows||`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${curYear}</div>`;
+  cdSortMode='first';
+  _cdState={entries,mode:'year',accentVar,emptyHtml:`<div class="cd-empty"><i class="fas fa-clipboard"></i> No entries logged for ${escHtml(f.label)} in ${curYear}</div>`};
 
   document.getElementById('categoryDetailTitle').textContent=`${f.icon} ${f.label}`;
   document.getElementById('categoryDetailSub').textContent=`${curYear} activity`;
@@ -1495,10 +1525,12 @@ function openCategoryDetailYear(fieldId){
     </div>
     <div class="cd-panel">
       <div class="cd-panel-head"><span>Monthly breakdown</span><span class="cd-panel-count">${count} ${count===1?'month':'months'}</span></div>
-      <div class="cd-list" style="--cd-accent:${accentVar}">${listBody}</div>
+      ${sortSelectHTML('setCdSortMode',cdSortMode)}
+      <div class="cd-list" id="categoryDetailList" style="--cd-accent:${accentVar}"></div>
     </div>
   `;
   document.getElementById('categoryDetailModal').classList.add('open');
+  renderCategoryDetailList();
 }
 
 // ─── DAY QUICK-VIEW (view-only, tap a day in the month strip) ─────────────────
@@ -1790,8 +1822,9 @@ function buildAccountLedger(accountId){
   return entries; // ascending, oldest first
 }
 
-let ahFullList=[]; // currently-open account's transactions, newest first
+let ahFullList=[]; // currently-open account's transactions, master list (unsorted display-wise)
 let ahShowingAll=false;
+let ahSortMode='last'; // default matches the original newest-first behavior
 const AH_PAGE_SIZE=50;
 
 function openAcctHistory(accountId){
@@ -1802,15 +1835,19 @@ function openAcctHistory(accountId){
   const currentBal=combined?ACCOUNTS.reduce((s,a)=>s+(balances[a.id]||0),0):(balances[accountId]||0);
   ahFullList=buildAccountLedger(accountId).reverse();
   ahShowingAll=false;
+  ahSortMode='last';
   document.getElementById('acctHistoryTitle').innerHTML=combined?'<i class="fas fa-wallet"></i> Total Balance':`${escHtml(acct.icon)} ${escHtml(acct.label)}`;
   const balEl=document.getElementById('ahCurrentBalance');
   balEl.textContent=fmt(currentBal);
   balEl.className='ah-stat-val'+(currentBal<0?' neg':'');
+  document.getElementById('ahSortBar').innerHTML=sortSelectHTML('setAhSortMode',ahSortMode);
   document.getElementById('acctHistoryModal').classList.add('open');
   renderAcctHistoryList();
 }
+function setAhSortMode(mode){ ahSortMode=mode; ahShowingAll=false; renderAcctHistoryList(); }
 function renderAcctHistoryList(){
-  const list=ahShowingAll?ahFullList:ahFullList.slice(0,AH_PAGE_SIZE);
+  const sorted=sortEntriesByMode(ahFullList,ahSortMode,e=>e.amount,e=>e.dt);
+  const list=ahShowingAll?sorted:sorted.slice(0,AH_PAGE_SIZE);
   const rows=list.map(e=>{
     const dateStr=e.dt.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
     const timeStr=e.hasTime?e.dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';

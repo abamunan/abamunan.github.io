@@ -276,7 +276,7 @@ footer.site-footer {
     color: #334155;
     text-align: center;
     padding: 20px 20px 16px;
-    border-radius: 20px 20px 0 0;
+    border-radius: 0;
     transition: background var(--trans), color var(--trans);
     width: 100%;
 }
