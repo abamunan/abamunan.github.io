@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>রেজোলিউশন পরিবর্তক — Aspect Ratio অক্ষত রেখে</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --paper:#f6f1e7;
+    --paper-2:#efe7d8;
+    --line:#d8cdb6;
+    --accent:#8a5a3b;
+    --accent-2:#c7743f;
+    --ok:#4d6b52;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#f1ece1;
+      --paper:#1b1815;
+      --paper-2:#241f1a;
+      --line:#3a332a;
+      --accent:#e0a97c;
+      --accent-2:#e08a52;
+      --ok:#8fb897;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#f1ece1;
+    --paper:#1b1815;
+    --paper-2:#241f1a;
+    --line:#3a332a;
+    --accent:#e0a97c;
+    --accent-2:#e08a52;
+    --ok:#8fb897;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Hind Siliguri', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+    min-height:100vh;
+    padding:32px 18px 80px;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap');
+
+  .wrap{max-width:760px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .kicker{font-size:13px;color:var(--accent-2);margin:0 0 6px;}
+  h1{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:clamp(28px,6vw,40px);
+    line-height:1.12;
+    margin:0 0 10px;
+  }
+  .sub{
+    font-size:15.5px;
+    line-height:1.6;
+    color:var(--ink);
+    opacity:.78;
+    margin:0;
+    max-width:56ch;
+  }
+
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    margin-top:22px;
+  }
+
+  .drop{
+    border:1.5px dashed var(--line);
+    border-radius:12px;
+    padding:36px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .drop:hover, .drop.drag{
+    border-color:var(--accent-2);
+    background:color-mix(in srgb, var(--accent-2) 6%, transparent);
+  }
+  .drop svg{opacity:.55;margin-bottom:10px;}
+  .drop-title{font-weight:600;font-size:15.5px;margin:0 0 4px;}
+  .drop-sub{font-size:13.5px;opacity:.65;margin:0;}
+  input[type=file]{display:none;}
+
+  .controls{display:none;margin-top:20px;}
+  .controls.show{display:block;}
+
+  .preview-stage{
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  #srcCanvas{
+    max-width:100%;
+    height:auto;
+    max-height:340px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    display:block;
+  }
+
+  .meta-line{
+    text-align:center;
+    font-size:12.5px;
+    opacity:.6;
+    margin:-8px 0 18px;
+  }
+
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .field{flex:1;min-width:140px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;opacity:.7;margin-bottom:7px;}
+
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .seg button{
+    flex:1;background:var(--paper);border:none;color:var(--ink);
+    padding:9px 8px;font-size:13.5px;font-family:inherit;cursor:pointer;
+    border-left:1px solid var(--line);opacity:.7;
+  }
+  .seg button:first-child{border-left:none;}
+  .seg button.active{background:var(--accent);color:var(--paper);opacity:1;font-weight:600;}
+
+  .dim-row{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+  }
+  .dim-field{flex:1;}
+  .dim-field label{display:block;font-size:12.5px;font-weight:600;opacity:.7;margin-bottom:7px;}
+  .dim-field input[type=number]{
+    width:100%;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:15px;
+    font-family:inherit;
+  }
+  .lock-btn{
+    flex:0 0 auto;
+    width:42px;
+    height:42px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--accent);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .lock-btn.unlocked{opacity:.4;color:var(--ink);}
+  .ratio-note{
+    font-size:12.5px;
+    opacity:.6;
+    margin:8px 0 0;
+  }
+
+  .quick-scales{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:14px;
+  }
+  .quick-scales button{
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:20px;
+    padding:7px 14px;
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .quick-scales button:hover{border-color:var(--accent-2);}
+
+  .field select{
+    width:100%;
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:14.5px;
+    font-family:inherit;
+  }
+
+  .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
+  button.primary{
+    flex:1;min-width:200px;
+    background:var(--accent);color:var(--paper);border:none;
+    border-radius:9px;padding:14px 18px;font-size:15.5px;font-weight:600;
+    font-family:inherit;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  button.primary:hover{opacity:.9;}
+  button.primary:disabled{opacity:.45;cursor:not-allowed;}
+  button.secondary{
+    background:transparent;color:var(--ink);border:1px solid var(--line);
+    border-radius:9px;padding:14px 16px;font-size:14.5px;font-family:inherit;cursor:pointer;
+  }
+
+  .warn{
+    font-size:12.5px;
+    color:var(--accent-2);
+    margin-top:10px;
+    display:none;
+  }
+  .warn.show{display:block;}
+
+  .steps{margin-top:34px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media (max-width:520px){.steps{grid-template-columns:1fr;}}
+  .step{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--paper-2);}
+  .step-num{font-family:'Fraunces', serif;font-size:20px;color:var(--accent-2);margin:0 0 4px;}
+  .step p{margin:0;font-size:13.5px;line-height:1.55;opacity:.8;}
+
+  footer{text-align:center;margin-top:36px;font-size:12.5px;opacity:.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">রেজোলিউশন টুল</p>
+    <h1>রেজোলিউশন বদলান, আকৃতি না</h1>
+    <p class="sub">ছবির অ্যাসপেক্ট রেশিও (দৈর্ঘ্য-প্রস্থের অনুপাত) অপরিবর্তিত রেখে শুধু পিক্সেল রেজোলিউশন বাড়ান বা কমান। ছবি বিকৃত হবে না, স্ট্রেচ হবে না। সম্পূর্ণ প্রসেসিং আপনার ব্রাউজারে হয়, কোথাও আপলোড হয় না।</p>
+  </header>
+
+  <div class="panel">
+    <div class="drop" id="dropZone">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+      <p class="drop-title">ছবি আপলোড করতে ট্যাপ করুন</p>
+      <p class="drop-sub">JPG, PNG, WebP সাপোর্টেড</p>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="preview-stage">
+        <canvas id="srcCanvas"></canvas>
+      </div>
+      <p class="meta-line" id="metaLine"></p>
+
+      <div class="row">
+        <div class="field" style="flex-basis:100%;">
+          <label>দ্রুত স্কেল</label>
+          <div class="quick-scales" id="quickScales">
+            <button data-scale="0.25">25%</button>
+            <button data-scale="0.5">50%</button>
+            <button data-scale="1" class="active">100%</button>
+            <button data-scale="2">2×</button>
+            <button data-scale="3">3×</button>
+            <button data-scale="4">4×</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="dim-row" style="flex-basis:100%;">
+          <div class="dim-field">
+            <label for="widthInput">প্রস্থ (px)</label>
+            <input type="number" id="widthInput" min="1">
+          </div>
+          <button class="lock-btn" id="lockBtn" title="Aspect ratio লক">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          </button>
+          <div class="dim-field">
+            <label for="heightInput">উচ্চতা (px)</label>
+            <input type="number" id="heightInput" min="1">
+          </div>
+        </div>
+      </div>
+      <p class="ratio-note" id="ratioNote"></p>
+
+      <div class="row" style="margin-top:6px;">
+        <div class="field">
+          <label for="formatSel">আউটপুট ফরম্যাট</label>
+          <select id="formatSel">
+            <option value="image/png">PNG (লসলেস)</option>
+            <option value="image/jpeg">JPEG (ছোট সাইজ)</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="warn" id="upscaleWarn">⚠️ ১০০% এর বেশি বড় করলে ছবি সফটওয়্যারভাবে বড় হবে — নতুন ডিটেইল তৈরি হবে না, তাই খুব বেশি বড় করলে কিছুটা ঝাপসা দেখাতে পারে।</p>
+
+      <div class="actions">
+        <button class="primary" id="downloadBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
+          ছবি ডাউনলোড করুন
+        </button>
+        <button class="secondary" id="changeBtn">অন্য ছবি বাছাই করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <p class="step-num">০১</p>
+      <p>ছবি আপলোড করুন — এর আসল রেজোলিউশন ও অনুপাত দেখাবে</p>
+    </div>
+    <div class="step">
+      <p class="step-num">০২</p>
+      <p>দ্রুত স্কেল বেছে নিন বা প্রস্থ/উচ্চতা নিজে লিখুন — অনুপাত লক থাকলে অন্যটা নিজে থেকেই ঠিক হয়ে যাবে</p>
+    </div>
+    <div class="step">
+      <p class="step-num">০৩</p>
+      <p>PNG (নিখুঁত মানের) বা JPEG (ছোট সাইজ) ফরম্যাট বেছে নিন</p>
+    </div>
+    <div class="step">
+      <p class="step-num">০৪</p>
+      <p>ডাউনলোড করুন — নতুন রেজোলিউশনের ছবি, একই আকৃতিতে</p>
+    </div>
+  </div>
+
+  <footer>ছবি প্রসেসিং সম্পূর্ণভাবে আপনার ব্রাউজারে হয় — কোনো সার্ভারে পাঠানো হয় না।</footer>
+</div>
+
+<script>
+(function(){
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const controls = document.getElementById('controls');
+  const srcCanvas = document.getElementById('srcCanvas');
+  const metaLine = document.getElementById('metaLine');
+  const widthInput = document.getElementById('widthInput');
+  const heightInput = document.getElementById('heightInput');
+  const lockBtn = document.getElementById('lockBtn');
+  const ratioNote = document.getElementById('ratioNote');
+  const quickScales = document.getElementById('quickScales');
+  const formatSel = document.getElementById('formatSel');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const changeBtn = document.getElementById('changeBtn');
+  const upscaleWarn = document.getElementById('upscaleWarn');
+
+  let img = null;
+  let origW = 0, origH = 0;
+  let ratio = 1;
+  let locked = true;
+  let fileBaseName = 'image';
+
+  const ctx = srcCanvas.getContext('2d');
+
+  function loadFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    fileBaseName = file.name.replace(/\.[^.]+$/, '') || 'image';
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const image = new Image();
+      image.onload = function(){
+        img = image;
+        origW = image.naturalWidth;
+        origH = image.naturalHeight;
+        ratio = origW / origH;
+
+        const maxW = 560, maxH = 340;
+        let dw = origW, dh = origH;
+        const s = Math.min(maxW/dw, maxH/dh, 1);
+        dw = Math.round(dw*s); dh = Math.round(dh*s);
+        srcCanvas.width = dw; srcCanvas.height = dh;
+        ctx.drawImage(image, 0, 0, dw, dh);
+
+        widthInput.value = origW;
+        heightInput.value = origH;
+        metaLine.textContent = `মূল ছবি: ${origW}×${origH}px  ·  অনুপাত ${simplifyRatio(origW,origH)}`;
+        updateRatioNote();
+        controls.classList.add('show');
+        controls.scrollIntoView({behavior:'smooth', block:'start'});
+      };
+      image.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function gcd(a,b){ return b === 0 ? a : gcd(b, a % b); }
+  function simplifyRatio(w,h){
+    const g = gcd(Math.round(w), Math.round(h));
+    return `${Math.round(w/g)}:${Math.round(h/g)}`;
+  }
+
+  dropZone.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=> loadFile(e.target.files[0]));
+  ['dragenter','dragover'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.remove('drag'); });
+  });
+  dropZone.addEventListener('drop', (e)=>{
+    loadFile(e.dataTransfer.files[0]);
+  });
+  changeBtn.addEventListener('click', ()=> fileInput.click());
+
+  lockBtn.addEventListener('click', ()=>{
+    locked = !locked;
+    lockBtn.classList.toggle('unlocked', !locked);
+    updateRatioNote();
+  });
+
+  function updateRatioNote(){
+    if(!img) return;
+    ratioNote.textContent = locked
+      ? 'আকৃতি লক করা আছে — একটা মান বদলালে অন্যটা নিজে থেকেই ঠিক হবে'
+      : 'আকৃতি আনলক করা — নিজের মতো দুটো মানই স্বাধীনভাবে বদলাতে পারবেন (এতে ছবি স্ট্রেচ হতে পারে)';
+  }
+
+  widthInput.addEventListener('input', ()=>{
+    if(!img) return;
+    const w = parseFloat(widthInput.value) || 0;
+    if(locked && w>0){
+      heightInput.value = Math.round(w / ratio);
+    }
+    checkUpscale();
+    clearQuickActive();
+  });
+  heightInput.addEventListener('input', ()=>{
+    if(!img) return;
+    const h = parseFloat(heightInput.value) || 0;
+    if(locked && h>0){
+      widthInput.value = Math.round(h * ratio);
+    }
+    checkUpscale();
+    clearQuickActive();
+  });
+
+  function clearQuickActive(){
+    quickScales.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  }
+
+  quickScales.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!img) return;
+      quickScales.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const scale = parseFloat(btn.dataset.scale);
+      widthInput.value = Math.round(origW * scale);
+      heightInput.value = Math.round(origH * scale);
+      checkUpscale();
+    });
+  });
+
+  function checkUpscale(){
+    const w = parseFloat(widthInput.value) || 0;
+    upscaleWarn.classList.toggle('show', w > origW);
+  }
+
+  downloadBtn.addEventListener('click', ()=>{
+    if(!img) return;
+    const targetW = Math.max(1, Math.round(parseFloat(widthInput.value) || origW));
+    const targetH = Math.max(1, Math.round(parseFloat(heightInput.value) || origH));
+
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = targetW;
+    outCanvas.height = targetH;
+    const octx = outCanvas.getContext('2d');
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = 'high';
+    octx.drawImage(img, 0, 0, targetW, targetH);
+
+    const format = formatSel.value;
+    const quality = format === 'image/jpeg' ? 0.95 : undefined;
+    const ext = format === 'image/jpeg' ? 'jpg' : 'png';
+
+    outCanvas.toBlob(function(blob){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileBaseName}-${targetW}x${targetH}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    }, format, quality);
+  });
+
+})();
+</script>
+</body>
+</html>

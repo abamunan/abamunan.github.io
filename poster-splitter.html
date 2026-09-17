@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image to Poster — A4 Splitter</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --paper:#f6f1e7;
+    --paper-2:#efe7d8;
+    --line:#d8cdb6;
+    --accent:#8a5a3b;
+    --accent-2:#c7743f;
+    --ok:#4d6b52;
+  }
+  :root:not([data-theme="light"]){
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#f1ece1;
+      --paper:#1b1815;
+      --paper-2:#241f1a;
+      --line:#3a332a;
+      --accent:#e0a97c;
+      --accent-2:#e08a52;
+      --ok:#8fb897;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#f1ece1;
+    --paper:#1b1815;
+    --paper-2:#241f1a;
+    --line:#3a332a;
+    --accent:#e0a97c;
+    --accent-2:#e08a52;
+    --ok:#8fb897;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    min-height:100vh;
+    padding:32px 18px 80px;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap');
+
+  .wrap{max-width:760px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .kicker{
+    font-size:13px;
+    color:var(--accent-2);
+    letter-spacing:.02em;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:clamp(28px,6vw,40px);
+    line-height:1.12;
+    margin:0 0 10px;
+  }
+  .sub{
+    font-size:15.5px;
+    line-height:1.6;
+    color:var(--ink);
+    opacity:.78;
+    margin:0;
+    max-width:56ch;
+  }
+
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    margin-top:22px;
+  }
+
+  .drop{
+    border:1.5px dashed var(--line);
+    border-radius:12px;
+    padding:36px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+    background:transparent;
+  }
+  .drop:hover, .drop.drag{
+    border-color:var(--accent-2);
+    background:color-mix(in srgb, var(--accent-2) 6%, transparent);
+  }
+  .drop svg{opacity:.55;margin-bottom:10px;}
+  .drop-title{font-weight:600;font-size:15.5px;margin:0 0 4px;}
+  .drop-sub{font-size:13.5px;opacity:.65;margin:0;}
+  input[type=file]{display:none;}
+
+  .controls{
+    display:none;
+    margin-top:20px;
+  }
+  .controls.show{display:block;}
+
+  .row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .field{flex:1;min-width:150px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    opacity:.7;
+    margin-bottom:7px;
+  }
+  select, .seg{
+    width:100%;
+  }
+  select{
+    appearance:none;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:14.5px;
+    font-family:inherit;
+  }
+  .seg{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  @media (max-width:480px){
+    .seg{grid-template-columns:repeat(2,1fr);}
+  }
+  .seg button{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--ink);
+    padding:9px 6px;
+    font-size:13px;
+    line-height:1.3;
+    font-family:inherit;
+    cursor:pointer;
+    text-align:center;
+    opacity:.7;
+  }
+  .seg button.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--paper);
+    opacity:1;
+    font-weight:600;
+  }
+
+  .overlap-row{margin-bottom:4px;}
+  input[type=range]{
+    width:100%;
+    accent-color:var(--accent-2);
+  }
+  .overlap-val{font-size:13px;opacity:.65;}
+
+  .preview-stage{
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+  }
+  .preview-wrap{
+    position:relative;
+    max-width:100%;
+  }
+  #srcCanvas{
+    display:block;
+    max-width:100%;
+    height:auto;
+    border-radius:6px;
+    border:1px solid var(--line);
+  }
+  .gridlines{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+  .gridlines .h, .gridlines .v{
+    position:absolute;
+    background:var(--accent-2);
+    opacity:.85;
+  }
+  .gridlines .h{height:2px;left:0;right:0;}
+  .gridlines .v{width:2px;top:0;bottom:0;}
+  .gridlines .label{
+    position:absolute;
+    background:var(--accent);
+    color:var(--paper);
+    font-size:11px;
+    font-weight:600;
+    padding:2px 6px;
+    border-radius:4px;
+    line-height:1.4;
+  }
+
+  .meta-line{
+    text-align:center;
+    font-size:12.5px;
+    opacity:.6;
+    margin-top:10px;
+  }
+
+  .actions{
+    display:flex;
+    gap:12px;
+    margin-top:22px;
+    flex-wrap:wrap;
+  }
+  button.primary{
+    flex:1;
+    min-width:200px;
+    background:var(--accent);
+    color:var(--paper);
+    border:none;
+    border-radius:9px;
+    padding:14px 18px;
+    font-size:15.5px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:opacity .15s ease;
+  }
+  button.primary:hover{opacity:.9;}
+  button.primary:disabled{opacity:.45;cursor:not-allowed;}
+  button.secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:14px 16px;
+    font-size:14.5px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  button.secondary:disabled{opacity:.45;cursor:not-allowed;}
+
+  .progress-wrap{
+    display:none;
+    margin-top:16px;
+  }
+  .progress-wrap.show{display:block;}
+  .progress-track{
+    height:8px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--ok);
+    transition:width .2s ease;
+  }
+  .progress-text{font-size:13px;opacity:.7;margin-top:8px;text-align:center;}
+
+  .steps{
+    margin-top:34px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+  @media (max-width:520px){
+    .steps{grid-template-columns:1fr;}
+  }
+  .step{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    background:var(--paper-2);
+  }
+  .step-num{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    color:var(--accent-2);
+    margin:0 0 4px;
+  }
+  .step p{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.55;
+    opacity:.8;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:36px;
+    font-size:12.5px;
+    opacity:.5;
+  }
+
+  .tool-download{
+    text-align:center;
+    margin-top:34px;
+  }
+  .tool-download button.secondary{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 16px;
+    font-size:13.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">Poster Print Tool</p>
+    <h1>Turn One Picture Into a Big Poster</h1>
+    <p class="sub">Upload any image — it'll be split into a grid (2×2, 3×3, and more) and turned into a print-ready A4 PDF. Print each page and tape them together to make one large poster. Your image stays in your browser and is never uploaded anywhere.</p>
+  </header>
+
+  <div class="panel">
+    <div class="drop" id="dropZone">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+      <p class="drop-title">Tap to upload an image</p>
+      <p class="drop-sub">JPG, PNG — higher resolution gives better results</p>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="row">
+        <div class="field" style="flex-basis:100%;">
+          <label for="gridSel">Number of pieces</label>
+          <div class="seg" id="gridSeg">
+            <button data-cols="2" data-rows="2" class="active">2 × 2 (4 pages)</button>
+            <button data-cols="2" data-rows="3">2 × 3 (6 pages)</button>
+            <button data-cols="3" data-rows="2">3 × 2 (6 pages)</button>
+            <button data-cols="3" data-rows="3">3 × 3 (9 pages)</button>
+            <button data-cols="3" data-rows="4">3 × 4 (12 pages)</button>
+            <button data-cols="4" data-rows="3">4 × 3 (12 pages)</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="orientSel">Page orientation</label>
+          <select id="orientSel">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row overlap-row">
+        <div class="field" style="flex-basis:100%;">
+          <label for="overlapRange">White trim margin — cut as needed when joining <span class="overlap-val" id="overlapVal">8 mm</span></label>
+          <input type="range" id="overlapRange" min="0" max="20" value="8">
+        </div>
+      </div>
+
+      <div class="preview-stage">
+        <div class="preview-wrap" id="previewWrap">
+          <canvas id="srcCanvas"></canvas>
+          <div class="gridlines" id="gridlines"></div>
+        </div>
+      </div>
+      <p class="meta-line" id="metaLine"></p>
+
+      <div class="actions">
+        <button class="primary" id="downloadBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
+          Download A4 Poster PDF
+        </button>
+        <button class="secondary" id="changeBtn">Choose another image</button>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <p class="progress-text" id="progressText">Generating pages…</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <p class="step-num">01</p>
+      <p>Upload an image and choose how many pieces to split it into (4 to 12 pages)</p>
+    </div>
+    <div class="step">
+      <p class="step-num">02</p>
+      <p>Download the PDF and print each page on A4 paper</p>
+    </div>
+    <div class="step">
+      <p class="step-num">03</p>
+      <p>Trim the white margin around each page as needed — it doesn't have to be perfect</p>
+    </div>
+    <div class="step">
+      <p class="step-num">04</p>
+      <p>Tape or glue the pages together side by side to make the poster</p>
+    </div>
+  </div>
+
+  <div class="tool-download">
+    <button class="secondary" id="downloadHtmlBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
+      Download this tool (HTML)
+    </button>
+  </div>
+
+  <footer>All image processing happens entirely in your browser — nothing is sent to any server.</footer>
+</div>
+
+<script>
+(function(){
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const controls = document.getElementById('controls');
+  const srcCanvas = document.getElementById('srcCanvas');
+  const gridlines = document.getElementById('gridlines');
+  const previewWrap = document.getElementById('previewWrap');
+  const metaLine = document.getElementById('metaLine');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const changeBtn = document.getElementById('changeBtn');
+  const gridSeg = document.getElementById('gridSeg');
+  const orientSel = document.getElementById('orientSel');
+  const overlapRange = document.getElementById('overlapRange');
+  const overlapVal = document.getElementById('overlapVal');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+
+  let img = null;
+  let cols = 2, rows = 2;
+  let overlapMm = 8;
+
+  const ctx = srcCanvas.getContext('2d');
+
+  function loadFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const image = new Image();
+      image.onload = function(){
+        img = image;
+        drawPreview();
+        controls.classList.add('show');
+        controls.scrollIntoView({behavior:'smooth', block:'start'});
+      };
+      image.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  dropZone.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=> loadFile(e.target.files[0]));
+
+  ['dragenter','dragover'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.remove('drag'); });
+  });
+  dropZone.addEventListener('drop', (e)=>{
+    const file = e.dataTransfer.files[0];
+    loadFile(file);
+  });
+
+  changeBtn.addEventListener('click', ()=> fileInput.click());
+
+  gridSeg.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      gridSeg.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      cols = parseInt(btn.dataset.cols);
+      rows = parseInt(btn.dataset.rows);
+      drawPreview();
+    });
+  });
+
+  orientSel.addEventListener('change', drawPreview);
+
+  overlapRange.addEventListener('input', ()=>{
+    overlapMm = parseInt(overlapRange.value);
+    overlapVal.textContent = overlapMm + ' mm';
+    drawPreview();
+  });
+
+  function drawPreview(){
+    if(!img) return;
+
+    const orientation = orientSel.value === 'landscape' ? 'l' : 'p';
+    const pageW = orientation === 'l' ? 297 : 210;
+    const pageH = orientation === 'l' ? 210 : 297;
+    const dstRatio = (pageW * cols) / (pageH * rows);
+
+    const maxSide = 640;
+    let w, h;
+    if(dstRatio >= 1){
+      w = maxSide;
+      h = Math.round(w / dstRatio);
+    } else {
+      h = maxSide;
+      w = Math.round(h * dstRatio);
+    }
+    srcCanvas.width = w;
+    srcCanvas.height = h;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+
+    const srcRatio = img.naturalWidth / img.naturalHeight;
+    let drawW, drawH, offX, offY;
+    if(srcRatio > dstRatio){
+      drawW = w;
+      drawH = drawW / srcRatio;
+      offX = 0;
+      offY = (h - drawH) / 2;
+    } else {
+      drawH = h;
+      drawW = drawH * srcRatio;
+      offX = (w - drawW) / 2;
+      offY = 0;
+    }
+    ctx.drawImage(img, offX, offY, drawW, drawH);
+
+    gridlines.innerHTML = '';
+    for(let c=1;c<cols;c++){
+      const v = document.createElement('div');
+      v.className = 'v';
+      v.style.left = (c*100/cols) + '%';
+      gridlines.appendChild(v);
+    }
+    for(let r=1;r<rows;r++){
+      const hLine = document.createElement('div');
+      hLine.className = 'h';
+      hLine.style.top = (r*100/rows) + '%';
+      gridlines.appendChild(hLine);
+    }
+    let n=1;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = 'Page ' + n;
+        label.style.left = (c*100/cols + 50/cols/2) + '%';
+        label.style.top = (r*100/rows + 6/rows) + '%';
+        label.style.transform = 'translate(-50%,0)';
+        gridlines.appendChild(label);
+        n++;
+      }
+    }
+
+    const totalPages = cols*rows;
+    metaLine.textContent = `Original image: ${img.naturalWidth}×${img.naturalHeight}px  ·  Total ${totalPages} A4 pages  ·  Grid: ${cols}×${rows}`;
+  }
+
+  downloadBtn.addEventListener('click', async ()=>{
+    if(!img) return;
+    downloadBtn.disabled = true;
+    progressWrap.classList.add('show');
+    progressFill.style.width = '0%';
+
+    try{
+      await buildPdf();
+    }catch(err){
+      progressText.textContent = 'Something went wrong, please try again.';
+      console.error(err);
+    }finally{
+      downloadBtn.disabled = false;
+    }
+  });
+
+  async function buildPdf(){
+    const { jsPDF } = window.jspdf;
+    const orientation = orientSel.value === 'landscape' ? 'l' : 'p';
+    const pdf = new jsPDF({ orientation: orientation, unit: 'mm', format: 'a4' });
+
+    const pageW = orientation === 'l' ? 297 : 210;
+    const pageH = orientation === 'l' ? 210 : 297;
+
+    // mm -> px conversion at high-quality render resolution (300 DPI)
+    const DPI = 300;
+    const mmToPx = (mm) => Math.round(mm * DPI / 25.4);
+
+    const tileWmm = pageW;
+    const tileHmm = pageH;
+    const tileWpx = mmToPx(tileWmm);
+    const tileHpx = mmToPx(tileHmm);
+
+    // Full poster canvas size at target DPI, honoring source aspect ratio,
+    // sized so each tile is a full A4 page at 300dpi.
+    const posterWpx = tileWpx * cols;
+    const posterHpx = tileHpx * rows;
+
+    // Build a working canvas: draw source image scaled/cropped (cover-fit)
+    // onto the full poster canvas.
+    const work = document.createElement('canvas');
+    work.width = posterWpx;
+    work.height = posterHpx;
+    const wctx = work.getContext('2d');
+    wctx.imageSmoothingEnabled = true;
+    wctx.imageSmoothingQuality = 'high';
+
+    // Contain-fit: the whole image is always shown at its original aspect
+    // ratio. Nothing is cropped — if the image's ratio doesn't match the
+    // poster grid, plain white space is added on the sides or top/bottom.
+    const srcRatio = img.naturalWidth / img.naturalHeight;
+    const dstRatio = posterWpx / posterHpx;
+    let drawW, drawH, offX, offY;
+    if(srcRatio > dstRatio){
+      drawW = posterWpx;
+      drawH = drawW / srcRatio;
+      offX = 0;
+      offY = (posterHpx - drawH) / 2;
+    } else {
+      drawH = posterHpx;
+      drawW = drawH * srcRatio;
+      offX = (posterWpx - drawW) / 2;
+      offY = 0;
+    }
+    wctx.fillStyle = '#ffffff';
+    wctx.fillRect(0,0,posterWpx, posterHpx);
+    wctx.drawImage(img, offX, offY, drawW, drawH);
+
+    const totalPages = cols*rows;
+    let pageIdx = 0;
+
+    // No duplicated image data between neighbouring pages — each tile is a
+    // clean, non-overlapping grid slice. Every page is then printed a bit
+    // smaller than full A4 and centred inside a plain white margin, so
+    // nothing from the image is lost or repeated. The margin is just spare
+    // paper: trim as little or as much of it as you need when lining the
+    // pages up, so the cut doesn't have to be perfect.
+    const drawWmm = pageW - overlapMm*2;
+    const drawHmm = pageH - overlapMm*2;
+    const posX = overlapMm;
+    const posY = overlapMm;
+
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        if(pageIdx>0) pdf.addPage('a4', orientation);
+
+        const sx = c*tileWpx;
+        const sy = r*tileHpx;
+        const sw = tileWpx;
+        const sh = tileHpx;
+
+        const tile = document.createElement('canvas');
+        tile.width = sw;
+        tile.height = sh;
+        const tctx = tile.getContext('2d');
+        tctx.drawImage(work, sx, sy, sw, sh, 0, 0, sw, sh);
+
+        const dataUrl = tile.toDataURL('image/jpeg', 0.95);
+
+        pdf.addImage(dataUrl, 'JPEG', posX, posY, drawWmm, drawHmm);
+
+        // corner trim marks showing exactly where the white margin ends
+        if(overlapMm>0){
+          pdf.setDrawColor(180,120,80);
+          pdf.setLineWidth(0.2);
+          const markLen = 4;
+          const xs = [posX, posX+drawWmm];
+          const ys = [posY, posY+drawHmm];
+          xs.forEach(x=>{
+            ys.forEach(y=>{
+              pdf.line(x-markLen/2, y, x+markLen/2, y);
+              pdf.line(x, y-markLen/2, x, y+markLen/2);
+            });
+          });
+        }
+
+        pageIdx++;
+        const pct = Math.round((pageIdx/totalPages)*100);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = `Generating pages… (${pageIdx}/${totalPages})`;
+        await new Promise(res=>setTimeout(res, 10));
+      }
+    }
+
+    progressText.textContent = 'PDF ready — downloading…';
+    pdf.save('poster-' + cols + 'x' + rows + '-A4.pdf');
+    setTimeout(()=>{
+      progressWrap.classList.remove('show');
+    }, 1200);
+  }
+
+  // Builds a pristine copy of this page's HTML for the "download this tool"
+  // button: clones the live document but resets anything the session may
+  // have changed (loaded image, selected grid, progress state) so the
+  // downloaded file always opens fresh, exactly like the original.
+  function buildToolHtmlSnapshot(){
+    const clone = document.documentElement.cloneNode(true);
+
+    const controls = clone.querySelector('#controls');
+    if(controls) controls.classList.remove('show');
+
+    const gridButtons = clone.querySelectorAll('#gridSeg button');
+    gridButtons.forEach(b=>b.classList.remove('active'));
+    if(gridButtons[0]) gridButtons[0].classList.add('active');
+
+    const overlapValClone = clone.querySelector('#overlapVal');
+    if(overlapValClone) overlapValClone.textContent = '8 mm';
+
+    const metaLineClone = clone.querySelector('#metaLine');
+    if(metaLineClone) metaLineClone.textContent = '';
+
+    const gridlinesClone = clone.querySelector('#gridlines');
+    if(gridlinesClone) gridlinesClone.innerHTML = '';
+
+    const srcCanvasClone = clone.querySelector('#srcCanvas');
+    if(srcCanvasClone){
+      srcCanvasClone.removeAttribute('width');
+      srcCanvasClone.removeAttribute('height');
+    }
+
+    const progressWrapClone = clone.querySelector('#progressWrap');
+    if(progressWrapClone) progressWrapClone.classList.remove('show');
+
+    const progressFillClone = clone.querySelector('#progressFill');
+    if(progressFillClone) progressFillClone.style.width = '0%';
+
+    const progressTextClone = clone.querySelector('#progressText');
+    if(progressTextClone) progressTextClone.textContent = 'Generating pages…';
+
+    const downloadBtnClone = clone.querySelector('#downloadBtn');
+    if(downloadBtnClone) downloadBtnClone.removeAttribute('disabled');
+
+    return '<!DOCTYPE html>\n' + clone.outerHTML;
+  }
+
+  downloadHtmlBtn.addEventListener('click', async ()=>{
+    downloadHtmlBtn.disabled = true;
+    const html = buildToolHtmlSnapshot();
+    const filename = 'poster-splitter.html';
+    try{
+      const downloadsApi = (window.claude && typeof window.claude.use === 'function')
+        ? await window.claude.use('downloads')
+        : null;
+      if(downloadsApi){
+        await downloadsApi.save({ filename, data: html });
+      } else {
+        // Running as a plain, standalone page (e.g. hosted on your own
+        // site) — do a normal browser download instead.
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    }catch(err){
+      if(!err || err.code !== 'declined'){
+        console.error(err);
+      }
+    }finally{
+      downloadHtmlBtn.disabled = false;
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
