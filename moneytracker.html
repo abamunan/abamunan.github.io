@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <link rel="stylesheet" href="mt.css">
+<link rel="stylesheet" href="mt-calc.css">
 </head>
 <body class="mt-app">
 
@@ -248,6 +249,7 @@
       <button class="modal-tab" data-tab="budgets" onclick="showSettingsTab('budgets')">Budgets</button>
       <button class="modal-tab" data-tab="goal" onclick="showSettingsTab('goal')">Goal</button>
       <button class="modal-tab" data-tab="backup" onclick="showSettingsTab('backup')">Backup</button>
+      <button class="modal-tab" data-tab="tools" onclick="showSettingsTab('tools'); if (window.mtCalc) mtCalc.refresh()">Tools</button>
     </div>
     <div class="modal-body">
       <div class="settings-pane active" id="pane-categories">
@@ -295,6 +297,11 @@
         <button class="btn-primary" onclick="exportAllDataCSV()"><i class="fas fa-file-csv"></i> Export All Data (CSV)</button>
         <div class="settings-sub" style="margin-top:22px;color:var(--danger)"><i class="fas fa-triangle-exclamation"></i> Permanently erase every day recorded, plus categories, accounts, budgets, goal, ledger and debts — on this device and in the cloud. Make sure you've downloaded a backup first.</div>
         <button class="btn-danger" onclick="openRemoveDataModal()"><i class="fas fa-trash"></i> Remove All Data</button>
+      </div>
+      <div class="settings-pane" id="pane-tools">
+        <div class="settings-sub"><i class="fas fa-calculator"></i> Floating calculator — tap the icon to open it and drag it anywhere. To hide the icon for 10 minutes, hold it and drop it on the ✕ that appears at the bottom.</div>
+        <div class="mtc-status" id="mtCalcStatus"></div>
+        <button class="btn-primary" onclick="mtCalcAdd()"><i class="fas fa-calculator"></i> Add Calculator</button>
       </div>
     </div>
   </div>
@@ -485,6 +492,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';document.head.appendChild(s);"></script>
 <script src="mt.js"></script>
+<script src="mt-calc.js"></script>
 <script src="footer.js"></script>
 </body>
 </html>

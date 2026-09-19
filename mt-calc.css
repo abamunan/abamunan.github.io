@@ -1,0 +1,307 @@
+/* ==========================================================================
+   mt-calc.css — Floating calculator for Money Tracker
+
+   Everything is prefixed .mtc- so nothing collides with mt.css / style.css
+   (style.css already has an unrelated .key class, for example).
+   Colours come from the page's own tokens (--accent, --accent2, --danger,
+   --surface, --card-bg-solid ...), so light / dark follows
+   [data-theme="dark"] with no extra work.
+
+   Layer order in this app:  nav 100 · toast 200 · nav drawer 250 ·
+   modals 300 · calculator 390-400 · splash 9999.
+   The calculator sits above the modals on purpose, so you can use it while
+   the Debts / Search sheets are open.
+   ========================================================================== */
+
+.mtc-hidden { display: none !important; }
+
+/* Invisible probe — lets JS read the phone's safe-area insets (notch / home bar). */
+.mtc-probe {
+  position: fixed; top: 0; left: 0; width: 0; height: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  visibility: hidden; pointer-events: none;
+}
+
+/* ── FLOATING ICON ─────────────────────────────────────────────────────── */
+.mtc-fab {
+  position: fixed; left: 0; top: 0; z-index: 400;
+  width: 54px; height: 54px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.92);
+  background: var(--accent);
+  color: #fff; font-size: 1.3rem;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18);
+  cursor: grab;
+  /* Position comes from JS via the `translate` property; `scale` / opacity animate separately. */
+  will-change: translate;
+  transition: scale 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+[data-theme="dark"] .mtc-fab { border-color: rgba(255,255,255,0.24); }
+.mtc-fab:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mtc-fab.mtc-dragging {
+  cursor: grabbing; scale: 1.12;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.38), 0 4px 10px rgba(0,0,0,0.22);
+}
+/* Over the ✕: the icon melts into it so the red ✕ stays clearly visible. */
+.mtc-fab.mtc-over { scale: 0.6; opacity: 0; }
+.mtc-fab.mtc-vanish { scale: 0.2; opacity: 0; }
+.mtc-fab.mtc-pop { animation: mtcFabPop 240ms cubic-bezier(.2,1.3,.4,1); }
+@keyframes mtcFabPop { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+/* Ring that pings twice so you can spot the icon after "Add Calculator". */
+.mtc-fab::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0; pointer-events: none;
+}
+.mtc-fab.mtc-ping::after { animation: mtcPing 900ms ease-out 2; }
+@keyframes mtcPing {
+  0%   { opacity: 0.75; transform: scale(1); }
+  100% { opacity: 0;    transform: scale(2); }
+}
+
+/* ── REMOVE TARGET (appears while you hold / drag the icon) ────────────── */
+.mtc-drop {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 230px;
+  z-index: 390; pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,0.42), rgba(0,0,0,0));
+  opacity: 0; transition: opacity 160ms ease;
+}
+.mtc-drop.mtc-show { opacity: 1; }
+
+.mtc-drop-x {
+  position: absolute; left: 50%; margin-left: -32px;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,20,20,0.74); color: #fff; font-size: 1.5rem;
+  border: 2px solid rgba(255,255,255,0.55);
+  translate: 0 16px;
+  transition: scale 140ms ease, background 140ms ease, border-color 140ms ease, translate 180ms ease;
+}
+.mtc-drop.mtc-show .mtc-drop-x { translate: 0 0; }
+.mtc-drop.mtc-over .mtc-drop-x { scale: 1.28; background: var(--danger); border-color: #fff; }
+
+.mtc-drop-label {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(96px + 64px + 12px + env(safe-area-inset-bottom, 0px));
+  padding: 4px 11px; border-radius: 999px;
+  background: rgba(20,20,20,0.74); color: #fff;
+  font: 600 0.7rem/1.3 var(--font, sans-serif); white-space: nowrap;
+}
+
+/* ── WINDOW ────────────────────────────────────────────────────────────── */
+.mtc-win {
+  position: fixed; left: 0; top: 0; z-index: 400;
+  width: 296px; max-width: calc(100vw - 12px);
+  outline: none;
+}
+.mtc-win-in {
+  background: var(--card-bg-solid, #fff);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.32), 0 2px 10px rgba(0,0,0,0.12);
+  overflow: hidden;
+  font-family: var(--font, 'Poppins', sans-serif);
+  color: var(--text-main);
+}
+.mtc-win-in.mtc-pop { animation: mtcWinPop 190ms cubic-bezier(.2,.9,.3,1.1); }
+@keyframes mtcWinPop {
+  from { transform: scale(0.55); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.mtc-win.mtc-moving .mtc-win-in { box-shadow: 0 26px 60px rgba(0,0,0,0.42), 0 4px 14px rgba(0,0,0,0.16); }
+
+/* Header = drag handle + close button */
+.mtc-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 6px 6px 14px;
+  background: var(--nav-bg); color: #fff;
+  cursor: grab; touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.mtc-win.mtc-moving .mtc-head { cursor: grabbing; }
+.mtc-title { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; }
+.mtc-x {
+  width: 36px; height: 36px; padding: 0; border: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: #fff; font-size: 1.05rem; cursor: pointer;
+  transition: background 120ms ease;
+}
+.mtc-x:hover { background: rgba(255,255,255,0.16); }
+.mtc-x:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+
+.mtc-body { position: relative; padding: 10px; }
+
+/* Screen */
+.mtc-screen {
+  height: 122px; padding: 8px 12px 6px;
+  display: flex; flex-direction: column;
+  text-align: right; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.mtc-screen-top { align-self: flex-start; }
+.mtc-hbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px 0 9px;
+  border: 1px solid var(--card-border); border-radius: 999px;
+  background: transparent; color: var(--text-soft);
+  font: 600 0.7rem/1 var(--font, sans-serif); cursor: pointer;
+}
+.mtc-hbtn:hover { color: var(--accent); border-color: var(--accent); }
+.mtc-hbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mtc-hbtn i { font-size: 0.72rem; }
+.mtc-badge {
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--accent); color: #fff;
+  font-size: 0.6rem; line-height: 16px; text-align: center;
+}
+.mtc-badge[hidden] { display: none; }
+
+.mtc-expr {
+  margin-top: auto; min-height: 18px;
+  font-size: 0.72rem; color: var(--text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mtc-result {
+  height: 44px; line-height: 44px;
+  font-size: 1.85rem; font-weight: 600; color: var(--text-main);
+  white-space: nowrap; overflow: hidden;
+}
+.mtc-result.mtc-md  { font-size: 1.5rem; }
+.mtc-result.mtc-sm  { font-size: 1.2rem; }
+.mtc-result.mtc-xs  { font-size: 1rem; }
+.mtc-result.mtc-msg { font-size: 0.95rem; color: var(--danger); }
+
+/* Keys */
+.mtc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.mtc-k {
+  height: 48px; padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--card-bg-solid, #fff); color: var(--text-main);
+  font: 600 1.05rem/1 var(--font, sans-serif);
+  cursor: pointer;
+  transition: transform 80ms ease, background 120ms ease, filter 120ms ease;
+  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mtc-k:hover { background: var(--surface); }
+.mtc-k.mtc-fn { background: var(--surface2); }
+.mtc-k.mtc-fn:hover { filter: brightness(0.96); }
+.mtc-k.mtc-op { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 1.25rem; }
+.mtc-k.mtc-eq { background: var(--accent2); border-color: var(--accent2); color: #fff; font-size: 1.3rem; }
+.mtc-k.mtc-op:hover, .mtc-k.mtc-eq:hover { filter: brightness(1.1); }
+[data-theme="dark"] .mtc-k.mtc-eq { color: #04170f; }
+.mtc-k:active, .mtc-k.mtc-pressed { transform: scale(0.94); }
+.mtc-k:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* History panel (covers the body, not the header — so the window stays draggable) */
+.mtc-hist {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; gap: 10px; padding: 10px;
+  background: var(--card-bg-solid, #fff);
+}
+.mtc-hist[hidden] { display: none; }
+.mtc-h-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mtc-h-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+.mtc-h-sub { margin-top: 1px; font-size: 0.66rem; color: var(--text-soft); }
+.mtc-h-actions { display: flex; align-items: center; gap: 4px; }
+.mtc-h-clear {
+  padding: 8px 9px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--text-soft);
+  font: 600 0.72rem/1 var(--font, sans-serif); cursor: pointer;
+}
+.mtc-h-clear[hidden] { display: none; }
+.mtc-h-clear.mtc-armed { background: var(--danger); color: #fff; }
+.mtc-h-close {
+  width: 34px; height: 34px; padding: 0; border: 0; border-radius: 10px;
+  background: var(--surface2); color: var(--text-main);
+  font-size: 1rem; cursor: pointer;
+}
+.mtc-h-clear:focus-visible, .mtc-h-close:focus-visible, .mtc-h-item:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.mtc-h-list {
+  list-style: none; flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px; padding-right: 2px;
+}
+.mtc-h-list[hidden] { display: none; }
+.mtc-h-item {
+  width: 100%; padding: 8px 12px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  border: 1px solid var(--card-border); border-radius: 10px;
+  background: var(--surface); color: var(--text-main);
+  font-family: var(--font, sans-serif); font-variant-numeric: tabular-nums;
+  text-align: right; cursor: pointer;
+  transition: transform 80ms ease;
+}
+.mtc-h-item:active { transform: scale(0.98); }
+.mtc-h-x { font-size: 0.68rem; color: var(--text-soft); overflow-wrap: anywhere; }
+.mtc-h-r { font-size: 1.05rem; font-weight: 700; overflow-wrap: anywhere; }
+.mtc-h-empty {
+  margin: auto 0; padding: 0 10px; text-align: center;
+  font-size: 0.78rem; line-height: 1.5; color: var(--text-soft);
+}
+.mtc-h-empty[hidden] { display: none; }
+
+/* ── SETTINGS → TOOLS TAB ──────────────────────────────────────────────── */
+/* Six tabs now instead of five: let them size to their text (and scroll a
+   little on very narrow phones) so "Categories" isn't squeezed. */
+#settingsModal .modal-tabs { overflow-x: auto; scrollbar-width: none; }
+#settingsModal .modal-tabs::-webkit-scrollbar { display: none; }
+#settingsModal .modal-tab { flex: 1 0 auto; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+
+.mtc-status {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 12px; padding: 10px 12px;
+  border: 1px solid var(--card-border); border-radius: var(--radius-lg, 12px);
+  background: var(--surface);
+  font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+}
+.mtc-status::before {
+  content: ''; flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent2);
+}
+.mtc-status.mtc-status-off::before { background: var(--text-soft); }
+
+/* ── MISC ──────────────────────────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .mtc-drop-x     { bottom: 44px; }
+  .mtc-drop-label { bottom: calc(44px + 64px + 12px); }
+}
+@media (max-width: 360px) {
+  .mtc-k { height: 44px; }
+  .mtc-screen { height: 116px; }
+}
+/* Short screens (phone in landscape, tiny viewports): compact layout so the
+   whole keypad fits without scrolling. */
+@media (max-height: 560px) {
+  .mtc-head { padding-top: 3px; padding-bottom: 3px; }
+  .mtc-x { width: 32px; height: 32px; }
+  .mtc-body { padding: 8px; }
+  .mtc-screen { height: 90px; padding: 6px 10px 4px; }
+  .mtc-hbtn { height: 24px; }
+  .mtc-result { height: 34px; line-height: 34px; font-size: 1.5rem; }
+  .mtc-result.mtc-md { font-size: 1.25rem; }
+  .mtc-result.mtc-sm { font-size: 1.05rem; }
+  .mtc-result.mtc-xs { font-size: 0.9rem; }
+  .mtc-keys { gap: 6px; margin-top: 8px; }
+  .mtc-k { height: 36px; font-size: 0.95rem; }
+  .mtc-k.mtc-op { font-size: 1.1rem; }
+  .mtc-k.mtc-eq { font-size: 1.15rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mtc-fab, .mtc-drop, .mtc-drop-x, .mtc-k, .mtc-h-item { transition: none; }
+  .mtc-fab.mtc-pop, .mtc-fab.mtc-ping::after, .mtc-win-in.mtc-pop { animation: none; }
+}
+@media print { .mtc-fab, .mtc-win, .mtc-drop { display: none !important; } }
