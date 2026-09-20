@@ -30,20 +30,23 @@ body{margin:0;background:var(--bg);color:var(--text-main);font-family:var(--font
 .tabbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .tabpanel{display:none}
 .section{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-.section h2{font-size:.85rem;margin:0 0 10px;font-weight:700}
+.section h2{font-size:.85rem;margin:0;font-weight:700}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
 .card .l{font-size:.64rem;color:var(--text-soft);font-weight:600;text-transform:uppercase}
 .card .v{font-size:1.05rem;font-weight:700;margin-top:4px;overflow-wrap:anywhere}
 .card.in .v{color:var(--accent2)}.card.out .v{color:var(--danger)}
 .row{display:flex;gap:8px;flex-wrap:wrap}
+.row.end{align-items:flex-end}
 .field{flex:1;min-width:110px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .field label{font-size:.66rem;color:var(--text-soft);font-weight:600}
+.field.wide{flex:2}.field.narrow{max-width:100px}
 input,select{font:500 .82rem var(--font);padding:9px 10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:var(--surface);color:var(--text-main);width:100%}
 input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
 .addbtn{margin-top:12px;width:100%;padding:11px;border:0;border-radius:var(--radius-md);font:700 .84rem var(--font);color:#fff;cursor:pointer;background:var(--accent2);box-shadow:0 4px 16px var(--accent2-glow)}
 .addbtn:disabled{opacity:.6;cursor:wait}
 .ghostbtn{margin-top:8px;width:100%;padding:10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:transparent;color:var(--text-main);font:600 .8rem var(--font);cursor:pointer}
+.btngrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.btngrid .ghostbtn{margin-top:0}
 .hint{font-size:.66rem;color:var(--text-soft);margin-top:8px;line-height:1.5}
 .warnbox{background:var(--warn-bg);border:1px solid var(--warn);color:var(--text-main);border-radius:var(--radius-md);padding:10px 12px;font-size:.74rem;margin-bottom:14px;line-height:1.5}
 .warnbox ul{margin:6px 0 0;padding-left:18px}
@@ -53,6 +56,7 @@ th{text-align:left;color:var(--text-soft);font-size:.62rem;text-transform:upperc
 td{padding:8px;border-bottom:1px solid var(--card-border);vertical-align:top}
 tr:last-child td{border-bottom:0}
 tr.editing td{background:var(--surface)}
+tr.total td{font-weight:700}
 tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .sub{display:block;font-size:.62rem;color:var(--text-soft);font-weight:500;margin-top:2px}
 .badge{padding:2px 8px;border-radius:999px;font-size:.62rem;font-weight:700;color:#fff;display:inline-block}
@@ -75,12 +79,12 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .catbar-amt{width:70px;text-align:right;font-weight:700;flex-shrink:0}
 .tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--card-border);font-size:.74rem;margin:3px 4px 3px 0}
 .tag button{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.68rem}
-.sechead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.sechead h2{margin:0}
-.histhead{flex-wrap:wrap}
+.sechead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .sortsel{width:auto;max-width:180px;padding:6px 8px;font-size:.72rem;cursor:pointer}
 .lockbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);color:inherit;font:700 .68rem var(--font);cursor:pointer;white-space:nowrap}
 .lockbtn.open{border-color:var(--accent2);color:var(--accent2)}
 .lockmsg{font-size:.7rem;color:var(--text-soft);margin-top:8px;line-height:1.6}.lockmsg b{color:inherit}
+.sechead+.lockmsg{margin:0 0 10px}
 .subh{font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:700;margin:14px 0 2px}
 .bigcash{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 12px;border-radius:var(--radius-md);background:var(--surface)}
 .bigcash .l{font-size:.72rem;color:var(--text-soft);font-weight:600}
@@ -91,6 +95,7 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .pcard h3{margin:0 0 4px;font-size:.84rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .minibtn{padding:5px 11px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);font:700 .66rem var(--font);cursor:pointer}
 .minibtn.solid{background:var(--accent);color:#fff}
+.minibtn.danger{background:var(--danger);border-color:var(--danger)}
 .limit{font-size:.7rem;line-height:1.6;margin-top:10px;padding:8px 10px;border-radius:var(--radius-md);background:var(--surface)}
 .limit.bad{background:var(--danger-glow);color:var(--danger)}
 /* phones: 16px inputs stop iOS Safari from zooming in on focus */
@@ -151,7 +156,7 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
  <div id="tab-inventory" class="tabpanel"></div>
  <div id="tab-settings" class="tabpanel"></div>
 </div>
-<!-- Backup & Export: Excel engine (used by the Excel report button on the Summary tab) -->
+<!-- Reports & Export: Excel engine (used by the Excel report button in the Settings tab) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';"></script>
 <script>
 'use strict';
@@ -195,7 +200,6 @@ let state={sales:[],expenses:[],stock:[],capital:[]};
 const editing={}, built={};
 const sortBy={sales:'new',expenses:'new',stock:'new',capital:'new',cash:'new'};   // history sort choice per table (always starts on "Newest first")
 const autoTouched={};   // date / time inputs a partner changed by hand: these are never auto-updated
-let rptFrom='', rptTo='';   // Backup & Export: Excel/PDF report date range (Summary tab rebuilds on every sync, so this is kept outside the DOM)
 
 /* ---------- small helpers ---------- */
 const $=id=>document.getElementById(id);
@@ -513,13 +517,13 @@ function updateFormMode(key){
 function buildCrudPanel(key){
  const cfg=TAB_CONFIGS[key];
  $('tab-'+key).innerHTML=`${cfg.slots?'<div id="acctTop"></div>':''}${cfg.dupWarn?`<div id="dupWarn_${key}"></div>`:''}
-  <div class="section"><h2 id="h_${key}">${esc(cfg.addTitle||'Add '+cfg.single)}</h2>
-   <div class="row crudform" id="form_${key}" data-key="${key}">${cfg.fields.map(f=>`<div class="field" id="fw_${key}_${f.key}" style="flex:${f.wide?2:1};${f.minw?'min-width:'+f.minw+'px':''}"><label for="${fid(key,f)}">${esc(f.label)}</label>${fieldInput(key,f)}</div>`).join('')}</div>
+  <div class="section">${secHead(esc(cfg.addTitle||'Add '+cfg.single),'','h_'+key)}
+   <div class="row crudform" id="form_${key}" data-key="${key}">${cfg.fields.map(f=>`<div class="field${f.wide?' wide':''}" id="fw_${key}_${f.key}"${f.minw?` style="min-width:${f.minw}px"`:''}><label for="${fid(key,f)}">${esc(f.label)}</label>${fieldInput(key,f)}</div>`).join('')}</div>
    ${cfg.hint?`<div class="hint">${esc(cfg.hint)}</div>`:''}
    ${key==='capital'?'<div class="limit" id="limit_capital"></div>':''}
    <button class="addbtn" id="addbtn_${key}" data-act="add" data-key="${key}">${esc(cfg.addBtn||'+ Add '+cfg.single)}</button>
    <button class="ghostbtn hidden" id="cancel_${key}" data-act="cancel" data-key="${key}">Cancel editing</button></div>
-  <div class="section"><div class="sechead histhead"><h2>${esc(cfg.title)}</h2><select class="sortsel" id="sort_${key}" data-act="sort" data-key="${key}" aria-label="Sort ${esc(cfg.title)}">${sortOpts(!!cfg.qty,sortBy[key])}</select></div><div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
+  <div class="section">${secHead(esc(cfg.title),`<select class="sortsel" id="sort_${key}" data-act="sort" data-key="${key}" aria-label="Sort ${esc(cfg.title)}">${sortOpts(!!cfg.qty,sortBy[key])}</select>`)}<div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
   ${cfg.slots?'<div id="acctBottom"></div>':''}`;
  refreshSelects(key);
 }
@@ -856,6 +860,8 @@ function duplicateWarnings(only){   // the same checks, run over everything alre
 }
 
 /* ---------- rendering ---------- */
+/* Every block on every tab is built the same way: .section > secHead(title, optional control) > content > .hint */
+function secHead(title,extra,id){return `<div class="sechead"><h2${id?` id="${id}"`:''}>${title}</h2>${extra||''}</div>`;}
 // numbers are money (green/red by sign, grey when zero); pass a string for counts, and plain=1 for values that are neither income nor cost
 function kvRows(pairs){return `<div>${pairs.map(([k,v,strong,plain])=>{
  const isNum=typeof v==='number';
@@ -873,41 +879,30 @@ function renderSummary(){
  const owedTotal=s.paidPersonallyTotal-s.repaidTotal;
  const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`);
  if(s.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(s.unmatched.capital)}</td><td>${money(s.unmatched.paid)}</td><td>${money(s.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
- prow.push(`<tr style="font-weight:700"><td>Total</td><td>${money(s.capitalNet)}</td><td>${money(s.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${s.shareTotal.toFixed(2)}%</td><td>${money(s.netProfit*s.shareTotal/100)}</td></tr>`);
- $('tab-summary').innerHTML=`<div class="section" id="reportExportCard"><h2>Reports</h2>
-  <div class="row">
-   <div class="field"><label for="rptFrom">From</label><input type="date" id="rptFrom" value="${esc(rptFrom)}"></div>
-   <div class="field"><label for="rptTo">To</label><input type="date" id="rptTo" value="${esc(rptTo)}"></div>
-  </div>
-  <div class="row" style="margin-top:8px">
-   <button type="button" class="abtn" data-act="xlsxExport">Download Excel Report</button>
-   <button type="button" class="abtn" data-act="pdfExport">Download PDF Report</button>
-  </div>
-  <div class="hint">From/To (optional) filter the Sales, Expenses, Stock and Accounts sheets/tables. Summary, Inventory and Partners always show all-time totals, so they match this screen.</div>
- </div>
- ${renderWarnings(s.warnings)}
+ prow.push(`<tr class="total"><td>Total</td><td>${money(s.capitalNet)}</td><td>${money(s.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${s.shareTotal.toFixed(2)}%</td><td>${money(s.netProfit*s.shareTotal/100)}</td></tr>`);
+ $('tab-summary').innerHTML=`${renderWarnings(s.warnings)}
  <div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(s.revenue)}</div></div>
  <div class="card out"><div class="l">Total Costs</div><div class="v">${money(s.totalCosts)}</div></div>
- <div class="card"><div class="l">Net Profit</div><div class="v" style="color:${s.netProfit<0?'var(--danger)':'var(--accent2)'}">${money(s.netProfit)}</div></div></div>
- <div class="section"><h2>Profit &amp; Loss</h2>${kvRows([['Product sales (delivered)',s.productSales],['Delivery charges collected',s.deliveryCollected],['Total Revenue',s.revenue,1],
+ <div class="card"><div class="l">Net Profit</div><div class="v amt ${s.netProfit<0?'expense':'income'}">${money(s.netProfit)}</div></div></div>
+ <div class="section">${secHead('Profit &amp; Loss')}${kvRows([['Product sales (delivered)',s.productSales],['Delivery charges collected',s.deliveryCollected],['Total Revenue',s.revenue,1],
   ['Cost of goods sold',-s.cogs],['Loss from damaged returns',-s.damageLoss],['Loss from lost products',-s.lostLoss],['Gross Profit',s.grossProfit,1],
   ['Courier fees (delivered, returned &amp; lost orders)',-s.courierResolved],['Return fees',-s.returnCharges],['Operating expenses',-s.operatingExpenses],['NET PROFIT',s.netProfit,1]])}
   <div class="hint">Pending orders do not affect profit until they are marked Delivered, Returned or Lost. Total Costs = everything subtracted above, so Revenue − Total Costs = Net Profit.</div></div>
- <div class="section"><h2>Orders</h2>${kvRows([['Delivered',String(s.deliveredCount)],['Returned',String(s.returnedCount)],['Lost',String(s.lostCount)],['Pending (with courier)',String(s.pendingCount)],['Total',String(s.totalOrders),1],['Return rate (delivered + returned)',(s.returnRate*100).toFixed(1)+'%']])}</div>
- <div class="section"><h2>Operating expenses by category</h2>${renderCatBars(s.expByCat)}</div>
- <div class="section"><h2>Cash</h2>${kvRows([['Cash in business account',s.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
+ <div class="section">${secHead('Orders')}${kvRows([['Delivered',String(s.deliveredCount)],['Returned',String(s.returnedCount)],['Lost',String(s.lostCount)],['Pending (with courier)',String(s.pendingCount)],['Total',String(s.totalOrders),1],['Return rate (delivered + returned)',(s.returnRate*100).toFixed(1)+'%']])}</div>
+ <div class="section">${secHead('Operating expenses by category')}${renderCatBars(s.expByCat)}</div>
+ <div class="section">${secHead('Cash')}${kvRows([['Cash in business account',s.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
   <div class="hint">Full breakdown, partner withdrawals and each partner's balance are in the Accounts tab.</div></div>
- <div class="section"><h2>Stock &amp; money still to come</h2>${kvRows([['Customer money not yet received',s.moneyPending,0,1],['Pending orders (COD value)',s.codPending,0,1],
+ <div class="section">${secHead('Stock &amp; money still to come')}${kvRows([['Customer money not yet received',s.moneyPending,0,1],['Pending orders (COD value)',s.codPending,0,1],
   ['Stock on shelf (at cost)',s.stockValue,0,1],['Stock in transit (at cost)',s.transitValue,0,1]])}</div>
- <div class="section"><h2>Partners</h2><div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div></div>`;
+ <div class="section">${secHead('Partners')}<div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div></div>`;
 }
 function renderInventory(){
  const inv=computeInventory(),showUnc=sum(inv,'returnedUnchecked')>0,showLost=sum(inv,'lost')>0;
  const head=['Product','Bought','Avg Cost','Sent Out','In Transit','Ret. Good','Ret. Damaged'].concat(showUnc?['Ret. Unchecked']:[],showLost?['Lost']:[],['In Stock','Stock Value']);
  const cell=v=>`<td>${v}</td>`;
  const rows=inv.map(i=>`<tr><td>${esc(i.product)}${i.removed?' <span class="sub">removed from Settings</span>':''}</td>${[i.qtyBought,money(i.avgCost),i.sentOut,i.inTransit,i.returnedGood,i.returnedDamaged].map(cell).join('')}${showUnc?cell(i.returnedUnchecked):''}${showLost?cell(i.lost):''}<td${i.inStock<0?' class="amt expense"':''}>${i.inStock}</td><td>${money(i.stockValue)}</td></tr>`).join('');
- const tot=`<tr style="font-weight:700"><td>Total</td><td>${sum(inv,'qtyBought')}</td><td></td><td>${sum(inv,'sentOut')}</td><td>${sum(inv,'inTransit')}</td><td>${sum(inv,'returnedGood')}</td><td>${sum(inv,'returnedDamaged')}</td>${showUnc?`<td>${sum(inv,'returnedUnchecked')}</td>`:''}${showLost?`<td>${sum(inv,'lost')}</td>`:''}<td>${sum(inv,'inStock')}</td><td>${money(sum(inv,'stockValue'))}</td></tr>`;
- $('tab-inventory').innerHTML=`${renderWarnings(inventoryWarnings(inv))}<div class="section"><h2>Inventory (auto)</h2><div class="tablewrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${inv.length?rows+tot:`<tr><td colspan="${head.length}" class="empty">No products yet.</td></tr>`}</tbody></table></div>
+ const tot=`<tr class="total"><td>Total</td><td>${sum(inv,'qtyBought')}</td><td></td><td>${sum(inv,'sentOut')}</td><td>${sum(inv,'inTransit')}</td><td>${sum(inv,'returnedGood')}</td><td>${sum(inv,'returnedDamaged')}</td>${showUnc?`<td>${sum(inv,'returnedUnchecked')}</td>`:''}${showLost?`<td>${sum(inv,'lost')}</td>`:''}<td>${sum(inv,'inStock')}</td><td>${money(sum(inv,'stockValue'))}</td></tr>`;
+ $('tab-inventory').innerHTML=`${renderWarnings(inventoryWarnings(inv))}<div class="section">${secHead('Inventory (auto)')}<div class="tablewrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${inv.length?rows+tot:`<tr><td colspan="${head.length}" class="empty">No products yet.</td></tr>`}</tbody></table></div>
   <div class="hint">Sent Out = every order that has left the shelf, including pending ones (In Transit). Returns come back to stock when their condition is Good (or not yet checked); Damaged returns, lost products (returns that never came back) and lost parcels are written off as a loss. Stock value = purchases − cost of goods sold − write-offs − stock in transit, where each order is costed at the average buying price up to its date.</div></div>`;
 }
 
@@ -944,17 +939,17 @@ function renderAccounts(){
   return `<div class="pcard"><h3><span>${esc(p.name)}</span><span><button class="minibtn solid" data-act="withdrawFor" data-pid="${esc(p.id)}">Withdraw</button> <button class="minibtn" data-act="investFor" data-pid="${esc(p.id)}">+ Invest</button>${a.owed>0.005?` <button class="minibtn" data-act="repayFor" data-pid="${esc(p.id)}">Repay bills</button>`:''}</span></h3>${kvRows(rows)}</div>`;
  }).join('')||'<div class="empty">Add partners in Settings</div>';
  top.innerHTML=`${renderWarnings(s.warnings)}
-  <div class="section"><h2>Business account</h2>
-   <div class="bigcash"><span class="l">Cash in business account</span><span class="v" style="color:${s.cashBalance<0?'var(--danger)':'var(--accent2)'}">${money(s.cashBalance)}</span></div>
+  <div class="section">${secHead('Business account')}
+   <div class="bigcash"><span class="l">Cash in business account</span><span class="v amt ${s.cashBalance<0?'expense':'income'}">${money(s.cashBalance)}</span></div>
    <div class="subh">Money in</div>${kvRows([['Investments by partners',s.investedTotal],['Customer payments received',s.moneyReceived],['Total in',moneyIn,1]])}
    <div class="subh">Money out</div>${kvRows([['Stock purchases',-s.bizBy.stock],['Expenses',-s.bizBy.expenses],['Courier &amp; return fees',-s.bizBy.courier],['Withdrawn by partners',-s.withdrawnTotal],['Bills repaid to partners',-s.repaidTotal],['Total out',-moneyOut,1]])}
    <div class="subh">Balance</div>${kvRows([['Cash balance (in − out)',s.cashBalance,1]])}
    <div class="hint">Bills a partner paid personally do not come out of this cash; they stay "owed back" until you use Repay bills. Still to collect: customer money not yet received ${money(s.moneyPending)}, pending orders ${money(s.codPending)}.</div></div>
-  <div class="section"><h2>Partner accounts</h2><div class="pgrid">${cards}</div>
+  <div class="section">${secHead('Partner accounts')}<div class="pgrid">${cards}</div>
    <div class="hint">Can still take = investment + profit share (− loss share) − already withdrawn. A withdrawal is also limited by the cash in the business account.</div></div>`;
  const led=cashLedger(),mode=sortBy.cash;
  if(!$('cashTbl')){   // the sort dropdown lives in a frame that is drawn once, so a live sync never closes it
-  bot.innerHTML=`<div class="section"><div class="sechead histhead"><h2>Cash statement</h2><select class="sortsel" id="sort_cash" data-act="sort" data-key="cash" aria-label="Sort cash statement">${sortOpts(false,mode)}</select></div><div class="tablewrap"><table><thead><tr><th>Date &amp; Time</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody id="cashTbl"></tbody></table></div><div id="cashLimit"></div>
+  bot.innerHTML=`<div class="section">${secHead('Cash statement',`<select class="sortsel" id="sort_cash" data-act="sort" data-key="cash" aria-label="Sort cash statement">${sortOpts(false,mode)}</select>`)}<div class="tablewrap"><table><thead><tr><th>Date &amp; Time</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody id="cashTbl"></tbody></table></div><div id="cashLimit"></div>
   <div class="hint">Customer payments use the Received On date (the order date for older entries). Bills a partner paid personally are not listed because they did not touch business cash. Balance is the cash after that movement, whatever the sort order.</div></div>`;
  }
  const show=sortRows(mode==='old'?led:led.slice().reverse(),mode,r=>r.inn||r.out).slice(0,100);
@@ -1016,35 +1011,42 @@ function guardCapital(list){
 /* ---------- settings ---------- */
 function buildSettings(){
  $('tab-settings').innerHTML=`
- <div class="section"><div class="sechead"><h2>Products</h2><button class="lockbtn" id="lock_products" data-act="toggleList" data-list="products"></button></div>
+ <div class="section">${secHead('Products','<button class="lockbtn" id="lock_products" data-act="toggleList" data-list="products"></button>')}
   <div id="prodList"></div>
-  <div id="addWrap_products" class="hidden"><div class="row"><div class="field" style="flex:2"><input id="newProd" placeholder="New product" aria-label="New product"></div></div><button class="addbtn" data-act="addProd">+ Add product</button></div>
+  <div id="addWrap_products" class="hidden"><div class="row"><div class="field wide"><input id="newProd" placeholder="New product" aria-label="New product"></div></div><button class="addbtn" data-act="addProd">+ Add product</button></div>
   <div class="hint">Removing a product only hides it from the dropdowns — past sales and stock still count in the totals. Renaming a product also renames it on the saved entries.</div></div>
- <div class="section"><div class="sechead"><h2>Expense categories</h2><button class="lockbtn" id="lock_categories" data-act="toggleList" data-list="categories"></button></div>
+ <div class="section">${secHead('Expense categories','<button class="lockbtn" id="lock_categories" data-act="toggleList" data-list="categories"></button>')}
   <div id="catList"></div>
-  <div id="addWrap_categories" class="hidden"><div class="row"><div class="field" style="flex:2"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
+  <div id="addWrap_categories" class="hidden"><div class="row"><div class="field wide"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
   <div class="hint">Renaming a category also renames it on the saved expenses.</div></div>
  <div class="section" id="shareSection"></div>
- <div class="section" id="backupExportCard"><h2>Backup &amp; Export</h2>
-  <div class="subh">Full backup</div>
-  <button type="button" class="abtn" data-act="backupDownload">Download Full Backup (JSON)</button>
-  <div class="hint">This file contains customer names, phone numbers and addresses — keep it private.</div>
-  <div class="subh">Restore</div>
-  <button type="button" class="abtn" data-act="restoreClick">Restore From Backup</button>
-  <input type="file" id="restoreFile" accept=".json" class="hidden">
-  <div class="hint">Restoring replaces the shared data for every partner. A safety backup of the current data downloads automatically first, and you'll need to type RESTORE to confirm.</div>
-  <div class="subh">Export CSV</div>
+ <div class="section" id="exportCard">${secHead('Reports &amp; Export')}
   <div class="row">
-   <div class="field"><label for="csvFrom">From</label><input type="date" id="csvFrom"></div>
-   <div class="field"><label for="csvTo">To</label><input type="date" id="csvTo"></div>
+   <div class="field"><label for="expFrom">From</label><input type="date" id="expFrom"></div>
+   <div class="field"><label for="expTo">To</label><input type="date" id="expTo"></div>
   </div>
-  <div class="row" style="margin-top:8px">
-   <button type="button" class="abtn" data-act="csvExport" data-list="sales">Export Sales CSV</button>
-   <button type="button" class="abtn" data-act="csvExport" data-list="expenses">Export Expenses CSV</button>
-   <button type="button" class="abtn" data-act="csvExport" data-list="stock">Export Stock CSV</button>
-   <button type="button" class="abtn" data-act="csvExport" data-list="capital">Export Accounts CSV</button>
+  <div class="subh">Reports</div>
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="xlsxExport">Excel report</button>
+   <button type="button" class="ghostbtn" data-act="pdfExport">PDF report</button>
   </div>
-  <div class="hint">Leave From/To empty to export all-time data.</div>
+  <div class="subh">CSV files</div>
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="sales">Sales CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="expenses">Expenses CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="stock">Stock CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="capital">Accounts CSV</button>
+  </div>
+  <div class="hint">From/To are optional — leave them empty to export all-time data. The dates filter the Sales, Expenses, Stock and Accounts data. The Summary, Inventory and Partners parts of the Excel/PDF report always show all-time totals, so they match those tabs.</div>
+ </div>
+ <div class="section" id="backupCard">${secHead('Backup &amp; Restore')}
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="backupDownload">Full backup (JSON)</button>
+   <button type="button" class="ghostbtn" data-act="restoreClick">Restore backup</button>
+  </div>
+  <input type="file" id="restoreFile" accept=".json" class="hidden">
+  <div class="hint">The backup file contains customer names, phone numbers and addresses — keep it private.</div>
+  <div class="hint">Restoring replaces the shared data for every partner. A safety backup of the current data downloads automatically first, and you'll need to type RESTORE to confirm.</div>
  </div>`;   // Business share stays last, always
 }
 function renderSettingsLists(fromSync){
@@ -1080,22 +1082,22 @@ function renderShare(){
  Object.keys(LOCKS.rm).forEach(id=>{if(!partnerById(id)||gate(LOCKS.rm[id],REMOVE_WAIT).s==='off')delete LOCKS.rm[id];});   // partner already gone, or the removal window ran out
  const g=gate(LOCKS.share,SHARE_WAIT),open=g.s==='open';
  const t=S.partners.reduce((a,p)=>a+num(p.share),0);
- const total=Math.abs(t-100)<=0.005?`Total share: ${t.toFixed(2)}%`:`<span style="color:var(--danger);font-weight:700">Total share: ${t.toFixed(2)}% — must add up to 100%</span>`;
+ const total=Math.abs(t-100)<=0.005?`Total share: ${t.toFixed(2)}%`:`<span class="amt expense">Total share: ${t.toFixed(2)}% — must add up to 100%</span>`;
  const btn=open?'<button class="lockbtn open" data-act="lockShare">🔓 Lock</button>':g.s==='wait'?'<button class="lockbtn" data-act="cancelShare">Cancel</button>':'<button class="lockbtn" data-act="unlockShare">🔒 Unlock</button>';
  const note=g.s==='wait'?`⏳ Editing opens in <b id="shareLeft">${fmtLeft(g.left)}</b> — this wait is here to stop hasty changes to profit shares.`
   :open?`🔓 Open for editing — locks again in <b id="shareLeft">${fmtLeft(g.left)}</b>.`
   :'🔒 Locked — tap Unlock; editing opens after a 5 minute wait.';
  const rows=!S.partners.length?'<div class="empty">No partners yet</div>'
-  :open?S.partners.map(p=>`<div class="row" style="align-items:flex-end"><div class="field"><label for="pn_${esc(p.id)}">Name</label><input id="pn_${esc(p.id)}" value="${esc(p.name)}" data-act="pname" data-pid="${esc(p.id)}"></div><div class="field" style="max-width:100px"><label for="ps_${esc(p.id)}">Share %</label><input id="ps_${esc(p.id)}" type="number" step="0.01" min="0" value="${esc(p.share)}" data-act="pshare" data-pid="${esc(p.id)}"></div>${gate(LOCKS.rm[p.id],REMOVE_WAIT).s==='off'?`<button class="minibtn" data-act="rmStart" data-pid="${esc(p.id)}">Remove…</button>`:''}</div>`).join('')
+  :open?S.partners.map(p=>`<div class="row end"><div class="field"><label for="pn_${esc(p.id)}">Name</label><input id="pn_${esc(p.id)}" value="${esc(p.name)}" data-act="pname" data-pid="${esc(p.id)}"></div><div class="field narrow"><label for="ps_${esc(p.id)}">Share %</label><input id="ps_${esc(p.id)}" type="number" step="0.01" min="0" value="${esc(p.share)}" data-act="pshare" data-pid="${esc(p.id)}"></div>${gate(LOCKS.rm[p.id],REMOVE_WAIT).s==='off'?`<button class="minibtn" data-act="rmStart" data-pid="${esc(p.id)}">Remove…</button>`:''}</div>`).join('')
   :kvRows(S.partners.map(p=>[esc(p.name),num(p.share).toFixed(2)+'%']));
  const pend=S.partners.map(p=>{
   const r=gate(LOCKS.rm[p.id],REMOVE_WAIT);
   if(r.s==='wait')return `<div class="lockmsg">⏳ Removing <b>${esc(p.name)}</b> is allowed in <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
-  if(r.s==='open')return `<div class="lockmsg">Ready to remove <b>${esc(p.name)}</b> (available for <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b>) <button class="minibtn solid" style="background:var(--danger);border-color:var(--danger)" data-act="rmNow" data-pid="${esc(p.id)}">Remove now</button> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
+  if(r.s==='open')return `<div class="lockmsg">Ready to remove <b>${esc(p.name)}</b> (available for <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b>) <button class="minibtn solid danger" data-act="rmNow" data-pid="${esc(p.id)}">Remove now</button> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
   return '';
  }).join('');
  const add=open?`<div class="row"><div class="field"><label for="newPartnerName">Name</label><input id="newPartnerName"></div><div class="field"><label for="newPartnerShare">Share %</label><input id="newPartnerShare" type="number" step="0.01" min="0"></div></div><button class="addbtn" data-act="addPartner">+ Add partner</button>`:'';
- box.innerHTML=`<div class="sechead"><h2>Business share</h2>${btn}</div><div class="lockmsg" style="margin-top:0">${note}</div><div style="margin-top:10px">${rows}</div>${pend}<div class="hint">${total}</div>${add}<div class="hint">Renaming a partner keeps all their history. A partner who has entries can't be deleted. Removing a partner needs a 10 minute wait after you tap Remove…</div>`;
+ box.innerHTML=`${secHead('Business share',btn)}<div class="lockmsg">${note}</div>${rows}${pend}<div class="hint">${total}</div>${add}<div class="hint">Renaming a partner keeps all their history. A partner who has entries can't be deleted. Removing a partner needs a 10 minute wait after you tap Remove…</div>`;
  shareSig=lockSig();
 }
 function tickLocks(){   // runs every second; only redraws when a lock changes state, so nobody loses what they are typing
@@ -1294,6 +1296,7 @@ async function runRestore(data){
 }
 
 /* ---------- shared: field-driven columns + date filtering (used by CSV, Excel and PDF) ---------- */
+function exportRange(){const f=$('expFrom'),t=$('expTo');return {from:f?f.value:'',to:t?t.value:''};}   // one From/To pair (Settings > Reports & Export) for every export
 function csvColumnsFor(key){
  return TAB_CONFIGS[key].fields.map(f=>({
   header:f.label,type:f.type,
@@ -1316,7 +1319,7 @@ function rowsForExport(key,from,to){
 /* ---------- 3. CSV export ---------- */
 function exportCsv(key){
  const cols=csvColumnsFor(key);
- const from=$('csvFrom')?$('csvFrom').value:'',to=$('csvTo')?$('csvTo').value:'';
+ const {from,to}=exportRange();
  const rows=rowsForExport(key,from,to);
  const lines=[cols.map(c=>csvEscape(c.header)).join(',')].concat(rows.map(r=>cols.map(c=>csvEscape(c.get(r))).join(',')));
  downloadBlob('\ufeff'+lines.join('\r\n'),'text/csv;charset=utf-8','garments-accounts-'+EXPORT_LIST_NAME[key]+'-'+todayStr()+'.csv');
@@ -1390,7 +1393,7 @@ function addPartnersSheet(wb){
 }
 async function exportExcel(){
  if(typeof ExcelJS==='undefined'){showToast('Excel engine still loading — try again in a sec',true);return;}
- const from=$('rptFrom')?$('rptFrom').value:'',to=$('rptTo')?$('rptTo').value:'';
+ const {from,to}=exportRange();
  try{
   const wb=new ExcelJS.Workbook();wb.creator='Garments Accounts';wb.created=new Date();
   addSummarySheet(wb);
@@ -1437,7 +1440,7 @@ ${pdfListTable('sales',from,to)}${pdfListTable('expenses',from,to)}${pdfListTabl
 </body></html>`;
 }
 function exportPdf(){
- const from=$('rptFrom')?$('rptFrom').value:'',to=$('rptTo')?$('rptTo').value:'';
+ const {from,to}=exportRange();
  const w=window.open('','_blank');   // opened synchronously, before any async work, so popup blockers allow it
  if(!w||w.closed){showToast('Popup blocked — allow popups to export PDF',true);return;}
  w.document.open();w.document.write(buildPdfHtml(from,to));w.document.close();
@@ -1455,10 +1458,6 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
  if(e.target&&e.target.id==='restoreFile'){const f=e.target.files&&e.target.files[0];e.target.value='';handleRestoreFile(f);}
-});
-document.addEventListener('input',e=>{
- if(e.target&&e.target.id==='rptFrom')rptFrom=e.target.value;
- else if(e.target&&e.target.id==='rptTo')rptTo=e.target.value;
 });
 
 
