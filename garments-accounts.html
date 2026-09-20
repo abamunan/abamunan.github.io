@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Garments Accounts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --accent:#1B3A5C;--accent2:#1E8449;--accent2-glow:rgba(30,132,73,.2);--danger:#B23A3A;--danger-glow:rgba(178,58,58,.2);
+ --warn:#9A6408;--warn-bg:rgba(201,138,18,.13);
+ --surface:rgba(27,58,92,.06);--surface2:rgba(27,58,92,.12);--card-bg:#fff;--card-border:rgba(27,58,92,.18);
+ --nav-bg:#1B3A5C;--text-main:#1a2632;--text-soft:#5c6b7a;--bg:#F4F6F8;--radius-lg:16px;--radius-md:10px;--font:'Poppins',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#4A7BA6;--accent2:#3FA873;--accent2-glow:rgba(63,168,115,.2);--danger:#D97575;--danger-glow:rgba(217,117,117,.2);--warn:#E0A94A;--warn-bg:rgba(224,169,74,.14);--surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.11);--card-bg:#16283D;--card-border:rgba(74,123,166,.25);--nav-bg:#0F2233;--text-main:#EAF0F6;--text-soft:#9CB0C2;--bg:#0B1622;}}
+:root[data-theme="dark"]{--accent:#4A7BA6;--accent2:#3FA873;--accent2-glow:rgba(63,168,115,.2);--danger:#D97575;--danger-glow:rgba(217,117,117,.2);--warn:#E0A94A;--warn-bg:rgba(224,169,74,.14);--surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.11);--card-bg:#16283D;--card-border:rgba(74,123,166,.25);--nav-bg:#0F2233;--text-main:#EAF0F6;--text-soft:#9CB0C2;--bg:#0B1622;}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0)}
+body{margin:0;background:var(--bg);color:var(--text-main);font-family:var(--font);padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+.hidden{display:none!important}
+.wrap{max-width:820px;margin:0 auto;padding:16px 14px 40px}
+.top{background:var(--nav-bg);color:#fff;border-radius:var(--radius-lg);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.top h1{font-size:1.02rem;margin:0;font-weight:700}
+.top p{margin:2px 0 0;font-size:.7rem;opacity:.8}
+.status{font-size:.64rem;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.15);white-space:nowrap}
+.tabbar{display:flex;gap:6px;overflow-x:auto;margin:14px 0;padding-bottom:2px;scrollbar-width:none}
+.tabbar::-webkit-scrollbar{display:none}
+.tabbtn{flex:0 0 auto;padding:8px 14px;border-radius:999px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-soft);font:600 .76rem var(--font);cursor:pointer}
+.tabbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabpanel{display:none}
+.section{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.section h2{font-size:.85rem;margin:0 0 10px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.card .l{font-size:.64rem;color:var(--text-soft);font-weight:600;text-transform:uppercase}
+.card .v{font-size:1.05rem;font-weight:700;margin-top:4px;overflow-wrap:anywhere}
+.card.in .v{color:var(--accent2)}.card.out .v{color:var(--danger)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.field{flex:1;min-width:110px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.field label{font-size:.66rem;color:var(--text-soft);font-weight:600}
+input,select{font:500 .82rem var(--font);padding:9px 10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:var(--surface);color:var(--text-main);width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.addbtn{margin-top:12px;width:100%;padding:11px;border:0;border-radius:var(--radius-md);font:700 .84rem var(--font);color:#fff;cursor:pointer;background:var(--accent2);box-shadow:0 4px 16px var(--accent2-glow)}
+.addbtn:disabled{opacity:.6;cursor:wait}
+.ghostbtn{margin-top:8px;width:100%;padding:10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:transparent;color:var(--text-main);font:600 .8rem var(--font);cursor:pointer}
+.hint{font-size:.66rem;color:var(--text-soft);margin-top:8px;line-height:1.5}
+.warnbox{background:var(--warn-bg);border:1px solid var(--warn);color:var(--text-main);border-radius:var(--radius-md);padding:10px 12px;font-size:.74rem;margin-bottom:14px;line-height:1.5}
+.warnbox ul{margin:6px 0 0;padding-left:18px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:620px}
+th{text-align:left;color:var(--text-soft);font-size:.62rem;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--card-border)}
+td{padding:8px;border-bottom:1px solid var(--card-border);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.editing td{background:var(--surface)}
+tbody[id^="tbl_"] td:first-child{white-space:nowrap}
+.sub{display:block;font-size:.62rem;color:var(--text-soft);font-weight:500;margin-top:2px}
+.badge{padding:2px 8px;border-radius:999px;font-size:.62rem;font-weight:700;color:#fff;display:inline-block}
+.b-ok{background:var(--accent2)}.b-bad{background:var(--danger)}.b-soft{background:var(--text-soft)}
+.amt.income{color:var(--accent2);font-weight:700}.amt.expense{color:var(--danger);font-weight:700}
+.rowbtns{white-space:nowrap;text-align:right}
+.del,.edit{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.85rem;padding:4px 6px}
+.del:hover{color:var(--danger)}
+.edit:hover{color:var(--accent)}
+.empty{text-align:center;color:var(--text-soft);padding:14px 0}
+.kv-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--card-border);font-size:.78rem}
+.kv-row:last-child{border-bottom:0}
+.kv-strong{font-weight:700}
+.kv-row span:last-child{white-space:nowrap;flex-shrink:0}
+.kv-row span:first-child{min-width:0}
+.catbar-row{display:flex;align-items:center;gap:8px;font-size:.74rem;margin-bottom:7px}
+.catbar-name{width:110px;flex-shrink:0;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catbar-track{flex:1;height:8px;border-radius:6px;background:var(--surface);overflow:hidden}
+.catbar-fill{height:100%;background:var(--danger);border-radius:6px}
+.catbar-amt{width:70px;text-align:right;font-weight:700;flex-shrink:0}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--card-border);font-size:.74rem;margin:3px 4px 3px 0}
+.tag button{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.68rem}
+.sechead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.sechead h2{margin:0}
+.lockbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);color:inherit;font:700 .68rem var(--font);cursor:pointer;white-space:nowrap}
+.lockbtn.open{border-color:var(--accent2);color:var(--accent2)}
+.lockmsg{font-size:.7rem;color:var(--text-soft);margin-top:8px;line-height:1.6}.lockmsg b{color:inherit}
+.subh{font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:700;margin:14px 0 2px}
+.bigcash{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 12px;border-radius:var(--radius-md);background:var(--surface)}
+.bigcash .l{font-size:.72rem;color:var(--text-soft);font-weight:600}
+.bigcash .v{font-size:1.3rem;font-weight:700;overflow-wrap:anywhere}
+.pgrid{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+.pcard{border:1px solid var(--card-border);border-radius:var(--radius-md);padding:10px 12px;background:var(--card-bg)}
+.pcard h3{margin:0 0 4px;font-size:.84rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.minibtn{padding:5px 11px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);font:700 .66rem var(--font);cursor:pointer}
+.minibtn.solid{background:var(--accent);color:#fff}
+.limit{font-size:.7rem;line-height:1.6;margin-top:10px;padding:8px 10px;border-radius:var(--radius-md);background:var(--surface)}
+.limit.bad{background:var(--danger-glow);color:var(--danger)}
+/* phones: 16px inputs stop iOS Safari from zooming in on focus */
+@media (max-width:640px){input,select{font-size:16px}}
+
+/* ---------- login / access gate ---------- */
+.authbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:.7rem;color:var(--text-soft)}
+.authbar .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.authbar .who i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font:700 .68rem var(--font);flex-shrink:0}
+.authbar .who b{color:var(--text-main);font-weight:600}
+.authbar .who .em{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.authbar .who .em{display:none}}
+.authbtns{display:flex;gap:6px;flex-shrink:0}
+.abtn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-main);font:600 .72rem var(--font);cursor:pointer;text-decoration:none;white-space:nowrap}
+.abtn:hover{border-color:var(--accent)}
+.abtn.out{color:var(--danger);border-color:var(--danger)}
+.abtn.out:hover{background:var(--danger-glow)}
+.abtn.in{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+.gatebox{width:100%;max-width:400px;text-align:center;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:28px 22px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.gatebox h2{margin:12px 0 8px;font-size:1.05rem}
+.gatebox p{margin:0 0 6px;font-size:.78rem;color:var(--text-soft);line-height:1.6;overflow-wrap:anywhere}
+.gatebox p b{color:var(--text-main)}
+.gatebox .abtn{margin:14px 4px 0;padding:10px 18px;font-size:.78rem}
+.gicon{width:54px;height:54px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--surface2)}
+.gicon.bad{background:var(--danger-glow)}
+.spinr{width:34px;height:34px;margin:0 auto;border:3px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:gspin .8s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+.by{display:inline-block;margin-top:3px;padding:1px 7px;border-radius:999px;background:var(--surface2);color:var(--text-soft);font-size:.6rem;font-weight:600;white-space:nowrap}
+.bys{display:block;line-height:1.5}
+</style>
+</head>
+<body>
+<!-- Nothing below is shown until the login check passes -->
+<div class="gate" id="gate">
+ <div class="gatebox" id="gateBox">
+  <div class="spinr"></div>
+  <h2>Checking your login…</h2>
+  <p>Please wait a moment.</p>
+ </div>
+</div>
+<div class="wrap hidden" id="appWrap">
+ <div class="authbar">
+  <div class="who" id="whoBox"></div>
+  <div class="authbtns"><button type="button" class="abtn out" id="logoutBtn"><span aria-hidden="true">⎋</span> Logout</button></div>
+ </div>
+ <div class="top"><div><h1>Garments Accounts</h1><p id="subtitle">Connecting to the shared database…</p></div><div class="status" id="status">Connecting…</div></div>
+ <div class="tabbar" id="tabbar"></div>
+ <div id="tab-summary" class="tabpanel"></div>
+ <div id="tab-sales" class="tabpanel"></div>
+ <div id="tab-expenses" class="tabpanel"></div>
+ <div id="tab-stock" class="tabpanel"></div>
+ <div id="tab-capital" class="tabpanel"></div>
+ <div id="tab-inventory" class="tabpanel"></div>
+ <div id="tab-settings" class="tabpanel"></div>
+</div>
+<script>
+'use strict';
+/* =====================================================================
+   Garments Accounts — shared partner ledger
+   Rules the numbers follow (so every screen agrees):
+   • Profit counts an order only when it is Delivered, Returned or Lost.
+   • Cost of goods = average buying price of the purchases made on or before the order date,
+     so buying more stock later never rewrites earlier profit.
+   • Pending = parcel already with the courier: it leaves the shelf (In Transit)
+     and its courier fee is paid (cash), but revenue/COGS wait for delivery.
+   • Returned: "With charge" = the customer paid the delivery charge (it counts as revenue and can be
+     received as cash); "Without charge" = the customer did not pay it. Condition Good comes back to
+     stock, Damaged is written off, Lost = the product never came back (written off).
+   • Cash = capital in − withdrawals + money received − costs paid from the
+     business account − repayments to partners.
+   • A cost a partner paid personally does NOT touch business cash; it becomes
+     "owed back" to that partner until a Reimbursement is recorded (Accounts tab).
+   • A partner can take out at most: investment + share of profit (− share of loss)
+     − what they already took — and never more than the cash in the business account.
+   ===================================================================== */
+const KEYS=['sales','expenses','stock','capital'];
+const BIZ='biz', BIZ_NAME='Business Account';
+const PLACEHOLDERS=['Partner 1','Partner 2','Partner 3'], REAL_NAMES=['Munan','Jeet','Riti'];
+// Costs the app already counts by itself. They can never be an Expense category, or they would be counted twice:
+//  product cost -> Stock tab (cash out when bought, profit cost when sold) · courier/return -> Sales order · damaged goods -> damaged returns
+const RESERVED=[
+ {re:/^(product|stock|inventory|goods|raw material)s?( (cost|purchase|buying))?s?$/,use:'the Stock tab'},
+ {re:/^(courier|delivery)( (cost|charge|fee))?s?$|^return( (charge|cost|fee))?s?$/,use:'the Courier Fee / Return Fee fields on the Sales tab'},
+ {re:/^loss\s*(&|and)\s*damage$|^damage(d)?( (goods|loss|return)s?)?$/,use:'damaged returns (choose Damaged on the return in the Sales tab)'}];
+function reservedUse(name){const n=String(name||'').toLowerCase().replace(/\s+/g,' ').trim();const r=RESERVED.find(x=>x.re.test(n));return r?r.use:'';}
+
+let db=null, activeTab='summary';
+let S={
+ partners:[{id:'p_munan',name:'Munan',share:33.33,legacy:[]},{id:'p_jeet',name:'Jeet',share:33.33,legacy:[]},{id:'p_riti',name:'Riti',share:33.34,legacy:[]}],
+ categories:['Packaging','Marketing','Payment Charges','Transport (Fare)','Operations','Staff','Official / Legal','Others'],
+ products:['Product A','Product B','Product C'],
+ dupOk:[]   // warnings a partner marked "Not a problem"
+};
+let state={sales:[],expenses:[],stock:[],capital:[]};
+const editing={}, built={};
+
+/* ---------- small helpers ---------- */
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));   // db snapshots are read-only, so always work on copies
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function num(v){return +v||0;}
+function money(n){const v=num(n);return (v<0?'−':'')+'৳'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:2});}
+function pad(n){return String(n).padStart(2,'0');}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}   // local date, not UTC
+function sum(arr,k){return arr.reduce((a,x)=>a+num(x[k]),0);}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'x';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function isLocalId(id){return /^local_/.test(id)||/^l\d{12,}/.test(id);}
+const st=r=>r.status||'Pending';
+const norm=v=>String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase();   // "Polo", "polo " and "POLO" are the same thing
+
+/* ---------- status pill + subtitle ---------- */
+function setStatus(kind){
+ const map={
+  connecting:['Connecting…','Connecting to the shared database…'],
+  synced:['Synced','Shared with all partners — live sync'],
+  offline:['Offline','Offline — reconnect to load and save shared data'],
+  error:['Sync problem','Sync problem — recent changes may not be saved'],
+  denied:['No access','Your account is not allowed to use this page']};
+ const m=map[kind]||map.connecting;
+ $('status').textContent=m[0];$('subtitle').textContent=m[1];
+}
+function saveFailed(e){
+ setStatus('error');
+ const c=e&&e.code;
+ const why=c==='invalid_argument'?'You may have view-only access to this page.'
+  :c==='quota_exceeded'?'The shared database is full. Delete old entries first.'
+  :c==='resource_exhausted'?'Too many requests — wait a moment and try again.'
+  :'Check your internet connection and try again.';
+ alert('Could not save to the shared database.\n'+why+'\nNothing was changed.');
+}
+
+/* ---------- local copy (works offline, refreshed on every sync) ---------- */
+function saveLocal(){try{localStorage.setItem('gat_state',JSON.stringify(state));localStorage.setItem('gat_settings',JSON.stringify(S));}catch(e){}}
+let cacheTimer=null;
+function cacheLocal(){clearTimeout(cacheTimer);cacheTimer=setTimeout(saveLocal,400);}
+function loadLocal(){try{
+ const s=JSON.parse(localStorage.getItem('gat_state')||'{}');
+ KEYS.forEach(k=>{if(Array.isArray(s[k]))state[k]=s[k];});
+ const ss=JSON.parse(localStorage.getItem('gat_settings')||'null');
+ if(ss&&typeof ss==='object')S=Object.assign(S,ss);
+}catch(e){}}
+
+/* ---------- partners: stable ids so renames never break history ---------- */
+function normalizeSettings(){
+ const list=Array.isArray(S.partners)?S.partners:[];
+ const oldFormat=list.some(p=>!p.id);
+ const seen=new Set();
+ S.partners=list.map((p,i)=>{
+  const name=String(p.name||'').trim()||('Partner '+(i+1));
+  const legacy=Array.isArray(p.legacy)?p.legacy.slice():(p.id?[]:[name]);   // names old records may still carry
+  let id=p.id||('p_'+slug(name));const base=id;let n=2;
+  while(seen.has(id))id=base+'_'+n++;
+  seen.add(id);
+  return {id,name,share:num(p.share),legacy};
+ });
+ // one-time: data saved by the old version still has the placeholder names
+ if(oldFormat&&S.partners.length===3&&S.partners.every((p,i)=>p.name===PLACEHOLDERS[i]))S.partners.forEach((p,i)=>{p.name=REAL_NAMES[i];});
+ S.categories=(Array.isArray(S.categories)?S.categories:[]).filter(c=>!reservedUse(c));
+ S.products=Array.isArray(S.products)?S.products:[];
+ S.dupOk=Array.isArray(S.dupOk)?S.dupOk:[];
+}
+function partnerById(id){return S.partners.find(p=>p.id===id)||null;}
+function partnerByName(n){return S.partners.find(p=>p.name===n)||S.partners.find(p=>(p.legacy||[]).includes(n))||null;}
+// who does a record point at?  -> {kind:'biz'} | {kind:'partner',p} | {kind:'unknown',name}
+function payer(rec,idKey,nameKey){
+ const id=rec[idKey],name=rec[nameKey];
+ if(id===BIZ)return {kind:'biz'};
+ if(id){const p=partnerById(id);return p?{kind:'partner',p}:{kind:'unknown',name:name||id};}
+ if(!name||name===BIZ_NAME)return {kind:'biz'};
+ const p=partnerByName(name);return p?{kind:'partner',p}:{kind:'unknown',name};
+}
+function payerLabel(pr){return pr.kind==='biz'?BIZ_NAME:pr.kind==='partner'?pr.p.name:(pr.name+' (removed)');}
+function partnerUsage(id){
+ let n=0;const hit=pr=>{if(pr.kind==='partner'&&pr.p.id===id)n++;};
+ state.capital.forEach(c=>hit(payer(c,'partnerId','partner')));
+ state.expenses.forEach(e=>hit(payer(e,'paidById','paidBy')));
+ state.stock.forEach(s=>hit(payer(s,'paidById','paidBy')));
+ state.sales.forEach(s=>hit(payer(s,'courierPaidById','courierPaidBy')));
+ return n;
+}
+
+/* ---------- option lists ---------- */
+function partnerOptions(){return S.partners.map(p=>({v:p.id,l:p.name}));}
+function paidByOptions(){return [{v:BIZ,l:BIZ_NAME}].concat(partnerOptions());}
+function productOptions(){return S.products.slice();}
+function categoryOptions(){const c=S.categories.filter(x=>!reservedUse(x));return c.length?c:['Others'];}
+function optList(f){return f.opts().map(o=>typeof o==='string'?{v:o,l:o}:o);}
+
+/* ---------- tab definitions ---------- */
+const statusCell=r=>{
+ const s=st(r);const c=s==='Delivered'?'b-ok':(s==='Returned'||s==='Lost')?'b-bad':'b-soft';
+ let sub='';
+ if(s==='Returned'){const bits=[r.returnCond&&r.returnCond!=='—'?r.returnCond:'condition not set'];if(r.returnMode)bits.push(r.returnMode.toLowerCase());if(num(r.returnCharge))bits.push('return fee '+money(r.returnCharge));sub=`<span class="sub">${esc(bits.join(' · '))}</span>`;}
+ return `<span class="badge ${c}">${esc(s)}</span>${sub}`;
+};
+const TYPE_LABEL={Investment:'Investment',Withdrawal:'Withdrawal',Reimbursement:'Bills repaid'};
+const codOf=r=>num(r.qty)*num(r.unitPrice)+num(r.deliveryCharge);
+const collects=r=>st(r)==='Delivered'||(st(r)==='Returned'&&r.returnMode==='With charge');   // orders where the customer pays us: COD on delivery, or the delivery charge on a "With charge" return
+const dueOf=r=>st(r)==='Delivered'?codOf(r):(collects(r)?num(r.deliveryCharge):0);   // how much the customer pays us on this order
+const TAB_CONFIGS={
+ sales:{title:'Sales',single:'Sale',fields:[
+  {key:'date',label:'Date',type:'date',req:true},
+  {key:'orderNo',label:'Order No',type:'text',ph:'ORD-001',req:true},
+  {key:'customerName',old:'customer',label:'Customer Name',type:'text',wide:true},
+  {key:'customerPhone',label:'Phone',type:'tel'},
+  {key:'customerAddress',label:'Address',type:'text',wide:true},
+  {key:'note',label:'Note',type:'text',wide:true},
+  {key:'product',label:'Product',type:'select',opts:productOptions,req:true,emptyMsg:'Add a product in Settings first'},
+  {key:'qty',label:'Qty',type:'number',step:1,int:true,req:true},
+  {key:'unitPrice',label:'Unit Price',type:'number',req:true},
+  {key:'deliveryCharge',label:'Delivery Charge',type:'number'},
+  {key:'courierCharge',label:'Courier Fee',type:'number'},
+  {key:'courierPaidById',nameKey:'courierPaidBy',label:'Courier / Return Fee Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'status',label:'Status',type:'select',opts:()=>['Pending','Delivered','Returned','Lost']},
+  {key:'returnMode',label:'Return Option',type:'select',blank:'Select…',opts:()=>['With charge','Without charge'],showIf:d=>d.status==='Returned',req:d=>d.status==='Returned'},
+  {key:'returnCharge',label:'Return Fee',type:'number',showIf:d=>d.status==='Returned'},
+  {key:'returnCond',label:'Return Condition',type:'select',blank:'Select…',opts:()=>['Good','Damaged','Lost'],showIf:d=>d.status==='Returned',req:d=>d.status==='Returned'},
+  {key:'received',label:'Money Received?',type:'select',opts:()=>['No','Yes'],showIf:collects,def:'No'},
+  {key:'receivedDate',label:'Received On',type:'date',showIf:d=>collects(d)&&d.received==='Yes',req:d=>collects(d)&&d.received==='Yes'}],
+  dupWarn:true,
+  hint:'Pending = parcel is with the courier. Profit is counted when the order is Delivered, Returned or Lost (status Lost = the parcel never arrived: goods and courier fee are written off). Return option: "With charge" = the customer paid the delivery charge, "Without charge" = the customer did not. Return condition: Good = product came back fine, Damaged = came back damaged, Lost = the product did not come back (written off). One order with several products = one line per product; enter the courier fee on one line only. Open the order with ✎ to update its status.',
+  columns:[
+   {label:'Date',fmt:r=>esc(r.date)},
+   {label:'Order',fmt:r=>esc(r.orderNo)},
+   {label:'Customer',fmt:r=>{const nm=r.customerName||r.customer;return [nm?esc(nm):'',r.customerPhone?`<span class="sub">${esc(r.customerPhone)}</span>`:'',r.customerAddress?`<span class="sub">${esc(r.customerAddress)}</span>`:'',r.note?`<span class="sub">Note: ${esc(r.note)}</span>`:''].join('')||'—';}},
+   {label:'Product',fmt:r=>esc(r.product)},
+   {label:'Qty',fmt:r=>esc(r.qty)},
+   {label:'Amount',fmt:r=>money(num(r.qty)*num(r.unitPrice))},
+   {label:'COD Total',fmt:r=>money(codOf(r))},
+   {label:'Courier',fmt:r=>money(r.courierCharge)+`<span class="sub">paid by ${esc(payerLabel(payer(r,'courierPaidById','courierPaidBy')))}</span>`},
+   {label:'Status',fmt:statusCell},
+   {label:'Received',fmt:r=>collects(r)?esc(r.received||'No')+(r.received==='Yes'&&r.receivedDate?`<span class="sub">${esc(r.receivedDate)}</span>`:''):'—'},
+   {label:'Entered by',fmt:byCell}]},
+ expenses:{title:'Expenses',single:'Expense',fields:[
+  {key:'date',label:'Date',type:'date',req:true},
+  {key:'category',label:'Category',type:'select',opts:categoryOptions},
+  {key:'item',label:'Item / Details',type:'text',wide:true,req:true},
+  {key:'amount',label:'Amount',type:'number',req:true},
+  {key:'paidById',nameKey:'paidBy',label:'Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'note',label:'Note',type:'text'}],
+  dupWarn:true,
+  hint:'Product cost goes in the Stock tab, courier and return fees on the Sales order, damaged goods on the return. Do not enter them here — they would be counted twice.',
+  columns:[
+   {label:'Date',fmt:r=>esc(r.date)},{label:'Category',fmt:r=>esc(r.category)},{label:'Item',fmt:r=>esc(r.item)},
+   {label:'Amount',fmt:r=>`<span class="amt expense">${money(r.amount)}</span>`},
+   {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]},
+ stock:{title:'Stock',single:'Stock Purchase',dupWarn:true,hint:'Product cost is entered here only. Do not add the same purchase again in Expenses — it would be counted twice.',fields:[
+  {key:'date',label:'Date',type:'date',req:true},
+  {key:'product',label:'Product',type:'select',opts:productOptions,req:true,emptyMsg:'Add a product in Settings first'},
+  {key:'supplier',label:'Supplier / Source',type:'text'},
+  {key:'qty',label:'Qty Bought',type:'number',step:1,int:true,req:true},
+  {key:'buyingPrice',label:'Buying Price/pc',type:'number',req:true},
+  {key:'paidById',nameKey:'paidBy',label:'Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'note',label:'Note',type:'text'}],
+  columns:[
+   {label:'Date',fmt:r=>esc(r.date)},{label:'Product',fmt:r=>esc(r.product)},{label:'Supplier',fmt:r=>esc(r.supplier)},
+   {label:'Qty',fmt:r=>esc(r.qty)},{label:'Price/pc',fmt:r=>money(r.buyingPrice)},
+   {label:'Total Cost',fmt:r=>money(num(r.qty)*num(r.buyingPrice))},
+   {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]},
+ capital:{title:'Partner money history',single:'Entry',addTitle:'Withdraw or add money',editTitle:'Edit entry',addBtn:'Save entry',slots:true,fields:[
+  {key:'date',label:'Date',type:'date',req:true},
+  {key:'partnerId',nameKey:'partner',noBiz:true,label:'Partner',type:'select',opts:partnerOptions,req:true,emptyMsg:'Add a partner in Settings first'},
+  {key:'type',label:'What is this?',type:'select',wide:true,minw:230,opts:()=>[{v:'Withdrawal',l:'Withdraw — partner takes money out'},{v:'Investment',l:'Investment — partner puts money in'},{v:'Reimbursement',l:'Repay bills the partner paid personally'}]},
+  {key:'amount',label:'Amount',type:'number',req:true},
+  {key:'note',label:'Note',type:'text',wide:true}],
+  columns:[
+   {label:'Date',fmt:r=>esc(r.date)},
+   {label:'Partner',fmt:r=>{const pr=payer(r,'partnerId','partner');return esc(pr.kind==='partner'?pr.p.name:pr.kind==='unknown'?pr.name+' (removed)':'—');}},
+   {label:'Type',fmt:r=>esc(TYPE_LABEL[r.type]||r.type)},
+   {label:'Amount',fmt:r=>`<span class="amt ${(r.type==='Withdrawal'||r.type==='Reimbursement')?'expense':'income'}">${money(r.amount)}</span>`},
+   {label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]}
+};
+
+/* ---------- forms (ids are unique per tab: in_<tab>_<field>) ---------- */
+const fid=(key,f)=>'in_'+key+'_'+f.key;
+function fieldInput(key,f){
+ const id=fid(key,f);
+ if(f.type==='select')return `<select id="${id}"></select>`;
+ if(f.type==='date')return `<input type="date" id="${id}" value="${todayStr()}">`;
+ const isNum=f.type==='number';
+ return `<input type="${f.type}" id="${id}" ${isNum?`step="${f.step||0.01}" min="0" inputmode="${f.step===1?'numeric':'decimal'}"`:''} placeholder="${esc(f.ph||'')}">`;
+}
+function fillSelect(el,f,wanted){
+ const cur=wanted!==undefined?wanted:el.value;
+ const opts=optList(f);
+ el.innerHTML=opts.length===0&&f.emptyMsg?`<option value="">${esc(f.emptyMsg)}</option>`
+  :(f.blank?`<option value="">${esc(f.blank)}</option>`:'')+opts.map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join('');
+ if(cur&&[...el.options].some(o=>o.value===cur))el.value=cur;
+ else if(cur){   // chosen value was removed from Settings — keep it visible instead of silently switching
+  el.insertAdjacentHTML('afterbegin',`<option value="${esc(cur)}">${esc(f.nameKey?'Removed partner':cur)} (removed)</option>`);el.value=cur;}
+}
+function refreshSelects(key){
+ TAB_CONFIGS[key].fields.forEach(f=>{if(f.type==='select'){const el=$(fid(key,f));if(el)fillSelect(el,f);}});
+ applyShowIf(key);
+}
+function applyShowIf(key){
+ const cfg=TAB_CONFIGS[key],d={};
+ cfg.fields.forEach(f=>{const el=$(fid(key,f));d[f.key]=el?el.value:'';});
+ cfg.fields.forEach(f=>{if(f.showIf){const w=$('fw_'+key+'_'+f.key);if(w)w.classList.toggle('hidden',!f.showIf(d));}});
+ if(key==='capital')updateCapitalHint();
+}
+function collectForm(key){
+ const cfg=TAB_CONFIGS[key],d={};
+ cfg.fields.forEach(f=>{
+  const el=$(fid(key,f));
+  d[f.key]=f.type==='number'?(parseFloat(el.value)||0):((f.type==='text'||f.type==='tel')?el.value.trim():el.value);
+  if(f.type==='select'&&f.nameKey)d[f.nameKey]=el.value&&el.selectedOptions[0]?el.selectedOptions[0].textContent:'';
+ });
+ // fields that don't apply to this status are stored empty, so they can never leak into the totals
+ cfg.fields.forEach(f=>{if(f.showIf&&!f.showIf(d))d[f.key]=f.def!==undefined?f.def:(f.type==='number'?0:'');});
+ return d;
+}
+function validate(key,d){
+ for(const f of TAB_CONFIGS[key].fields){
+  if(f.showIf&&!f.showIf(d))continue;
+  if(f.type==='select'&&f.emptyMsg&&optList(f).length===0){alert(f.emptyMsg+'.');return false;}
+  const need=typeof f.req==='function'?f.req(d):f.req,v=d[f.key];
+  if(need){const bad=f.type==='number'?!(v>0):!String(v??'').trim();if(bad){alert('Please fill in: '+f.label);return false;}}
+  if(f.type==='number'){
+   if(v<0){alert(f.label+' cannot be negative.');return false;}
+   if(f.int&&!Number.isInteger(v)){alert(f.label+' must be a whole number.');return false;}
+  }
+  if(f.nameKey&&v!==BIZ&&!partnerById(v)){alert('Please choose: '+f.label);return false;}
+ }
+ return true;
+}
+function loadIntoForm(key,rec){
+ TAB_CONFIGS[key].fields.forEach(f=>{
+  const el=$(fid(key,f));if(!el)return;
+  if(f.type==='select'){
+   if(f.nameKey){   // older records stored only a name — map it to a partner
+    let pr=payer(rec,f.key,f.nameKey);
+    if(f.noBiz&&pr.kind==='biz')pr={kind:'unknown',name:'not set'};
+    fillSelect(el,f,pr.kind==='biz'?BIZ:pr.kind==='partner'?pr.p.id:'');
+    if(pr.kind==='unknown'){el.insertAdjacentHTML('afterbegin',`<option value="">Choose… (was: ${esc(pr.name)})</option>`);el.value='';}
+   }else{let w=rec[f.key];if(w==null||w==='—')w='';fillSelect(el,f,String(w));}
+  }else if(f.type==='date')el.value=rec[f.key]||todayStr();
+  else if(f.type==='number')el.value=num(rec[f.key])?rec[f.key]:'';
+  else el.value=rec[f.key]||(f.old&&rec[f.old])||'';
+ });
+ applyShowIf(key);
+}
+function clearForm(key,keepSelects){
+ TAB_CONFIGS[key].fields.forEach(f=>{
+  const el=$(fid(key,f));if(!el)return;
+  if(f.type==='date')el.value=todayStr();
+  else if(f.type==='select'){if(!keepSelects){fillSelect(el,f,'');el.selectedIndex=0;}}
+  else el.value='';
+ });
+ applyShowIf(key);
+}
+function updateFormMode(key){
+ const cfg=TAB_CONFIGS[key],ed=!!editing[key];
+ $('h_'+key).textContent=ed?(cfg.editTitle||'Edit '+cfg.single):(cfg.addTitle||'Add '+cfg.single);
+ $('addbtn_'+key).textContent=ed?'Save changes':(cfg.addBtn||'+ Add '+cfg.single);
+ $('cancel_'+key).classList.toggle('hidden',!ed);
+}
+
+/* ---------- CRUD panels: built once per tab, then only the table refreshes ---------- */
+function buildCrudPanel(key){
+ const cfg=TAB_CONFIGS[key];
+ $('tab-'+key).innerHTML=`${cfg.slots?'<div id="acctTop"></div>':''}${cfg.dupWarn?`<div id="dupWarn_${key}"></div>`:''}
+  <div class="section"><h2 id="h_${key}">${esc(cfg.addTitle||'Add '+cfg.single)}</h2>
+   <div class="row crudform" id="form_${key}" data-key="${key}">${cfg.fields.map(f=>`<div class="field" id="fw_${key}_${f.key}" style="flex:${f.wide?2:1};${f.minw?'min-width:'+f.minw+'px':''}"><label for="${fid(key,f)}">${esc(f.label)}</label>${fieldInput(key,f)}</div>`).join('')}</div>
+   ${cfg.hint?`<div class="hint">${esc(cfg.hint)}</div>`:''}
+   ${key==='capital'?'<div class="limit" id="limit_capital"></div>':''}
+   <button class="addbtn" id="addbtn_${key}" data-act="add" data-key="${key}">${esc(cfg.addBtn||'+ Add '+cfg.single)}</button>
+   <button class="ghostbtn hidden" id="cancel_${key}" data-act="cancel" data-key="${key}">Cancel editing</button></div>
+  <div class="section"><h2>${esc(cfg.title)}</h2><div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
+  ${cfg.slots?'<div id="acctBottom"></div>':''}`;
+ refreshSelects(key);
+}
+function renderTab(key){
+ const cfg=TAB_CONFIGS[key];
+ if(editing[key]&&!state[key].some(r=>r.id===editing[key])){editing[key]=null;updateFormMode(key);}   // someone deleted it meanwhile
+ const rows=state[key].slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||num(b.createdAt)-num(a.createdAt));
+ $('tbl_'+key).innerHTML=rows.length?rows.map(r=>`<tr class="${editing[key]===r.id?'editing':''}">${cfg.columns.map(c=>`<td>${c.fmt(r)}</td>`).join('')}<td class="rowbtns"><button class="edit" data-act="edit" data-key="${key}" data-id="${esc(r.id)}" aria-label="Edit entry">✎</button><button class="del" data-act="del" data-key="${key}" data-id="${esc(r.id)}" aria-label="Delete entry">✕</button></td></tr>`).join('')
+  :`<tr><td colspan="${cfg.columns.length+1}" class="empty">No entries yet.</td></tr>`;
+}
+function startEdit(key,id){
+ const rec=state[key].find(r=>r.id===id);if(!rec)return;
+ editing[key]=id;loadIntoForm(key,rec);updateFormMode(key);renderTab(key);
+ $('form_'+key).scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelEdit(key){editing[key]=null;clearForm(key,false);updateFormMode(key);renderTab(key);}
+
+function availableStock(product,skipSaleId){const i=computeInventory(skipSaleId).find(x=>norm(x.product)===norm(product));return i?i.inStock:0;}
+function confirmRisky(key,d){
+ const dup=key==='sales'?null:sameEntry(key,d,editing[key]);   // sales have their own order-number check below
+ if(dup&&!confirm(`An identical ${DUP_LABEL[key]} is already saved (${dupText(key,dup)}).\n\nIf this is the same entry, adding it again counts it twice.\n\nAdd it anyway?`))return false;
+ if(key==='expenses'){
+  const use=reservedUse(d.category);
+  if(use){alert(`"${d.category}" is already counted automatically through ${use}.\n\nEnter it there — adding it here would count it twice.`);return false;}
+  const why=expenseIssue(d,true);
+  if(why&&!confirm(`This expense may already be counted somewhere else: ${why}.\n\nProduct cost is counted from Stock only, and courier, return and damage costs from the Sales tab — adding it here can count it twice.\n\nAdd it as an expense anyway?`))return false;
+  const im=investMsg(d.paidById,num(d.amount));
+  if(im&&!confirm(`${im}\n\nSave it anyway?`))return false;
+ }
+ if(key==='stock'){
+  const twin=expenseTwin(d);
+  if(twin&&!confirm(`This purchase looks like an expense that is already entered (${twin}).\n\nProduct cost should be entered once — here in Stock. If that expense is the same purchase, delete it from Expenses first, otherwise it is counted twice.\n\nAdd it anyway?`))return false;
+  const im=investMsg(d.paidById,stockTotal(d));
+  if(im&&!confirm(`${im}\n\nSave it anyway?`))return false;
+ }
+ if(key==='sales'){
+  const same=d.orderNo?state.sales.filter(s=>s.id!==editing.sales&&norm(s.orderNo)===norm(d.orderNo)):[];
+  if(same.length){
+   const exact=same.some(s=>DUP_SIG.sales(s)===DUP_SIG.sales(d));
+   const courier=num(d.courierCharge)>0&&same.some(s=>num(s.courierCharge)>0);
+   const lines=same.slice(0,3).map(s=>`• ${s.product} × ${s.qty} at ${money(s.unitPrice)} (${s.date})`).join('\n');
+   const msg=`Order ${d.orderNo} is already in Sales:\n${lines}\n\n`
+    +(exact?'This line has the same product, quantity and price, so it looks like a duplicate — revenue, product cost and courier would all be counted twice.':'If this is another product in the same order, that is fine.')
+    +(courier?'\n\nThat order already has a courier fee — enter it once per parcel, or it is counted twice.':'')
+    +'\n\nAdd it anyway?';
+   if(!confirm(msg))return false;
+  }
+  const need=(d.status==='Returned'&&d.returnCond==='Good')?0:d.qty;
+  const have=availableStock(d.product,editing.sales);
+  if(need>0&&have-need<0&&!confirm(`Only ${have} unit(s) of ${d.product} in stock, but this order needs ${need}.\n\nAdd it anyway?`))return false;
+ }
+ if(key==='capital'){
+  const who=(partnerById(d.partnerId)||{}).name||'This partner';
+  if(d.type==='Investment'){
+   const t=personalTwin(d.partnerId,d.amount);
+   if(t&&!confirm(`${who} also paid ${t} personally.\n\nIf this Investment is the same money, ${who} is credited twice — once as a bill owed back and again as capital.\n\nSave it anyway?`))return false;
+  }
+  if(d.type==='Withdrawal'){
+   const owed=computeSummary(state.capital.filter(r=>r.id!==editing.capital)).owed[d.partnerId]||0;
+   if(owed>0.005&&Math.abs(owed-d.amount)<0.005&&!confirm(`This is exactly the ${money(owed)} that ${who} is owed for bills paid personally.\n\nIf you are paying those bills back, cancel and use "Repay bills" — a Withdrawal lowers their profit balance but leaves the bills owed, so they would be paid twice.\n\nSave it as a Withdrawal anyway?`))return false;
+  }
+ }
+ return true;
+}
+async function addTabRecord(key){
+ const btn=$('addbtn_'+key);if(btn.disabled)return;
+ const d=collectForm(key);
+ if(!validate(key,d)||!confirmRisky(key,d))return;
+ if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==editing.capital).concat([Object.assign({},d,{id:editing.capital||'__new'})])))return;
+ btn.disabled=true;
+ try{
+  const editId=editing[key];let ok;
+  if(editId){const old=state[key].find(r=>r.id===editId);d.createdAt=(old&&old.createdAt)||Date.now();stampEdit(d,old);ok=await updateRecord(key,editId,d);}
+  else{d.createdAt=Date.now();stampNew(d);ok=await addRecord(key,d);}
+  if(ok){editing[key]=null;clearForm(key,!editId);updateFormMode(key);refreshActive();}
+ }finally{btn.disabled=false;}
+}
+
+/* ---------- saving: shared db when available, this device otherwise. Failures are never silent. ---------- */
+async function addRecord(key,data){
+ if(db){try{await db.collection(key).add(clone(data));setStatus('synced');return true;}catch(e){saveFailed(e);return false;}}
+ state[key].push(Object.assign({id:'local_'+uid()},clone(data)));saveLocal();refreshActive();return true;
+}
+async function updateRecord(key,id,data){
+ if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).set(clone(data));setStatus('synced');return true;}catch(e){saveFailed(e);return false;}}
+ const i=state[key].findIndex(r=>r.id===id);if(i<0)return false;
+ state[key][i]=Object.assign({id},clone(data));saveLocal();refreshActive();return true;
+}
+async function delRecord(key,id){
+ if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==id)))return;
+ if(!confirm('Delete this entry?\nIt will disappear for every partner and cannot be undone.'))return;
+ if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).delete();setStatus('synced');}catch(e){saveFailed(e);return;}}
+ else{state[key]=state[key].filter(r=>r.id!==id);saveLocal();}
+ if(editing[key]===id){editing[key]=null;clearForm(key,false);updateFormMode(key);}
+ refreshActive();
+}
+let settingsQueue=Promise.resolve();   // one settings write at a time
+function commitSettings(mutator){
+ const run=async()=>{
+  const next=clone(S);
+  if(mutator(next)===false)return false;
+  if(db){try{await db.doc('settings/main').set(next);setStatus('synced');}catch(e){saveFailed(e);return false;}}
+  S=next;normalizeSettings();if(!db)saveLocal();
+  refreshActive();return true;
+ };
+ const p=settingsQueue.then(run);settingsQueue=p.catch(()=>{});return p;
+}
+async function uploadOfflineRecords(){   // entries typed while offline are pushed once the shared db is reachable
+ for(const key of KEYS){
+  for(const r of state[key].filter(x=>isLocalId(x.id))){
+   const data=clone(r);delete data.id;
+   try{await db.collection(key).add(data);}catch(e){saveFailed(e);return;}   // entries not sent yet stay on this device (see the snapshot handler)
+   state[key]=state[key].filter(x=>x.id!==r.id);saveLocal();   // saved right away, so closing the tab can never upload the same entry twice
+  }
+ }
+}
+
+/* ---------- calculations ---------- */
+function costAt(stk,date,fallback){   // average buying price of the purchases made on or before `date`: buying more stock later never rewrites older profit
+ let q=0,t=0;
+ stk.forEach(x=>{if((x.date||'')<=(date||'')){q+=num(x.qty);t+=num(x.qty)*num(x.buyingPrice);}});
+ return q>0?t/q:fallback;   // sale entered before any purchase: use the overall average
+}
+function computeInventory(skipSaleId){
+ const names=[],seen=new Set();
+ const add=n=>{if(n===undefined||n===null||n==='')return;const k=norm(n);if(!seen.has(k)){seen.add(k);names.push(n);}};   // "Polo" and "polo" are one product
+ S.products.forEach(add);state.stock.forEach(s=>add(s.product));state.sales.forEach(s=>add(s.product));   // removed products keep counting
+ const sales=state.sales.filter(s=>s.id!==skipSaleId);
+ return names.map(p=>{
+  const k=norm(p);
+  const stk=state.stock.filter(s=>norm(s.product)===k);
+  const qtyBought=sum(stk,'qty'),totalPurchaseCost=stk.reduce((a,s)=>a+num(s.qty)*num(s.buyingPrice),0);
+  const avgCost=qtyBought?totalPurchaseCost/qtyBought:0;
+  const sal=sales.filter(s=>norm(s.product)===k),q=l=>sum(l,'qty');
+  const costOf=l=>l.reduce((a,s)=>a+num(s.qty)*costAt(stk,s.date,avgCost),0);   // what these orders' goods cost when they were sent
+  const del=sal.filter(s=>st(s)==='Delivered'),pen=sal.filter(s=>st(s)==='Pending'),ret=sal.filter(s=>st(s)==='Returned'),lost=sal.filter(s=>st(s)==='Lost');
+  const returnedGood=q(ret.filter(s=>s.returnCond==='Good')),returnedDamaged=q(ret.filter(s=>s.returnCond==='Damaged')),returnedLost=q(ret.filter(s=>s.returnCond==='Lost'));
+  const returnedUnchecked=q(ret)-returnedGood-returnedDamaged-returnedLost;   // came back, condition not recorded yet
+  const sentOut=q(sal),inTransit=q(pen);
+  const inStock=qtyBought-sentOut+returnedGood+returnedUnchecked;
+  const cogs=costOf(del),damageLoss=costOf(ret.filter(s=>s.returnCond==='Damaged')),lostLoss=costOf(lost.concat(ret.filter(s=>s.returnCond==='Lost'))),transitValue=costOf(pen);
+  return {product:p,removed:!S.products.some(x=>norm(x)===k),qtyBought,totalPurchaseCost,avgCost,sentOut,inTransit,lost:q(lost)+returnedLost,returnedGood,returnedDamaged,returnedUnchecked,
+   inStock,transitValue,cogs,damageLoss,lostLoss,
+   stockValue:totalPurchaseCost-cogs-damageLoss-lostLoss-transitValue};   // every purchased taka lands in exactly one bucket: shelf, transit, sold, damaged or lost
+ });
+}
+function inventoryWarnings(inv){
+ const w=[];
+ inv.filter(i=>i.inStock<0).forEach(i=>w.push(`Stock for <b>${esc(i.product)}</b> is negative (${i.inStock}): more was sold than bought, so cost of goods is understated. Add the missing purchase.`));
+ const unc=sum(inv,'returnedUnchecked');
+ if(unc>0)w.push(`${unc} returned unit(s) have no condition set. Edit those returns and choose Good, Damaged or Lost.`);
+ inv.filter(i=>/^product [a-z]$/.test(norm(i.product))&&(i.qtyBought||i.sentOut)).forEach(i=>{
+  const sig='ph|'+norm(i.product);
+  if(!okSig(sig))w.push(`<b>${esc(i.product)}</b> is a placeholder product name but has entries. If they were test entries, delete them — otherwise they are counted in your totals.`+okBtn(sig));
+ });
+ return w;
+}
+function computeSummary(capitalList){   // capitalList lets us test "what if this entry changed?"
+ const inv=computeInventory();
+ const delivered=state.sales.filter(s=>st(s)==='Delivered'),returned=state.sales.filter(s=>st(s)==='Returned'),pending=state.sales.filter(s=>st(s)==='Pending'),lostOrders=state.sales.filter(s=>st(s)==='Lost');
+ // profit & loss — only orders that are finished (Delivered / Returned / Lost)
+ const productSales=delivered.reduce((a,s)=>a+num(s.qty)*num(s.unitPrice),0);
+ const deliveryCollected=sum(delivered,'deliveryCharge')+sum(returned.filter(s=>s.returnMode==='With charge'),'deliveryCharge');   // a returned order still earns the delivery charge when the customer paid it
+ const revenue=productSales+deliveryCollected,cogs=sum(inv,'cogs'),damageLoss=sum(inv,'damageLoss'),lostLoss=sum(inv,'lostLoss');
+ const grossProfit=revenue-cogs-damageLoss-lostLoss;
+ const courierResolved=sum(delivered,'courierCharge')+sum(returned,'courierCharge')+sum(lostOrders,'courierCharge');
+ const returnCharges=sum(returned,'returnCharge');
+ const operatingExpenses=sum(state.expenses,'amount');
+ const totalCosts=cogs+damageLoss+lostLoss+courierResolved+returnCharges+operatingExpenses;
+ const netProfit=revenue-totalCosts;
+ const decided=delivered.length+returned.length,returnRate=decided?returned.length/decided:0;
+ // money still to come in / stock
+ const collectible=state.sales.filter(s=>collects(s));
+ const moneyReceived=collectible.filter(s=>s.received==='Yes').reduce((a,s)=>a+dueOf(s),0);
+ const moneyPending=collectible.filter(s=>s.received!=='Yes').reduce((a,s)=>a+dueOf(s),0);
+ const codPending=pending.reduce((a,s)=>a+codOf(s),0);
+ const stockPurchases=sum(inv,'totalPurchaseCost'),stockValue=sum(inv,'stockValue'),transitValue=sum(inv,'transitValue');
+ const courierAll=sum(state.sales,'courierCharge');   // paid to the courier when dispatched, pending orders included
+ // who paid what
+ const paidPersonally={},capitalByPartner={},repaid={},invested={},withdrawn={};
+ S.partners.forEach(p=>{paidPersonally[p.id]=0;capitalByPartner[p.id]=0;repaid[p.id]=0;invested[p.id]=0;withdrawn[p.id]=0;});
+ const unmatched={paid:0,capital:0,repaid:0,count:0};
+ let bizPaid=0;const bizBy={stock:0,expenses:0,courier:0};
+ const pay=(pr,amt,cat)=>{if(pr.kind==='biz'){bizPaid+=amt;bizBy[cat]+=amt;}else if(pr.kind==='partner')paidPersonally[pr.p.id]+=amt;else{unmatched.paid+=amt;unmatched.count++;}};
+ state.expenses.forEach(e=>pay(payer(e,'paidById','paidBy'),num(e.amount),'expenses'));
+ state.stock.forEach(s=>pay(payer(s,'paidById','paidBy'),num(s.qty)*num(s.buyingPrice),'stock'));
+ state.sales.forEach(s=>pay(payer(s,'courierPaidById','courierPaidBy'),num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0),'courier'));
+ let investedTotal=0,withdrawnTotal=0,repaidTotal=0;
+ (capitalList||state.capital).forEach(c=>{
+  const a=num(c.amount),pr=payer(c,'partnerId','partner'),p=pr.kind==='partner'?pr.p:null;
+  if(c.type==='Reimbursement'){repaidTotal+=a;if(p)repaid[p.id]+=a;else{unmatched.repaid+=a;unmatched.count++;}}
+  else if(c.type==='Withdrawal'){withdrawnTotal+=a;if(p){withdrawn[p.id]+=a;capitalByPartner[p.id]-=a;}else{unmatched.capital-=a;unmatched.count++;}}
+  else{investedTotal+=a;if(p){invested[p.id]+=a;capitalByPartner[p.id]+=a;}else{unmatched.capital+=a;unmatched.count++;}}
+ });
+ const capitalNet=investedTotal-withdrawnTotal;
+ const owed={};S.partners.forEach(p=>{owed[p.id]=paidPersonally[p.id]-repaid[p.id];});
+ unmatched.owed=unmatched.paid-unmatched.repaid;
+ const paidPersonallyTotal=Object.values(paidPersonally).reduce((a,x)=>a+x,0)+unmatched.paid;
+ const cashBalance=capitalNet+moneyReceived-bizPaid-repaidTotal;
+ // each partner's account = what they put in + their share of profit (or − loss) − what they already took
+ const acct={};
+ S.partners.forEach(p=>{
+  const profitShare=netProfit*num(p.share)/100;
+  const entitlement=invested[p.id]-withdrawn[p.id]+profitShare;
+  acct[p.id]={invested:invested[p.id],withdrawn:withdrawn[p.id],profitShare,entitlement,owed:owed[p.id],
+   canTake:Math.max(0,entitlement),canNow:Math.max(0,Math.min(entitlement,cashBalance))};
+ });
+ const expByCat={};state.expenses.forEach(e=>{expByCat[e.category]=(expByCat[e.category]||0)+num(e.amount);});
+ const shareTotal=S.partners.reduce((a,p)=>a+num(p.share),0);
+ const warnings=inventoryWarnings(inv).concat(duplicateWarnings());
+ if(Math.abs(shareTotal-100)>0.005)warnings.push(`Profit shares add up to ${shareTotal.toFixed(2)}%, not 100%. Fix this in Settings.`);
+ if(unmatched.count)warnings.push(`${unmatched.count} record(s) name a partner who no longer exists. Edit them so the partner totals add up.`);
+ if(cashBalance<-0.005)warnings.push(`Cash in the business account is negative (${money(cashBalance)}): more money has gone out than came in. Check recent withdrawals and entries.`);
+ S.partners.forEach(p=>{const a=acct[p.id];if(a.withdrawn>0.005&&a.entitlement<-0.005)warnings.push(`<b>${esc(p.name)}</b> has taken ${money(-a.entitlement)} more than investment + profit share.`);});
+ return {revenue,productSales,deliveryCollected,cogs,damageLoss,lostLoss,grossProfit,courierResolved,courierAll,returnCharges,operatingExpenses,totalCosts,netProfit,
+  deliveredCount:delivered.length,returnedCount:returned.length,pendingCount:pending.length,lostCount:lostOrders.length,totalOrders:state.sales.length,returnRate,
+  capitalNet,investedTotal,withdrawnTotal,bizBy,acct,moneyReceived,moneyPending,codPending,stockPurchases,stockValue,transitValue,bizPaid,repaidTotal,paidPersonallyTotal,cashBalance,
+  paidPersonally,capitalByPartner,owed,unmatched,shareTotal,expByCat,warnings};
+}
+
+/* ---------- double-entry checks ---------- */
+const stockTotal=s=>num(s.qty)*num(s.buyingPrice);
+const okSig=sig=>(S.dupOk||[]).includes(sig);   // warnings a partner has marked "Not a problem"
+const okBtn=sig=>` <button type="button" class="minibtn" data-act="dupOk" data-sig="${esc(sig)}">Not a problem</button>`;
+const COST_WORDS=/\b(courier|pathao|steadfast|redx|paperfly|sundarban|delivery|parcel|returns?|returned|damage[sd]?)\b/i;   // costs the Sales tab already counts
+const partnerKey=(r,idKey,nameKey)=>{const pr=payer(r,idKey,nameKey);return pr.kind==='partner'?pr.p.id:pr.kind==='biz'?BIZ:'x:'+norm(pr.name);};
+const DUP_LABEL={sales:'order line',stock:'stock purchase',expenses:'expense',capital:'partner money entry'};
+const DUP_SIG={   // two saved entries with the same signature are the same thing entered twice
+ sales:r=>[norm(r.orderNo),norm(r.product),num(r.qty),num(r.unitPrice)].join('|'),
+ stock:r=>[r.date,norm(r.product),num(r.qty),num(r.buyingPrice)].join('|'),
+ expenses:r=>[r.date,norm(r.item),num(r.amount).toFixed(2)].join('|'),
+ capital:r=>[r.date,partnerKey(r,'partnerId','partner'),r.type,num(r.amount).toFixed(2)].join('|')};
+function dupText(key,r){
+ if(key==='sales')return `order ${r.orderNo}: ${r.product} × ${r.qty} at ${money(r.unitPrice)}`;
+ if(key==='stock')return `${r.product} × ${r.qty} at ${money(r.buyingPrice)} on ${r.date}`;
+ if(key==='expenses')return `"${r.item}" ${money(r.amount)} on ${r.date}`;
+ return `${r.type} ${money(r.amount)} by ${payerLabel(payer(r,'partnerId','partner'))} on ${r.date}`;
+}
+function sameEntry(key,d,skipId){return state[key].find(r=>r.id!==skipId&&DUP_SIG[key](r)===DUP_SIG[key](d))||null;}
+function dupGroups(key){   // saved entries that share a signature
+ const m={};
+ state[key].forEach(r=>{if(key==='sales'&&!norm(r.orderNo))return;const g=DUP_SIG[key](r);(m[g]=m[g]||[]).push(r);});
+ return Object.entries(m).filter(([,l])=>l.length>1);
+}
+const dayGap=(a,b)=>Math.abs(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/864e5;
+function sameMoney(amtA,dateA,amtB,dateB){   // same amount within 3 days, or about the same amount (±10%) on the same day
+ if(!(amtA>0&&amtB>0))return false;
+ const gap=dayGap(dateA,dateB),diff=Math.abs(amtA-amtB);
+ if(!isFinite(gap))return dateA===dateB&&diff<0.005;
+ return (gap<=3&&diff<0.005)||(gap===0&&diff<=Math.max(amtA,amtB)*0.1);
+}
+const stockDesc=s=>`${s.product}: ${s.qty} × ${money(s.buyingPrice)} = ${money(stockTotal(s))} on ${s.date}`;
+function stockTwin(e){return state.stock.find(s=>sameMoney(stockTotal(s),s.date,num(e.amount),e.date))||null;}   // a purchase this expense may be the same money as
+function expenseIssue(e,withNames){   // why might this expense already be counted somewhere else? ('' = looks fine)
+ const hit=stockTwin(e);
+ if(hit)return 'it looks like the stock purchase '+stockDesc(hit);
+ const text=(String(e.item||'')+' '+String(e.note||'')).trim();
+ const w=text.match(COST_WORDS);
+ if(w)return 'the details mention "'+w[0]+'" — courier, return and damage costs are counted from the Sales tab';
+ if(/\b(stock|product cost)\b/i.test(text))return 'the details mention stock / product cost';
+ if(withNames){
+  const names=Array.from(new Set(S.products.concat(state.stock.map(s=>s.product)))).filter(n=>n&&String(n).length>=3);
+  const pn=names.find(n=>norm(text).includes(norm(n)));
+  if(pn)return 'the details mention the product "'+pn+'"';
+ }
+ return '';
+}
+function personalTwin(pid,amt){   // a bill this partner paid personally for exactly this amount ('' = none)
+ const mine=(r,idKey,nameKey)=>{const p=payer(r,idKey,nameKey);return p.kind==='partner'&&p.p.id===pid;};
+ const e=state.expenses.find(x=>mine(x,'paidById','paidBy')&&Math.abs(num(x.amount)-amt)<0.005);
+ if(e)return `the expense "${e.item}" (${money(e.amount)})`;
+ const s=state.stock.find(x=>mine(x,'paidById','paidBy')&&Math.abs(stockTotal(x)-amt)<0.005);
+ if(s)return `the stock purchase of ${s.product} (${money(stockTotal(s))})`;
+ return '';
+}
+function investMsg(pid,amt){   // a bill paid personally must not also be an Investment for the same money
+ if(!pid||pid===BIZ||!(amt>0))return '';
+ const p=partnerById(pid);if(!p)return '';
+ const inv=state.capital.find(c=>c.type==='Investment'&&Math.abs(num(c.amount)-amt)<0.005&&partnerKey(c,'partnerId','partner')===pid);
+ return inv?`${p.name} also has an Investment of ${money(inv.amount)} (${inv.date}). If it is the same money, ${p.name} is credited twice — once as a bill paid personally and again as an Investment.`:'';
+}
+function expenseTwin(s){   // does this stock purchase look like an expense already entered?
+ const tot=stockTotal(s);
+ const hit=state.expenses.find(e=>sameMoney(num(e.amount),e.date,tot,s.date));
+ return hit?`"${hit.item}" ${money(hit.amount)} on ${hit.date}`:'';
+}
+function duplicateWarnings(only){   // the same checks, run over everything already saved
+ const tabs={sales:['sales'],expenses:['expenses','stock'],stock:['expenses','stock']};   // which checks each tab shows (no argument = all, for the Summary)
+ const want=t=>!only||(tabs[only]||[]).includes(t);
+ const w=[];
+ const add=(sig,html)=>{if(!okSig(sig))w.push(html+okBtn(sig));};
+ if(want('expenses')){
+  const bad=state.expenses.filter(e=>reservedUse(e.category));
+  if(bad.length)w.push(`${bad.length} expense entr${bad.length===1?'y':'ies'} (${money(sum(bad,'amount'))}) use ${Array.from(new Set(bad.map(e=>'"'+esc(e.category)+'"'))).join(', ')} — a cost the app already counts by itself. If it is also entered in Stock or Sales it is counted twice. Delete or fix these entries.`);
+  const exp=[];
+  state.expenses.forEach(e=>{
+   if(reservedUse(e.category))return;
+   const why=expenseIssue(e,false),sig='exp|'+e.id;
+   if(why&&!okSig(sig))exp.push(`expense "${esc(e.item)}" ${money(e.amount)} on ${esc(e.date)}: ${esc(why)}.`+okBtn(sig));
+  });
+  if(exp.length)w.push(`Possible double cost:<br>${exp.slice(0,3).join('<br>')}${exp.length>3?`<br>…and ${exp.length-3} more.`:''}<br>If it is already counted elsewhere, delete the expense; otherwise tap “Not a problem”.`);
+ }
+ [['expenses','expenses'],['stock','stock'],['sales','sales'],['capital','money']].forEach(([key,t])=>{   // the same entry saved more than once
+  if(!want(t))return;
+  dupGroups(key).forEach(([sig,l])=>add(key+'|'+sig,`${l.length} copies of the same ${DUP_LABEL[key]}: ${esc(dupText(key,l[0]))}. If it was entered twice, delete the extra one${l.length>2?'s':''}.`));
+ });
+ if(want('sales')){   // one parcel, but the courier charge typed on every product line
+  const byOrder={};
+  state.sales.forEach(s=>{const k=norm(s.orderNo);if(k)(byOrder[k]=byOrder[k]||[]).push(s);});
+  Object.entries(byOrder).forEach(([k,l])=>{
+   const c=l.filter(s=>num(s.courierCharge)>0);
+   if(c.length>1&&new Set(c.map(s=>DUP_SIG.sales(s))).size>1)add('courier|'+k,`Order ${esc(l[0].orderNo)} has a courier fee on ${c.length} lines. If it went in one parcel, enter the fee on one line only.`);
+  });
+ }
+ if(!only){   // an Investment that repeats a bill the same partner paid personally
+  state.capital.filter(c=>c.type==='Investment').forEach(c=>{
+   const pk=partnerKey(c,'partnerId','partner');if(pk===BIZ||pk.startsWith('x:'))return;
+   const t=personalTwin(pk,num(c.amount));
+   if(t)add('inv|'+c.id,`Investment of ${money(c.amount)} on ${esc(c.date)} equals ${esc(t)} paid personally by the same partner. If it is the same money, they are credited twice — delete one.`);
+  });
+ }
+ return w;
+}
+
+/* ---------- rendering ---------- */
+// numbers are money (green/red by sign, grey when zero); pass a string for counts, and plain=1 for values that are neither income nor cost
+function kvRows(pairs){return `<div>${pairs.map(([k,v,strong,plain])=>{
+ const isNum=typeof v==='number';
+ const cls=isNum&&!plain&&v!==0?(v<0?'amt expense':'amt income'):'';
+ return `<div class="kv-row${strong?' kv-strong':''}"><span>${k}</span><span class="${cls}">${isNum?money(v):esc(v)}</span></div>`;}).join('')}</div>`;}
+function renderCatBars(map){
+ const arr=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+ if(!arr.length)return '<div class="empty">No expenses yet</div>';
+ const max=arr[0][1]||1;
+ return arr.map(([n,v])=>`<div class="catbar-row"><div class="catbar-name">${esc(n)}</div><div class="catbar-track"><div class="catbar-fill" style="width:${Math.max(4,v/max*100)}%"></div></div><div class="catbar-amt">${money(v)}</div></div>`).join('');
+}
+function renderWarnings(list){return list.length?`<div class="warnbox"><b>Please check</b><ul>${list.map(w=>`<li>${w}</li>`).join('')}</ul></div>`:'';}
+function renderSummary(){
+ const s=computeSummary();
+ const owedTotal=s.paidPersonallyTotal-s.repaidTotal;
+ const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`);
+ if(s.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(s.unmatched.capital)}</td><td>${money(s.unmatched.paid)}</td><td>${money(s.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
+ prow.push(`<tr style="font-weight:700"><td>Total</td><td>${money(s.capitalNet)}</td><td>${money(s.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${s.shareTotal.toFixed(2)}%</td><td>${money(s.netProfit*s.shareTotal/100)}</td></tr>`);
+ $('tab-summary').innerHTML=`${renderWarnings(s.warnings)}
+ <div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(s.revenue)}</div></div>
+ <div class="card out"><div class="l">Total Costs</div><div class="v">${money(s.totalCosts)}</div></div>
+ <div class="card"><div class="l">Net Profit</div><div class="v" style="color:${s.netProfit<0?'var(--danger)':'var(--accent2)'}">${money(s.netProfit)}</div></div></div>
+ <div class="section"><h2>Profit &amp; Loss</h2>${kvRows([['Product sales (delivered)',s.productSales],['Delivery charges collected',s.deliveryCollected],['Total Revenue',s.revenue,1],
+  ['Cost of goods sold',-s.cogs],['Loss from damaged returns',-s.damageLoss],['Loss from lost products',-s.lostLoss],['Gross Profit',s.grossProfit,1],
+  ['Courier fees (delivered, returned &amp; lost orders)',-s.courierResolved],['Return fees',-s.returnCharges],['Operating expenses',-s.operatingExpenses],['NET PROFIT',s.netProfit,1]])}
+  <div class="hint">Pending orders do not affect profit until they are marked Delivered, Returned or Lost. Total Costs = everything subtracted above, so Revenue − Total Costs = Net Profit.</div></div>
+ <div class="section"><h2>Orders</h2>${kvRows([['Delivered',String(s.deliveredCount)],['Returned',String(s.returnedCount)],['Lost',String(s.lostCount)],['Pending (with courier)',String(s.pendingCount)],['Total',String(s.totalOrders),1],['Return rate (delivered + returned)',(s.returnRate*100).toFixed(1)+'%']])}</div>
+ <div class="section"><h2>Operating expenses by category</h2>${renderCatBars(s.expByCat)}</div>
+ <div class="section"><h2>Cash</h2>${kvRows([['Cash in business account',s.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
+  <div class="hint">Full breakdown, partner withdrawals and each partner's balance are in the Accounts tab.</div></div>
+ <div class="section"><h2>Stock &amp; money still to come</h2>${kvRows([['Customer money not yet received',s.moneyPending,0,1],['Pending orders (COD value)',s.codPending,0,1],
+  ['Stock on shelf (at cost)',s.stockValue,0,1],['Stock in transit (at cost)',s.transitValue,0,1]])}</div>
+ <div class="section"><h2>Partners</h2><div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div></div>`;
+}
+function renderInventory(){
+ const inv=computeInventory(),showUnc=sum(inv,'returnedUnchecked')>0,showLost=sum(inv,'lost')>0;
+ const head=['Product','Bought','Avg Cost','Sent Out','In Transit','Ret. Good','Ret. Damaged'].concat(showUnc?['Ret. Unchecked']:[],showLost?['Lost']:[],['In Stock','Stock Value']);
+ const cell=v=>`<td>${v}</td>`;
+ const rows=inv.map(i=>`<tr><td>${esc(i.product)}${i.removed?' <span class="sub">removed from Settings</span>':''}</td>${[i.qtyBought,money(i.avgCost),i.sentOut,i.inTransit,i.returnedGood,i.returnedDamaged].map(cell).join('')}${showUnc?cell(i.returnedUnchecked):''}${showLost?cell(i.lost):''}<td${i.inStock<0?' class="amt expense"':''}>${i.inStock}</td><td>${money(i.stockValue)}</td></tr>`).join('');
+ const tot=`<tr style="font-weight:700"><td>Total</td><td>${sum(inv,'qtyBought')}</td><td></td><td>${sum(inv,'sentOut')}</td><td>${sum(inv,'inTransit')}</td><td>${sum(inv,'returnedGood')}</td><td>${sum(inv,'returnedDamaged')}</td>${showUnc?`<td>${sum(inv,'returnedUnchecked')}</td>`:''}${showLost?`<td>${sum(inv,'lost')}</td>`:''}<td>${sum(inv,'inStock')}</td><td>${money(sum(inv,'stockValue'))}</td></tr>`;
+ $('tab-inventory').innerHTML=`${renderWarnings(inventoryWarnings(inv))}<div class="section"><h2>Inventory (auto)</h2><div class="tablewrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${inv.length?rows+tot:`<tr><td colspan="${head.length}" class="empty">No products yet.</td></tr>`}</tbody></table></div>
+  <div class="hint">Sent Out = every order that has left the shelf, including pending ones (In Transit). Returns come back to stock when their condition is Good (or not yet checked); Damaged returns, lost products (returns that never came back) and lost parcels are written off as a loss. Stock value = purchases − cost of goods sold − write-offs − stock in transit, where each order is costed at the average buying price up to its date.</div></div>`;
+}
+
+/* ---------- accounts: business cash, partner balances, limits ---------- */
+function cashLedger(){   // every movement of business cash, oldest first, with a running balance
+ const rows=[];
+ const add=(date,created,label,inn,out)=>{if(inn||out)rows.push({date:date||'',c:num(created),label,inn,out});};
+ state.capital.forEach(c=>{
+  const pr=payer(c,'partnerId','partner'),name=pr.kind==='partner'?pr.p.name:(pr.kind==='unknown'?pr.name:'—'),a=num(c.amount);
+  if(c.type==='Reimbursement')add(c.date,c.createdAt,'Bills repaid to '+name,0,a);
+  else if(c.type==='Withdrawal')add(c.date,c.createdAt,'Withdrawal by '+name,0,a);
+  else add(c.date,c.createdAt,'Investment by '+name,a,0);
+ });
+ state.sales.forEach(s=>{
+  if(collects(s)&&s.received==='Yes')add(s.receivedDate||s.date,s.createdAt,st(s)==='Delivered'?'Order '+s.orderNo+' received':'Order '+s.orderNo+' delivery charge (returned)',dueOf(s),0);   // older entries have no received date: they keep the order date
+  if(payer(s,'courierPaidById','courierPaidBy').kind==='biz')add(s.date,s.createdAt,'Courier / return — '+s.orderNo,0,num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0));
+ });
+ state.stock.forEach(s=>{if(payer(s,'paidById','paidBy').kind==='biz')add(s.date,s.createdAt,'Stock: '+s.product+' × '+s.qty,0,num(s.qty)*num(s.buyingPrice));});
+ state.expenses.forEach(e=>{if(payer(e,'paidById','paidBy').kind==='biz')add(e.date,e.createdAt,'Expense: '+e.item+' ('+e.category+')',0,num(e.amount));});
+ rows.sort((a,b)=>a.date.localeCompare(b.date)||a.c-b.c);
+ let bal=0;rows.forEach(r=>{bal+=r.inn-r.out;r.bal=bal;});
+ return rows;
+}
+function renderAccounts(){
+ const top=$('acctTop'),bot=$('acctBottom');if(!top||!bot)return;
+ const s=computeSummary();
+ const moneyIn=s.investedTotal+s.moneyReceived;
+ const moneyOut=s.bizBy.stock+s.bizBy.expenses+s.bizBy.courier+s.withdrawnTotal+s.repaidTotal;
+ const cards=S.partners.map(p=>{
+  const a=s.acct[p.id];
+  const rows=[['Invested',a.invested,0,1],[a.profitShare<0?'Loss share':'Profit share',a.profitShare],['Already withdrawn',-a.withdrawn],['Can still take',a.canTake,1,1]];
+  if(a.canNow<a.canTake-0.005)rows.push(['Can withdraw right now (limited by cash)',a.canNow,0,1]);
+  if(Math.abs(a.owed)>0.005)rows.push(['Bills paid personally — owed back',a.owed,0,1]);
+  return `<div class="pcard"><h3><span>${esc(p.name)}</span><span><button class="minibtn solid" data-act="withdrawFor" data-pid="${esc(p.id)}">Withdraw</button> <button class="minibtn" data-act="investFor" data-pid="${esc(p.id)}">+ Invest</button>${a.owed>0.005?` <button class="minibtn" data-act="repayFor" data-pid="${esc(p.id)}">Repay bills</button>`:''}</span></h3>${kvRows(rows)}</div>`;
+ }).join('')||'<div class="empty">Add partners in Settings</div>';
+ top.innerHTML=`${renderWarnings(s.warnings)}
+  <div class="section"><h2>Business account</h2>
+   <div class="bigcash"><span class="l">Cash in business account</span><span class="v" style="color:${s.cashBalance<0?'var(--danger)':'var(--accent2)'}">${money(s.cashBalance)}</span></div>
+   <div class="subh">Money in</div>${kvRows([['Investments by partners',s.investedTotal],['Customer payments received',s.moneyReceived],['Total in',moneyIn,1]])}
+   <div class="subh">Money out</div>${kvRows([['Stock purchases',-s.bizBy.stock],['Expenses',-s.bizBy.expenses],['Courier &amp; return fees',-s.bizBy.courier],['Withdrawn by partners',-s.withdrawnTotal],['Bills repaid to partners',-s.repaidTotal],['Total out',-moneyOut,1]])}
+   <div class="subh">Balance</div>${kvRows([['Cash balance (in − out)',s.cashBalance,1]])}
+   <div class="hint">Bills a partner paid personally do not come out of this cash; they stay "owed back" until you use Repay bills. Still to collect: customer money not yet received ${money(s.moneyPending)}, pending orders ${money(s.codPending)}.</div></div>
+  <div class="section"><h2>Partner accounts</h2><div class="pgrid">${cards}</div>
+   <div class="hint">Can still take = investment + profit share (− loss share) − already withdrawn. A withdrawal is also limited by the cash in the business account.</div></div>`;
+ const led=cashLedger(),show=led.slice().reverse().slice(0,100);
+ bot.innerHTML=`<div class="section"><h2>Cash statement</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody>${show.length?show.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.label)}</td><td>${r.inn?`<span class="amt income">${money(r.inn)}</span>`:''}</td><td>${r.out?`<span class="amt expense">${money(r.out)}</span>`:''}</td><td>${money(r.bal)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No money movements yet.</td></tr>'}</tbody></table></div>${led.length>100?`<div class="hint">Showing the latest 100 of ${led.length} entries.</div>`:''}
+  <div class="hint">Customer payments use the Received On date (the order date for older entries). Bills a partner paid personally are not listed because they did not touch business cash.</div></div>`;
+}
+function capitalLimit(){   // what may the selected partner do right now with this kind of entry?
+ const pid=$('in_capital_partnerId').value,type=$('in_capital_type').value,p=partnerById(pid);
+ if(!p)return null;
+ const s=computeSummary(state.capital.filter(r=>r.id!==editing.capital)),a=s.acct[pid];
+ let limit=null;
+ if(type==='Withdrawal')limit=Math.max(0,Math.min(a.entitlement,s.cashBalance));
+ else if(type==='Reimbursement')limit=Math.max(0,Math.min(a.owed,s.cashBalance));
+ return {p,s,a,type,limit};
+}
+function updateCapitalHint(){
+ const box=$('limit_capital');if(!box||!$('in_capital_type'))return;
+ const L=capitalLimit();
+ if(!L){box.className='limit';box.textContent='Add a partner in Settings first.';return;}
+ const {p,s,a,type,limit}=L,amt=parseFloat($('in_capital_amount').value)||0;
+ let text;
+ if(type==='Withdrawal')text=`Business cash: <b>${money(s.cashBalance)}</b>. ${esc(p.name)} can still take <b>${money(a.canTake)}</b> (invested ${money(a.invested)} ${a.profitShare<0?'−':'+'} ${a.profitShare<0?'loss':'profit'} share ${money(Math.abs(a.profitShare))} − already withdrawn ${money(a.withdrawn)}). Withdraw up to <b>${money(limit)}</b> now.${a.owed>0.005?` <br>${esc(p.name)} is also owed <b>${money(a.owed)}</b> for bills paid personally — to pay those back, choose “Repay bills”, not Withdraw.`:''}`;
+ else if(type==='Reimbursement')text=`Business cash: <b>${money(s.cashBalance)}</b>. ${esc(p.name)} paid <b>${money(Math.max(0,a.owed))}</b> of business bills personally and has not been repaid. Repay up to <b>${money(limit)}</b> now.`;
+ else text=`This adds money to the business account (cash now <b>${money(s.cashBalance)}</b>).`;
+ const over=limit!==null&&amt>limit+0.005;
+ box.className='limit'+(over?' bad':'');
+ box.innerHTML=text+(over?'<br><b>This amount is more than allowed and will be blocked.</b>':'')+(limit>0?` <button type="button" class="minibtn" data-act="fillMax">Use ${money(limit)}</button>`:'');
+}
+function fillMax(){
+ const L=capitalLimit();if(!L||L.limit===null)return;
+ $('in_capital_amount').value=Math.floor(L.limit*100)/100;updateCapitalHint();
+}
+function prefillAccount(pid,type){
+ if(editing.capital)cancelEdit('capital');
+ $('in_capital_partnerId').value=pid;$('in_capital_type').value=type;$('in_capital_amount').value='';
+ updateCapitalHint();
+ $('form_capital').scrollIntoView({behavior:'smooth',block:'center'});
+ $('in_capital_amount').focus({preventScroll:true});
+}
+// would this list of partner-money entries overspend the cash or the partner's balance?
+function capitalProblems(newCapital){
+ const before=computeSummary(),after=computeSummary(newCapital),eps=0.005,msgs=[];
+ if(after.cashBalance<-eps&&after.cashBalance<before.cashBalance-eps)
+  msgs.push(`Not enough cash in the business account. Cash now: ${money(before.cashBalance)}; after this it would be ${money(after.cashBalance)}.`);
+ S.partners.forEach(p=>{
+  const a=before.acct[p.id],b=after.acct[p.id];
+  if(b.withdrawn>eps&&b.entitlement<-eps&&b.entitlement<a.entitlement-eps)
+   msgs.push(`${p.name} can only take ${money(a.canTake)} more (investment + profit share − loss − already withdrawn).`);
+  if(b.owed<-eps&&b.owed<a.owed-eps)
+   msgs.push(`${p.name} has only ${money(Math.max(0,a.owed))} of personally paid bills left to repay.`);
+ });
+ return msgs;
+}
+function guardCapital(list){
+ const m=capitalProblems(list);if(!m.length)return true;
+ alert('Not allowed:\n\n• '+m.join('\n• '));return false;
+}
+
+/* ---------- settings ---------- */
+function buildSettings(){
+ $('tab-settings').innerHTML=`
+ <div class="section"><div class="sechead"><h2>Products</h2><button class="lockbtn" id="lock_products" data-act="toggleList" data-list="products"></button></div>
+  <div id="prodList"></div>
+  <div id="addWrap_products" class="hidden"><div class="row"><div class="field" style="flex:2"><input id="newProd" placeholder="New product" aria-label="New product"></div></div><button class="addbtn" data-act="addProd">+ Add product</button></div>
+  <div class="hint">Removing a product only hides it from the dropdowns — past sales and stock still count in the totals. Renaming a product also renames it on the saved entries.</div></div>
+ <div class="section"><div class="sechead"><h2>Expense categories</h2><button class="lockbtn" id="lock_categories" data-act="toggleList" data-list="categories"></button></div>
+  <div id="catList"></div>
+  <div id="addWrap_categories" class="hidden"><div class="row"><div class="field" style="flex:2"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
+  <div class="hint">Renaming a category also renames it on the saved expenses.</div></div>
+ <div class="section" id="shareSection"></div>`;   // Business share stays last, always
+}
+function renderSettingsLists(fromSync){
+ const ae=document.activeElement;
+ if(fromSync&&ae&&ae.tagName==='INPUT'&&$('tab-settings').contains(ae))return;   // don't disturb someone who is typing
+ [['products','prodList'],['categories','catList']].forEach(([list,boxId])=>{
+  const open=listUnlocked[list];
+  const tags=S[list].map(x=>`<span class="tag">${esc(x)}${open?`<button data-act="editItem" data-list="${list}" data-name="${esc(x)}" aria-label="Rename" title="Rename">✎</button><button data-act="rmItem" data-list="${list}" data-name="${esc(x)}" aria-label="Remove" title="Remove">✕</button>`:''}</span>`).join('')||'<div class="empty">None yet</div>';
+  $(boxId).innerHTML=tags+`<div class="hint">${open?'🔓 Unlocked — it locks again when you leave Settings.':'🔒 Locked — tap Unlock to add, rename or remove.'}</div>`;
+  $('addWrap_'+list).classList.toggle('hidden',!open);
+  const b=$('lock_'+list);b.textContent=open?'🔓 Lock':'🔒 Unlock';b.classList.toggle('open',open);
+ });
+ renderShare();
+}
+/* ---------- locks: lists unlock at once; profit shares need a wait; removing a partner needs a longer wait ---------- */
+const SHARE_WAIT=5*60*1000,REMOVE_WAIT=10*60*1000,OPEN_WINDOW=10*60*1000;   // cooling-off waits, and how long an unlocked action stays available
+let LOCKS={share:0,rm:{}},shareSig='';   // start times, kept on this device so a reload or a phone switching apps does not restart the wait
+const listUnlocked={products:false,categories:false};
+function loadLocks(){try{const x=JSON.parse(localStorage.getItem('gat_locks')||'null');if(x&&typeof x==='object')LOCKS={share:+x.share||0,rm:(x.rm&&typeof x.rm==='object')?x.rm:{}};}catch(e){}}
+function saveLocks(){try{localStorage.setItem('gat_locks',JSON.stringify(LOCKS));}catch(e){}}
+function gate(start,wait){   // s: 'off' (never started / expired) · 'wait' (left = ms until it opens) · 'open' (left = ms until it locks again)
+ const now=Date.now(),t=+start||0;
+ if(!t||now<t)return {s:'off'};
+ if(now<t+wait)return {s:'wait',left:t+wait-now};
+ if(now<t+wait+OPEN_WINDOW)return {s:'open',left:t+wait+OPEN_WINDOW-now};
+ return {s:'off'};
+}
+const fmtLeft=ms=>{const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+pad(s%60);};
+const shareOpen=()=>gate(LOCKS.share,SHARE_WAIT).s==='open';
+function lockSig(){return gate(LOCKS.share,SHARE_WAIT).s+'|'+S.partners.map(p=>p.id+':'+gate(LOCKS.rm[p.id],REMOVE_WAIT).s).join(',');}
+function renderShare(){
+ const box=$('shareSection');if(!box)return;
+ Object.keys(LOCKS.rm).forEach(id=>{if(!partnerById(id)||gate(LOCKS.rm[id],REMOVE_WAIT).s==='off')delete LOCKS.rm[id];});   // partner already gone, or the removal window ran out
+ const g=gate(LOCKS.share,SHARE_WAIT),open=g.s==='open';
+ const t=S.partners.reduce((a,p)=>a+num(p.share),0);
+ const total=Math.abs(t-100)<=0.005?`Total share: ${t.toFixed(2)}%`:`<span style="color:var(--danger);font-weight:700">Total share: ${t.toFixed(2)}% — must add up to 100%</span>`;
+ const btn=open?'<button class="lockbtn open" data-act="lockShare">🔓 Lock</button>':g.s==='wait'?'<button class="lockbtn" data-act="cancelShare">Cancel</button>':'<button class="lockbtn" data-act="unlockShare">🔒 Unlock</button>';
+ const note=g.s==='wait'?`⏳ Editing opens in <b id="shareLeft">${fmtLeft(g.left)}</b> — this wait is here to stop hasty changes to profit shares.`
+  :open?`🔓 Open for editing — locks again in <b id="shareLeft">${fmtLeft(g.left)}</b>.`
+  :'🔒 Locked — tap Unlock; editing opens after a 5 minute wait.';
+ const rows=!S.partners.length?'<div class="empty">No partners yet</div>'
+  :open?S.partners.map(p=>`<div class="row" style="align-items:flex-end"><div class="field"><label for="pn_${esc(p.id)}">Name</label><input id="pn_${esc(p.id)}" value="${esc(p.name)}" data-act="pname" data-pid="${esc(p.id)}"></div><div class="field" style="max-width:100px"><label for="ps_${esc(p.id)}">Share %</label><input id="ps_${esc(p.id)}" type="number" step="0.01" min="0" value="${esc(p.share)}" data-act="pshare" data-pid="${esc(p.id)}"></div>${gate(LOCKS.rm[p.id],REMOVE_WAIT).s==='off'?`<button class="minibtn" data-act="rmStart" data-pid="${esc(p.id)}">Remove…</button>`:''}</div>`).join('')
+  :kvRows(S.partners.map(p=>[esc(p.name),num(p.share).toFixed(2)+'%']));
+ const pend=S.partners.map(p=>{
+  const r=gate(LOCKS.rm[p.id],REMOVE_WAIT);
+  if(r.s==='wait')return `<div class="lockmsg">⏳ Removing <b>${esc(p.name)}</b> is allowed in <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
+  if(r.s==='open')return `<div class="lockmsg">Ready to remove <b>${esc(p.name)}</b> (available for <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b>) <button class="minibtn solid" style="background:var(--danger);border-color:var(--danger)" data-act="rmNow" data-pid="${esc(p.id)}">Remove now</button> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
+  return '';
+ }).join('');
+ const add=open?`<div class="row"><div class="field"><label for="newPartnerName">Name</label><input id="newPartnerName"></div><div class="field"><label for="newPartnerShare">Share %</label><input id="newPartnerShare" type="number" step="0.01" min="0"></div></div><button class="addbtn" data-act="addPartner">+ Add partner</button>`:'';
+ box.innerHTML=`<div class="sechead"><h2>Business share</h2>${btn}</div><div class="lockmsg" style="margin-top:0">${note}</div><div style="margin-top:10px">${rows}</div>${pend}<div class="hint">${total}</div>${add}<div class="hint">Renaming a partner keeps all their history. A partner who has entries can't be deleted. Removing a partner needs a 10 minute wait after you tap Remove…</div>`;
+ shareSig=lockSig();
+}
+function tickLocks(){   // runs every second; only redraws when a lock changes state, so nobody loses what they are typing
+ if(activeTab!=='settings'||!built.settings)return;
+ if(lockSig()!==shareSig){renderShare();return;}
+ const g=gate(LOCKS.share,SHARE_WAIT),e=$('shareLeft');
+ if(e&&g.left!==undefined)e.textContent=fmtLeft(g.left);
+ document.querySelectorAll('[data-rmleft]').forEach(n=>{const r=gate(LOCKS.rm[n.dataset.rmleft],REMOVE_WAIT);if(r.left!==undefined)n.textContent=fmtLeft(r.left);});
+}
+function toggleList(list){if(!(list in listUnlocked))return;listUnlocked[list]=!listUnlocked[list];renderSettingsLists();}
+function unlockShare(){LOCKS.share=Date.now();saveLocks();renderShare();}
+function lockShare(){LOCKS.share=0;saveLocks();renderShare();}
+function nameTaken(list,name,exceptIndex){return list.some((x,i)=>i!==exceptIndex&&String(x.name!==undefined?x.name:x).toLowerCase()===name.toLowerCase());}
+async function updatePartner(pid,key,val){
+ if(!shareOpen()){alert('Business share is locked. Tap Unlock and wait 5 minutes to edit.');renderShare();return;}
+ const ok=await commitSettings(next=>{
+  const p=next.partners.find(x=>x.id===pid);if(!p)return false;
+  if(key==='share'){p.share=Math.max(0,parseFloat(val)||0);return;}
+  const n=String(val).trim();
+  if(!n){alert('Name cannot be empty.');return false;}
+  if(n.toLowerCase()===BIZ_NAME.toLowerCase()||next.partners.some(q=>q.id!==pid&&q.name.toLowerCase()===n.toLowerCase())){alert('That name is already used.');return false;}
+  if(p.name!==n){p.legacy=Array.from(new Set((p.legacy||[]).concat(p.name)));p.name=n;}   // remember the old name for older records
+ });
+ if(!ok)renderSettingsLists();
+}
+function rmStart(pid){   // step 1: start the 10 minute wait
+ const p=partnerById(pid);if(!p)return;
+ if(!shareOpen()){renderShare();return;}
+ const n=partnerUsage(pid);
+ if(n>0){alert(`${p.name} has ${n} entr${n===1?'y':'ies'} (capital or payments) and can't be deleted. Rename the partner instead.`);return;}
+ LOCKS.rm[pid]=Date.now();saveLocks();renderShare();
+}
+function rmCancel(pid){delete LOCKS.rm[pid];saveLocks();renderShare();}
+function rmNow(pid){   // step 2: only after the wait, and only inside the window that follows it
+ const p=partnerById(pid);if(!p)return;
+ if(gate(LOCKS.rm[pid],REMOVE_WAIT).s!=='open'){renderShare();return;}
+ const n=partnerUsage(pid);
+ if(n>0){alert(`${p.name} now has ${n} entr${n===1?'y':'ies'} (capital or payments) and can't be deleted. Rename the partner instead.`);rmCancel(pid);return;}
+ if(!confirm(`Remove partner ${p.name}?`))return;
+ commitSettings(next=>{next.partners=next.partners.filter(x=>x.id!==pid);}).then(ok=>{if(ok){delete LOCKS.rm[pid];saveLocks();renderShare();}});
+}
+function addPartner(){
+ if(!shareOpen()){alert('Business share is locked. Tap Unlock and wait 5 minutes to edit.');renderShare();return;}
+ const n=$('newPartnerName').value.trim();if(!n)return;
+ if(n.toLowerCase()===BIZ_NAME.toLowerCase()||S.partners.some(p=>p.name.toLowerCase()===n.toLowerCase())){alert('That name is already used.');return;}
+ const share=Math.max(0,parseFloat($('newPartnerShare').value)||0);
+ commitSettings(next=>{next.partners.push({id:'p_'+uid(),name:n,share,legacy:[]});}).then(ok=>{if(ok){$('newPartnerName').value='';$('newPartnerShare').value='';}});
+}
+function addItem(list,inputId){
+ if(!listUnlocked[list])return;
+ const v=$(inputId).value.trim();if(!v)return;
+ if(list==='categories'){const use=reservedUse(v);if(use){alert(`"${v}" is already counted automatically through ${use}, so it can't be an expense category.`);return;}}
+ if(S[list].some(x=>x.toLowerCase()===v.toLowerCase())){alert('Already in the list.');return;}
+ commitSettings(next=>{next[list].push(v);}).then(ok=>{if(ok)$(inputId).value='';});
+}
+function removeItem(list,name){if(!listUnlocked[list])return;commitSettings(next=>{next[list]=next[list].filter(x=>x!==name);});}
+async function renameItem(list,oldName){   // renames the list entry and every saved entry that uses it, so history stays together
+ if(!listUnlocked[list])return;
+ const raw=prompt(`Rename "${oldName}" to:`,oldName);
+ if(raw===null)return;
+ const v=raw.trim();
+ if(!v||v===oldName)return;
+ if(list==='categories'){const use=reservedUse(v);if(use){alert(`"${v}" is already counted automatically through ${use}, so it can't be an expense category.`);return;}}
+ if(S[list].some(x=>x!==oldName&&norm(x)===norm(v))){alert('Already in the list.');return;}
+ const keys=list==='products'?['stock','sales']:['expenses'],field=list==='products'?'product':'category';
+ const hit=r=>list==='products'?norm(r[field])===norm(oldName):r[field]===oldName;
+ const affected=[];keys.forEach(k=>state[k].filter(hit).forEach(r=>affected.push([k,r])));
+ if(affected.length&&!confirm(`This also renames "${oldName}" on ${affected.length} saved entr${affected.length===1?'y':'ies'}, so the history stays together.\n\nContinue?`))return;
+ const ok=await commitSettings(next=>{const i=next[list].indexOf(oldName);if(i<0)return false;next[list][i]=v;});
+ if(!ok)return;
+ for(const [k,r] of affected){
+  const d=clone(r);delete d.id;d[field]=v;stampEdit(d,r);
+  if(!(await updateRecord(k,r.id,d))){alert(`The name was changed in the list, but some saved entries could not be updated. Rename "${v}" back and try again when the connection is fine.`);break;}
+ }
+ refreshActive();
+}
+function markOk(sig){if(!sig)return;commitSettings(next=>{next.dupOk=Array.from(new Set((next.dupOk||[]).concat(sig)));});}   // shared with all partners
+
+/* ---------- navigation & refresh ---------- */
+function showTab(key){
+ activeTab=key;
+ if(key!=='settings'){listUnlocked.products=false;listUnlocked.categories=false;}   // lists lock again when you leave Settings
+ document.querySelectorAll('.tabpanel').forEach(p=>p.style.display=p.id==='tab-'+key?'block':'none');
+ document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
+ if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);built[key]=true;}
+ if(key==='settings'&&!built.settings){buildSettings();built.settings=true;}
+ refreshActive();
+}
+function refreshActive(fromSync){   // never rebuilds a form, so nobody loses what they are typing
+ const key=activeTab;
+ if(key==='summary')renderSummary();
+ else if(key==='inventory')renderInventory();
+ else if(key==='settings')renderSettingsLists(fromSync);
+ else if(TAB_CONFIGS[key]){refreshSelects(key);renderTab(key);if(key==='capital')renderAccounts();if(TAB_CONFIGS[key].dupWarn)$('dupWarn_'+key).innerHTML=renderWarnings(duplicateWarnings(key));}
+}
+function buildTabbar(){
+ const TABS=[['summary','Summary'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts'],['inventory','Inventory'],['settings','Settings']];
+ $('tabbar').innerHTML=TABS.map(([k,l])=>`<button class="tabbtn" data-act="tab" data-tab="${k}">${l}</button>`).join('');
+}
+
+/* ---------- events (delegated: no ids or names are ever pasted into inline handlers) ---------- */
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;
+ const a=b.dataset.act;
+ if(a==='tab')showTab(b.dataset.tab);
+ else if(a==='add')addTabRecord(b.dataset.key);
+ else if(a==='cancel')cancelEdit(b.dataset.key);
+ else if(a==='edit')startEdit(b.dataset.key,b.dataset.id);
+ else if(a==='withdrawFor'||a==='repayFor'||a==='investFor')prefillAccount(b.dataset.pid,a==='repayFor'?'Reimbursement':a==='investFor'?'Investment':'Withdrawal');
+ else if(a==='fillMax')fillMax();
+ else if(a==='del')delRecord(b.dataset.key,b.dataset.id);
+ else if(a==='addPartner')addPartner();
+ else if(a==='addCat')addItem('categories','newCat');
+ else if(a==='addProd')addItem('products','newProd');
+ else if(a==='toggleList')toggleList(b.dataset.list);
+ else if(a==='editItem')renameItem(b.dataset.list,b.dataset.name);
+ else if(a==='unlockShare')unlockShare();
+ else if(a==='cancelShare'||a==='lockShare')lockShare();
+ else if(a==='rmStart')rmStart(b.dataset.pid);
+ else if(a==='rmCancel')rmCancel(b.dataset.pid);
+ else if(a==='rmNow')rmNow(b.dataset.pid);
+ else if(a==='rmItem')removeItem(b.dataset.list,b.dataset.name);
+ else if(a==='dupOk')markOk(b.dataset.sig);
+});
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#form_capital'))updateCapitalHint();});   // live limit while typing an amount
+document.addEventListener('change',e=>{
+ const t=e.target,a=t.dataset&&t.dataset.act;
+ if(a==='pname')updatePartner(t.dataset.pid,'name',t.value);
+ else if(a==='pshare')updatePartner(t.dataset.pid,'share',t.value);
+ else if(t.closest&&t.closest('.crudform'))applyShowIf(t.closest('.crudform').dataset.key);   // show/hide status-specific fields
+});
+
+
+/* =====================================================================
+   LOGIN + SHARED DATABASE  (Firebase Auth + Firestore)
+   • Same Firebase project as the rest of the site (login.html / dashboard.html).
+   • Only the 3 e-mails in ALLOWED can open this page. Everyone else is signed out.
+   • The client-side list below only decides what to SHOW. The real lock is the
+     Firestore rules (firestore.rules) — those refuse reads/writes from any other e-mail.
+   • Data lives in ONE shared place (garments/…), not per-user, so every partner
+     sees every change instantly.
+   ===================================================================== */
+const FB_VER='10.12.0', FB_BASE='https://www.gstatic.com/firebasejs/'+FB_VER+'/';
+const FB_CONFIG={apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",authDomain:"login-system-309fc.firebaseapp.com",projectId:"login-system-309fc",storageBucket:"login-system-309fc.firebasestorage.app",messagingSenderId:"509365590175",appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"};
+const LOGIN_PAGE='login.html', THIS_PAGE='garments-accounts.html';
+const ROOT='garments';   // Firestore: garments/{sales|expenses|stock|capital}/items/{id}  and  garments/settings
+// allowed e-mail  ->  name shown in "Entered by"
+const ALLOWED={
+ 'allmunanabdullah@gmail.com':'Munan',
+ 'maitrariti@gmail.com':'Riti',
+ 'jeetm6863@gmail.com':'Jeet'
+};
+let me=null;   // {email,name,uid} once logged in and allowed
+
+function allowedName(email){return ALLOWED[String(email||'').trim().toLowerCase()]||null;}
+function gateShow(html){$('gate').classList.remove('hidden');$('gateBox').innerHTML=html;}
+function gateHide(){$('gate').classList.add('hidden');$('appWrap').classList.remove('hidden');}
+function goLogin(){try{sessionStorage.setItem('gat_return',THIS_PAGE);}catch(e){}location.href=LOGIN_PAGE;}
+function clearSiteFlags(){['munan_auth','isLoggedIn','loggedInUser'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});}
+function showBlocked(email){
+ setStatus('denied');
+ gateShow(`<div class="gicon bad">🚫</div><h2>Access blocked</h2>
+  <p>You are signed in as <b>${esc(email||'unknown')}</b>.</p>
+  <p>This page is private and only open to the 3 partner accounts. Your login has been signed out.</p>
+  <button type="button" class="abtn in" data-act="gotoLogin">Login with another account</button>
+  <a class="abtn" href="index.html">Home</a>`);
+}
+function showLoginNeeded(){
+ gateShow(`<div class="gicon">🔒</div><h2>Login required</h2>
+  <p>Please login with an approved account to open Garments Accounts.</p>
+  <button type="button" class="abtn in" data-act="gotoLogin">Login</button>
+  <a class="abtn" href="index.html">Home</a>`);
+}
+function showFatal(msg){
+ gateShow(`<div class="gicon bad">⚠️</div><h2>Could not start</h2><p>${esc(msg)}</p>
+  <button type="button" class="abtn in" onclick="location.reload()">Try again</button>`);
+}
+function renderWho(){
+ $('whoBox').innerHTML=`<i>${esc(me.name.charAt(0))}</i><span>Signed in as <b>${esc(me.name)}</b><span class="em"> · ${esc(me.email)}</span></span>`;
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act="gotoLogin"]');if(b)goLogin();
+});
+
+/* "Entered by" stamps.  enteredBy = who created it (never changes);
+   editedBy = the last person who changed it, only kept when that is somebody else. */
+function stampNew(d){d.enteredBy=me.name;d.enteredEmail=me.email;delete d.editedBy;return d;}
+function stampEdit(d,old){
+ // Never invent an author: an entry saved before logins existed stays untagged ("—"),
+ // and the person who touched it is recorded only as the editor.
+ if(old&&old.enteredBy){d.enteredBy=old.enteredBy;d.enteredEmail=old.enteredEmail||'';}
+ else{delete d.enteredBy;delete d.enteredEmail;}
+ if(d.enteredBy!==me.name)d.editedBy=me.name;else delete d.editedBy;
+ return d;
+}
+function byCell(r){
+ if(!r.enteredBy)return r.editedBy?`<span class="sub">edited by ${esc(r.editedBy)}</span>`:'—';
+ return `<span class="by">${esc(r.enteredBy)}</span>`+(r.editedBy&&r.editedBy!==r.enteredBy?`<span class="sub">edited by ${esc(r.editedBy)}</span>`:'');
+}
+
+/* Adapter: gives the ledger code the small db API it was written for
+   (collection().add / doc().set / doc().delete / onSnapshot) on top of Firestore. */
+function makeDb(fs,fstore){
+ const C=(key)=>fs.collection(fstore,ROOT,key,'items');
+ return {
+  collection:key=>({
+   add:async data=>{const r=await fs.addDoc(C(key),data);return {id:r.id};},
+   doc:id=>({
+    set:data=>fs.setDoc(fs.doc(fstore,ROOT,key,'items',id),data),
+    delete:()=>fs.deleteDoc(fs.doc(fstore,ROOT,key,'items',id))}),
+   onSnapshot:(ok,err)=>fs.onSnapshot(C(key),ok,err)}),
+  doc:path=>{   // only used for 'settings/main'
+   const ref=fs.doc(fstore,ROOT,'settings');
+   // the modern SDK has snap.exists() as a METHOD; the ledger code reads snap.exists as a value
+   return {set:data=>fs.setDoc(ref,data),
+    onSnapshot:(ok,err)=>fs.onSnapshot(ref,snap=>{const has=snap.exists();ok({exists:has,data:()=>has?snap.data():undefined});},err)};}
+ };
+}
+
+let fbAuth=null, fbSignOut=null;
+async function doLogout(){
+ try{ if(fbAuth&&fbSignOut)await fbSignOut(fbAuth); }catch(e){}
+ clearSiteFlags();
+ try{ sessionStorage.setItem('gat_return',THIS_PAGE); }catch(e){}
+ location.href=LOGIN_PAGE;
+}
+
+async function startAuth(){
+ let appMod,authMod,fsMod;
+ try{
+  [appMod,authMod,fsMod]=await Promise.all([import(FB_BASE+'firebase-app.js'),import(FB_BASE+'firebase-auth.js'),import(FB_BASE+'firebase-firestore.js')]);
+ }catch(e){showFatal('Could not load the login system. Check your internet connection and try again.');return;}
+ // reuse the app if another script on this page already created it
+ const app=appMod.getApps().length?appMod.getApp():appMod.initializeApp(FB_CONFIG);
+ const auth=authMod.getAuth(app);fbAuth=auth;fbSignOut=authMod.signOut;
+ const fstore=fsMod.getFirestore(app);
+ let started=false, blocked=false;
+ authMod.onAuthStateChanged(auth,async user=>{
+  if(!user){                                   // not logged in -> login page
+   me=null;db=null;
+   if(blocked)return;                          // WE signed a non-partner out: keep the "Access blocked" message on screen
+   if(!started){showLoginNeeded();setTimeout(goLogin,600);}
+   else goLogin();                             // logged out in another tab
+   return;
+  }
+  const name=allowedName(user.email);
+  // must be an allowed e-mail AND a verified e-mail (blocks look-alike accounts)
+  if(!name||!user.emailVerified){
+   const shown=user.email;
+   blocked=true;                               // set BEFORE signOut, which fires this listener again with user=null
+   showBlocked(shown);
+   try{await authMod.signOut(auth);}catch(e){}
+   clearSiteFlags();me=null;db=null;
+   return;
+  }
+  blocked=false;
+  if(started)return;                           // token refresh — already running
+  started=true;
+  me={email:String(user.email).toLowerCase(),name,uid:user.uid};
+  renderWho();
+  db=makeDb(fsMod,fstore);
+  gateHide();
+  await connect();
+ });
+}
+$('logoutBtn').addEventListener('click',doLogout);
+
+/* ---------- start ---------- */
+async function connect(){
+ bootUi();
+ if(!db){setStatus('offline');refreshActive();return;}
+ await uploadOfflineRecords();
+ KEYS.forEach(key=>{
+  try{db.collection(key).onSnapshot(snap=>{
+   const unsent=state[key].filter(r=>isLocalId(r.id));   // offline entries that could not be uploaded yet: never overwrite them
+   state[key]=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id})).concat(unsent);
+   setStatus('synced');cacheLocal();refreshActive(true);
+  },()=>setStatus('error'));}catch(e){setStatus('error');}
+ });
+ try{db.doc('settings/main').onSnapshot(snap=>{
+  if(snap.exists){S=Object.assign({},S,clone(snap.data()));normalizeSettings();cacheLocal();}
+  refreshActive(true);
+ },()=>setStatus('error'));}catch(e){setStatus('error');}
+ setStatus('synced');
+}
+function init(){
+ // Nothing is read from this device or from the database until login is confirmed.
+ // (the page body stays hidden behind the gate until then)
+ startAuth();
+}
+let booted=false;
+function bootUi(){   // runs once, right after the login check passes
+ if(booted)return;booted=true;
+ loadLocal();loadLocks();normalizeSettings();buildTabbar();setStatus('connecting');
+ setInterval(tickLocks,1000);
+ showTab('summary');   // draw immediately; the shared database connects in the background
+}
+init();
+</script>
+</body>
+</html>
