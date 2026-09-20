@@ -25,6 +25,8 @@
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <link rel="stylesheet" href="mt.css">
 <link rel="stylesheet" href="mt-calc.css">
+<!-- [MTI EDIT 3] Insights upgrade styles -->
+<link rel="stylesheet" href="mt-insights.css">
 </head>
 <body class="mt-app">
 
@@ -192,6 +194,8 @@
 </div>
 
 <!-- INSIGHTS -->
+<!-- [MTI EDIT 1] Insights markup regrouped into 4 sub-tab panes. Every original element ID is
+     unchanged (only wrapped in .mti-pane divs); new mount points are the #mti-* nodes. -->
 <div class="insights-section" id="insightsSection">
   <div class="main">
     <div class="day-header" style="margin-top:10px">
@@ -199,41 +203,83 @@
       <p id="insightsSubtitle"></p>
     </div>
 
-    <div class="section-title">Top Spending Category</div>
-    <div id="topCategoryCard"></div>
+    <!-- [MTI] sub-tab pill bar + period chips (populated by mt-insights.js) -->
+    <div class="mti-tabbar" id="mtiTabBar" role="tablist" aria-label="Insights sections"></div>
+    <div class="mti-periodbar" id="mtiPeriodBar"></div>
 
-    <div class="section-title">This Month vs Last Month</div>
-    <div id="insightList"></div>
-    <div class="chart-card"><canvas id="comparisonChart"></canvas></div>
+    <!-- ══ OVERVIEW ══ -->
+    <div class="mti-pane" id="mtiPane-overview" data-mti-pane="overview">
+      <div id="mtiTips"></div>
+      <div class="mti-card-slot" id="mtiBudgetCard"></div>
+      <div class="mti-card-slot" id="mtiSavingsCard"></div>
+      <div class="mti-card-slot" id="mtiNetWorthCard"></div>
 
-    <div class="section-title">Spending Patterns</div>
-    <div class="ins-stat-grid">
-      <div class="ins-stat-card"><div class="ins-stat-label">No-Spend Days</div><div class="ins-stat-val" id="insNoSpendVal">–</div><div class="ins-stat-sub" id="insNoSpendSub"></div></div>
-      <div class="ins-stat-card"><div class="ins-stat-label">Longest Streak</div><div class="ins-stat-val" id="insStreakVal">–</div><div class="ins-stat-sub" id="insStreakSub"></div></div>
-      <div class="ins-stat-card"><div class="ins-stat-label">Highest Spend Day</div><div class="ins-stat-val" id="insHighDayVal">–</div><div class="ins-stat-sub" id="insHighDaySub"></div></div>
-      <div class="ins-stat-card"><div class="ins-stat-label">Weekday vs Weekend</div><div class="ins-stat-val" id="insWkndVal">–</div><div class="ins-stat-sub" id="insWkndSub"></div></div>
+      <div class="section-title">Top Spending Category</div>
+      <div id="topCategoryCard"></div>
+
+      <div class="section-title">This Month vs Last Month</div>
+      <div id="insightList"></div>
+      <div class="chart-card"><canvas id="comparisonChart"></canvas></div>
+
+      <div class="mti-card-slot" id="mtiBiggestCard"></div>
     </div>
 
-    <div class="ins-card" id="insParetoCard"></div>
-    <div class="ins-card" id="insFixedVarCard"></div>
-    <div class="ins-card" id="insFreqCard"></div>
-    <div class="ins-card" id="insNewDroppedCard"></div>
-    <div class="ins-card" id="insAvgTxnCard"></div>
-    <div class="ins-card" id="insIncomeConcCard"></div>
+    <!-- ══ PATTERNS ══ -->
+    <div class="mti-pane" id="mtiPane-patterns" data-mti-pane="patterns">
+      <div class="mti-card-slot" id="mtiHeatmapCard"></div>
 
-    <div class="section-title">Rolling Trend (per category)</div>
-    <div class="chart-card"><canvas id="rollingTrendChart"></canvas></div>
-    <div id="insTrendList"></div>
+      <div class="section-title">Spending Patterns</div>
+      <div class="ins-stat-grid">
+        <div class="ins-stat-card"><div class="ins-stat-label">No-Spend Days</div><div class="ins-stat-val" id="insNoSpendVal">–</div><div class="ins-stat-sub" id="insNoSpendSub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Longest Streak</div><div class="ins-stat-val" id="insStreakVal">–</div><div class="ins-stat-sub" id="insStreakSub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Highest Spend Day</div><div class="ins-stat-val" id="insHighDayVal">–</div><div class="ins-stat-sub" id="insHighDaySub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Weekday vs Weekend</div><div class="ins-stat-val" id="insWkndVal">–</div><div class="ins-stat-sub" id="insWkndSub"></div></div>
+      </div>
 
-    <div class="section-title" id="insYoyTitle" style="display:none">Same Month, Last Year</div>
-    <div id="insYoyCard"></div>
+      <div class="ins-card" id="insParetoCard"></div>
+      <div class="ins-card" id="insFixedVarCard"></div>
+      <div class="ins-card" id="insFreqCard"></div>
+      <div class="ins-card" id="insNewDroppedCard"></div>
+      <div class="ins-card" id="insAvgTxnCard"></div>
+      <div class="ins-card" id="insIncomeConcCard"></div>
+    </div>
 
-    <div class="section-title">Best &amp; Worst Months</div>
-    <div class="ins-card" id="insBestWorstCard"></div>
+    <!-- ══ TRENDS ══ -->
+    <div class="mti-pane" id="mtiPane-trends" data-mti-pane="trends">
+      <div class="section-title">Rolling Trend (per category)</div>
+      <div class="chart-card"><canvas id="rollingTrendChart"></canvas></div>
+      <div id="insTrendList"></div>
 
-    <div class="section-title">Next Month Forecast</div>
-    <div class="ins-card" id="insForecastCard"></div>
-    <div class="ins-card" id="insPaceCard" style="display:none"></div>
+      <div class="section-title" id="insYoyTitle" style="display:none">Same Month, Last Year</div>
+      <div id="insYoyCard"></div>
+
+      <div class="section-title">Best &amp; Worst Months</div>
+      <div class="ins-card" id="insBestWorstCard"></div>
+    </div>
+
+    <!-- ══ FORECAST ══ -->
+    <div class="mti-pane" id="mtiPane-forecast" data-mti-pane="forecast">
+      <div class="mti-card-slot" id="mtiPaceChartCard"></div>
+
+      <div class="section-title">Next Month Forecast</div>
+      <div class="ins-card" id="insForecastCard"></div>
+      <div class="mti-card-slot" id="mtiForecastAccCard"></div>
+      <div class="ins-card" id="insPaceCard" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- [MTI EDIT 2] Bottom-sheet for category drill-down (own ID; does not touch #categoryDetailModal) -->
+<div class="modal-overlay" id="mtiDrillModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="mtiDrillTitle" style="margin-bottom:2px">Category</h3>
+        <div id="mtiDrillSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" id="mtiDrillClose" aria-label="Close"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="mtiDrillBody"></div>
   </div>
 </div>
 
@@ -493,6 +539,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';document.head.appendChild(s);"></script>
 <script src="mt.js"></script>
 <script src="mt-calc.js"></script>
+<!-- [MTI EDIT 4] Insights upgrade (must load after mt.js and mt-calc.js) -->
+<script src="mt-insights.js"></script>
 <script src="footer.js"></script>
 </body>
 </html>

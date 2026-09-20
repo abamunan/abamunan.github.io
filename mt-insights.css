@@ -1,0 +1,316 @@
+/* ==========================================================================
+   mt-insights.css — styles for the Insights upgrade (mt-insights.js)
+   All new classes are prefixed `mti-`. Uses only the app's existing tokens
+   (--accent, --accent2, --danger, --surface, --card-bg-solid, --text-main,
+   --text-soft, --card-border) so light and [data-theme="dark"] both work.
+   Mobile-first (390px); tap targets >= 44px. z-index stays below modals (300)
+   and the calculator (400): nothing here exceeds 50.
+   ========================================================================== */
+
+/* ── panes (sub-tabs) ─────────────────────────────────────────────────── */
+.mti-pane { display: none; }
+.mti-pane.mti-active { display: block; animation: mtiFade 0.18s ease; }
+@keyframes mtiFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.mti-hide { display: none !important; }
+
+/* ── sub-tab pill bar ─────────────────────────────────────────────────── */
+.mti-tabbar {
+  display: flex; gap: 6px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--card-border);
+  border-radius: 999px; margin: 0 0 10px;
+  /* Dock directly BELOW the app's own sticky .topbar (z-index 100, ~51px). --mti-top is measured at
+     runtime by mt-insights.js; 51px is only the fallback. Without this the bar slides under the topbar. */
+  position: sticky; top: var(--mti-top, 51px); z-index: 20;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.mti-tab {
+  flex: 1 1 0; min-height: 44px; min-width: 0;
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font); font-size: 0.76rem; font-weight: 600;
+  color: var(--text-soft); border-radius: 999px; padding: 0 6px;
+  transition: background var(--trans), color var(--trans), box-shadow var(--trans);
+  -webkit-tap-highlight-color: transparent;
+}
+.mti-tab:hover { color: var(--text-main); }
+.mti-tab.active {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+.mti-tab:focus-visible, .mti-chip:focus-visible, .mti-card-head:focus-visible,
+.mti-brow:focus-visible, .mti-hm-cell:focus-visible, .mti-link:focus-visible,
+.mti-row-btn:focus-visible, .mti-sec-title:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+/* ── collapsible cards ────────────────────────────────────────────────────
+   Geometry is deliberately IDENTICAL to a plain .ins-card (padding 13px 15px,
+   title margin-bottom 8px) so existing cards look exactly as before. The head
+   is a button reset with zero padding; its >=44px tap target comes from an
+   invisible ::after hit-area, not from extra layout height.                  */
+.mti-card { overflow: visible; }
+.mti-card-head {
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; margin: 0; padding: 0;
+  background: transparent; border: none; cursor: pointer; text-align: left;
+  font-family: var(--font); color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.mti-card-head::after {           /* invisible 44px-tall hit area centred on the title row */
+  content: ''; position: absolute; left: -15px; right: -15px; top: 50%; height: 44px; transform: translateY(-50%);
+}
+.mti-card-head .mti-card-title { flex: 1; min-width: 0; margin-bottom: 0; line-height: 1.6; }
+/* The head reproduces the original title block: same 8px gap below, so following content does not move. */
+.mti-card-head { margin-bottom: 8px; }
+.mti-card-title i { margin-right: 6px; color: var(--accent); }
+.mti-card-body { padding: 0; }
+.mti-chev { font-size: 0.7rem; color: var(--text-soft); transition: transform 0.2s ease; flex-shrink: 0; }
+.mti-collapsed .mti-chev { transform: rotate(-90deg); }
+.mti-collapsed .mti-card-body { display: none; }
+/* when collapsed there is no body, so drop the gap below the head to avoid a tall empty card */
+.mti-collapsed .mti-card-head { margin-bottom: 0; }
+
+/* section titles that toggle a chart/list group */
+.mti-sec-title { cursor: pointer; min-height: 44px; user-select: none; -webkit-tap-highlight-color: transparent; }
+.mti-sec-title .mti-chev { order: 3; }
+.mti-sec-collapsed .mti-chev { transform: rotate(-90deg); }
+
+/* ── period chips ─────────────────────────────────────────────────────── */
+.mti-periodbar { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 8px; margin-bottom: 4px; scrollbar-width: none; }
+.mti-periodbar::-webkit-scrollbar { display: none; }
+.mti-chip {
+  flex: 0 0 auto; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-soft);
+  border-radius: 999px; font-family: var(--font); font-size: 0.74rem; font-weight: 600; cursor: pointer;
+  transition: var(--trans); -webkit-tap-highlight-color: transparent;
+}
+.mti-chip.active { background: var(--accent); border-color: transparent; color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+.mti-period-note { font-size: 0.7rem; color: var(--text-soft); margin: 0 2px 8px; }
+.mti-custom { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 8px; }
+.mti-custom input[type="date"] {
+  flex: 1 1 130px; min-height: 44px; padding: 0 10px; box-sizing: border-box;
+  background: var(--card-bg); color: var(--text-main); border: 1px solid var(--card-border);
+  border-radius: var(--radius-md); font-family: var(--font); font-size: 0.8rem;
+}
+.mti-custom button {
+  min-height: 44px; padding: 0 16px; border: none; border-radius: var(--radius-md);
+  background: var(--accent); color: #fff; font-family: var(--font); font-weight: 600; font-size: 0.78rem; cursor: pointer;
+}
+
+/* ── small utilities ──────────────────────────────────────────────────── */
+.mti-ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.mti-soft { color: var(--text-soft); }
+.mti-t-green { color: var(--accent2); }
+.mti-t-amber { color: #d97706; }
+[data-theme="dark"] .mti-t-amber { color: #fbbf24; }
+.mti-t-red { color: var(--danger); }
+.mti-link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px;
+  background: none; border: none; cursor: pointer; color: var(--accent);
+  font-family: var(--font); font-size: 0.78rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
+}
+/* Inline links stay visually inline but get a >=44px hit area via an invisible
+   pseudo-element (keeps the sentence layout, satisfies the tap-target rule). */
+.mti-link-inline { position: relative; min-height: 0; padding: 0; display: inline; text-align: left; }
+.mti-link-inline::after { content: ''; position: absolute; left: -8px; right: -8px; top: 50%; height: 44px; transform: translateY(-50%); }
+.mti-card-slot:empty { display: none; }
+.mti-mini-note { font-size: 0.7rem; color: var(--text-soft); margin-top: 6px; line-height: 1.4; }
+
+/* ── progress bars ────────────────────────────────────────────────────── */
+.mti-bar { height: 8px; border-radius: 999px; background: var(--surface2); overflow: hidden; margin: 6px 0 4px; }
+.mti-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+.mti-bar-fill.mti-green { background: var(--accent2); }
+.mti-bar-fill.mti-amber { background: #d97706; }
+[data-theme="dark"] .mti-bar-fill.mti-amber { background: #fbbf24; }
+.mti-bar-fill.mti-red { background: var(--danger); }
+
+/* ── Budget vs Actual rows ────────────────────────────────────────────── */
+.mti-brow {
+  display: block; width: 100%; text-align: left; font-family: var(--font); color: inherit;
+  background: transparent; border: none; border-bottom: 1px solid var(--card-border);
+  padding: 10px 0; cursor: pointer; min-height: 44px; -webkit-tap-highlight-color: transparent;
+}
+.mti-brow:last-of-type { border-bottom: none; }
+.mti-brow:hover { background: var(--surface); }
+.mti-brow-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mti-brow-name { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.82rem; color: var(--text-main); }
+.mti-brow-pct { font-weight: 800; font-size: 0.82rem; flex-shrink: 0; }
+.mti-brow-sub { display: flex; justify-content: space-between; gap: 8px; font-size: 0.7rem; color: var(--text-soft); }
+.mti-brow-proj { margin-top: 2px; font-size: 0.68rem; }
+.mti-proj { font-weight: 600; }
+.mti-btotal { cursor: default; border-top: 2px solid var(--card-border); border-bottom: none; margin-top: 4px; padding-top: 12px; }
+.mti-btotal:hover { background: transparent; }
+.mti-btotal .mti-brow-name { font-weight: 700; }
+.mti-hidden-note { font-size: 0.72rem; color: var(--text-soft); margin-top: 8px; line-height: 1.5; }
+
+/* ── Smart tips ───────────────────────────────────────────────────────── */
+.mti-tips { margin: 0 0 12px; }
+.mti-tips-head { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); margin: 0 2px 8px; }
+.mti-tips-head i { color: #d97706; margin-right: 5px; }
+[data-theme="dark"] .mti-tips-head i { color: #fbbf24; }
+.mti-tip {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-left-width: 4px; border-radius: var(--radius-md);
+  padding: 10px 12px; margin-bottom: 6px; box-shadow: var(--shadow-card);
+}
+.mti-tip-text { font-size: 0.79rem; line-height: 1.45; color: var(--text-main); min-width: 0; overflow-wrap: anywhere; }
+.mti-tip-ico { margin-top: 3px; font-size: 0.85rem; flex-shrink: 0; }
+.mti-tip-bad { border-left-color: var(--danger); } .mti-tip-bad .mti-tip-ico { color: var(--danger); }
+.mti-tip-warn { border-left-color: #d97706; } .mti-tip-warn .mti-tip-ico { color: #d97706; }
+[data-theme="dark"] .mti-tip-warn { border-left-color: #fbbf24; } [data-theme="dark"] .mti-tip-warn .mti-tip-ico { color: #fbbf24; }
+.mti-tip-good { border-left-color: var(--accent2); } .mti-tip-good .mti-tip-ico { color: var(--accent2); }
+
+/* ── Calendar heatmap ─────────────────────────────────────────────────── */
+.mti-hm-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.mti-hm-dow { text-align: center; font-size: 0.62rem; font-weight: 700; color: var(--text-soft); padding-bottom: 2px; }
+.mti-hm-dow.mti-hm-we { color: var(--accent-2, var(--danger)); }
+.mti-hm-cell {
+  position: relative; aspect-ratio: 1 / 1; min-height: 44px; padding: 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  border: 1px solid var(--card-border); border-radius: 8px; cursor: pointer;
+  background: var(--surface); color: var(--text-main); font-family: var(--font);
+  -webkit-tap-highlight-color: transparent; overflow: hidden;
+}
+.mti-hm-blank { border: none; background: transparent; cursor: default; pointer-events: none; }
+.mti-hm-num { font-size: 0.72rem; font-weight: 700; line-height: 1.1; }
+.mti-hm-amt { font-size: 0.55rem; font-weight: 600; opacity: 0.85; line-height: 1.1; }
+/* Intensity ramp. Fill AND text colour are chosen per theme so every level
+   keeps >= 4.5:1 contrast (measured from rendered pixels): in light mode the
+   fill darkens with intensity (text flips to white at L4); in dark mode the
+   fill LIGHTENS with intensity (text flips to dark at L4). */
+.mti-hm-l0 { background: var(--surface); }
+.mti-hm-l1 { background: color-mix(in srgb, var(--danger) 18%, var(--card-bg-solid)); }
+.mti-hm-l2 { background: color-mix(in srgb, var(--danger) 38%, var(--card-bg-solid)); }
+.mti-hm-l3 { background: color-mix(in srgb, var(--danger) 55%, var(--card-bg-solid)); }
+.mti-hm-l4 { background: var(--danger); color: #fff; border-color: transparent; }
+[data-theme="dark"] .mti-hm-l4 { color: #0b1220; }
+/* browsers without color-mix: solid rgba tints of the light-theme danger colour */
+@supports not (background: color-mix(in srgb, red 10%, white)) {
+  .mti-hm-l1 { background: rgba(178, 58, 58, 0.16); }
+  .mti-hm-l2 { background: rgba(178, 58, 58, 0.34); }
+  .mti-hm-l3 { background: rgba(178, 58, 58, 0.52); }
+}
+.mti-hm-we:not(.mti-hm-l1):not(.mti-hm-l2):not(.mti-hm-l3):not(.mti-hm-l4):not(.mti-hm-dow) { background: var(--surface2); }
+.mti-hm-inc:not(.mti-hm-l1) { box-shadow: inset 0 -3px 0 var(--accent2); }   /* income-only day marker */
+.mti-hm-future { opacity: 0.4; }
+.mti-hm-today { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mti-hm-legend { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 10px; font-size: 0.62rem; color: var(--text-soft); }
+.mti-hm-sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--card-border); }
+
+/* ── Desktop refinements (>= 900px) ───────────────────────────────────── */
+@media (min-width: 900px) {
+  .mti-tabbar { max-width: 520px; margin-left: auto; margin-right: auto; }
+  .mti-periodbar { justify-content: center; }
+  .mti-pane.mti-active { max-width: 720px; margin-left: auto; margin-right: auto; }
+  .mti-hm-cell { min-height: 56px; }
+  .mti-hm-num { font-size: 0.82rem; }
+  .mti-hm-amt { font-size: 0.65rem; }
+  .mti-brow:hover { border-radius: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mti-pane.mti-active { animation: none; }
+  .mti-bar-fill, .mti-chev { transition: none; }
+}
+
+/* ══════════════════ PHASE 2 ══════════════════ */
+
+/* period chips */
+.mti-chips-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.mti-chips-row::-webkit-scrollbar { display: none; }
+.mti-periodbar { flex-wrap: wrap; }
+.mti-periodbar .mti-chips-row { flex: 1 0 100%; }
+.mti-title-sub { font-weight: 600; color: var(--text-soft); margin-left: 6px; font-size: 0.66rem; white-space: nowrap; }
+
+
+/* tappable rows inside existing cards: identical visual height to the original rows;
+   the >=44px tap target comes from an invisible ::after hit-area (see also .mti-card-head). */
+.mti-row-tap { position: relative; cursor: pointer; transition: background var(--trans); -webkit-tap-highlight-color: transparent; }
+/* Stacked rows are only ~36px apart, so an oversized overlay would steal taps from neighbours (the later
+   row wins the overlap and the first row ends up untappable). Instead each row's overlay is EXACTLY its own box
+   (inset:0, no overflow), and the 44px target is reached by giving these rows real height: min-height 44px with
+   the content centred. This is a small, deliberate visual change limited to the three tappable lists. */
+.mti-row-tap { min-height: 44px; box-sizing: border-box; }
+.mti-row-tap:hover, .mti-row-tap:active { background: var(--surface); }
+.mti-row-tap .icr-right::after { content: '\203A'; margin-left: 8px; color: var(--text-soft); font-weight: 400; font-size: 1.1em; }
+.mti-row-tap:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* savings rate */
+.mti-sr-row { display: flex; align-items: center; gap: 14px; margin: 2px 0 10px; }
+.mti-sr-big { font-size: 2rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.mti-sr-side { font-size: 0.76rem; line-height: 1.5; color: var(--text-main); min-width: 0; }
+.mti-sr-trend { display: flex; align-items: flex-end; gap: 6px; height: 118px; padding: 4px 0 0; }
+.mti-sr-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.mti-sr-val { font-size: 0.6rem; font-weight: 700; height: 14px; }
+.mti-sr-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.mti-sr-bar { width: 70%; max-width: 30px; border-radius: 5px 5px 2px 2px; }
+.mti-sr-bar.mti-pos { background: var(--accent2); }
+.mti-sr-bar.mti-neg { background: var(--danger); }
+.mti-sr-lab { font-size: 0.6rem; color: var(--text-soft); margin-top: 4px; }
+
+/* goal box */
+.mti-goal-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--card-border); }
+.mti-goal-title { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.mti-goal-title i.fa-bullseye { color: var(--accent); }
+.mti-goal-amt { font-size: 0.9rem; font-weight: 800; }
+.mti-eta { font-size: 0.8rem; margin-top: 8px; line-height: 1.5; }
+
+/* progress hint (low-data) */
+.mti-lowdata { font-size: 0.72rem; color: var(--text-soft); margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-md); background: var(--surface); }
+.mti-prog { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.mti-prog-meter { display: inline-block; width: 54px; height: 6px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+.mti-prog-meter i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* charts inside mti cards */
+.mti-chart-wrap { position: relative; height: 220px; }
+.mti-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+.mti-chart-wrap .chart-empty { inset: 0; }
+
+/* entry rows (biggest expenses + drill top entries) */
+.mti-elist { display: flex; flex-direction: column; }
+.mti-erow {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 4px;
+  background: transparent; border: none; border-bottom: 1px solid var(--card-border);
+  text-align: left; cursor: pointer; font-family: var(--font); color: var(--text-main);
+  -webkit-tap-highlight-color: transparent;
+}
+.mti-erow:last-child { border-bottom: none; }
+.mti-erow:hover { background: var(--surface); }
+.mti-erow:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mti-erow-rank { flex: 0 0 24px; height: 24px; border-radius: 50%; background: var(--surface2); color: var(--text-main); font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.mti-erow-date { flex: 0 0 40px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.mti-erow-date b { font-size: 1rem; }
+.mti-erow-date i { font-style: normal; font-size: 0.6rem; color: var(--text-soft); }
+.mti-erow-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mti-erow-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.82rem; font-weight: 600; }
+.mti-erow-amt { font-weight: 800; font-size: 0.86rem; color: var(--danger); flex-shrink: 0; }
+.mti-erow-note { font-size: 0.7rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mti-erow-go { color: var(--text-soft); font-size: 0.7rem; flex-shrink: 0; }
+
+/* drill-down sheet */
+.mti-drill-change { font-size: 0.78rem; margin: 10px 0 4px; line-height: 1.5; }
+.mti-drill-sec { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); margin: 14px 0 6px; }
+.mti-drill-chart { position: relative; height: 170px; }
+.mti-drill-chart canvas { width: 100% !important; height: 100% !important; }
+.mti-drill-chart .chart-empty { inset: 0; }
+.mti-drill-full { margin-top: 16px; }
+#mtiDrillModal .cd-stats { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+.mti-eta-lab { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 2px; }
+
+/* ══════════════════ PHASE 3 ══════════════════ */
+
+/* net worth */
+.mti-nw-hero { margin: 2px 0 10px; }
+.mti-nw-hero .mti-sr-big { font-size: 1.9rem; }
+.mti-nw-hero .insight-good, .mti-nw-hero .insight-bad { font-size: 0.76rem; margin-top: 4px; }
+.mti-nw-lines .ins-card-row { min-height: 40px; }
+.mti-nw-trend { display: flex; align-items: flex-end; gap: 6px; height: 104px; margin-top: 10px; }
+
+/* forecast accuracy */
+.mti-acc-line { font-size: 0.82rem; line-height: 1.55; margin-bottom: 4px; color: var(--text-main); }
+
+/* low-data inline hint replacing "Needs at least N months" */
+.mti-lowdata-inline { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; text-align: left; }
+.mti-lowdata i.fa-seedling { color: var(--accent2); margin-right: 4px; }
+
+/* Anything scrolled into view (scrollIntoView) should land BELOW the topbar + pill bar, not under them. */
+.mti-pane, .mti-card, .mti-card-slot { scroll-margin-top: calc(var(--mti-top, 51px) + 64px); }
