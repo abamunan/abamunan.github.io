@@ -76,6 +76,8 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--card-border);font-size:.74rem;margin:3px 4px 3px 0}
 .tag button{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.68rem}
 .sechead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.sechead h2{margin:0}
+.histhead{flex-wrap:wrap}
+.sortsel{width:auto;max-width:180px;padding:6px 8px;font-size:.72rem;cursor:pointer}
 .lockbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);color:inherit;font:700 .68rem var(--font);cursor:pointer;white-space:nowrap}
 .lockbtn.open{border-color:var(--accent2);color:var(--accent2)}
 .lockmsg{font-size:.7rem;color:var(--text-soft);margin-top:8px;line-height:1.6}.lockmsg b{color:inherit}
@@ -92,7 +94,7 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .limit{font-size:.7rem;line-height:1.6;margin-top:10px;padding:8px 10px;border-radius:var(--radius-md);background:var(--surface)}
 .limit.bad{background:var(--danger-glow);color:var(--danger)}
 /* phones: 16px inputs stop iOS Safari from zooming in on focus */
-@media (max-width:640px){input,select{font-size:16px}}
+@media (max-width:640px){input,select,.sortsel{font-size:16px}}
 
 /* ---------- login / access gate ---------- */
 .authbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:.7rem;color:var(--text-soft)}
@@ -119,6 +121,10 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 @keyframes gspin{to{transform:rotate(360deg)}}
 .by{display:inline-block;margin-top:3px;padding:1px 7px;border-radius:999px;background:var(--surface2);color:var(--text-soft);font-size:.6rem;font-weight:600;white-space:nowrap}
 .bys{display:block;line-height:1.5}
+/* ---------- toast (Backup & Export) ---------- */
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--accent);color:#fff;padding:10px 18px;border-radius:999px;font:600 .78rem var(--font);box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.toast.err{background:var(--danger)}
 </style>
 </head>
 <body>
@@ -145,6 +151,8 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
  <div id="tab-inventory" class="tabpanel"></div>
  <div id="tab-settings" class="tabpanel"></div>
 </div>
+<!-- Backup & Export: Excel engine (used by the Excel report button on the Summary tab) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';"></script>
 <script>
 'use strict';
 /* =====================================================================
@@ -185,6 +193,9 @@ let S={
 };
 let state={sales:[],expenses:[],stock:[],capital:[]};
 const editing={}, built={};
+const sortBy={sales:'new',expenses:'new',stock:'new',capital:'new',cash:'new'};   // history sort choice per table (always starts on "Newest first")
+const autoTouched={};   // date / time inputs a partner changed by hand: these are never auto-updated
+let rptFrom='', rptTo='';   // Backup & Export: Excel/PDF report date range (Summary tab rebuilds on every sync, so this is kept outside the DOM)
 
 /* ---------- small helpers ---------- */
 const $=id=>document.getElementById(id);
@@ -194,12 +205,52 @@ function num(v){return +v||0;}
 function money(n){const v=num(n);return (v<0?'−':'')+'৳'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:2});}
 function pad(n){return String(n).padStart(2,'0');}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}   // local date, not UTC
+function nowTimeStr(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}   // local time, 24h "HH:MM" (stored that way)
+function fmtTime(t){const m=/^(\d{1,2}):(\d{2})/.exec(String(t||''));if(!m)return '';const h=+m[1];return (h%12||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}   // shown as 3:45 PM
 function sum(arr,k){return arr.reduce((a,x)=>a+num(x[k]),0);}
 function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'x';}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function isLocalId(id){return /^local_/.test(id)||/^l\d{12,}/.test(id);}
 const st=r=>r.status||'Pending';
-const norm=v=>String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase();   // "Polo", "polo " and "POLO" are the same thing
+const norm=v=>String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase();
+/* ---------- history sorting (date + time; entries saved before time existed count as 00:00) ---------- */
+const cmp=(a,b)=>a<b?-1:a>b?1:0;
+const whenKey=r=>(r.date||'')+' '+(r.time||'00:00');
+const byNewest=(a,b)=>cmp(whenKey(b),whenKey(a))||num(b.createdAt)-num(a.createdAt);
+const SORT_LABELS=[['new','Newest first'],['old','Oldest first'],['amtHigh','Highest amount'],['amtLow','Lowest amount'],['qtyHigh','Highest quantity'],['qtyLow','Lowest quantity']];
+const sortOpts=(hasQty,cur)=>SORT_LABELS.filter(([v])=>hasQty||!/^qty/.test(v)).map(([v,l])=>`<option value="${v}"${v===cur?' selected':''}>${l}</option>`).join('');
+function sortRows(rows,mode,amt,qty){   // ties on amount / quantity fall back to newest first
+ const by={
+  new:byNewest,
+  old:(a,b)=>byNewest(b,a),
+  amtHigh:(a,b)=>amt(b)-amt(a)||byNewest(a,b),
+  amtLow:(a,b)=>amt(a)-amt(b)||byNewest(a,b),
+  qtyHigh:(a,b)=>qty(b)-qty(a)||byNewest(a,b),
+  qtyLow:(a,b)=>qty(a)-qty(b)||byNewest(a,b)}[mode]||byNewest;
+ return rows.slice().sort(by);
+}   // "Polo", "polo " and "POLO" are the same thing
+
+/* ---------- Backup & Export helpers ---------- */
+function downloadBlob(content,mime,filename){
+ const blob=new Blob([content],{type:mime});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+ setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},0);
+}
+function csvEscape(v){
+ let s=v==null?'':String(v);
+ if(/^[=+\-@]/.test(s))s="'"+s;   // stop spreadsheet apps from treating a cell as a formula
+ if(/[",\n]/.test(s))s='"'+s.replace(/"/g,'""')+'"';
+ return s;
+}
+let toastTimer=null;
+function showToast(msg,isError){
+ let t=$('gatToast');
+ if(!t){t=document.createElement('div');t.id='gatToast';t.className='toast';document.body.appendChild(t);}
+ t.textContent=msg;t.className='toast show'+(isError?' err':'');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='toast';},isError?4500:2600);
+}
+function yieldToUI(){return new Promise(r=>setTimeout(r,0));}
 
 /* ---------- status pill + subtitle ---------- */
 function setStatus(kind){
@@ -287,12 +338,15 @@ const statusCell=r=>{
  return `<span class="badge ${c}">${esc(s)}</span>${sub}`;
 };
 const TYPE_LABEL={Investment:'Investment',Withdrawal:'Withdrawal',Reimbursement:'Bills repaid'};
+const dateCell=r=>esc(r.date)+(r.time?`<span class="sub">${esc(fmtTime(r.time))}</span>`:'');
+// Time is picked automatically (current time) but can be changed. It is required, except when editing an older entry that was saved before time existed.
+const timeField=key=>({key:'time',label:'Time',type:'time',req:()=>{const id=editing[key],old=id&&state[key].find(r=>r.id===id);return !(old&&!old.time);}});
 const codOf=r=>num(r.qty)*num(r.unitPrice)+num(r.deliveryCharge);
 const collects=r=>st(r)==='Delivered'||(st(r)==='Returned'&&r.returnMode==='With charge');   // orders where the customer pays us: COD on delivery, or the delivery charge on a "With charge" return
 const dueOf=r=>st(r)==='Delivered'?codOf(r):(collects(r)?num(r.deliveryCharge):0);   // how much the customer pays us on this order
 const TAB_CONFIGS={
- sales:{title:'Sales',single:'Sale',fields:[
-  {key:'date',label:'Date',type:'date',req:true},
+ sales:{title:'Sales',single:'Sale',amount:r=>num(r.qty)*num(r.unitPrice),qty:r=>num(r.qty),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('sales'),
   {key:'orderNo',label:'Order No',type:'text',ph:'ORD-001',req:true},
   {key:'customerName',old:'customer',label:'Customer Name',type:'text',wide:true},
   {key:'customerPhone',label:'Phone',type:'tel'},
@@ -313,7 +367,7 @@ const TAB_CONFIGS={
   dupWarn:true,
   hint:'Pending = parcel is with the courier. Profit is counted when the order is Delivered, Returned or Lost (status Lost = the parcel never arrived: goods and courier fee are written off). Return option: "With charge" = the customer paid the delivery charge, "Without charge" = the customer did not. Return condition: Good = product came back fine, Damaged = came back damaged, Lost = the product did not come back (written off). One order with several products = one line per product; enter the courier fee on one line only. Open the order with ✎ to update its status.',
   columns:[
-   {label:'Date',fmt:r=>esc(r.date)},
+   {label:'Date & Time',fmt:dateCell},
    {label:'Order',fmt:r=>esc(r.orderNo)},
    {label:'Customer',fmt:r=>{const nm=r.customerName||r.customer;return [nm?esc(nm):'',r.customerPhone?`<span class="sub">${esc(r.customerPhone)}</span>`:'',r.customerAddress?`<span class="sub">${esc(r.customerAddress)}</span>`:'',r.note?`<span class="sub">Note: ${esc(r.note)}</span>`:''].join('')||'—';}},
    {label:'Product',fmt:r=>esc(r.product)},
@@ -324,8 +378,8 @@ const TAB_CONFIGS={
    {label:'Status',fmt:statusCell},
    {label:'Received',fmt:r=>collects(r)?esc(r.received||'No')+(r.received==='Yes'&&r.receivedDate?`<span class="sub">${esc(r.receivedDate)}</span>`:''):'—'},
    {label:'Entered by',fmt:byCell}]},
- expenses:{title:'Expenses',single:'Expense',fields:[
-  {key:'date',label:'Date',type:'date',req:true},
+ expenses:{title:'Expenses',single:'Expense',amount:r=>num(r.amount),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('expenses'),
   {key:'category',label:'Category',type:'select',opts:categoryOptions},
   {key:'item',label:'Item / Details',type:'text',wide:true,req:true},
   {key:'amount',label:'Amount',type:'number',req:true},
@@ -334,12 +388,12 @@ const TAB_CONFIGS={
   dupWarn:true,
   hint:'Product cost goes in the Stock tab, courier and return fees on the Sales order, damaged goods on the return. Do not enter them here — they would be counted twice.',
   columns:[
-   {label:'Date',fmt:r=>esc(r.date)},{label:'Category',fmt:r=>esc(r.category)},{label:'Item',fmt:r=>esc(r.item)},
+   {label:'Date & Time',fmt:dateCell},{label:'Category',fmt:r=>esc(r.category)},{label:'Item',fmt:r=>esc(r.item)},
    {label:'Amount',fmt:r=>`<span class="amt expense">${money(r.amount)}</span>`},
    {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
    {label:'Entered by',fmt:byCell}]},
- stock:{title:'Stock',single:'Stock Purchase',dupWarn:true,hint:'Product cost is entered here only. Do not add the same purchase again in Expenses — it would be counted twice.',fields:[
-  {key:'date',label:'Date',type:'date',req:true},
+ stock:{title:'Stock',single:'Stock Purchase',amount:r=>num(r.qty)*num(r.buyingPrice),qty:r=>num(r.qty),dupWarn:true,hint:'Product cost is entered here only. Do not add the same purchase again in Expenses — it would be counted twice.',fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('stock'),
   {key:'product',label:'Product',type:'select',opts:productOptions,req:true,emptyMsg:'Add a product in Settings first'},
   {key:'supplier',label:'Supplier / Source',type:'text'},
   {key:'qty',label:'Qty Bought',type:'number',step:1,int:true,req:true},
@@ -347,19 +401,19 @@ const TAB_CONFIGS={
   {key:'paidById',nameKey:'paidBy',label:'Paid By',type:'select',opts:paidByOptions,req:true},
   {key:'note',label:'Note',type:'text'}],
   columns:[
-   {label:'Date',fmt:r=>esc(r.date)},{label:'Product',fmt:r=>esc(r.product)},{label:'Supplier',fmt:r=>esc(r.supplier)},
+   {label:'Date & Time',fmt:dateCell},{label:'Product',fmt:r=>esc(r.product)},{label:'Supplier',fmt:r=>esc(r.supplier)},
    {label:'Qty',fmt:r=>esc(r.qty)},{label:'Price/pc',fmt:r=>money(r.buyingPrice)},
    {label:'Total Cost',fmt:r=>money(num(r.qty)*num(r.buyingPrice))},
    {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
    {label:'Entered by',fmt:byCell}]},
- capital:{title:'Partner money history',single:'Entry',addTitle:'Withdraw or add money',editTitle:'Edit entry',addBtn:'Save entry',slots:true,fields:[
-  {key:'date',label:'Date',type:'date',req:true},
+ capital:{title:'Partner money history',single:'Entry',addTitle:'Withdraw or add money',editTitle:'Edit entry',addBtn:'Save entry',slots:true,amount:r=>num(r.amount),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('capital'),
   {key:'partnerId',nameKey:'partner',noBiz:true,label:'Partner',type:'select',opts:partnerOptions,req:true,emptyMsg:'Add a partner in Settings first'},
   {key:'type',label:'What is this?',type:'select',wide:true,minw:230,opts:()=>[{v:'Withdrawal',l:'Withdraw — partner takes money out'},{v:'Investment',l:'Investment — partner puts money in'},{v:'Reimbursement',l:'Repay bills the partner paid personally'}]},
   {key:'amount',label:'Amount',type:'number',req:true},
   {key:'note',label:'Note',type:'text',wide:true}],
   columns:[
-   {label:'Date',fmt:r=>esc(r.date)},
+   {label:'Date & Time',fmt:dateCell},
    {label:'Partner',fmt:r=>{const pr=payer(r,'partnerId','partner');return esc(pr.kind==='partner'?pr.p.name:pr.kind==='unknown'?pr.name+' (removed)':'—');}},
    {label:'Type',fmt:r=>esc(TYPE_LABEL[r.type]||r.type)},
    {label:'Amount',fmt:r=>`<span class="amt ${(r.type==='Withdrawal'||r.type==='Reimbursement')?'expense':'income'}">${money(r.amount)}</span>`},
@@ -373,6 +427,7 @@ function fieldInput(key,f){
  const id=fid(key,f);
  if(f.type==='select')return `<select id="${id}"></select>`;
  if(f.type==='date')return `<input type="date" id="${id}" value="${todayStr()}">`;
+ if(f.type==='time')return `<input type="time" id="${id}" value="${nowTimeStr()}">`;
  const isNum=f.type==='number';
  return `<input type="${f.type}" id="${id}" ${isNum?`step="${f.step||0.01}" min="0" inputmode="${f.step===1?'numeric':'decimal'}"`:''} placeholder="${esc(f.ph||'')}">`;
 }
@@ -430,7 +485,8 @@ function loadIntoForm(key,rec){
     fillSelect(el,f,pr.kind==='biz'?BIZ:pr.kind==='partner'?pr.p.id:'');
     if(pr.kind==='unknown'){el.insertAdjacentHTML('afterbegin',`<option value="">Choose… (was: ${esc(pr.name)})</option>`);el.value='';}
    }else{let w=rec[f.key];if(w==null||w==='—')w='';fillSelect(el,f,String(w));}
-  }else if(f.type==='date')el.value=rec[f.key]||todayStr();
+  }else if(f.type==='date'){el.value=rec[f.key]||todayStr();if(f.key==='date')autoTouched[el.id]=true;}   // while editing, the saved date/time stay as they are
+  else if(f.type==='time'){el.value=rec[f.key]||'';autoTouched[el.id]=true;}
   else if(f.type==='number')el.value=num(rec[f.key])?rec[f.key]:'';
   else el.value=rec[f.key]||(f.old&&rec[f.old])||'';
  });
@@ -439,7 +495,8 @@ function loadIntoForm(key,rec){
 function clearForm(key,keepSelects){
  TAB_CONFIGS[key].fields.forEach(f=>{
   const el=$(fid(key,f));if(!el)return;
-  if(f.type==='date')el.value=todayStr();
+  if(f.type==='date'){el.value=todayStr();delete autoTouched[el.id];}
+  else if(f.type==='time'){el.value=nowTimeStr();delete autoTouched[el.id];}
   else if(f.type==='select'){if(!keepSelects){fillSelect(el,f,'');el.selectedIndex=0;}}
   else el.value='';
  });
@@ -462,17 +519,27 @@ function buildCrudPanel(key){
    ${key==='capital'?'<div class="limit" id="limit_capital"></div>':''}
    <button class="addbtn" id="addbtn_${key}" data-act="add" data-key="${key}">${esc(cfg.addBtn||'+ Add '+cfg.single)}</button>
    <button class="ghostbtn hidden" id="cancel_${key}" data-act="cancel" data-key="${key}">Cancel editing</button></div>
-  <div class="section"><h2>${esc(cfg.title)}</h2><div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
+  <div class="section"><div class="sechead histhead"><h2>${esc(cfg.title)}</h2><select class="sortsel" id="sort_${key}" data-act="sort" data-key="${key}" aria-label="Sort ${esc(cfg.title)}">${sortOpts(!!cfg.qty,sortBy[key])}</select></div><div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
   ${cfg.slots?'<div id="acctBottom"></div>':''}`;
  refreshSelects(key);
 }
 function renderTab(key){
  const cfg=TAB_CONFIGS[key];
  if(editing[key]&&!state[key].some(r=>r.id===editing[key])){editing[key]=null;updateFormMode(key);}   // someone deleted it meanwhile
- const rows=state[key].slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||num(b.createdAt)-num(a.createdAt));
+ const rows=sortRows(state[key],sortBy[key],cfg.amount,cfg.qty);
  $('tbl_'+key).innerHTML=rows.length?rows.map(r=>`<tr class="${editing[key]===r.id?'editing':''}">${cfg.columns.map(c=>`<td>${c.fmt(r)}</td>`).join('')}<td class="rowbtns"><button class="edit" data-act="edit" data-key="${key}" data-id="${esc(r.id)}" aria-label="Edit entry">✎</button><button class="del" data-act="del" data-key="${key}" data-id="${esc(r.id)}" aria-label="Delete entry">✕</button></td></tr>`).join('')
   :`<tr><td colspan="${cfg.columns.length+1}" class="empty">No entries yet.</td></tr>`;
 }
+function refreshAutoStamp(){   // date + time follow the clock until a partner changes them by hand (never while editing or while the field is focused)
+ KEYS.forEach(key=>{
+  if(!built[key]||editing[key])return;
+  [['date',todayStr],['time',nowTimeStr]].forEach(([k,now])=>{
+   const id='in_'+key+'_'+k,el=$(id),v=now();
+   if(el&&!autoTouched[id]&&document.activeElement!==el&&el.value!==v)el.value=v;
+  });
+ });
+}
+function setSort(key,mode){sortBy[key]=mode;if(key==='cash')renderAccounts();else renderTab(key);}
 function startEdit(key,id){
  const rec=state[key].find(r=>r.id===id);if(!rec)return;
  editing[key]=id;loadIntoForm(key,rec);updateFormMode(key);renderTab(key);
@@ -529,6 +596,7 @@ function confirmRisky(key,d){
 }
 async function addTabRecord(key){
  const btn=$('addbtn_'+key);if(btn.disabled)return;
+ refreshAutoStamp();   // an untouched date/time is stamped with the moment of saving
  const d=collectForm(key);
  if(!validate(key,d)||!confirmRisky(key,d))return;
  if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==editing.capital).concat([Object.assign({},d,{id:editing.capital||'__new'})])))return;
@@ -806,7 +874,18 @@ function renderSummary(){
  const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`);
  if(s.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(s.unmatched.capital)}</td><td>${money(s.unmatched.paid)}</td><td>${money(s.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
  prow.push(`<tr style="font-weight:700"><td>Total</td><td>${money(s.capitalNet)}</td><td>${money(s.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${s.shareTotal.toFixed(2)}%</td><td>${money(s.netProfit*s.shareTotal/100)}</td></tr>`);
- $('tab-summary').innerHTML=`${renderWarnings(s.warnings)}
+ $('tab-summary').innerHTML=`<div class="section" id="reportExportCard"><h2>Reports</h2>
+  <div class="row">
+   <div class="field"><label for="rptFrom">From</label><input type="date" id="rptFrom" value="${esc(rptFrom)}"></div>
+   <div class="field"><label for="rptTo">To</label><input type="date" id="rptTo" value="${esc(rptTo)}"></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+   <button type="button" class="abtn" data-act="xlsxExport">Download Excel Report</button>
+   <button type="button" class="abtn" data-act="pdfExport">Download PDF Report</button>
+  </div>
+  <div class="hint">From/To (optional) filter the Sales, Expenses, Stock and Accounts sheets/tables. Summary, Inventory and Partners always show all-time totals, so they match this screen.</div>
+ </div>
+ ${renderWarnings(s.warnings)}
  <div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(s.revenue)}</div></div>
  <div class="card out"><div class="l">Total Costs</div><div class="v">${money(s.totalCosts)}</div></div>
  <div class="card"><div class="l">Net Profit</div><div class="v" style="color:${s.netProfit<0?'var(--danger)':'var(--accent2)'}">${money(s.netProfit)}</div></div></div>
@@ -835,20 +914,20 @@ function renderInventory(){
 /* ---------- accounts: business cash, partner balances, limits ---------- */
 function cashLedger(){   // every movement of business cash, oldest first, with a running balance
  const rows=[];
- const add=(date,created,label,inn,out)=>{if(inn||out)rows.push({date:date||'',c:num(created),label,inn,out});};
+ const add=(date,time,created,label,inn,out)=>{if(inn||out)rows.push({date:date||'',time:time||'',createdAt:num(created),label,inn,out});};
  state.capital.forEach(c=>{
   const pr=payer(c,'partnerId','partner'),name=pr.kind==='partner'?pr.p.name:(pr.kind==='unknown'?pr.name:'—'),a=num(c.amount);
-  if(c.type==='Reimbursement')add(c.date,c.createdAt,'Bills repaid to '+name,0,a);
-  else if(c.type==='Withdrawal')add(c.date,c.createdAt,'Withdrawal by '+name,0,a);
-  else add(c.date,c.createdAt,'Investment by '+name,a,0);
+  if(c.type==='Reimbursement')add(c.date,c.time,c.createdAt,'Bills repaid to '+name,0,a);
+  else if(c.type==='Withdrawal')add(c.date,c.time,c.createdAt,'Withdrawal by '+name,0,a);
+  else add(c.date,c.time,c.createdAt,'Investment by '+name,a,0);
  });
  state.sales.forEach(s=>{
-  if(collects(s)&&s.received==='Yes')add(s.receivedDate||s.date,s.createdAt,st(s)==='Delivered'?'Order '+s.orderNo+' received':'Order '+s.orderNo+' delivery charge (returned)',dueOf(s),0);   // older entries have no received date: they keep the order date
-  if(payer(s,'courierPaidById','courierPaidBy').kind==='biz')add(s.date,s.createdAt,'Courier / return — '+s.orderNo,0,num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0));
+  if(collects(s)&&s.received==='Yes')add(s.receivedDate||s.date,s.receivedDate?'':s.time,s.createdAt,st(s)==='Delivered'?'Order '+s.orderNo+' received':'Order '+s.orderNo+' delivery charge (returned)',dueOf(s),0);   // older entries have no received date: they keep the order date
+  if(payer(s,'courierPaidById','courierPaidBy').kind==='biz')add(s.date,s.time,s.createdAt,'Courier / return — '+s.orderNo,0,num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0));
  });
- state.stock.forEach(s=>{if(payer(s,'paidById','paidBy').kind==='biz')add(s.date,s.createdAt,'Stock: '+s.product+' × '+s.qty,0,num(s.qty)*num(s.buyingPrice));});
- state.expenses.forEach(e=>{if(payer(e,'paidById','paidBy').kind==='biz')add(e.date,e.createdAt,'Expense: '+e.item+' ('+e.category+')',0,num(e.amount));});
- rows.sort((a,b)=>a.date.localeCompare(b.date)||a.c-b.c);
+ state.stock.forEach(s=>{if(payer(s,'paidById','paidBy').kind==='biz')add(s.date,s.time,s.createdAt,'Stock: '+s.product+' × '+s.qty,0,num(s.qty)*num(s.buyingPrice));});
+ state.expenses.forEach(e=>{if(payer(e,'paidById','paidBy').kind==='biz')add(e.date,e.time,e.createdAt,'Expense: '+e.item+' ('+e.category+')',0,num(e.amount));});
+ rows.sort((a,b)=>cmp(whenKey(a),whenKey(b))||a.createdAt-b.createdAt);
  let bal=0;rows.forEach(r=>{bal+=r.inn-r.out;r.bal=bal;});
  return rows;
 }
@@ -873,9 +952,14 @@ function renderAccounts(){
    <div class="hint">Bills a partner paid personally do not come out of this cash; they stay "owed back" until you use Repay bills. Still to collect: customer money not yet received ${money(s.moneyPending)}, pending orders ${money(s.codPending)}.</div></div>
   <div class="section"><h2>Partner accounts</h2><div class="pgrid">${cards}</div>
    <div class="hint">Can still take = investment + profit share (− loss share) − already withdrawn. A withdrawal is also limited by the cash in the business account.</div></div>`;
- const led=cashLedger(),show=led.slice().reverse().slice(0,100);
- bot.innerHTML=`<div class="section"><h2>Cash statement</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody>${show.length?show.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.label)}</td><td>${r.inn?`<span class="amt income">${money(r.inn)}</span>`:''}</td><td>${r.out?`<span class="amt expense">${money(r.out)}</span>`:''}</td><td>${money(r.bal)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No money movements yet.</td></tr>'}</tbody></table></div>${led.length>100?`<div class="hint">Showing the latest 100 of ${led.length} entries.</div>`:''}
-  <div class="hint">Customer payments use the Received On date (the order date for older entries). Bills a partner paid personally are not listed because they did not touch business cash.</div></div>`;
+ const led=cashLedger(),mode=sortBy.cash;
+ if(!$('cashTbl')){   // the sort dropdown lives in a frame that is drawn once, so a live sync never closes it
+  bot.innerHTML=`<div class="section"><div class="sechead histhead"><h2>Cash statement</h2><select class="sortsel" id="sort_cash" data-act="sort" data-key="cash" aria-label="Sort cash statement">${sortOpts(false,mode)}</select></div><div class="tablewrap"><table><thead><tr><th>Date &amp; Time</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody id="cashTbl"></tbody></table></div><div id="cashLimit"></div>
+  <div class="hint">Customer payments use the Received On date (the order date for older entries). Bills a partner paid personally are not listed because they did not touch business cash. Balance is the cash after that movement, whatever the sort order.</div></div>`;
+ }
+ const show=sortRows(mode==='old'?led:led.slice().reverse(),mode,r=>r.inn||r.out).slice(0,100);
+ $('cashTbl').innerHTML=show.length?show.map(r=>`<tr><td>${dateCell(r)}</td><td>${esc(r.label)}</td><td>${r.inn?`<span class="amt income">${money(r.inn)}</span>`:''}</td><td>${r.out?`<span class="amt expense">${money(r.out)}</span>`:''}</td><td>${money(r.bal)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No money movements yet.</td></tr>';
+ $('cashLimit').innerHTML=led.length>100?`<div class="hint">Showing 100 of ${led.length} entries (${(SORT_LABELS.find(x=>x[0]===mode)||[])[1]||'Newest first'}).</div>`:'';
 }
 function capitalLimit(){   // what may the selected partner do right now with this kind of entry?
  const pid=$('in_capital_partnerId').value,type=$('in_capital_type').value,p=partnerById(pid);
@@ -940,7 +1024,28 @@ function buildSettings(){
   <div id="catList"></div>
   <div id="addWrap_categories" class="hidden"><div class="row"><div class="field" style="flex:2"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
   <div class="hint">Renaming a category also renames it on the saved expenses.</div></div>
- <div class="section" id="shareSection"></div>`;   // Business share stays last, always
+ <div class="section" id="shareSection"></div>
+ <div class="section" id="backupExportCard"><h2>Backup &amp; Export</h2>
+  <div class="subh">Full backup</div>
+  <button type="button" class="abtn" data-act="backupDownload">Download Full Backup (JSON)</button>
+  <div class="hint">This file contains customer names, phone numbers and addresses — keep it private.</div>
+  <div class="subh">Restore</div>
+  <button type="button" class="abtn" data-act="restoreClick">Restore From Backup</button>
+  <input type="file" id="restoreFile" accept=".json" class="hidden">
+  <div class="hint">Restoring replaces the shared data for every partner. A safety backup of the current data downloads automatically first, and you'll need to type RESTORE to confirm.</div>
+  <div class="subh">Export CSV</div>
+  <div class="row">
+   <div class="field"><label for="csvFrom">From</label><input type="date" id="csvFrom"></div>
+   <div class="field"><label for="csvTo">To</label><input type="date" id="csvTo"></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+   <button type="button" class="abtn" data-act="csvExport" data-list="sales">Export Sales CSV</button>
+   <button type="button" class="abtn" data-act="csvExport" data-list="expenses">Export Expenses CSV</button>
+   <button type="button" class="abtn" data-act="csvExport" data-list="stock">Export Stock CSV</button>
+   <button type="button" class="abtn" data-act="csvExport" data-list="capital">Export Accounts CSV</button>
+  </div>
+  <div class="hint">Leave From/To empty to export all-time data.</div>
+ </div>`;   // Business share stays last, always
 }
 function renderSettingsLists(fromSync){
  const ae=document.activeElement;
@@ -1076,6 +1181,7 @@ function showTab(key){
  document.querySelectorAll('.tabpanel').forEach(p=>p.style.display=p.id==='tab-'+key?'block':'none');
  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
  if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);built[key]=true;}
+ if(TAB_CONFIGS[key])refreshAutoStamp();
  if(key==='settings'&&!built.settings){buildSettings();built.settings=true;}
  refreshActive();
 }
@@ -1116,11 +1222,243 @@ document.addEventListener('click',e=>{
  else if(a==='dupOk')markOk(b.dataset.sig);
 });
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#form_capital'))updateCapitalHint();});   // live limit while typing an amount
+['input','change'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target&&/^in_(sales|expenses|stock|capital)_(date|time)$/.test(e.target.id))autoTouched[e.target.id]=true;}));   // changed by hand -> stop auto-updating it
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAutoStamp();});
 document.addEventListener('change',e=>{
  const t=e.target,a=t.dataset&&t.dataset.act;
- if(a==='pname')updatePartner(t.dataset.pid,'name',t.value);
+ if(a==='sort')setSort(t.dataset.key,t.value);
+ else if(a==='pname')updatePartner(t.dataset.pid,'name',t.value);
  else if(a==='pshare')updatePartner(t.dataset.pid,'share',t.value);
  else if(t.closest&&t.closest('.crudform'))applyShowIf(t.closest('.crudform').dataset.key);   // show/hide status-specific fields
+});
+
+/* =====================================================================
+   BACKUP & EXPORT  (added feature — reads/writes via the same `state`,
+   `S` and `db` the rest of the app uses; never touches gat_locks)
+   ===================================================================== */
+const EXPORT_LIST_NAME={sales:'sales',expenses:'expenses',stock:'stock',capital:'accounts'};
+
+/* ---------- 1. Full backup (JSON) ---------- */
+function backupPayload(){
+ return {app:'garments-accounts',version:1,exportedAt:new Date().toISOString(),exportedBy:(me&&me.email)||'',
+  settings:clone(S),sales:clone(state.sales),expenses:clone(state.expenses),stock:clone(state.stock),capital:clone(state.capital)};
+}
+function downloadFullBackup(silent){
+ downloadBlob(JSON.stringify(backupPayload(),null,2),'application/json','garments-accounts-backup-'+todayStr()+'.json');
+ if(!silent)showToast('Backup downloaded');
+}
+
+/* ---------- 2. Restore from backup (JSON) ---------- */
+async function handleRestoreFile(file){
+ if(!file)return;
+ if(!db){showToast('Restore needs you to be online and logged in.',true);return;}
+ let data;
+ try{data=JSON.parse(await file.text());}catch(e){showToast('Invalid backup file',true);return;}
+ const listsOk=data&&typeof data==='object'&&KEYS.every(k=>Array.isArray(data[k])&&data[k].every(r=>r&&typeof r==='object'));
+ if(!data||data.app!=='garments-accounts'||!listsOk){showToast('Invalid backup file',true);return;}
+ const counts=KEYS.map(k=>`${(TAB_CONFIGS[k]&&TAB_CONFIGS[k].title)||k}: ${data[k].length}`).join('\n');
+ const when=data.exportedAt?new Date(data.exportedAt).toLocaleString():'unknown date';
+ if(!confirm(`Restore this backup?\n\nBackup date: ${when}\n${counts}\n\nThis REPLACES the shared data for ALL partners.\n\nContinue?`))return;
+ downloadFullBackup(true);   // safety copy of the current data before anything is overwritten
+ if(prompt('This cannot be undone. Type RESTORE to continue:')!=='RESTORE'){showToast('Restore cancelled');return;}
+ await runRestore(data);
+}
+async function runRestore(data){
+ try{
+  for(const key of KEYS){
+   const incoming=data[key];
+   const incomingIds=new Set(incoming.map(r=>r.id).filter(id=>id&&!isLocalId(id)));
+   const toDelete=state[key].map(r=>r.id).filter(id=>!isLocalId(id)&&!incomingIds.has(id));
+   const label=(TAB_CONFIGS[key]&&TAB_CONFIGS[key].title)||key;
+   const ops=incoming.map(rec=>()=>{
+    const d=clone(rec);const id=d.id;delete d.id;
+    return (!id||isLocalId(id))?db.collection(key).add(d):db.collection(key).doc(id).set(d);
+   }).concat(toDelete.map(id=>()=>db.collection(key).doc(id).delete()));
+   for(let i=0;i<ops.length;i+=15){
+    showToast(`Restoring ${label}… ${Math.min(i+15,ops.length)}/${ops.length}`);
+    try{await Promise.all(ops.slice(i,i+15).map(fn=>fn()));}
+    catch(e){console.error(e);showToast(`Restore failed while writing ${label} — run the same restore again.`,true);return;}
+    await yieldToUI();
+   }
+  }
+  showToast('Restoring settings…');
+  try{
+   const nextSettings=clone(data.settings||{});
+   await db.doc('settings/main').set(nextSettings);
+   S=Object.assign({},S,nextSettings);normalizeSettings();
+  }catch(e){console.error(e);showToast('Restore failed while writing settings — run the same restore again.',true);return;}
+  // the onSnapshot listeners refresh `state` by themselves — never overwrite it manually here
+  refreshActive();
+  showToast('Backup restored');
+ }catch(e){console.error(e);showToast('Restore failed — run the same restore again.',true);}
+}
+
+/* ---------- shared: field-driven columns + date filtering (used by CSV, Excel and PDF) ---------- */
+function csvColumnsFor(key){
+ return TAB_CONFIGS[key].fields.map(f=>({
+  header:f.label,type:f.type,
+  get:r=>{
+   if(f.nameKey)return payerLabel(payer(r,f.key,f.nameKey));
+   let v=r[f.key];if((v===undefined||v===null||v==='')&&f.old)v=r[f.old];
+   return v==null?'':v;
+  }
+ }));
+}
+function rowsForExport(key,from,to){
+ return state[key].filter(r=>{
+  const d=r.date||'';
+  if(from&&d<from)return false;
+  if(to&&d>to)return false;
+  return true;
+ }).slice().sort((a,b)=>cmp(whenKey(a),whenKey(b))||num(a.createdAt)-num(b.createdAt));
+}
+
+/* ---------- 3. CSV export ---------- */
+function exportCsv(key){
+ const cols=csvColumnsFor(key);
+ const from=$('csvFrom')?$('csvFrom').value:'',to=$('csvTo')?$('csvTo').value:'';
+ const rows=rowsForExport(key,from,to);
+ const lines=[cols.map(c=>csvEscape(c.header)).join(',')].concat(rows.map(r=>cols.map(c=>csvEscape(c.get(r))).join(',')));
+ downloadBlob('\ufeff'+lines.join('\r\n'),'text/csv;charset=utf-8','garments-accounts-'+EXPORT_LIST_NAME[key]+'-'+todayStr()+'.csv');
+ showToast('CSV downloaded');
+}
+
+/* ---------- 4. Excel report (.xlsx) — every number below comes from the app's own compute functions ---------- */
+function xlAutoWidth(ws){ws.columns.forEach(col=>{let max=10;col.eachCell({includeEmpty:false},c=>{const l=(c.value==null?'':String(c.value)).length;if(l>max)max=l;});col.width=Math.min(40,max+2);});}
+function xlBanner(ws,title,cols){
+ ws.mergeCells(1,1,1,Math.max(1,cols));
+ const c=ws.getCell(1,1);c.value=title;c.font={bold:true,size:13,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1B3A5C'}};
+ ws.getRow(1).height=22;
+}
+function addSummarySheet(wb){
+ const s=computeSummary(),ws=wb.addWorksheet('Summary');
+ xlBanner(ws,'Garments Accounts — Summary',3);ws.addRow([]);
+ const put=(label,val)=>{const r=ws.addRow([label,val]);r.getCell(2).numFmt='"৳"#,##0.00';};
+ ws.addRow(['Profit & Loss']).getCell(1).font={bold:true};
+ put('Product sales (delivered)',s.productSales);put('Delivery charges collected',s.deliveryCollected);put('Total Revenue',s.revenue);
+ put('Cost of goods sold',-s.cogs);put('Loss from damaged returns',-s.damageLoss);put('Loss from lost products',-s.lostLoss);put('Gross Profit',s.grossProfit);
+ put('Courier fees',-s.courierResolved);put('Return fees',-s.returnCharges);put('Operating expenses',-s.operatingExpenses);put('NET PROFIT',s.netProfit);
+ ws.addRow([]);ws.addRow(['Cash']).getCell(1).font={bold:true};
+ put('Cash in business account',s.cashBalance);put('Owed back to partners',s.paidPersonallyTotal-s.repaidTotal);
+ ws.addRow([]);ws.addRow(['Orders']).getCell(1).font={bold:true};
+ ws.addRow(['Delivered',s.deliveredCount]);ws.addRow(['Returned',s.returnedCount]);ws.addRow(['Lost',s.lostCount]);
+ ws.addRow(['Pending',s.pendingCount]);ws.addRow(['Total',s.totalOrders]);
+ ws.addRow([]);ws.addRow(['Operating expenses by category']).getCell(1).font={bold:true};
+ Object.entries(s.expByCat).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>put(k,v));
+ ws.getColumn(1).width=36;ws.getColumn(2).width=18;
+ ws.views=[{state:'frozen',ySplit:2}];
+}
+function addListSheet(wb,key,sheetName,from,to){
+ const cfg=TAB_CONFIGS[key],cols=csvColumnsFor(key),rows=rowsForExport(key,from,to),ws=wb.addWorksheet(sheetName);
+ ws.addRow([cfg.title]);ws.addRow([]);
+ const hRow=ws.addRow(cols.map(c=>c.header));
+ hRow.eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFEFEF'}};});
+ rows.forEach(r=>{
+  const excelRow=ws.addRow(cols.map(c=>c.get(r)));
+  cols.forEach((c,i)=>{const cell=excelRow.getCell(i+1);if(c.type==='number')cell.numFmt='"৳"#,##0.00';else if(c.type==='tel')cell.numFmt='@';});
+ });
+ xlBanner(ws,cfg.title,cols.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+function addInventorySheet(wb){
+ const inv=computeInventory(),ws=wb.addWorksheet('Inventory');
+ const headers=['Product','Bought','Avg Cost','Sent Out','In Transit','Ret. Good','Ret. Damaged','Ret. Unchecked','Lost','In Stock','Stock Value'];
+ ws.addRow(['Garments Accounts — Inventory']);ws.addRow([]);
+ ws.addRow(headers).eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFEFEF'}};});
+ inv.forEach(i=>{
+  const row=ws.addRow([i.product,i.qtyBought,i.avgCost,i.sentOut,i.inTransit,i.returnedGood,i.returnedDamaged,i.returnedUnchecked,i.lost,i.inStock,i.stockValue]);
+  row.getCell(3).numFmt='"৳"#,##0.00';row.getCell(11).numFmt='"৳"#,##0.00';
+ });
+ xlBanner(ws,'Garments Accounts — Inventory',headers.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+function addPartnersSheet(wb){
+ const s=computeSummary(),ws=wb.addWorksheet('Partners');
+ const headers=['Partner','Capital (net)','Paid personally','Owed back','Share %','Profit share'];
+ ws.addRow(['Garments Accounts — Partners']);ws.addRow([]);
+ ws.addRow(headers).eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFEFEF'}};});
+ S.partners.forEach(p=>{
+  const row=ws.addRow([p.name,s.capitalByPartner[p.id],s.paidPersonally[p.id],s.owed[p.id],num(p.share),s.netProfit*num(p.share)/100]);
+  [2,3,4,6].forEach(i=>row.getCell(i).numFmt='"৳"#,##0.00');
+  row.getCell(5).numFmt='0.00"%"';
+ });
+ xlBanner(ws,'Garments Accounts — Partners',headers.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+async function exportExcel(){
+ if(typeof ExcelJS==='undefined'){showToast('Excel engine still loading — try again in a sec',true);return;}
+ const from=$('rptFrom')?$('rptFrom').value:'',to=$('rptTo')?$('rptTo').value:'';
+ try{
+  const wb=new ExcelJS.Workbook();wb.creator='Garments Accounts';wb.created=new Date();
+  addSummarySheet(wb);
+  addListSheet(wb,'sales','Sales',from,to);addListSheet(wb,'expenses','Expenses',from,to);
+  addListSheet(wb,'stock','Stock',from,to);addListSheet(wb,'capital','Accounts',from,to);
+  addInventorySheet(wb);addPartnersSheet(wb);
+  const buf=await wb.xlsx.writeBuffer();
+  downloadBlob(buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','garments-accounts-report-'+todayStr()+'.xlsx');
+  showToast('Excel report downloaded');
+ }catch(e){console.error(e);showToast('Could not build the Excel report',true);}
+}
+
+/* ---------- 5. PDF report (print window) ---------- */
+function pdfListTable(key,from,to){
+ const cfg=TAB_CONFIGS[key],cols=csvColumnsFor(key),rows=rowsForExport(key,from,to);
+ return `<h2>${esc(cfg.title)}</h2><table><thead><tr>${cols.map(c=>`<th>${esc(c.header)}</th>`).join('')}</tr></thead><tbody>${
+  rows.length?rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(c.get(r))}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}">No entries</td></tr>`}</tbody></table>`;
+}
+function buildPdfHtml(from,to){
+ const s=computeSummary();
+ const kv=(label,val)=>`<tr><td>${esc(label)}</td><td>${money(val)}</td></tr>`;
+ const partnersRows=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(num(p.share))}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`).join('');
+ const catRows=Object.entries(s.expByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${money(v)}</td></tr>`).join('')||'<tr><td colspan="2">No expenses yet</td></tr>';
+ return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Garments Accounts Report</title>
+<style>
+ body{font-family:Arial,Helvetica,sans-serif;color:#1a2632;padding:20px}
+ h1{margin:0 0 4px;font-size:1.2rem}
+ h2{margin:22px 0 8px;font-size:1rem}
+ table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:.78rem}
+ th,td{border:1px solid #ccc;padding:5px 7px;text-align:left}
+ th{background:#f0f0f0}
+ .banner{background:#1B3A5C;color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:16px}
+ @media print{.banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{margin:14mm}}
+</style></head><body>
+<div class="banner"><h1>Garments Accounts — Report</h1><div>Generated ${esc(new Date().toLocaleString())}${from||to?` · ${esc(from||'start')} to ${esc(to||'today')}`:''}</div></div>
+<h2>Profit &amp; Loss</h2><table><tbody>${kv('Product sales (delivered)',s.productSales)}${kv('Delivery charges collected',s.deliveryCollected)}${kv('Total Revenue',s.revenue)}${kv('Cost of goods sold',-s.cogs)}${kv('Loss from damaged returns',-s.damageLoss)}${kv('Loss from lost products',-s.lostLoss)}${kv('Gross Profit',s.grossProfit)}${kv('Courier fees',-s.courierResolved)}${kv('Return fees',-s.returnCharges)}${kv('Operating expenses',-s.operatingExpenses)}${kv('NET PROFIT',s.netProfit)}</tbody></table>
+<h2>Orders</h2><table><tbody><tr><td>Delivered</td><td>${s.deliveredCount}</td></tr><tr><td>Returned</td><td>${s.returnedCount}</td></tr><tr><td>Lost</td><td>${s.lostCount}</td></tr><tr><td>Pending</td><td>${s.pendingCount}</td></tr><tr><td>Total</td><td>${s.totalOrders}</td></tr></tbody></table>
+<h2>Operating Expenses By Category</h2><table><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody>${catRows}</tbody></table>
+<h2>Cash</h2><table><tbody>${kv('Cash in business account',s.cashBalance)}${kv('Owed back to partners',s.paidPersonallyTotal-s.repaidTotal)}</tbody></table>
+<h2>Stock &amp; Money Still To Come</h2><table><tbody>${kv('Customer money not yet received',s.moneyPending)}${kv('Pending orders (COD value)',s.codPending)}${kv('Stock on shelf (at cost)',s.stockValue)}${kv('Stock in transit (at cost)',s.transitValue)}</tbody></table>
+<h2>Partners</h2><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${partnersRows}</tbody></table>
+${pdfListTable('sales',from,to)}${pdfListTable('expenses',from,to)}${pdfListTable('stock',from,to)}${pdfListTable('capital',from,to)}
+<script>window.onload=function(){setTimeout(function(){window.print();},200);};</` + `script>
+</body></html>`;
+}
+function exportPdf(){
+ const from=$('rptFrom')?$('rptFrom').value:'',to=$('rptTo')?$('rptTo').value:'';
+ const w=window.open('','_blank');   // opened synchronously, before any async work, so popup blockers allow it
+ if(!w||w.closed){showToast('Popup blocked — allow popups to export PDF',true);return;}
+ w.document.open();w.document.write(buildPdfHtml(from,to));w.document.close();
+}
+
+/* ---------- Backup & Export: own delegated listeners (kept separate from the app's own handlers above) ---------- */
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;
+ const a=b.dataset.act;
+ if(a==='backupDownload')downloadFullBackup();
+ else if(a==='restoreClick'){const f=$('restoreFile');if(f)f.click();}
+ else if(a==='csvExport')exportCsv(b.dataset.list);
+ else if(a==='xlsxExport')exportExcel();
+ else if(a==='pdfExport')exportPdf();
+});
+document.addEventListener('change',e=>{
+ if(e.target&&e.target.id==='restoreFile'){const f=e.target.files&&e.target.files[0];e.target.value='';handleRestoreFile(f);}
+});
+document.addEventListener('input',e=>{
+ if(e.target&&e.target.id==='rptFrom')rptFrom=e.target.value;
+ else if(e.target&&e.target.id==='rptTo')rptTo=e.target.value;
 });
 
 
@@ -1286,6 +1624,7 @@ function bootUi(){   // runs once, right after the login check passes
  if(booted)return;booted=true;
  loadLocal();loadLocks();normalizeSettings();buildTabbar();setStatus('connecting');
  setInterval(tickLocks,1000);
+ setInterval(refreshAutoStamp,15000);
  showTab('summary');   // draw immediately; the shared database connects in the background
 }
 init();
