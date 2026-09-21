@@ -177,9 +177,14 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
      "owed back" to that partner until a Reimbursement is recorded (Accounts tab).
    • A partner can take out at most: investment + share of profit (− share of loss)
      − what they already took — and never more than the cash in the business account.
+   • Every order can name its Courier. The Accounts tab groups the customer money still to receive by courier
+     (orders saved before couriers existed sit under "No courier set"); the groups always add up to
+     Summary's "Customer money not yet received". Marking orders received from there uses the normal save path.
    ===================================================================== */
 const KEYS=['sales','expenses','stock','capital'];
 const BIZ='biz', BIZ_NAME='Business Account';
+const DEFAULT_COURIERS=['Pathao','Steadfast','RedX'];
+const NO_COURIER='__no_courier__';   // sentinel bucket for orders with no Courier set — never a real courier name a partner would type
 const PLACEHOLDERS=['Partner 1','Partner 2','Partner 3'], REAL_NAMES=['Munan','Jeet','Riti'];
 // Costs the app already counts by itself. They can never be an Expense category, or they would be counted twice:
 //  product cost -> Stock tab (cash out when bought, profit cost when sold) · courier/return -> Sales order · damaged goods -> damaged returns
@@ -194,6 +199,7 @@ let S={
  partners:[{id:'p_munan',name:'Munan',share:33.33,legacy:[]},{id:'p_jeet',name:'Jeet',share:33.33,legacy:[]},{id:'p_riti',name:'Riti',share:33.34,legacy:[]}],
  categories:['Packaging','Marketing','Payment Charges','Transport (Fare)','Operations','Staff','Official / Legal','Others'],
  products:['Product A','Product B','Product C'],
+ couriers:DEFAULT_COURIERS.slice(),
  dupOk:[]   // warnings a partner marked "Not a problem"
 };
 let state={sales:[],expenses:[],stock:[],capital:[]};
@@ -305,6 +311,7 @@ function normalizeSettings(){
  if(oldFormat&&S.partners.length===3&&S.partners.every((p,i)=>p.name===PLACEHOLDERS[i]))S.partners.forEach((p,i)=>{p.name=REAL_NAMES[i];});
  S.categories=(Array.isArray(S.categories)?S.categories:[]).filter(c=>!reservedUse(c));
  S.products=Array.isArray(S.products)?S.products:[];
+ S.couriers=Array.isArray(S.couriers)?S.couriers:DEFAULT_COURIERS.slice();   // old settings docs have no couriers list — fall back to the defaults
  S.dupOk=Array.isArray(S.dupOk)?S.dupOk:[];
 }
 function partnerById(id){return S.partners.find(p=>p.id===id)||null;}
@@ -331,6 +338,7 @@ function partnerUsage(id){
 function partnerOptions(){return S.partners.map(p=>({v:p.id,l:p.name}));}
 function paidByOptions(){return [{v:BIZ,l:BIZ_NAME}].concat(partnerOptions());}
 function productOptions(){return S.products.slice();}
+function courierOptions(){return S.couriers.slice();}
 function categoryOptions(){const c=S.categories.filter(x=>!reservedUse(x));return c.length?c:['Others'];}
 function optList(f){return f.opts().map(o=>typeof o==='string'?{v:o,l:o}:o);}
 
@@ -360,6 +368,7 @@ const TAB_CONFIGS={
   {key:'qty',label:'Qty',type:'number',step:1,int:true,req:true},
   {key:'unitPrice',label:'Unit Price',type:'number',req:true},
   {key:'deliveryCharge',label:'Delivery Charge',type:'number'},
+  {key:'courier',label:'Courier',type:'select',opts:courierOptions,blank:'Select…',emptyMsg:'Add a courier in Settings first',req:()=>{const id=editing.sales,old=id&&state.sales.find(r=>r.id===id);return !(old&&!old.courier);}},
   {key:'courierCharge',label:'Courier Fee',type:'number'},
   {key:'courierPaidById',nameKey:'courierPaidBy',label:'Courier / Return Fee Paid By',type:'select',opts:paidByOptions,req:true},
   {key:'status',label:'Status',type:'select',opts:()=>['Pending','Delivered','Returned','Lost']},
@@ -369,7 +378,7 @@ const TAB_CONFIGS={
   {key:'received',label:'Money Received?',type:'select',opts:()=>['No','Yes'],showIf:collects,def:'No'},
   {key:'receivedDate',label:'Received On',type:'date',showIf:d=>collects(d)&&d.received==='Yes',req:d=>collects(d)&&d.received==='Yes'}],
   dupWarn:true,
-  hint:'Pending = parcel is with the courier. Profit is counted when the order is Delivered, Returned or Lost (status Lost = the parcel never arrived: goods and courier fee are written off). Return option: "With charge" = the customer paid the delivery charge, "Without charge" = the customer did not. Return condition: Good = product came back fine, Damaged = came back damaged, Lost = the product did not come back (written off). One order with several products = one line per product; enter the courier fee on one line only. Open the order with ✎ to update its status.',
+  hint:'Pending = parcel is with the courier. Profit is counted when the order is Delivered, Returned or Lost (status Lost = the parcel never arrived: goods and courier fee are written off). Return option: "With charge" = the customer paid the delivery charge, "Without charge" = the customer did not. Return condition: Good = product came back fine, Damaged = came back damaged, Lost = the product did not come back (written off). One order with several products = one line per product; enter the courier fee on one line only, and pick the same courier on every line. Open the order with ✎ to update its status.',
   columns:[
    {label:'Date & Time',fmt:dateCell},
    {label:'Order',fmt:r=>esc(r.orderNo)},
@@ -378,7 +387,8 @@ const TAB_CONFIGS={
    {label:'Qty',fmt:r=>esc(r.qty)},
    {label:'Amount',fmt:r=>money(num(r.qty)*num(r.unitPrice))},
    {label:'COD Total',fmt:r=>money(codOf(r))},
-   {label:'Courier',fmt:r=>money(r.courierCharge)+`<span class="sub">paid by ${esc(payerLabel(payer(r,'courierPaidById','courierPaidBy')))}</span>`},
+   {label:'Courier',fmt:r=>esc(r.courier||'—')},
+   {label:'Courier Fee',fmt:r=>money(r.courierCharge)+`<span class="sub">paid by ${esc(payerLabel(payer(r,'courierPaidById','courierPaidBy')))}</span>`},
    {label:'Status',fmt:statusCell},
    {label:'Received',fmt:r=>collects(r)?esc(r.received||'No')+(r.received==='Yes'&&r.receivedDate?`<span class="sub">${esc(r.receivedDate)}</span>`:''):'—'},
    {label:'Entered by',fmt:byCell}]},
@@ -468,8 +478,8 @@ function collectForm(key){
 function validate(key,d){
  for(const f of TAB_CONFIGS[key].fields){
   if(f.showIf&&!f.showIf(d))continue;
-  if(f.type==='select'&&f.emptyMsg&&optList(f).length===0){alert(f.emptyMsg+'.');return false;}
   const need=typeof f.req==='function'?f.req(d):f.req,v=d[f.key];
+  if(f.type==='select'&&f.emptyMsg&&optList(f).length===0&&need&&!String(v??'').trim()){alert(f.emptyMsg+'.');return false;}   // an empty list only blocks a required field with nothing chosen (an old order without a courier can still be edited)
   if(need){const bad=f.type==='number'?!(v>0):!String(v??'').trim();if(bad){alert('Please fill in: '+f.label);return false;}}
   if(f.type==='number'){
    if(v<0){alert(f.label+' cannot be negative.');return false;}
@@ -516,7 +526,7 @@ function updateFormMode(key){
 /* ---------- CRUD panels: built once per tab, then only the table refreshes ---------- */
 function buildCrudPanel(key){
  const cfg=TAB_CONFIGS[key];
- $('tab-'+key).innerHTML=`${cfg.slots?'<div id="acctTop"></div>':''}${cfg.dupWarn?`<div id="dupWarn_${key}"></div>`:''}
+ $('tab-'+key).innerHTML=`${cfg.slots?'<div id="acctTop"></div><div id="acctCouriers"></div>':''}${cfg.dupWarn?`<div id="dupWarn_${key}"></div>`:''}
   <div class="section">${secHead(esc(cfg.addTitle||'Add '+cfg.single),'','h_'+key)}
    <div class="row crudform" id="form_${key}" data-key="${key}">${cfg.fields.map(f=>`<div class="field${f.wide?' wide':''}" id="fw_${key}_${f.key}"${f.minw?` style="min-width:${f.minw}px"`:''}><label for="${fid(key,f)}">${esc(f.label)}</label>${fieldInput(key,f)}</div>`).join('')}</div>
    ${cfg.hint?`<div class="hint">${esc(cfg.hint)}</div>`:''}
@@ -618,8 +628,8 @@ async function addRecord(key,data){
  if(db){try{await db.collection(key).add(clone(data));setStatus('synced');return true;}catch(e){saveFailed(e);return false;}}
  state[key].push(Object.assign({id:'local_'+uid()},clone(data)));saveLocal();refreshActive();return true;
 }
-async function updateRecord(key,id,data){
- if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).set(clone(data));setStatus('synced');return true;}catch(e){saveFailed(e);return false;}}
+async function updateRecord(key,id,data,quiet){   // quiet = the caller lists failures itself (batch receive), so no pop-up per record
+ if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).set(clone(data));setStatus('synced');return true;}catch(e){if(quiet){setStatus('error');return false;}saveFailed(e);return false;}}
  const i=state[key].findIndex(r=>r.id===id);if(i<0)return false;
  state[key][i]=Object.assign({id},clone(data));saveLocal();refreshActive();return true;
 }
@@ -1022,7 +1032,7 @@ function cashLedger(){   // every movement of business cash, oldest first, with 
  return rows;
 }
 function renderAccounts(){
- const top=$('acctTop'),bot=$('acctBottom');if(!top||!bot)return;
+ const top=$('acctTop'),bot=$('acctBottom'),cour=$('acctCouriers');if(!top||!bot||!cour)return;
  const s=computeSummary();
  const moneyIn=s.investedTotal+s.moneyReceived;
  const moneyOut=s.bizBy.stock+s.bizBy.expenses+s.bizBy.courier+s.withdrawnTotal+s.repaidTotal;
@@ -1042,6 +1052,7 @@ function renderAccounts(){
    <div class="hint">Bills a partner paid personally do not come out of this cash; they stay "owed back" until you use Repay bills. Still to collect: customer money not yet received ${money(s.moneyPending)}, pending orders ${money(s.codPending)}.</div></div>
   <div class="section">${secHead('Partner accounts')}<div class="pgrid">${cards}</div>
    <div class="hint">Can still take = investment + profit share (− loss share) − already withdrawn. A withdrawal is also limited by the cash in the business account.</div></div>`;
+ renderCourierBlock();
  const led=cashLedger(),mode=sortBy.cash;
  if(!$('cashTbl')){   // the sort dropdown lives in a frame that is drawn once, so a live sync never closes it
   bot.innerHTML=`<div class="section">${secHead('Cash statement',`<select class="sortsel" id="sort_cash" data-act="sort" data-key="cash" aria-label="Sort cash statement">${sortOpts(false,mode)}</select>`)}<div class="tablewrap"><table><thead><tr><th>Date &amp; Time</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody id="cashTbl"></tbody></table></div><div id="cashLimit"></div>
@@ -1050,6 +1061,107 @@ function renderAccounts(){
  const show=sortRows(mode==='old'?led:led.slice().reverse(),mode,r=>r.inn||r.out).slice(0,100);
  $('cashTbl').innerHTML=show.length?show.map(r=>`<tr><td>${dateCell(r)}</td><td>${esc(r.label)}</td><td>${r.inn?`<span class="amt income">${money(r.inn)}</span>`:''}</td><td>${r.out?`<span class="amt expense">${money(r.out)}</span>`:''}</td><td>${money(r.bal)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No money movements yet.</td></tr>';
  $('cashLimit').innerHTML=led.length>100?`<div class="hint">Showing 100 of ${led.length} entries (${(SORT_LABELS.find(x=>x[0]===mode)||[])[1]||'Newest first'}).</div>`:'';
+}
+
+/* ---------- Accounts tab: money to collect from couriers ---------- */
+/* Every order lands in exactly ONE bucket: its courier's name, or "No courier set" (orders saved before the Courier field existed).
+   Each bucket uses the same collects()/dueOf() rule as Summary, so the buckets always add up to Summary's
+   "Customer money not yet received" and "Pending orders (COD value)". */
+function courierBuckets(){   // every courier currently in Settings, plus any that only appear on saved orders (renamed/removed since) — 'No courier set' is added separately by the caller
+ const seen=new Set(),list=[];
+ S.couriers.forEach(c=>{if(c&&!seen.has(c)){seen.add(c);list.push(c);}});
+ state.sales.forEach(s=>{if(s.courier&&!seen.has(s.courier)){seen.add(s.courier);list.push(s.courier);}});
+ return list;
+}
+const courierOf=s=>s.courier||NO_COURIER;   // which bucket a sale belongs to
+const courierLabel=b=>b===NO_COURIER?'No courier set':b;
+function courierOrdersFor(bucket){   // this courier's orders that still owe money — same rule as Summary's "Customer money not yet received"
+ return state.sales.filter(s=>collects(s)&&s.received!=='Yes'&&courierOf(s)===bucket);
+}
+function courierMoneyPending(bucket){return courierOrdersFor(bucket).reduce((a,s)=>a+dueOf(s),0);}
+function courierPendingCodValue(bucket){return state.sales.filter(s=>st(s)==='Pending'&&courierOf(s)===bucket).reduce((a,s)=>a+codOf(s),0);}
+
+let courierBatch={open:null,date:todayStr(),selected:new Set(),failed:[],busy:false};   // JS-only state, same reasoning as the Summary period filter
+let courierBlockBuilt=false,courierPanelBuiltFor=null;
+function ensureCourierBlockShell(){   // built ONCE: renderAccounts() runs on every live sync and must never re-create the Received-on date input mid-use
+ const box=$('acctCouriers');if(!box||courierBlockBuilt)return;
+ box.innerHTML=`<div class="section">${secHead('Money to collect from couriers')}
+  <div class="tablewrap"><table><thead><tr><th>Courier</th><th>Money still to receive</th><th>Pending COD value</th></tr></thead><tbody id="cbRows"></tbody></table></div>
+  <div id="cbPanel"></div>
+  <div class="hint">Tap a courier to open its unreceived orders and mark them received. Money still to receive = customer money not yet received on Delivered orders, plus the delivery charge on "With charge" returns; its Total is the same figure as Summary's "Customer money not yet received". Pending COD value = orders still with the courier (not due yet), so it is not part of that total. Orders saved before couriers were added are under "No courier set".</div></div>`;
+ courierBlockBuilt=true;
+}
+function ensureCourierPanelShell(){   // built once per courier that's open; the date input is never recreated while that courier stays open
+ const box=$('cbPanel');if(!box)return;
+ if(!courierBatch.open){box.innerHTML='';courierPanelBuiltFor=null;return;}
+ if(courierPanelBuiltFor===courierBatch.open)return;
+ box.innerHTML=`<div class="subh">Unreceived orders — ${esc(courierLabel(courierBatch.open))}</div>
+  <div class="row"><div class="field"><label for="cbDateInput">Received on</label><input type="date" id="cbDateInput" value="${esc(courierBatch.date)}" data-act="cbDate"></div></div>
+  <div id="cbOrderList"></div>
+  <button class="ghostbtn" data-act="cbOpen" data-courier="${esc(courierBatch.open)}">Close</button>`;
+ courierPanelBuiltFor=courierBatch.open;
+}
+function renderCourierOrderList(){   // rebuilt freely: checkboxes/labels/button are fully driven by courierBatch, so a rebuild never loses a selection
+ const list=$('cbOrderList');if(!list)return;
+ const courier=courierBatch.open;if(!courier)return;
+ const orders=courierOrdersFor(courier).slice().sort((a,b)=>cmp(whenKey(a),whenKey(b))||num(a.createdAt)-num(b.createdAt));
+ const ids=orders.map(s=>s.id);
+ const allChecked=ids.length>0&&ids.every(id=>courierBatch.selected.has(id));
+ const selOrders=orders.filter(s=>courierBatch.selected.has(s.id));
+ const dis=courierBatch.busy?' disabled':'';
+ const failHtml=courierBatch.failed.length?`<div class="hint"><span class="amt expense">Not saved: ${esc(courierBatch.failed.join(', '))}</span> — they are still unreceived. Check your connection and try again.</div>`:'';
+ if(!orders.length){list.innerHTML=`<div class="empty">All caught up — nothing pending from this courier.</div>${failHtml}`;return;}
+ // checkboxes carry .sortsel only to reset the global input{width:100%} rule (it would stretch them); no new CSS needed
+ const rows=orders.map(s=>`<label class="kv-row"><span><input type="checkbox" class="sortsel" data-act="cbCheck" data-id="${esc(s.id)}"${courierBatch.selected.has(s.id)?' checked':''}${dis}> ${esc(s.orderNo)}<small class="sub">${esc(s.date)} · ${esc(s.product)} × ${esc(s.qty)}${st(s)==='Returned'?' · delivery charge on a return':''}</small></span><span>${money(dueOf(s))}</span></label>`).join('');
+ list.innerHTML=`<label class="kv-row kv-strong"><span><input type="checkbox" class="sortsel" data-act="cbSelectAll"${allChecked?' checked':''}${dis}> Select all</span><span>${orders.length} order${orders.length===1?'':'s'}</span></label>${rows}
+  <button class="addbtn" data-act="cbReceive"${(!selOrders.length||courierBatch.busy)?' disabled':''}>${courierBatch.busy?'Saving…':'Mark '+selOrders.length+' order'+(selOrders.length===1?'':'s')+' received ('+money(selOrders.reduce((a,s)=>a+dueOf(s),0))+')'}</button>${failHtml}`;
+}
+function renderCourierBlock(){
+ ensureCourierBlockShell();
+ const rows=$('cbRows');if(!rows)return;
+ const inSettings=new Set(S.couriers),buckets=courierBuckets().concat([NO_COURIER]);
+ if(courierBatch.open&&!buckets.includes(courierBatch.open)&&!courierBatch.busy){courierBatch.open=null;courierBatch.selected=new Set();courierBatch.failed=[];}   // the open courier was renamed or deleted meanwhile
+ let totDue=0,totCod=0;
+ const body=buckets.map(c=>{
+  const due=courierMoneyPending(c),cod=courierPendingCodValue(c),open=courierBatch.open===c;
+  totDue+=due;totCod+=cod;
+  const gone=c!==NO_COURIER&&!inSettings.has(c);   // still on saved orders, but no longer in Settings
+  return `<tr><td><button class="minibtn${open?' solid':''}" data-act="cbOpen" data-courier="${esc(c)}" aria-expanded="${open}">${esc(courierLabel(c))}</button>${gone?'<span class="sub">removed from Settings</span>':''}</td><td>${money(due)}</td><td>${money(cod)}</td></tr>`;
+ }).join('');
+ rows.innerHTML=body+`<tr class="total"><td>Total</td><td>${money(totDue)}</td><td>${money(totCod)}</td></tr>`;
+ ensureCourierPanelShell();
+ renderCourierOrderList();
+}
+function toggleCourierPanel(courier){
+ if(courierBatch.busy)return;   // never switch couriers while a batch is being saved
+ courierBatch.open=courierBatch.open===courier?null:courier;
+ courierBatch.selected=new Set();courierBatch.date=todayStr();courierBatch.failed=[];
+ renderCourierBlock();
+}
+async function batchReceiveCourier(){   // marks the ticked orders received through the normal save path (updateRecord + stampEdit), 5 at a time; the cash statement refreshes by itself once state changes
+ const courier=courierBatch.open;if(!courier||courierBatch.busy)return;
+ const orders=courierOrdersFor(courier).filter(s=>courierBatch.selected.has(s.id));
+ if(!orders.length)return;
+ const box=$('cbDateInput'),date=box?box.value:courierBatch.date;   // the date the person sees right now (a change event may not have fired yet)
+ if(!date){alert('Please fill in: Received on');return;}
+ courierBatch.date=date;
+ const n=orders.length,total=orders.reduce((a,s)=>a+dueOf(s),0);
+ if(!confirm(`Mark ${n} order${n===1?'':'s'} from ${courierLabel(courier)} as received on ${date}?\n\n${money(total)} will be added to the cash statement on that date.`))return;
+ courierBatch.busy=true;courierBatch.failed=[];renderCourierOrderList();   // busy is set before the first await, so a double tap cannot start a second batch
+ const failed=[],CHUNK=5;let saved=0;
+ try{
+  for(let i=0;i<orders.length;i+=CHUNK){
+   await Promise.all(orders.slice(i,i+CHUNK).map(async s=>{
+    const old=state.sales.find(r=>r.id===s.id),name=s.orderNo||s.id;
+    if(!old||!collects(old)){failed.push(name);return;}   // deleted, or changed by another partner while this was open
+    if(old.received==='Yes'){courierBatch.selected.delete(s.id);return;}   // another partner already marked it
+    const d=clone(old);delete d.id;d.received='Yes';d.receivedDate=date;d.createdAt=old.createdAt||Date.now();stampEdit(d,old);
+    if(await updateRecord('sales',s.id,d,true)){saved++;courierBatch.selected.delete(s.id);}else failed.push(name);
+   }));
+  }
+ }finally{courierBatch.busy=false;courierBatch.failed=failed;}
+ refreshActive();
+ showToast(failed.length?`${failed.length} order${failed.length===1?'':'s'} could not be saved — see the list`:`${saved} order${saved===1?'':'s'} marked received`,failed.length>0);
 }
 function capitalLimit(){   // what may the selected partner do right now with this kind of entry?
  const pid=$('in_capital_partnerId').value,type=$('in_capital_type').value,p=partnerById(pid);
@@ -1110,6 +1222,10 @@ function buildSettings(){
   <div id="prodList"></div>
   <div id="addWrap_products" class="hidden"><div class="row"><div class="field wide"><input id="newProd" placeholder="New product" aria-label="New product"></div></div><button class="addbtn" data-act="addProd">+ Add product</button></div>
   <div class="hint">Removing a product only hides it from the dropdowns — past sales and stock still count in the totals. Renaming a product also renames it on the saved entries.</div></div>
+ <div class="section">${secHead('Couriers','<button class="lockbtn" id="lock_couriers" data-act="toggleList" data-list="couriers"></button>')}
+  <div id="courierList"></div>
+  <div id="addWrap_couriers" class="hidden"><div class="row"><div class="field wide"><input id="newCourier" placeholder="New courier" aria-label="New courier"></div></div><button class="addbtn" data-act="addCourier">+ Add courier</button></div>
+  <div class="hint">Removing a courier only hides it from the Sales dropdown — past orders still show it. Renaming a courier also renames it on the saved orders.</div></div>
  <div class="section">${secHead('Expense categories','<button class="lockbtn" id="lock_categories" data-act="toggleList" data-list="categories"></button>')}
   <div id="catList"></div>
   <div id="addWrap_categories" class="hidden"><div class="row"><div class="field wide"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
@@ -1147,7 +1263,7 @@ function buildSettings(){
 function renderSettingsLists(fromSync){
  const ae=document.activeElement;
  if(fromSync&&ae&&ae.tagName==='INPUT'&&$('tab-settings').contains(ae))return;   // don't disturb someone who is typing
- [['products','prodList'],['categories','catList']].forEach(([list,boxId])=>{
+ [['products','prodList'],['couriers','courierList'],['categories','catList']].forEach(([list,boxId])=>{
   const open=listUnlocked[list];
   const tags=S[list].map(x=>`<span class="tag">${esc(x)}${open?`<button data-act="editItem" data-list="${list}" data-name="${esc(x)}" aria-label="Rename" title="Rename">✎</button><button data-act="rmItem" data-list="${list}" data-name="${esc(x)}" aria-label="Remove" title="Remove">✕</button>`:''}</span>`).join('')||'<div class="empty">None yet</div>';
   $(boxId).innerHTML=tags+`<div class="hint">${open?'🔓 Unlocked — it locks again when you leave Settings.':'🔒 Locked — tap Unlock to add, rename or remove.'}</div>`;
@@ -1159,7 +1275,7 @@ function renderSettingsLists(fromSync){
 /* ---------- locks: lists unlock at once; profit shares need a wait; removing a partner needs a longer wait ---------- */
 const SHARE_WAIT=5*60*1000,REMOVE_WAIT=10*60*1000,OPEN_WINDOW=10*60*1000;   // cooling-off waits, and how long an unlocked action stays available
 let LOCKS={share:0,rm:{}},shareSig='';   // start times, kept on this device so a reload or a phone switching apps does not restart the wait
-const listUnlocked={products:false,categories:false};
+const listUnlocked={products:false,categories:false,couriers:false};
 function loadLocks(){try{const x=JSON.parse(localStorage.getItem('gat_locks')||'null');if(x&&typeof x==='object')LOCKS={share:+x.share||0,rm:(x.rm&&typeof x.rm==='object')?x.rm:{}};}catch(e){}}
 function saveLocks(){try{localStorage.setItem('gat_locks',JSON.stringify(LOCKS));}catch(e){}}
 function gate(start,wait){   // s: 'off' (never started / expired) · 'wait' (left = ms until it opens) · 'open' (left = ms until it locks again)
@@ -1257,8 +1373,9 @@ async function renameItem(list,oldName){   // renames the list entry and every s
  if(!v||v===oldName)return;
  if(list==='categories'){const use=reservedUse(v);if(use){alert(`"${v}" is already counted automatically through ${use}, so it can't be an expense category.`);return;}}
  if(S[list].some(x=>x!==oldName&&norm(x)===norm(v))){alert('Already in the list.');return;}
- const keys=list==='products'?['stock','sales']:['expenses'],field=list==='products'?'product':'category';
- const hit=r=>list==='products'?norm(r[field])===norm(oldName):r[field]===oldName;
+ const RENAME_TARGETS={products:{keys:['stock','sales'],field:'product'},couriers:{keys:['sales'],field:'courier'},categories:{keys:['expenses'],field:'category'}};
+ const {keys,field}=RENAME_TARGETS[list]||{keys:[],field:''};
+ const hit=r=>list==='categories'?r[field]===oldName:norm(r[field])===norm(oldName);
  const affected=[];keys.forEach(k=>state[k].filter(hit).forEach(r=>affected.push([k,r])));
  if(affected.length&&!confirm(`This also renames "${oldName}" on ${affected.length} saved entr${affected.length===1?'y':'ies'}, so the history stays together.\n\nContinue?`))return;
  const ok=await commitSettings(next=>{const i=next[list].indexOf(oldName);if(i<0)return false;next[list][i]=v;});
@@ -1274,7 +1391,7 @@ function markOk(sig){if(!sig)return;commitSettings(next=>{next.dupOk=Array.from(
 /* ---------- navigation & refresh ---------- */
 function showTab(key){
  activeTab=key;
- if(key!=='settings'){listUnlocked.products=false;listUnlocked.categories=false;}   // lists lock again when you leave Settings
+ if(key!=='settings'){listUnlocked.products=false;listUnlocked.categories=false;listUnlocked.couriers=false;}   // lists lock again when you leave Settings
  document.querySelectorAll('.tabpanel').forEach(p=>p.style.display=p.id==='tab-'+key?'block':'none');
  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
  if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);built[key]=true;}
@@ -1308,6 +1425,7 @@ document.addEventListener('click',e=>{
  else if(a==='addPartner')addPartner();
  else if(a==='addCat')addItem('categories','newCat');
  else if(a==='addProd')addItem('products','newProd');
+ else if(a==='addCourier')addItem('couriers','newCourier');
  else if(a==='toggleList')toggleList(b.dataset.list);
  else if(a==='editItem')renameItem(b.dataset.list,b.dataset.name);
  else if(a==='unlockShare')unlockShare();
@@ -1317,6 +1435,8 @@ document.addEventListener('click',e=>{
  else if(a==='rmNow')rmNow(b.dataset.pid);
  else if(a==='rmItem')removeItem(b.dataset.list,b.dataset.name);
  else if(a==='dupOk')markOk(b.dataset.sig);
+ else if(a==='cbOpen')toggleCourierPanel(b.dataset.courier);
+ else if(a==='cbReceive')batchReceiveCourier();
 });
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#form_capital'))updateCapitalHint();});   // live limit while typing an amount
 ['input','change'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target&&/^in_(sales|expenses|stock|capital)_(date|time)$/.test(e.target.id))autoTouched[e.target.id]=true;}));   // changed by hand -> stop auto-updating it
@@ -1329,6 +1449,9 @@ document.addEventListener('change',e=>{
  else if(a==='periodMode'){summaryPeriod.mode=t.value;syncPeriodFieldVisibility();renderSummary();}
  else if(a==='periodFrom'){summaryPeriod.from=t.value;renderSummary();}
  else if(a==='periodTo'){summaryPeriod.to=t.value;renderSummary();}
+ else if(a==='cbCheck'){if(t.checked)courierBatch.selected.add(t.dataset.id);else courierBatch.selected.delete(t.dataset.id);renderCourierOrderList();}
+ else if(a==='cbSelectAll'){const ids=courierOrdersFor(courierBatch.open).map(s=>s.id);if(t.checked)ids.forEach(id=>courierBatch.selected.add(id));else ids.forEach(id=>courierBatch.selected.delete(id));renderCourierOrderList();}
+ else if(a==='cbDate'){courierBatch.date=t.value;}
  else if(t.closest&&t.closest('.crudform'))applyShowIf(t.closest('.crudform').dataset.key);   // show/hide status-specific fields
 });
 
