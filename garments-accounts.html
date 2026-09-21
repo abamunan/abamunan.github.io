@@ -658,11 +658,18 @@ function costAt(stk,date,fallback){   // average buying price of the purchases m
  stk.forEach(x=>{if((x.date||'')<=(date||'')){q+=num(x.qty);t+=num(x.qty)*num(x.buyingPrice);}});
  return q>0?t/q:fallback;   // sale entered before any purchase: use the overall average
 }
-function computeInventory(skipSaleId){
+function inPeriod(dateStr,period){   // true when the (order/expense) date falls inside {from,to}; no period, or a blank bound, = no limit on that side
+ if(!period)return true;
+ const d=dateStr||'';
+ if(period.from&&d<period.from)return false;
+ if(period.to&&d>period.to)return false;
+ return true;
+}
+function computeInventory(skipSaleId,period){   // period (optional {from,to}) scopes which SALES count, by order date. Buying history (stk / avgCost) is never scoped, so a sale's cost is still today's same average-cost-on-order-date rule either way.
  const names=[],seen=new Set();
  const add=n=>{if(n===undefined||n===null||n==='')return;const k=norm(n);if(!seen.has(k)){seen.add(k);names.push(n);}};   // "Polo" and "polo" are one product
  S.products.forEach(add);state.stock.forEach(s=>add(s.product));state.sales.forEach(s=>add(s.product));   // removed products keep counting
- const sales=state.sales.filter(s=>s.id!==skipSaleId);
+ const sales=state.sales.filter(s=>s.id!==skipSaleId&&inPeriod(s.date,period));
  return names.map(p=>{
   const k=norm(p);
   const stk=state.stock.filter(s=>norm(s.product)===k);
@@ -692,28 +699,32 @@ function inventoryWarnings(inv){
  });
  return w;
 }
-function computeSummary(capitalList){   // capitalList lets us test "what if this entry changed?"
- const inv=computeInventory();
- const delivered=state.sales.filter(s=>st(s)==='Delivered'),returned=state.sales.filter(s=>st(s)==='Returned'),pending=state.sales.filter(s=>st(s)==='Pending'),lostOrders=state.sales.filter(s=>st(s)==='Lost');
- // profit & loss — only orders that are finished (Delivered / Returned / Lost)
+function computeSummary(capitalList,period){   // capitalList lets us test "what if this entry changed?"; period (optional {from,to}) scopes Revenue/Costs/Orders/Expenses-by-category by order/expense date. Cash, Stock and Partners' capital/paid/owed below are always all-time, whatever `period` is.
+ const inv=computeInventory();   // unfiltered — feeds Stock & money still to come, and the Inventory tab; never changes with the period
+ const invScoped=period?computeInventory(undefined,period):inv;   // same average-cost-on-order-date rule; only which orders are counted changes
+ const salesAll=state.sales,pendingAll=salesAll.filter(s=>st(s)==='Pending');
+ const salesScoped=period?salesAll.filter(s=>inPeriod(s.date,period)):salesAll;
+ const delivered=salesScoped.filter(s=>st(s)==='Delivered'),returned=salesScoped.filter(s=>st(s)==='Returned'),pending=salesScoped.filter(s=>st(s)==='Pending'),lostOrders=salesScoped.filter(s=>st(s)==='Lost');
+ // profit & loss — only orders that are finished (Delivered / Returned / Lost); counted by order date when a period is set
  const productSales=delivered.reduce((a,s)=>a+num(s.qty)*num(s.unitPrice),0);
  const deliveryCollected=sum(delivered,'deliveryCharge')+sum(returned.filter(s=>s.returnMode==='With charge'),'deliveryCharge');   // a returned order still earns the delivery charge when the customer paid it
- const revenue=productSales+deliveryCollected,cogs=sum(inv,'cogs'),damageLoss=sum(inv,'damageLoss'),lostLoss=sum(inv,'lostLoss');
+ const revenue=productSales+deliveryCollected,cogs=sum(invScoped,'cogs'),damageLoss=sum(invScoped,'damageLoss'),lostLoss=sum(invScoped,'lostLoss');
  const grossProfit=revenue-cogs-damageLoss-lostLoss;
  const courierResolved=sum(delivered,'courierCharge')+sum(returned,'courierCharge')+sum(lostOrders,'courierCharge');
  const returnCharges=sum(returned,'returnCharge');
- const operatingExpenses=sum(state.expenses,'amount');
+ const expensesScoped=period?state.expenses.filter(e=>inPeriod(e.date,period)):state.expenses;   // by expense date
+ const operatingExpenses=sum(expensesScoped,'amount');
  const totalCosts=cogs+damageLoss+lostLoss+courierResolved+returnCharges+operatingExpenses;
  const netProfit=revenue-totalCosts;
  const decided=delivered.length+returned.length,returnRate=decided?returned.length/decided:0;
- // money still to come in / stock
- const collectible=state.sales.filter(s=>collects(s));
+ // money still to come in / stock — always as of today, never scoped to a period
+ const collectible=salesAll.filter(s=>collects(s));
  const moneyReceived=collectible.filter(s=>s.received==='Yes').reduce((a,s)=>a+dueOf(s),0);
  const moneyPending=collectible.filter(s=>s.received!=='Yes').reduce((a,s)=>a+dueOf(s),0);
- const codPending=pending.reduce((a,s)=>a+codOf(s),0);
+ const codPending=pendingAll.reduce((a,s)=>a+codOf(s),0);
  const stockPurchases=sum(inv,'totalPurchaseCost'),stockValue=sum(inv,'stockValue'),transitValue=sum(inv,'transitValue');
- const courierAll=sum(state.sales,'courierCharge');   // paid to the courier when dispatched, pending orders included
- // who paid what
+ const courierAll=sum(salesAll,'courierCharge');   // paid to the courier when dispatched, pending orders included
+ // who paid what — always all-time, never scoped
  const paidPersonally={},capitalByPartner={},repaid={},invested={},withdrawn={};
  S.partners.forEach(p=>{paidPersonally[p.id]=0;capitalByPartner[p.id]=0;repaid[p.id]=0;invested[p.id]=0;withdrawn[p.id]=0;});
  const unmatched={paid:0,capital:0,repaid:0,count:0};
@@ -721,7 +732,7 @@ function computeSummary(capitalList){   // capitalList lets us test "what if thi
  const pay=(pr,amt,cat)=>{if(pr.kind==='biz'){bizPaid+=amt;bizBy[cat]+=amt;}else if(pr.kind==='partner')paidPersonally[pr.p.id]+=amt;else{unmatched.paid+=amt;unmatched.count++;}};
  state.expenses.forEach(e=>pay(payer(e,'paidById','paidBy'),num(e.amount),'expenses'));
  state.stock.forEach(s=>pay(payer(s,'paidById','paidBy'),num(s.qty)*num(s.buyingPrice),'stock'));
- state.sales.forEach(s=>pay(payer(s,'courierPaidById','courierPaidBy'),num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0),'courier'));
+ salesAll.forEach(s=>pay(payer(s,'courierPaidById','courierPaidBy'),num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0),'courier'));
  let investedTotal=0,withdrawnTotal=0,repaidTotal=0;
  (capitalList||state.capital).forEach(c=>{
   const a=num(c.amount),pr=payer(c,'partnerId','partner'),p=pr.kind==='partner'?pr.p:null;
@@ -734,7 +745,8 @@ function computeSummary(capitalList){   // capitalList lets us test "what if thi
  unmatched.owed=unmatched.paid-unmatched.repaid;
  const paidPersonallyTotal=Object.values(paidPersonally).reduce((a,x)=>a+x,0)+unmatched.paid;
  const cashBalance=capitalNet+moneyReceived-bizPaid-repaidTotal;
- // each partner's account = what they put in + their share of profit (or − loss) − what they already took
+ // each partner's account = what they put in + their share of profit (or − loss) − what they already took.
+ // NOTE: profitShare/entitlement below follow `netProfit`, so they are only "as of today" when no `period` is passed — every existing caller of computeSummary() does that; the Summary tab's period filter reads `netProfit` directly instead of through `acct`, for exactly this reason.
  const acct={};
  S.partners.forEach(p=>{
   const profitShare=netProfit*num(p.share)/100;
@@ -742,7 +754,7 @@ function computeSummary(capitalList){   // capitalList lets us test "what if thi
   acct[p.id]={invested:invested[p.id],withdrawn:withdrawn[p.id],profitShare,entitlement,owed:owed[p.id],
    canTake:Math.max(0,entitlement),canNow:Math.max(0,Math.min(entitlement,cashBalance))};
  });
- const expByCat={};state.expenses.forEach(e=>{expByCat[e.category]=(expByCat[e.category]||0)+num(e.amount);});
+ const expByCat={};expensesScoped.forEach(e=>{expByCat[e.category]=(expByCat[e.category]||0)+num(e.amount);});
  const shareTotal=S.partners.reduce((a,p)=>a+num(p.share),0);
  const warnings=inventoryWarnings(inv).concat(duplicateWarnings());
  if(Math.abs(shareTotal-100)>0.005)warnings.push(`Profit shares add up to ${shareTotal.toFixed(2)}%, not 100%. Fix this in Settings.`);
@@ -750,7 +762,7 @@ function computeSummary(capitalList){   // capitalList lets us test "what if thi
  if(cashBalance<-0.005)warnings.push(`Cash in the business account is negative (${money(cashBalance)}): more money has gone out than came in. Check recent withdrawals and entries.`);
  S.partners.forEach(p=>{const a=acct[p.id];if(a.withdrawn>0.005&&a.entitlement<-0.005)warnings.push(`<b>${esc(p.name)}</b> has taken ${money(-a.entitlement)} more than investment + profit share.`);});
  return {revenue,productSales,deliveryCollected,cogs,damageLoss,lostLoss,grossProfit,courierResolved,courierAll,returnCharges,operatingExpenses,totalCosts,netProfit,
-  deliveredCount:delivered.length,returnedCount:returned.length,pendingCount:pending.length,lostCount:lostOrders.length,totalOrders:state.sales.length,returnRate,
+  deliveredCount:delivered.length,returnedCount:returned.length,pendingCount:pending.length,lostCount:lostOrders.length,totalOrders:salesScoped.length,returnRate,
   capitalNet,investedTotal,withdrawnTotal,bizBy,acct,moneyReceived,moneyPending,codPending,stockPurchases,stockValue,transitValue,bizPaid,repaidTotal,paidPersonallyTotal,cashBalance,
   paidPersonally,capitalByPartner,owed,unmatched,shareTotal,expByCat,warnings};
 }
@@ -874,27 +886,110 @@ function renderCatBars(map){
  return arr.map(([n,v])=>`<div class="catbar-row"><div class="catbar-name">${esc(n)}</div><div class="catbar-track"><div class="catbar-fill" style="width:${Math.max(4,v/max*100)}%"></div></div><div class="catbar-amt">${money(v)}</div></div>`).join('');
 }
 function renderWarnings(list){return list.length?`<div class="warnbox"><b>Please check</b><ul>${list.map(w=>`<li>${w}</li>`).join('')}</ul></div>`:'';}
+
+/* ---------- Summary tab: period filter (state lives in JS only, never read back from the DOM) ---------- */
+let summaryPeriod={mode:'all',from:'',to:''};
+let summaryShellBuilt=false;
+const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function monthBounds(y,m){   // m is 0-indexed; returns the calendar month as {from,to} date strings
+ const from=y+'-'+pad(m+1)+'-01';
+ return {from,to:y+'-'+pad(m+1)+'-'+pad(new Date(y,m+1,0).getDate())};
+}
+function monthLabel(y,m){return MONTH_NAMES[m]+' '+String(y).slice(2);}
+function resolveSummaryPeriod(p){   // -> {from,to,label} (from/to=null means no bound) or {error}
+ const d=new Date();
+ if(p.mode==='this'){const{from,to}=monthBounds(d.getFullYear(),d.getMonth());return{from,to,label:'This month ('+from+' to '+to+')'};}
+ if(p.mode==='last'){let y=d.getFullYear(),m=d.getMonth()-1;if(m<0){m=11;y--;}const{from,to}=monthBounds(y,m);return{from,to,label:'Last month ('+from+' to '+to+')'};}
+ if(p.mode==='custom'){
+  const from=p.from||'',to=p.to||'';
+  if(from&&to&&from>to)return{error:'The "From" date is after the "To" date — pick a valid range.'};
+  if(!from&&!to)return{from:null,to:null,label:'Custom (no dates picked yet — showing all time)'};
+  return{from:from||null,to:to||null,label:'Custom ('+(from||'start')+' to '+(to||'today')+')'};
+ }
+ return{from:null,to:null,label:'All time'};
+}
+function summaryMonthRange(){   // last 12 calendar months or fewer, capped to when sales/expenses actually start
+ const d=new Date(),curY=d.getFullYear(),curM=d.getMonth();
+ let startY=curY,startM=curM-11;while(startM<0){startM+=12;startY--;}
+ const dates=[];
+ state.sales.forEach(s=>{if(s.date)dates.push(s.date);});
+ state.expenses.forEach(e=>{if(e.date)dates.push(e.date);});
+ if(dates.length){
+  const earliest=dates.reduce((a,b)=>a<b?a:b),ey=+earliest.slice(0,4),em=+earliest.slice(5,7)-1;
+  if(ey>startY||(ey===startY&&em>startM)){startY=ey;startM=em;}
+ }
+ const out=[];let y=startY,m=startM;
+ while(y<curY||(y===curY&&m<=curM)){out.push({y,m});m++;if(m>11){m=0;y++;}}
+ return out;
+}
+function renderMonthlyProfitChart(){   // dependency-free inline SVG bar chart; always all-time, never affected by summaryPeriod
+ const vals=summaryMonthRange().map(({y,m})=>{const{from,to}=monthBounds(y,m);return{y,m,net:computeSummary(null,{from,to}).netProfit};});
+ const maxAbs=Math.max(1,...vals.map(v=>Math.abs(v.net)));
+ const barW=40,gap=14,padL=10,padR=10,padT=10,plotH=110,padB=26;
+ const zeroY=padT+plotH/2,scale=(plotH/2-6)/maxAbs;
+ const W=padL+padR+vals.length*(barW+gap)-gap,H=padT+plotH+padB;
+ let bars='';
+ vals.forEach((v,i)=>{
+  const x=padL+i*(barW+gap),h=Math.max(1,Math.abs(v.net)*scale),y=v.net>=0?zeroY-h:zeroY;
+  const color=v.net>0?'var(--accent2)':v.net<0?'var(--danger)':'var(--text-soft)';
+  bars+=`<rect x="${x}" y="${y.toFixed(1)}" width="${barW}" height="${h.toFixed(1)}" rx="3" fill="${color}"><title>${esc(monthLabel(v.y,v.m))}: ${esc(money(v.net))}</title></rect>`;
+  bars+=`<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--text-soft)">${esc(monthLabel(v.y,v.m))}</text>`;
+ });
+ bars+=`<line x1="${padL-4}" y1="${zeroY.toFixed(1)}" x2="${(W-padR+4).toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="var(--card-border)"/>`;
+ return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Net profit by month">${bars}</svg>`;
+}
+function syncPeriodFieldVisibility(){
+ const show=summaryPeriod.mode==='custom';
+ $('sumFromF').classList.toggle('hidden',!show);$('sumToF').classList.toggle('hidden',!show);
+}
+function ensureSummaryShell(){   // builds the period selector ONCE; Summary re-renders on every live sync and must never re-create these inputs, or an open date picker / half-typed date would be lost
+ if(summaryShellBuilt)return;
+ $('tab-summary').innerHTML=`<div class="section">${secHead('Period')}
+  <div class="row">
+   <div class="field"><label for="sumPeriodSel">Period</label><select id="sumPeriodSel" data-act="periodMode">
+    <option value="all">All time</option><option value="this">This month</option><option value="last">Last month</option><option value="custom">Custom</option>
+   </select></div>
+   <div class="field" id="sumFromF"><label for="sumFromI">From</label><input type="date" id="sumFromI" data-act="periodFrom"></div>
+   <div class="field" id="sumToF"><label for="sumToI">To</label><input type="date" id="sumToI" data-act="periodTo"></div>
+  </div>
+  <div class="hint" id="sumPeriodHint"></div></div>
+ <div id="summaryBody"></div>`;
+ syncPeriodFieldVisibility();
+ summaryShellBuilt=true;
+}
 function renderSummary(){
- const s=computeSummary();
- const owedTotal=s.paidPersonallyTotal-s.repaidTotal;
- const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`);
- if(s.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(s.unmatched.capital)}</td><td>${money(s.unmatched.paid)}</td><td>${money(s.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
- prow.push(`<tr class="total"><td>Total</td><td>${money(s.capitalNet)}</td><td>${money(s.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${s.shareTotal.toFixed(2)}%</td><td>${money(s.netProfit*s.shareTotal/100)}</td></tr>`);
- $('tab-summary').innerHTML=`${renderWarnings(s.warnings)}
- <div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(s.revenue)}</div></div>
- <div class="card out"><div class="l">Total Costs</div><div class="v">${money(s.totalCosts)}</div></div>
- <div class="card"><div class="l">Net Profit</div><div class="v amt ${s.netProfit<0?'expense':'income'}">${money(s.netProfit)}</div></div></div>
- <div class="section">${secHead('Profit &amp; Loss')}${kvRows([['Product sales (delivered)',s.productSales],['Delivery charges collected',s.deliveryCollected],['Total Revenue',s.revenue,1],
-  ['Cost of goods sold',-s.cogs],['Loss from damaged returns',-s.damageLoss],['Loss from lost products',-s.lostLoss],['Gross Profit',s.grossProfit,1],
-  ['Courier fees (delivered, returned &amp; lost orders)',-s.courierResolved],['Return fees',-s.returnCharges],['Operating expenses',-s.operatingExpenses],['NET PROFIT',s.netProfit,1]])}
-  <div class="hint">Pending orders do not affect profit until they are marked Delivered, Returned or Lost. Total Costs = everything subtracted above, so Revenue − Total Costs = Net Profit.</div></div>
- <div class="section">${secHead('Orders')}${kvRows([['Delivered',String(s.deliveredCount)],['Returned',String(s.returnedCount)],['Lost',String(s.lostCount)],['Pending (with courier)',String(s.pendingCount)],['Total',String(s.totalOrders),1],['Return rate (delivered + returned)',(s.returnRate*100).toFixed(1)+'%']])}</div>
- <div class="section">${secHead('Operating expenses by category')}${renderCatBars(s.expByCat)}</div>
- <div class="section">${secHead('Cash')}${kvRows([['Cash in business account',s.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
-  <div class="hint">Full breakdown, partner withdrawals and each partner's balance are in the Accounts tab.</div></div>
- <div class="section">${secHead('Stock &amp; money still to come')}${kvRows([['Customer money not yet received',s.moneyPending,0,1],['Pending orders (COD value)',s.codPending,0,1],
-  ['Stock on shelf (at cost)',s.stockValue,0,1],['Stock in transit (at cost)',s.transitValue,0,1]])}</div>
- <div class="section">${secHead('Partners')}<div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div></div>`;
+ ensureSummaryShell();
+ const resolved=resolveSummaryPeriod(summaryPeriod),validPeriod=!resolved.error;
+ $('sumPeriodHint').innerHTML=resolved.error?`<span class="amt expense">${esc(resolved.error)}</span>`:esc('Showing: '+resolved.label+'.');
+ const sAll=computeSummary();   // Cash, Stock and Partners' capital/paid/owed below always come from this — never filtered
+ const sP=validPeriod?computeSummary(null,{from:resolved.from,to:resolved.to}):null;
+ const netForShare=validPeriod?sP.netProfit:sAll.netProfit;   // invalid range: fall back to all-time so the Partners table isn't left blank
+ const owedTotal=sAll.paidPersonallyTotal-sAll.repaidTotal;
+ const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(sAll.capitalByPartner[p.id])}</td><td>${money(sAll.paidPersonally[p.id])}</td><td>${money(sAll.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(netForShare*num(p.share)/100)}</td></tr>`);
+ if(sAll.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(sAll.unmatched.capital)}</td><td>${money(sAll.unmatched.paid)}</td><td>${money(sAll.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
+ prow.push(`<tr class="total"><td>Total</td><td>${money(sAll.capitalNet)}</td><td>${money(sAll.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${sAll.shareTotal.toFixed(2)}%</td><td>${money(netForShare*sAll.shareTotal/100)}</td></tr>`);
+ const periodBlocks=validPeriod?`<div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(sP.revenue)}</div></div>
+ <div class="card out"><div class="l">Total Costs</div><div class="v">${money(sP.totalCosts)}</div></div>
+ <div class="card"><div class="l">Net Profit</div><div class="v amt ${sP.netProfit<0?'expense':'income'}">${money(sP.netProfit)}</div></div></div>
+ <div class="section">${secHead('Profit &amp; Loss')}${kvRows([['Product sales (delivered)',sP.productSales],['Delivery charges collected',sP.deliveryCollected],['Total Revenue',sP.revenue,1],
+  ['Cost of goods sold',-sP.cogs],['Loss from damaged returns',-sP.damageLoss],['Loss from lost products',-sP.lostLoss],['Gross Profit',sP.grossProfit,1],
+  ['Courier fees (delivered, returned &amp; lost orders)',-sP.courierResolved],['Return fees',-sP.returnCharges],['Operating expenses',-sP.operatingExpenses],['NET PROFIT',sP.netProfit,1]])}
+  <div class="hint">Pending orders do not affect profit until they are marked Delivered, Returned or Lost. Orders are counted by order date — there is no delivered date recorded — and expenses by expense date. Total Costs = everything subtracted above, so Revenue − Total Costs = Net Profit.</div></div>
+ <div class="section">${secHead('Orders')}${kvRows([['Delivered',String(sP.deliveredCount)],['Returned',String(sP.returnedCount)],['Lost',String(sP.lostCount)],['Pending (with courier)',String(sP.pendingCount)],['Total',String(sP.totalOrders),1],['Return rate (delivered + returned)',(sP.returnRate*100).toFixed(1)+'%']])}
+  <div class="hint">Counted by order date — there is no delivered date recorded.</div></div>
+ <div class="section">${secHead('Operating expenses by category')}${renderCatBars(sP.expByCat)}
+  <div class="hint">Counted by expense date.</div></div>`:`<div class="warnbox">${esc(resolved.error)}</div>`;
+ $('summaryBody').innerHTML=`${renderWarnings(sAll.warnings)}
+ ${periodBlocks}
+ <div class="section">${secHead('Cash')}${kvRows([['Cash in business account',sAll.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
+  <div class="hint">As of today — not affected by the period filter above. Full breakdown, partner withdrawals and each partner's balance are in the Accounts tab.</div></div>
+ <div class="section">${secHead('Stock &amp; money still to come')}${kvRows([['Customer money not yet received',sAll.moneyPending,0,1],['Pending orders (COD value)',sAll.codPending,0,1],
+  ['Stock on shelf (at cost)',sAll.stockValue,0,1],['Stock in transit (at cost)',sAll.transitValue,0,1]])}
+  <div class="hint">As of today — not affected by the period filter above.</div></div>
+ <div class="section">${secHead('Partners')}<div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div>
+  <div class="hint">Capital, paid personally and owed back are as of today. Only Profit share follows the period filter above.</div></div>
+ <div class="section">${secHead('Profit by month')}<div class="tablewrap">${renderMonthlyProfitChart()}</div>
+  <div class="hint">Last 12 months (or fewer for a newer business), counted by order/expense date. Always all-time — not affected by the period filter above. Green = profit, red = loss.</div></div>`;
 }
 function renderInventory(){
  const inv=computeInventory(),showUnc=sum(inv,'returnedUnchecked')>0,showLost=sum(inv,'lost')>0;
@@ -1231,6 +1326,9 @@ document.addEventListener('change',e=>{
  if(a==='sort')setSort(t.dataset.key,t.value);
  else if(a==='pname')updatePartner(t.dataset.pid,'name',t.value);
  else if(a==='pshare')updatePartner(t.dataset.pid,'share',t.value);
+ else if(a==='periodMode'){summaryPeriod.mode=t.value;syncPeriodFieldVisibility();renderSummary();}
+ else if(a==='periodFrom'){summaryPeriod.from=t.value;renderSummary();}
+ else if(a==='periodTo'){summaryPeriod.to=t.value;renderSummary();}
  else if(t.closest&&t.closest('.crudform'))applyShowIf(t.closest('.crudform').dataset.key);   // show/hide status-specific fields
 });
 
