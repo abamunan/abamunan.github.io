@@ -6,12 +6,15 @@
 <title>Garments Accounts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Icons used by the floating calculator (fa-calculator, fa-xmark, fa-clock-rotate-left, magnifying glasses) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 :root{
  --accent:#1B3A5C;--accent2:#1E8449;--accent2-glow:rgba(30,132,73,.2);--danger:#B23A3A;--danger-glow:rgba(178,58,58,.2);
  --warn:#9A6408;--warn-bg:rgba(201,138,18,.13);
  --surface:rgba(27,58,92,.06);--surface2:rgba(27,58,92,.12);--card-bg:#fff;--card-border:rgba(27,58,92,.18);
  --nav-bg:#1B3A5C;--text-main:#1a2632;--text-soft:#5c6b7a;--bg:#F4F6F8;--radius-lg:16px;--radius-md:10px;--font:'Poppins',Arial,sans-serif;
+ --card-bg-solid:var(--card-bg); /* alias for the floating calculator's CSS, follows light/dark automatically */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#4A7BA6;--accent2:#3FA873;--accent2-glow:rgba(63,168,115,.2);--danger:#D97575;--danger-glow:rgba(217,117,117,.2);--warn:#E0A94A;--warn-bg:rgba(224,169,74,.14);--surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.11);--card-bg:#16283D;--card-border:rgba(74,123,166,.25);--nav-bg:#0F2233;--text-main:#EAF0F6;--text-soft:#9CB0C2;--bg:#0B1622;}}
 :root[data-theme="dark"]{--accent:#4A7BA6;--accent2:#3FA873;--accent2-glow:rgba(63,168,115,.2);--danger:#D97575;--danger-glow:rgba(217,117,117,.2);--warn:#E0A94A;--warn-bg:rgba(224,169,74,.14);--surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.11);--card-bg:#16283D;--card-border:rgba(74,123,166,.25);--nav-bg:#0F2233;--text-main:#EAF0F6;--text-soft:#9CB0C2;--bg:#0B1622;}
@@ -130,6 +133,341 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--accent);color:#fff;padding:10px 18px;border-radius:999px;font:600 .78rem var(--font);box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
 .toast.err{background:var(--danger)}
+
+/* ========================================================================
+   Floating Calculator (integrated from floating-calculator.html)
+   ======================================================================== */
+/* ==========================================================================
+   PART 1 — mt-calc.css  (copied from the app, + size controls)
+   ========================================================================== */
+/* ==========================================================================
+   mt-calc.css — Floating calculator for Money Tracker
+
+   Everything is prefixed .mtc- so nothing collides with mt.css / style.css
+   (style.css already has an unrelated .key class, for example).
+   Colours come from the page's own tokens (--accent, --accent2, --danger,
+   --surface, --card-bg-solid ...), so light / dark follows
+   [data-theme="dark"] with no extra work.
+
+   Layer order in this app:  nav 100 · toast 200 · nav drawer 250 ·
+   modals 300 · calculator 390-400 · splash 9999.
+   The calculator sits above the modals on purpose, so you can use it while
+   the Debts / Search sheets are open.
+   ========================================================================== */
+
+.mtc-hidden { display: none !important; }
+
+/* Invisible probe — lets JS read the phone's safe-area insets (notch / home bar). */
+.mtc-probe {
+  position: fixed; top: 0; left: 0; width: 0; height: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  visibility: hidden; pointer-events: none;
+}
+
+/* ── FLOATING ICON ─────────────────────────────────────────────────────── */
+.mtc-fab {
+  position: fixed; left: 0; top: 0; z-index: 400;
+  width: 54px; height: 54px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.92);
+  background: var(--accent);
+  color: #fff; font-size: 1.3rem;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18);
+  cursor: grab;
+  /* Position comes from JS via the `translate` property; `scale` / opacity animate separately. */
+  will-change: translate;
+  transition: scale 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+[data-theme="dark"] .mtc-fab { border-color: rgba(255,255,255,0.24); }
+.mtc-fab:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mtc-fab.mtc-dragging {
+  cursor: grabbing; scale: 1.12;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.38), 0 4px 10px rgba(0,0,0,0.22);
+}
+/* Over the ✕: the icon melts into it so the red ✕ stays clearly visible. */
+.mtc-fab.mtc-over { scale: 0.6; opacity: 0; }
+.mtc-fab.mtc-vanish { scale: 0.2; opacity: 0; }
+.mtc-fab.mtc-pop { animation: mtcFabPop 240ms cubic-bezier(.2,1.3,.4,1); }
+@keyframes mtcFabPop { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+/* Ring that pings twice so you can spot the icon after "Add Calculator". */
+.mtc-fab::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0; pointer-events: none;
+}
+.mtc-fab.mtc-ping::after { animation: mtcPing 900ms ease-out 2; }
+@keyframes mtcPing {
+  0%   { opacity: 0.75; transform: scale(1); }
+  100% { opacity: 0;    transform: scale(2); }
+}
+
+/* ── REMOVE TARGET (appears while you hold / drag the icon) ────────────── */
+.mtc-drop {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 230px;
+  z-index: 390; pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,0.42), rgba(0,0,0,0));
+  opacity: 0; transition: opacity 160ms ease;
+}
+.mtc-drop.mtc-show { opacity: 1; }
+
+.mtc-drop-x {
+  position: absolute; left: 50%; margin-left: -32px;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,20,20,0.74); color: #fff; font-size: 1.5rem;
+  border: 2px solid rgba(255,255,255,0.55);
+  translate: 0 16px;
+  transition: scale 140ms ease, background 140ms ease, border-color 140ms ease, translate 180ms ease;
+}
+.mtc-drop.mtc-show .mtc-drop-x { translate: 0 0; }
+.mtc-drop.mtc-over .mtc-drop-x { scale: 1.28; background: var(--danger); border-color: #fff; }
+
+.mtc-drop-label {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(96px + 64px + 12px + env(safe-area-inset-bottom, 0px));
+  padding: 4px 11px; border-radius: 999px;
+  background: rgba(20,20,20,0.74); color: #fff;
+  font: 600 0.7rem/1.3 var(--font, sans-serif); white-space: nowrap;
+}
+
+/* ── WINDOW ────────────────────────────────────────────────────────────── */
+.mtc-win {
+  position: fixed; left: 0; top: 0; z-index: 400;
+  /* 296px at 100 %. --mtc-s (0.4 – 1.3) is set by JS from the − / + buttons. */
+  width: calc(296px * var(--mtc-s, 1)); max-width: calc(100vw - 12px);
+  outline: none;
+}
+.mtc-win-in {
+  zoom: var(--mtc-s, 1);   /* scales everything inside the window */
+  background: var(--card-bg-solid, #fff);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.32), 0 2px 10px rgba(0,0,0,0.12);
+  overflow: hidden;
+  font-family: var(--font, 'Poppins', sans-serif);
+  color: var(--text-main);
+}
+.mtc-win-in.mtc-pop { animation: mtcWinPop 190ms cubic-bezier(.2,.9,.3,1.1); }
+@keyframes mtcWinPop {
+  from { transform: scale(0.55); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.mtc-win.mtc-moving .mtc-win-in { box-shadow: 0 26px 60px rgba(0,0,0,0.42), 0 4px 14px rgba(0,0,0,0.16); }
+
+/* Header = drag handle + close button */
+.mtc-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 6px 6px 14px;
+  background: var(--nav-bg); color: #fff;
+  cursor: grab; touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.mtc-win.mtc-moving .mtc-head { cursor: grabbing; }
+.mtc-title { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; }
+.mtc-x {
+  width: 36px; height: 36px; padding: 0; border: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: #fff; font-size: 1.05rem; cursor: pointer;
+  transition: background 120ms ease;
+}
+.mtc-x:hover { background: rgba(255,255,255,0.16); }
+.mtc-x:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+
+/* Size controls:  −  100%  +  ✕ */
+.mtc-tools { display: flex; align-items: center; gap: 2px; }
+.mtc-sz {
+  width: 32px; height: 36px; padding: 0; border: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: #fff; font-size: 0.95rem; cursor: pointer;
+  transition: background 120ms ease, opacity 120ms ease;
+}
+.mtc-sz:hover:not(:disabled) { background: rgba(255,255,255,0.16); }
+.mtc-sz:disabled { opacity: 0.32; cursor: default; }
+.mtc-sz:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+.mtc-pct {
+  min-width: 38px; text-align: center;
+  font-size: 0.7rem; font-weight: 700; opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.mtc-body { position: relative; padding: 10px; }
+
+/* Screen */
+.mtc-screen {
+  height: 122px; padding: 8px 12px 6px;
+  display: flex; flex-direction: column;
+  text-align: right; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.mtc-screen-top { align-self: flex-start; }
+.mtc-hbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px 0 9px;
+  border: 1px solid var(--card-border); border-radius: 999px;
+  background: transparent; color: var(--text-soft);
+  font: 600 0.7rem/1 var(--font, sans-serif); cursor: pointer;
+}
+.mtc-hbtn:hover { color: var(--accent); border-color: var(--accent); }
+.mtc-hbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mtc-hbtn i { font-size: 0.72rem; }
+.mtc-badge {
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--accent); color: #fff;
+  font-size: 0.6rem; line-height: 16px; text-align: center;
+}
+.mtc-badge[hidden] { display: none; }
+
+.mtc-expr {
+  margin-top: auto; min-height: 18px;
+  font-size: 0.72rem; color: var(--text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mtc-result {
+  height: 44px; line-height: 44px;
+  font-size: 1.85rem; font-weight: 600; color: var(--text-main);
+  white-space: nowrap; overflow: hidden;
+}
+.mtc-result.mtc-md  { font-size: 1.5rem; }
+.mtc-result.mtc-sm  { font-size: 1.2rem; }
+.mtc-result.mtc-xs  { font-size: 1rem; }
+.mtc-result.mtc-msg { font-size: 0.95rem; color: var(--danger); }
+
+/* Keys */
+.mtc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.mtc-k {
+  height: 48px; padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--card-bg-solid, #fff); color: var(--text-main);
+  font: 600 1.05rem/1 var(--font, sans-serif);
+  cursor: pointer;
+  transition: transform 80ms ease, background 120ms ease, filter 120ms ease;
+  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mtc-k:hover { background: var(--surface); }
+.mtc-k.mtc-fn { background: var(--surface2); }
+.mtc-k.mtc-fn:hover { filter: brightness(0.96); }
+.mtc-k.mtc-op { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 1.25rem; }
+.mtc-k.mtc-eq { background: var(--accent2); border-color: var(--accent2); color: #fff; font-size: 1.3rem; }
+.mtc-k.mtc-op:hover, .mtc-k.mtc-eq:hover { filter: brightness(1.1); }
+[data-theme="dark"] .mtc-k.mtc-eq { color: #04170f; }
+.mtc-k:active, .mtc-k.mtc-pressed { transform: scale(0.94); }
+.mtc-k:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* History panel (covers the body, not the header — so the window stays draggable) */
+.mtc-hist {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; gap: 10px; padding: 10px;
+  background: var(--card-bg-solid, #fff);
+}
+.mtc-hist[hidden] { display: none; }
+.mtc-h-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mtc-h-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+.mtc-h-sub { margin-top: 1px; font-size: 0.66rem; color: var(--text-soft); }
+.mtc-h-actions { display: flex; align-items: center; gap: 4px; }
+.mtc-h-clear {
+  padding: 8px 9px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--text-soft);
+  font: 600 0.72rem/1 var(--font, sans-serif); cursor: pointer;
+}
+.mtc-h-clear[hidden] { display: none; }
+.mtc-h-clear.mtc-armed { background: var(--danger); color: #fff; }
+.mtc-h-close {
+  width: 34px; height: 34px; padding: 0; border: 0; border-radius: 10px;
+  background: var(--surface2); color: var(--text-main);
+  font-size: 1rem; cursor: pointer;
+}
+.mtc-h-clear:focus-visible, .mtc-h-close:focus-visible, .mtc-h-item:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.mtc-h-list {
+  list-style: none; flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px; padding-right: 2px;
+}
+.mtc-h-list[hidden] { display: none; }
+.mtc-h-item {
+  width: 100%; padding: 8px 12px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  border: 1px solid var(--card-border); border-radius: 10px;
+  background: var(--surface); color: var(--text-main);
+  font-family: var(--font, sans-serif); font-variant-numeric: tabular-nums;
+  text-align: right; cursor: pointer;
+  transition: transform 80ms ease;
+}
+.mtc-h-item:active { transform: scale(0.98); }
+.mtc-h-x { font-size: 0.68rem; color: var(--text-soft); overflow-wrap: anywhere; }
+.mtc-h-r { font-size: 1.05rem; font-weight: 700; overflow-wrap: anywhere; }
+.mtc-h-empty {
+  margin: auto 0; padding: 0 10px; text-align: center;
+  font-size: 0.78rem; line-height: 1.5; color: var(--text-soft);
+}
+.mtc-h-empty[hidden] { display: none; }
+
+/* ── SETTINGS → TOOLS TAB ──────────────────────────────────────────────── */
+/* Six tabs now instead of five: let them size to their text (and scroll a
+   little on very narrow phones) so "Categories" isn't squeezed. */
+#settingsModal .modal-tabs { overflow-x: auto; scrollbar-width: none; }
+#settingsModal .modal-tabs::-webkit-scrollbar { display: none; }
+#settingsModal .modal-tab { flex: 1 0 auto; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+
+.mtc-status {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 12px; padding: 10px 12px;
+  border: 1px solid var(--card-border); border-radius: var(--radius-lg, 12px);
+  background: var(--surface);
+  font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+}
+.mtc-status::before {
+  content: ''; flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent2);
+}
+.mtc-status.mtc-status-off::before { background: var(--text-soft); }
+
+/* ── MISC ──────────────────────────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .mtc-drop-x     { bottom: 44px; }
+  .mtc-drop-label { bottom: calc(44px + 64px + 12px); }
+}
+@media (max-width: 360px) {
+  .mtc-k { height: 44px; }
+  .mtc-screen { height: 116px; }
+}
+/* Short screens (phone in landscape, tiny viewports): compact layout so the
+   whole keypad fits without scrolling. */
+@media (max-height: 560px) {
+  .mtc-head { padding-top: 3px; padding-bottom: 3px; }
+  .mtc-x { width: 32px; height: 32px; }
+  .mtc-sz { height: 32px; }
+  .mtc-body { padding: 8px; }
+  .mtc-screen { height: 90px; padding: 6px 10px 4px; }
+  .mtc-hbtn { height: 24px; }
+  .mtc-result { height: 34px; line-height: 34px; font-size: 1.5rem; }
+  .mtc-result.mtc-md { font-size: 1.25rem; }
+  .mtc-result.mtc-sm { font-size: 1.05rem; }
+  .mtc-result.mtc-xs { font-size: 0.9rem; }
+  .mtc-keys { gap: 6px; margin-top: 8px; }
+  .mtc-k { height: 36px; font-size: 0.95rem; }
+  .mtc-k.mtc-op { font-size: 1.1rem; }
+  .mtc-k.mtc-eq { font-size: 1.15rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mtc-fab, .mtc-drop, .mtc-drop-x, .mtc-k, .mtc-h-item { transition: none; }
+  .mtc-fab.mtc-pop, .mtc-fab.mtc-ping::after, .mtc-win-in.mtc-pop { animation: none; }
+}
+@media print { .mtc-fab, .mtc-win, .mtc-drop { display: none !important; } }
+
 </style>
 </head>
 <body>
@@ -1258,7 +1596,13 @@ function buildSettings(){
   <input type="file" id="restoreFile" accept=".json" class="hidden">
   <div class="hint">The backup file contains customer names, phone numbers and addresses — keep it private.</div>
   <div class="hint">Restoring replaces the shared data for every partner. A safety backup of the current data downloads automatically first, and you'll need to type RESTORE to confirm.</div>
+ </div>
+ <div class="section" id="calcCard">${secHead('Calculator')}
+  <div class="mtc-status" id="mtCalcStatus"></div>
+  <button type="button" class="ghostbtn" onclick="mtCalcAdd()">+ Add calculator</button>
+  <div class="hint">Tap the floating icon to open it and drag it anywhere on screen. Hold it and drop it on the ✕ that appears to hide it for 10 minutes — use this button to bring it back sooner. Resize it with the −/+ buttons in its title bar.</div>
  </div>`;   // Business share stays last, always
+ if(window.mtCalc)window.mtCalc.refresh();
 }
 function renderSettingsLists(fromSync){
  const ae=document.activeElement;
@@ -1848,6 +2192,784 @@ function bootUi(){   // runs once, right after the login check passes
  showTab('summary');   // draw immediately; the shared database connects in the background
 }
 init();
+</script>
+
+<!-- ========================================================================
+     Floating Calculator (integrated from floating-calculator.html)
+     Must stay at the end of <body>, after showToast() is defined above.
+     ======================================================================== -->
+<script>
+/* ==========================================================================
+   mt-calc.js — Floating calculator for Money Tracker
+   Load AFTER mt.js (it uses showToast / closeSettings from there).
+
+   • Floating icon (fa-calculator): tap = open, drag = move anywhere.
+   • Hold or drag the icon → a ✕ target appears at the bottom-centre;
+     drop the icon on it to hide the icon for 10 minutes.
+   • Calculator window: drag by its header, ✕ (top-right) closes it.
+   • Settings → Tools → "Add Calculator" brings the icon back straight away
+     (mtCalcAdd() below).
+   • Last 25 results are kept as history.
+   • Size: the − / + buttons in the window header change the size between
+     40 % and 130 % (10 % steps). On a small screen "+" stops at the biggest
+     size that still fits.
+
+   Saved in localStorage (this browser only):
+     mt_calc_icon_v1          icon position
+     mt_calc_win_v1           window position
+     mt_calc_hidden_until_v1  when the 10-minute hide ends
+     mt_calc_history_v1       history
+     mt_calc_scale_v1         window size (%)
+   ========================================================================== */
+(function () {
+  'use strict';
+  if (window.__mtCalcLoaded) return;
+  window.__mtCalcLoaded = true;
+
+  var K_ICON = 'mt_calc_icon_v1';
+  var K_WIN  = 'mt_calc_win_v1';
+  var K_HIDE = 'mt_calc_hidden_until_v1';
+  var K_HIST = 'mt_calc_history_v1';
+  var K_SCALE = 'mt_calc_scale_v1';
+
+  var HIDE_MS     = 10 * 60 * 1000; // how long "remove" hides the icon
+  var FAB         = 54;             // icon size (px) — keep in sync with CSS
+  var EDGE        = 6;              // min gap to the screen edges (px)
+  var HOLD_MS     = 380;            // press-and-hold time that reveals the ✕
+  var MOVE_PX     = 6;              // finger travel before a press becomes a drag
+  var SNAP_PX     = 64;             // how close to the ✕ counts as "on it"
+  var MAX_HISTORY = 25;
+  var MAX_DIGITS  = 12;
+  var WIN_W       = 296;            // window width at 100 % (px) — keep in sync with CSS
+  var SC_MIN      = 40;             // smallest size (%)
+  var SC_MAX      = 130;            // biggest size (%)
+  var SC_STEP     = 10;             // change per − / + press (%)
+
+  /* ───────────────────────── storage helpers ───────────────────────── */
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode etc. */ } }
+  function readJSON(k) { try { return JSON.parse(lsGet(k)); } catch (e) { return null; } }
+  function validFrac(f) {
+    return f && typeof f.fx === 'number' && typeof f.fy === 'number' &&
+           isFinite(f.fx) && isFinite(f.fy) && f.fx >= 0 && f.fx <= 1 && f.fy >= 0 && f.fy <= 1;
+  }
+
+  function toast(msg) { if (typeof window.showToast === 'function') window.showToast(msg); }
+  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 12); } catch (e) {} }
+
+  /* ───────────────────────────── DOM ───────────────────────────── */
+  var root = document.createElement('div');
+  root.className = 'mtc-root';
+  root.innerHTML =
+    '<div class="mtc-probe" id="mtcProbe"></div>' +
+
+    '<div class="mtc-drop" id="mtcDrop" aria-hidden="true">' +
+      '<div class="mtc-drop-label">Drop here to hide for 10 min</div>' +
+      '<div class="mtc-drop-x"><i class="fas fa-xmark"></i></div>' +
+    '</div>' +
+
+    '<button class="mtc-fab mtc-hidden" id="mtcFab" type="button" aria-label="Open calculator" title="Calculator">' +
+      '<i class="fas fa-calculator" aria-hidden="true"></i>' +
+    '</button>' +
+
+    '<section class="mtc-win mtc-hidden" id="mtcWin" role="dialog" aria-label="Calculator" tabindex="-1">' +
+      '<div class="mtc-win-in" id="mtcWinIn">' +
+        '<header class="mtc-head" id="mtcHead">' +
+          '<span class="mtc-title"><i class="fas fa-calculator" aria-hidden="true"></i> Calculator</span>' +
+          '<span class="mtc-tools">' +
+            '<button class="mtc-sz" id="mtcSmaller" type="button" aria-label="Make calculator smaller" title="Smaller"><i class="fas fa-magnifying-glass-minus" aria-hidden="true"></i></button>' +
+            '<span class="mtc-pct" id="mtcPct" aria-live="polite">100%</span>' +
+            '<button class="mtc-sz" id="mtcBigger" type="button" aria-label="Make calculator bigger" title="Bigger"><i class="fas fa-magnifying-glass-plus" aria-hidden="true"></i></button>' +
+            '<button class="mtc-x" id="mtcClose" type="button" aria-label="Close calculator"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
+          '</span>' +
+        '</header>' +
+        '<div class="mtc-body">' +
+          '<div class="mtc-screen" id="mtcScreen">' +
+            '<div class="mtc-screen-top">' +
+              '<button class="mtc-hbtn" id="mtcHistBtn" type="button" aria-expanded="false" aria-controls="mtcHist">' +
+                '<i class="fas fa-clock-rotate-left" aria-hidden="true"></i><span>History</span>' +
+                '<span class="mtc-badge" id="mtcBadge" hidden>0</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="mtc-expr" id="mtcExpr" aria-hidden="true">&nbsp;</div>' +
+            '<div class="mtc-result" id="mtcResult" role="status" aria-live="polite">0</div>' +
+          '</div>' +
+
+          '<div class="mtc-keys" id="mtcKeys">' +
+            '<button class="mtc-k mtc-fn" data-k="ac" aria-label="Clear all">AC</button>' +
+            '<button class="mtc-k mtc-fn" data-k="bs" aria-label="Backspace">&#9003;</button>' +
+            '<button class="mtc-k mtc-fn" data-k="pct" aria-label="Percent">%</button>' +
+            '<button class="mtc-k mtc-op" data-k="/" aria-label="Divide">&divide;</button>' +
+
+            '<button class="mtc-k" data-k="7">7</button>' +
+            '<button class="mtc-k" data-k="8">8</button>' +
+            '<button class="mtc-k" data-k="9">9</button>' +
+            '<button class="mtc-k mtc-op" data-k="*" aria-label="Multiply">&times;</button>' +
+
+            '<button class="mtc-k" data-k="4">4</button>' +
+            '<button class="mtc-k" data-k="5">5</button>' +
+            '<button class="mtc-k" data-k="6">6</button>' +
+            '<button class="mtc-k mtc-op" data-k="-" aria-label="Subtract">&minus;</button>' +
+
+            '<button class="mtc-k" data-k="1">1</button>' +
+            '<button class="mtc-k" data-k="2">2</button>' +
+            '<button class="mtc-k" data-k="3">3</button>' +
+            '<button class="mtc-k mtc-op" data-k="+" aria-label="Add">+</button>' +
+
+            '<button class="mtc-k mtc-fn" data-k="neg" aria-label="Change sign">&plusmn;</button>' +
+            '<button class="mtc-k" data-k="0">0</button>' +
+            '<button class="mtc-k" data-k="." aria-label="Decimal point">.</button>' +
+            '<button class="mtc-k mtc-eq" data-k="=" aria-label="Equals">=</button>' +
+          '</div>' +
+
+          '<section class="mtc-hist" id="mtcHist" aria-label="Calculator history" hidden>' +
+            '<div class="mtc-h-head">' +
+              '<div>' +
+                '<div class="mtc-h-title">History</div>' +
+                '<div class="mtc-h-sub" id="mtcHistCount">0 of 25 saved</div>' +
+              '</div>' +
+              '<div class="mtc-h-actions">' +
+                '<button class="mtc-h-clear" id="mtcHistClear" type="button" hidden>Clear all</button>' +
+                '<button class="mtc-h-close" id="mtcHistClose" type="button" aria-label="Close history"><i class="fas fa-xmark" aria-hidden="true"></i></button>' +
+              '</div>' +
+            '</div>' +
+            '<p class="mtc-h-empty" id="mtcHistEmpty">No calculations yet. Press = and the result is saved here.</p>' +
+            '<ul class="mtc-h-list" id="mtcHistList" hidden></ul>' +
+          '</section>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+  document.body.appendChild(root);
+
+  function $(id) { return document.getElementById(id); }
+  var probe = $('mtcProbe'), dropEl = $('mtcDrop'), fab = $('mtcFab');
+  var win = $('mtcWin'), winIn = $('mtcWinIn'), head = $('mtcHead'), closeBtn = $('mtcClose');
+  var screenEl = $('mtcScreen'), exprEl = $('mtcExpr'), resEl = $('mtcResult'), keysEl = $('mtcKeys');
+  var histBtn = $('mtcHistBtn'), badgeEl = $('mtcBadge'), histPanel = $('mtcHist');
+  var listEl = $('mtcHistList'), emptyEl = $('mtcHistEmpty'), countEl = $('mtcHistCount');
+  var clearBtn = $('mtcHistClear'), histClose = $('mtcHistClose');
+  var smallerBtn = $('mtcSmaller'), biggerBtn = $('mtcBigger'), pctEl = $('mtcPct');
+
+  /* ─────────────────────── geometry & positioning ─────────────────────── */
+  function vw() { return document.documentElement.clientWidth; }
+  function vh() { return window.innerHeight; }
+  function safe() {
+    var cs = getComputedStyle(probe);
+    return { t: parseFloat(cs.paddingTop) || 0, b: parseFloat(cs.paddingBottom) || 0 };
+  }
+  function bounds(w, h) {
+    var s = safe();
+    var minY = EDGE + s.t;
+    return {
+      minX: EDGE, maxX: Math.max(EDGE, vw() - w - EDGE),
+      minY: minY, maxY: Math.max(minY, vh() - h - EDGE - s.b)
+    };
+  }
+  function clampPos(p, w, h) {
+    var b = bounds(w, h);
+    return { x: Math.min(Math.max(p.x, b.minX), b.maxX), y: Math.min(Math.max(p.y, b.minY), b.maxY) };
+  }
+  // Positions are stored as 0–1 fractions of the free space, so they still
+  // make sense after a rotation or on a different screen size.
+  function toFrac(p, w, h) {
+    var b = bounds(w, h);
+    return {
+      fx: b.maxX > b.minX ? (p.x - b.minX) / (b.maxX - b.minX) : 0,
+      fy: b.maxY > b.minY ? (p.y - b.minY) / (b.maxY - b.minY) : 0
+    };
+  }
+  function fromFrac(f, w, h) {
+    var b = bounds(w, h);
+    return { x: b.minX + f.fx * (b.maxX - b.minX), y: b.minY + f.fy * (b.maxY - b.minY) };
+  }
+  // Uses the CSS `translate` property (not `transform`): it is applied outside
+  // `scale`, so the pop / press / snap scaling never shifts where the icon sits.
+  function setXY(el, p) {
+    el.style.translate = Math.round(p.x) + 'px ' + Math.round(p.y) + 'px';
+  }
+
+  function defaultIconPos() {
+    var desktop = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
+    var s = safe();
+    // Mobile: sit above the floating bottom-nav pill. Desktop: near the corner.
+    return { x: vw() - FAB - 14, y: vh() - FAB - (desktop ? 28 : 112) - s.b };
+  }
+
+  var iconPos = { x: 0, y: 0 };
+  var winPos = { x: 0, y: 0 };
+  var winOpen = false;
+
+  (function initIconPos() {
+    var f = readJSON(K_ICON);
+    var p = validFrac(f) ? fromFrac(f, FAB, FAB) : defaultIconPos();
+    iconPos = clampPos(p, FAB, FAB);
+    setXY(fab, iconPos);
+  })();
+
+  function saveIconPos() { lsSet(K_ICON, JSON.stringify(toFrac(iconPos, FAB, FAB))); }
+  function saveWinPos() {
+    lsSet(K_WIN, JSON.stringify(toFrac(winPos, win.offsetWidth, win.offsetHeight)));
+  }
+
+  /* ───────────────────── icon visibility (10-minute hide) ───────────────────── */
+  var returnTimer = null;
+  var statusTimer = null;
+
+  function hiddenUntil() {
+    var v = parseInt(lsGet(K_HIDE), 10);
+    if (!isFinite(v)) return 0;
+    return Math.min(v, Date.now() + HIDE_MS); // never trust a value further out than 10 min
+  }
+  function isSnoozed() { return hiddenUntil() > Date.now(); }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function renderStatus() {
+    var el = $('mtCalcStatus');
+    var left = hiddenUntil() - Date.now();
+    if (left > 0) {
+      if (!statusTimer) statusTimer = setInterval(renderStatus, 1000);
+    } else if (statusTimer) {
+      clearInterval(statusTimer); statusTimer = null;
+    }
+    if (!el) return;
+    if (left > 0) {
+      var s = Math.ceil(left / 1000);
+      el.textContent = 'Icon hidden — back in ' + Math.floor(s / 60) + ':' + pad2(s % 60);
+      el.className = 'mtc-status mtc-status-off';
+    } else {
+      el.textContent = winOpen ? 'Calculator is open on screen' : 'Icon is on screen';
+      el.className = 'mtc-status';
+    }
+  }
+
+  function popFab() {
+    fab.classList.remove('mtc-pop'); void fab.offsetWidth; fab.classList.add('mtc-pop');
+  }
+  function pingFab() {
+    fab.classList.remove('mtc-ping'); void fab.offsetWidth; fab.classList.add('mtc-ping');
+  }
+
+  function applyVisibility(pop) {
+    var show = !winOpen && !isSnoozed();
+    var wasShown = !fab.classList.contains('mtc-hidden');
+    fab.classList.toggle('mtc-hidden', !show);
+    if (show && !wasShown) {
+      iconPos = clampPos(iconPos, FAB, FAB);
+      setXY(fab, iconPos);
+      if (pop) popFab();
+    }
+    clearTimeout(returnTimer);
+    var left = hiddenUntil() - Date.now();
+    if (left > 0) returnTimer = setTimeout(function () { applyVisibility(true); }, left + 30);
+    renderStatus();
+  }
+
+  function hideFor10() {
+    lsSet(K_HIDE, String(Date.now() + HIDE_MS));
+    applyVisibility();
+    toast('Calculator hidden for 10 min');
+  }
+
+  // Timers pause while a phone sleeps / a tab is in the background — re-check on return.
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) applyVisibility(true); });
+  window.addEventListener('focus', function () { applyVisibility(true); });
+  window.addEventListener('storage', function (e) { if (e.key === K_HIDE) applyVisibility(true); });
+
+  /* ───────────────────── icon: tap / drag / hold-to-remove ───────────────────── */
+  var drag = null, holdTimer = null, lastDragEnd = 0;
+  var over = false, snapPos = { x: 0, y: 0 };
+
+  function measureDrop() {
+    var x = dropEl.querySelector('.mtc-drop-x');
+    var bottom = parseFloat(getComputedStyle(x).bottom) || 96;
+    var cx = vw() / 2;
+    var cy = vh() - bottom - 32; // circle is 64px
+    snapPos = { x: cx - FAB / 2, y: cy - FAB / 2 };
+    return { cx: cx, cy: cy };
+  }
+  var dropC = { cx: 0, cy: 0 };
+
+  function startDrag() {
+    drag.active = true;
+    dropC = measureDrop();
+    fab.classList.add('mtc-dragging');
+    dropEl.classList.add('mtc-show');
+  }
+
+  function paintFab() {
+    var wasOver = over;
+    var icx = iconPos.x + FAB / 2, icy = iconPos.y + FAB / 2;
+    over = Math.hypot(icx - dropC.cx, icy - dropC.cy) < SNAP_PX;
+    fab.classList.toggle('mtc-over', over);
+    dropEl.classList.toggle('mtc-over', over);
+    if (over && !wasOver) buzz(10);
+    setXY(fab, over ? snapPos : iconPos);
+  }
+
+  fab.addEventListener('pointerdown', function (e) {
+    if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: iconPos.x, oy: iconPos.y,
+             moved: false, held: false, active: false };
+    try { fab.setPointerCapture(e.pointerId); } catch (err) {}
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function () {
+      if (drag && !drag.active) { drag.held = true; startDrag(); buzz(15); }
+    }, HOLD_MS);
+  });
+
+  fab.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.hypot(dx, dy) > MOVE_PX) {
+      drag.moved = true;
+      clearTimeout(holdTimer);
+      if (!drag.active) startDrag();
+    }
+    if (!drag.moved) return;
+    iconPos = clampPos({ x: drag.ox + dx, y: drag.oy + dy }, FAB, FAB);
+    paintFab();
+  });
+
+  function endDrag(e, cancelled) {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    clearTimeout(holdTimer);
+    var d = drag; drag = null;
+    try { fab.releasePointerCapture(d.id); } catch (err) {}
+    if (!d.active) return; // plain tap — the click handler opens the calculator
+
+    lastDragEnd = Date.now();
+    var dropped = over && !cancelled;
+    over = false;
+    fab.classList.remove('mtc-dragging', 'mtc-over');
+    dropEl.classList.remove('mtc-show', 'mtc-over');
+
+    if (dropped) {
+      // Remember its old home so it returns there, then shrink away into the ✕.
+      iconPos = { x: d.ox, y: d.oy };
+      saveIconPos();
+      fab.classList.add('mtc-vanish');
+      setTimeout(function () {
+        fab.classList.remove('mtc-vanish');
+        setXY(fab, iconPos);
+        hideFor10();
+      }, 150);
+    } else {
+      setXY(fab, iconPos);
+      if (d.moved) saveIconPos();
+    }
+  }
+  fab.addEventListener('pointerup', function (e) { endDrag(e, false); });
+  fab.addEventListener('pointercancel', function (e) { endDrag(e, true); });
+  fab.addEventListener('contextmenu', function (e) { e.preventDefault(); }); // long-press menu off
+
+  fab.addEventListener('click', function () {
+    if (Date.now() - lastDragEnd < 400) return; // that was a drag / hold, not a tap
+    openWin();
+  });
+
+  /* ─────────────────────────── window size (− / +) ─────────────────────────── */
+  // The window is scaled with CSS `zoom` (see .mtc-win-in), driven by --mtc-s on .mtc-win.
+  function loadScale() {
+    var v = parseInt(lsGet(K_SCALE), 10);
+    if (!isFinite(v)) return 100;
+    v = Math.round(v / SC_STEP) * SC_STEP;
+    return Math.min(SC_MAX, Math.max(SC_MIN, v));
+  }
+  var userPct = loadScale();  // size the user picked (%)
+  var cssPct = 100;           // size actually applied right now (%)
+  var maxPct = SC_MAX;        // biggest size that fits this screen (%)
+
+  function setCssScale(pct) {
+    cssPct = pct;
+    win.style.setProperty('--mtc-s', String(pct / 100));
+  }
+  // Call while the window is visible (it needs real measurements).
+  function applyScale() {
+    setCssScale(userPct);
+    var h = win.offsetHeight;
+    if (!h) return;
+    var baseH = h / (userPct / 100);                       // height at 100 %
+    var s = safe();
+    var fit = Math.min((vw() - 2 * EDGE) / WIN_W, (vh() - 2 * EDGE - s.t - s.b) / baseH);
+    maxPct = Math.min(SC_MAX, Math.max(100, Math.floor(fit * 100 / SC_STEP) * SC_STEP));
+    var pct = userPct > 100 ? Math.min(userPct, maxPct) : userPct;
+    if (pct !== userPct) setCssScale(pct);
+    pctEl.textContent = pct + '%';
+    smallerBtn.disabled = pct <= SC_MIN;
+    biggerBtn.disabled = pct >= maxPct;
+  }
+  function stepScale(dir) {
+    var pct = Math.min(Math.max(cssPct + dir * SC_STEP, SC_MIN), maxPct);
+    if (pct === cssPct) return;
+    userPct = pct;
+    lsSet(K_SCALE, String(pct));
+    applyScale();
+    winPos = clampPos(winPos, win.offsetWidth, win.offsetHeight);
+    setXY(win, winPos);
+    saveWinPos();
+    buzz(8);
+  }
+  smallerBtn.addEventListener('click', function () { stepScale(-1); });
+  biggerBtn.addEventListener('click', function () { stepScale(1); });
+
+  /* ─────────────────────────── window: open / close / move ─────────────────────────── */
+  function openWin() {
+    if (winOpen) return;
+    winOpen = true;
+    win.classList.remove('mtc-hidden');
+    applyScale();
+    var w = win.offsetWidth, h = win.offsetHeight;
+    var f = readJSON(K_WIN);
+    // First time: grow out of the icon's corner. After that: wherever you left it.
+    var p = validFrac(f) ? fromFrac(f, w, h) : { x: iconPos.x + FAB - w, y: iconPos.y + FAB - h };
+    winPos = clampPos(p, w, h);
+    setXY(win, winPos);
+    var z = cssPct / 100;   // the origin is measured inside the zoomed box
+    winIn.style.transformOrigin =
+      ((iconPos.x + FAB / 2 - winPos.x) / z) + 'px ' + ((iconPos.y + FAB / 2 - winPos.y) / z) + 'px';
+    winIn.classList.remove('mtc-pop'); void winIn.offsetWidth; winIn.classList.add('mtc-pop');
+    applyVisibility();
+    try { win.focus({ preventScroll: true }); } catch (err) {}
+    update();
+  }
+
+  function closeWin() {
+    if (!winOpen) return;
+    if (!histPanel.hidden) closeHistory(false);
+    winOpen = false;
+    win.classList.add('mtc-hidden');
+    applyVisibility(true);
+  }
+  closeBtn.addEventListener('click', closeWin);
+
+  var wdrag = null;
+  head.addEventListener('pointerdown', function (e) {
+    if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (e.target.closest('.mtc-x, .mtc-sz')) return;
+    wdrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: winPos.x, oy: winPos.y, moved: false };
+    try { head.setPointerCapture(e.pointerId); } catch (err) {}
+    win.classList.add('mtc-moving');
+  });
+  head.addEventListener('pointermove', function (e) {
+    if (!wdrag || e.pointerId !== wdrag.id) return;
+    var dx = e.clientX - wdrag.sx, dy = e.clientY - wdrag.sy;
+    if (!wdrag.moved && Math.hypot(dx, dy) > 3) wdrag.moved = true;
+    if (!wdrag.moved) return;
+    winPos = clampPos({ x: wdrag.ox + dx, y: wdrag.oy + dy }, win.offsetWidth, win.offsetHeight);
+    setXY(win, winPos);
+  });
+  function endWinDrag(e) {
+    if (!wdrag || e.pointerId !== wdrag.id) return;
+    try { head.releasePointerCapture(wdrag.id); } catch (err) {}
+    if (wdrag.moved) saveWinPos();
+    wdrag = null;
+    win.classList.remove('mtc-moving');
+  }
+  head.addEventListener('pointerup', endWinDrag);
+  head.addEventListener('pointercancel', endWinDrag);
+
+  window.addEventListener('resize', function () {
+    iconPos = clampPos(iconPos, FAB, FAB);
+    setXY(fab, iconPos);
+    if (winOpen) {
+      applyScale();
+      winPos = clampPos(winPos, win.offsetWidth, win.offsetHeight);
+      setXY(win, winPos);
+    }
+  });
+
+  /* ───────────────────────── Settings → "Add Calculator" ───────────────────────── */
+  window.mtCalcAdd = function () {
+    var wasOnScreen = !isSnoozed();
+    lsSet(K_HIDE, '0');
+    if (typeof window.closeSettings === 'function') window.closeSettings();
+    if (winOpen) { renderStatus(); toast('Calculator is already open'); return; }
+    if (wasOnScreen) {
+      // Already showing — bring it back to the default corner so it can't stay lost.
+      iconPos = clampPos(defaultIconPos(), FAB, FAB);
+      setXY(fab, iconPos);
+      saveIconPos();
+    }
+    applyVisibility(true);
+    pingFab();
+    toast(wasOnScreen ? 'Calculator is on screen' : 'Calculator added');
+  };
+  window.mtCalc = { open: openWin, close: closeWin, add: window.mtCalcAdd, refresh: renderStatus };
+
+  /* ═══════════════════════════ CALCULATOR ═══════════════════════════ */
+  var SYM = { '+': '+', '-': '\u2212', '*': '\u00D7', '/': '\u00F7' };
+
+  var cur = '0';          // number being typed / shown
+  var prev = null;        // stored left-hand number
+  var op = null;          // pending operator
+  var fresh = false;      // next digit starts a new number
+  var done = false;       // just pressed equals
+  var err = false;        // showing an error
+  var overwrite = false;  // number came from history; next digit replaces it
+  var expr = '';          // small line above the result
+  var trail = '';         // full expression so far, e.g. "5 + 3 ×"
+
+  function loadHistory() {
+    var arr = readJSON(K_HIST);
+    if (!Array.isArray(arr)) return [];
+    return arr.filter(function (h) {
+      return h && typeof h.x === 'string' && h.x.length <= 200 &&
+             typeof h.r === 'string' && /^-?[0-9.]+(e-?[0-9]+)?$/.test(h.r);
+    }).slice(0, MAX_HISTORY);
+  }
+  var history = loadHistory();
+  function saveHistory() { lsSet(K_HIST, JSON.stringify(history)); }
+
+  function toStr(n) {
+    n = parseFloat(n.toPrecision(12));
+    var s = String(n);
+    if (s.indexOf('e') !== -1 || Math.abs(n) >= 1e15) {
+      s = n.toExponential(6).replace(/\.?0+e/, 'e').replace('e+', 'e');
+    }
+    return s;
+  }
+  function fmt(s) {
+    if (s.indexOf('e') !== -1) return s;
+    var neg = s.charAt(0) === '-';
+    if (neg) s = s.slice(1);
+    var parts = s.split('.');
+    var int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '\u2212' : '') + int + (parts.length > 1 ? '.' + parts[1] : '');
+  }
+  function clip(s) { return s.length > 26 ? '\u2026' + s.slice(-25) : s; }
+
+  function update() {
+    var text;
+    if (err) {
+      text = "Can't divide by 0";
+      resEl.className = 'mtc-result mtc-msg';
+    } else {
+      text = fmt(cur);
+      var len = text.length;
+      resEl.className = 'mtc-result' + (len > 14 ? ' mtc-xs' : len > 11 ? ' mtc-sm' : len > 8 ? ' mtc-md' : '');
+    }
+    resEl.textContent = text;
+    exprEl.textContent = expr ? clip(expr) : '\u00A0';
+    if (history.length) { badgeEl.hidden = false; badgeEl.textContent = history.length; }
+    else { badgeEl.hidden = true; }
+  }
+
+  function reset() {
+    cur = '0'; prev = null; op = null;
+    fresh = false; done = false; err = false; overwrite = false;
+    expr = ''; trail = '';
+  }
+  function compute(a, o, b) {
+    var r;
+    if (o === '+') r = a + b;
+    else if (o === '-') r = a - b;
+    else if (o === '*') r = a * b;
+    else if (o === '/') { if (b === 0) return null; r = a / b; }
+    return isFinite(r) ? r : null;
+  }
+  function fail() { reset(); err = true; update(); }
+
+  function startNew() {
+    if (err) reset();
+    if (fresh || done) {
+      cur = '0'; fresh = false;
+      if (done) { expr = ''; trail = ''; done = false; }
+    } else if (overwrite) {
+      cur = '0';
+    }
+    overwrite = false;
+  }
+  function digit(d) {
+    startNew();
+    if (cur === '0') cur = d;
+    else if (cur.replace(/[-.]/g, '').length < MAX_DIGITS) cur += d;
+    update();
+  }
+  function dot() {
+    startNew();
+    if (cur.indexOf('.') === -1) cur += '.';
+    update();
+  }
+  function operator(o) {
+    if (err) return;
+    var v = parseFloat(cur);
+    if (op && fresh) {
+      trail = trail.slice(0, -1) + SYM[o];            // pressed twice: swap operator
+    } else if (op) {
+      var r = compute(prev, op, v);                   // chain: 5 + 3 × …
+      if (r === null) return fail();
+      trail += ' ' + fmt(toStr(v)) + ' ' + SYM[o];
+      prev = r; cur = toStr(r);
+    } else {
+      prev = v;
+      trail = fmt(toStr(v)) + ' ' + SYM[o];
+    }
+    op = o; fresh = true; done = false; overwrite = false;
+    expr = trail;
+    update();
+  }
+  function equals() {
+    if (err || !op) return;
+    var b = parseFloat(cur);
+    var r = compute(prev, op, b);
+    if (r === null) return fail();
+    var full = trail + ' ' + fmt(toStr(b));
+    var res = toStr(r);
+
+    history.unshift({ x: full, r: res });
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    saveHistory();
+
+    expr = full + ' =';
+    cur = res; prev = null; op = null; trail = '';
+    done = true; fresh = false; overwrite = false;
+    update();
+  }
+  function percent() {
+    if (err) return;
+    cur = toStr(parseFloat(cur) / 100);
+    update();
+  }
+  function negate() {
+    if (err || cur === '0') return;
+    cur = cur.charAt(0) === '-' ? cur.slice(1) : '-' + cur;
+    update();
+  }
+  function backspace() {
+    if (err) { reset(); update(); return; }
+    if (done || fresh || overwrite) return;
+    cur = cur.slice(0, -1);
+    if (cur === '' || cur === '-') cur = '0';
+    update();
+  }
+  function handle(k) {
+    if (/^[0-9]$/.test(k)) digit(k);
+    else if (k === '.') dot();
+    else if (k === '+' || k === '-' || k === '*' || k === '/') operator(k);
+    else if (k === '=') equals();
+    else if (k === 'ac') { reset(); update(); }
+    else if (k === 'bs') backspace();
+    else if (k === 'pct') percent();
+    else if (k === 'neg') negate();
+  }
+
+  /* ───────────────────────────── history panel ───────────────────────────── */
+  var clearTimer = null;
+  function disarm() {
+    clearTimeout(clearTimer); clearTimer = null;
+    clearBtn.textContent = 'Clear all';
+    clearBtn.classList.remove('mtc-armed');
+  }
+  function renderHistory() {
+    listEl.textContent = '';
+    history.forEach(function (h, i) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'mtc-h-item';
+      b.setAttribute('data-i', String(i));
+      b.setAttribute('aria-label', 'Use ' + fmt(h.r) + ' from ' + h.x);
+      var x = document.createElement('span'); x.className = 'mtc-h-x'; x.textContent = h.x + ' =';
+      var r = document.createElement('span'); r.className = 'mtc-h-r'; r.textContent = fmt(h.r);
+      b.appendChild(x); b.appendChild(r); li.appendChild(b); listEl.appendChild(li);
+    });
+    var n = history.length;
+    emptyEl.hidden = n > 0;
+    listEl.hidden = n === 0;
+    clearBtn.hidden = n === 0;
+    countEl.textContent = n + ' of ' + MAX_HISTORY + ' saved';
+    disarm();
+  }
+  function setInert(state) { screenEl.inert = state; keysEl.inert = state; }
+  function openHistory() {
+    renderHistory();
+    histPanel.hidden = false;
+    setInert(true);
+    histBtn.setAttribute('aria-expanded', 'true');
+    histClose.focus();
+  }
+  function closeHistory(refocus) {
+    histPanel.hidden = true;
+    setInert(false);
+    histBtn.setAttribute('aria-expanded', 'false');
+    if (refocus !== false) histBtn.focus();
+  }
+  function recall(i) {
+    var h = history[i];
+    if (!h) return;
+    if (err) reset();
+    cur = h.r; fresh = false;
+    if (op) {
+      overwrite = true;          // mid-calculation: use it as the next number
+    } else {
+      prev = null; trail = ''; done = true; overwrite = false;
+      expr = h.x + ' =';
+    }
+    closeHistory();
+    update();
+  }
+
+  histBtn.addEventListener('click', openHistory);
+  histClose.addEventListener('click', function () { closeHistory(); });
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-i]');
+    if (btn) recall(parseInt(btn.getAttribute('data-i'), 10));
+  });
+  clearBtn.addEventListener('click', function () {
+    if (clearTimer) {                       // second tap within 3 s → really clear
+      history = []; saveHistory(); renderHistory(); update();
+      histClose.focus();
+      return;
+    }
+    clearBtn.textContent = 'Tap again to clear';
+    clearBtn.classList.add('mtc-armed');
+    clearTimer = setTimeout(disarm, 3000);
+  });
+
+  /* ───────────────────────────── key input ───────────────────────────── */
+  keysEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-k]');
+    if (btn) handle(btn.getAttribute('data-k'));
+  });
+
+  function flash(k) {
+    var btn = keysEl.querySelector('button[data-k="' + k.replace(/"/g, '') + '"]');
+    if (!btn) return;
+    btn.classList.add('mtc-pressed');
+    setTimeout(function () { btn.classList.remove('mtc-pressed'); }, 110);
+  }
+
+  // Keyboard works only while the window is open, and never steals keystrokes
+  // from the app's own amount / note / search fields.
+  document.addEventListener('keydown', function (e) {
+    if (!winOpen || e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    var inside = win.contains(t);
+    if (!inside && t !== document.body && t !== document.documentElement) return;
+
+    var key = e.key, k = null;
+    if (!histPanel.hidden) {
+      if (key === 'Escape') { e.preventDefault(); closeHistory(); }
+      return;
+    }
+    if (/^[0-9]$/.test(key)) k = key;
+    else if (key === '.' || key === ',') k = '.';
+    else if (key === '+' || key === '-' || key === '*' || key === '/') k = key;
+    else if (key === 'Enter' || key === '=') k = '=';
+    else if (key === 'Backspace') k = 'bs';
+    else if (key === 'Delete') k = 'ac';
+    else if (key === '%') k = 'pct';
+    else if (key === 'Escape') { e.preventDefault(); closeWin(); return; }
+    if (k === null) return;
+    e.preventDefault();
+    handle(k);
+    flash(k);
+  });
+
+  /* ───────────────────────────── start-up ───────────────────────────── */
+  update();
+  applyVisibility(true);
+})();
+
 </script>
 </body>
 </html>
