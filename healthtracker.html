@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" class="mt-splash-lock">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Health Tracker</title>
+
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Health Tracker">
+<link rel="manifest" href="manifest-healthtracker.json">
+<link rel="apple-touch-icon" href="healthtracker-192.png">
+<link rel="icon" type="image/png" href="icon.png">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
+<link rel="stylesheet" href="mt.css">
+<link rel="stylesheet" href="mt-insights.css">
+<link rel="stylesheet" href="ht.css">
+<link rel="stylesheet" href="ht-insights.css">
+</head>
+<body class="mt-app ht-app">
+
+<!-- ── SPLASH SCREEN ── -->
+<div id="mtSplash" class="mt-splash">
+  <div class="mt-splash-inner">
+    <dotlottie-wc id="mtSplashLottie" speed="1" mode="forward" loop autoplay style="width:170px;height:170px;"></dotlottie-wc>
+    <div class="mt-splash-title"><i class="fas fa-heart-pulse"></i> Health Tracker</div>
+    <div class="mt-splash-progress-track">
+      <div class="mt-splash-progress-bar" id="mtSplashBar"></div>
+    </div>
+    <div class="mt-splash-credit" id="mtSplashCredit">Developed by Munan</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <button class="menu-toggle-btn" id="menuToggleBtn" onclick="toggleNavDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
+  <div class="topbar-title"><i class="fas fa-heart-pulse"></i> Health Tracker</div>
+  <div class="topbar-right">
+    <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+    <button class="settings-btn" onclick="openSearch()" title="Search"><i class="fas fa-magnifying-glass"></i></button>
+    <button class="settings-btn" onclick="openSettings()" title="Settings"><i class="fas fa-gear"></i></button>
+    <a class="settings-btn home-btn" href="index.html" title="Home"><i class="fas fa-house"></i></a>
+  </div>
+</div>
+
+<div class="nav-drawer-backdrop" id="navDrawerBackdrop" onclick="closeNavDrawer()"></div>
+
+<div id="monthBarAnchor"></div>
+<div class="month-bar">
+  <div class="month-selector">
+    <select id="yearSel" onchange="onMonthChange()"></select>
+    <select id="monthSel" onchange="onMonthChange()"></select>
+  </div>
+</div>
+
+<!-- DAY VIEW -->
+<div id="daySection">
+  <div class="day-nav">
+    <button class="nav-arrow" onclick="shiftNav(-7)">◀</button>
+    <div id="dayBtns" style="display:flex;gap:5px;"></div>
+    <button class="nav-arrow" onclick="shiftNav(7)">▶</button>
+  </div>
+  <div class="main">
+    <div class="day-header">
+      <h2 id="dayTitle">Day 1</h2>
+      <p id="daySubtitle"></p>
+    </div>
+    <div class="day-lock-bar" id="dayLockBar" onclick="toggleDayLock()">
+      <i id="dayLockIcon" class="fas fa-lock-open"></i>
+      <span id="dayLockText">Unlocked — tap to lock</span>
+    </div>
+    <div id="dayEntryArea">
+    <div class="ht-score-card" id="htScoreCard">
+      <div class="ht-score-ring-wrap">
+        <svg viewBox="0 0 100 100" class="ht-score-ring"><circle cx="50" cy="50" r="42" class="ht-score-bg"/><circle cx="50" cy="50" r="42" class="ht-score-fg" id="htScoreFg"/></svg>
+        <div class="ht-score-num" id="htScoreNum">–</div>
+      </div>
+      <div class="ht-score-label">Today's Log Score</div>
+      <div class="ht-score-sub" id="htScoreSub">Start logging to see your score</div>
+    </div>
+    <div id="htGroupsContainer"></div>
+    <div class="add-cat-link" onclick="openAddFieldModal()"><i class="fas fa-plus"></i> Add / Remove metrics for today</div>
+    <button class="btn-primary" id="saveDayBtn" onclick="saveDay()"><i class="fas fa-check"></i> Save</button>
+    </div>
+    <button class="btn-outline" onclick="exportDayPDF()"><i class="fas fa-file-pdf"></i> Export Today as PDF</button>
+  </div>
+</div>
+
+<!-- MONTHLY SUMMARY -->
+<div class="summary-section" id="summarySection">
+  <div class="main">
+    <div class="day-header" style="margin-top:10px">
+      <h2>Monthly Summary</h2>
+      <p id="summarySubtitle"></p>
+    </div>
+    <div class="summary-grid" id="summaryStatGrid"></div>
+    <div id="goalCardContainer"></div>
+    <div class="section-title">Weight Trend</div>
+    <div class="chart-card"><canvas id="weightTrendChart"></canvas></div>
+    <div class="section-title">Blood Pressure &amp; Heart Rate</div>
+    <div class="chart-card"><canvas id="bpTrendChart"></canvas></div>
+    <div class="section-title">Sleep &amp; Water</div>
+    <div class="chart-card"><canvas id="sleepWaterChart"></canvas></div>
+    <div class="section-title">Steps &amp; Calories</div>
+    <div class="chart-card"><canvas id="activityChart"></canvas></div>
+    <div class="section-title">Mood Overview</div>
+    <div id="moodSummary"></div>
+    <div class="section-title">Day by Day</div>
+    <div id="dailyList"></div>
+  </div>
+</div>
+
+<!-- YEARLY SUMMARY -->
+<div class="yearly-section" id="yearlySection">
+  <div class="main">
+    <div class="day-header" style="margin-top:10px">
+      <h2 id="yearlyTitle">Yearly Summary</h2>
+      <p id="yearlySubtitle"></p>
+    </div>
+    <div class="yearly-grid" id="yearlyStatGrid"></div>
+    <div class="section-title">Weight — Full Year</div>
+    <div class="chart-card"><canvas id="yearlyWeightChart"></canvas></div>
+    <div class="section-title">Monthly Logging Consistency</div>
+    <div class="chart-card"><canvas id="yearlyConsistencyChart"></canvas></div>
+    <div class="section-title">Monthly Breakdown</div>
+    <div id="monthlyBreakdown"></div>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="insights-section" id="insightsSection">
+  <div class="main">
+    <div class="day-header" style="margin-top:10px">
+      <h2>Insights</h2>
+      <p id="insightsSubtitle"></p>
+    </div>
+
+    <div class="mti-tabbar" id="mtiTabBar" role="tablist" aria-label="Insights sections"></div>
+    <div class="mti-periodbar" id="mtiPeriodBar"></div>
+
+    <!-- ══ OVERVIEW ══ -->
+    <div class="mti-pane" id="mtiPane-overview" data-mti-pane="overview">
+      <div id="mtiTips"></div>
+      <div class="mti-card-slot" id="mtiStreakCard"></div>
+      <div class="section-title">Goal Progress</div>
+      <div id="insGoalCard"></div>
+      <div class="section-title">This Month vs Last Month</div>
+      <div id="insightList"></div>
+    </div>
+
+    <!-- ══ STREAKS ══ -->
+    <div class="mti-pane" id="mtiPane-streaks" data-mti-pane="streaks">
+      <div class="section-title">Consistency</div>
+      <div class="ins-stat-grid">
+        <div class="ins-stat-card"><div class="ins-stat-label">Logging Streak</div><div class="ins-stat-val" id="insLogStreakVal">–</div><div class="ins-stat-sub" id="insLogStreakSub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Water Goal Streak</div><div class="ins-stat-val" id="insWaterStreakVal">–</div><div class="ins-stat-sub" id="insWaterStreakSub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Active Days</div><div class="ins-stat-val" id="insActiveDaysVal">–</div><div class="ins-stat-sub" id="insActiveDaysSub"></div></div>
+        <div class="ins-stat-card"><div class="ins-stat-label">Meds Adherence</div><div class="ins-stat-val" id="insMedsVal">–</div><div class="ins-stat-sub" id="insMedsSub"></div></div>
+      </div>
+      <div class="mti-card-slot" id="mtiHeatmapCard"></div>
+      <div class="ins-card" id="insMoodFreqCard"></div>
+    </div>
+
+    <!-- ══ TRENDS ══ -->
+    <div class="mti-pane" id="mtiPane-trends" data-mti-pane="trends">
+      <div class="section-title">Rolling Trend (per metric)</div>
+      <div class="mti-metric-picker" id="mtiMetricPicker"></div>
+      <div class="chart-card"><canvas id="rollingTrendChart"></canvas></div>
+      <div class="section-title">Best &amp; Worst Months</div>
+      <div class="ins-card" id="insBestWorstCard"></div>
+    </div>
+
+    <!-- ══ FORECAST & CORRELATIONS ══ -->
+    <div class="mti-pane" id="mtiPane-forecast" data-mti-pane="forecast">
+      <div class="section-title">Weight Goal Forecast</div>
+      <div class="ins-card" id="insForecastCard"></div>
+      <div class="section-title">Correlations</div>
+      <div class="ins-card" id="insCorrSleepMoodCard"></div>
+      <div class="ins-card" id="insCorrWaterWeightCard"></div>
+      <div class="ins-card" id="insCorrStepsSleepCard"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="mtiDrillModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="mtiDrillTitle" style="margin-bottom:2px">Metric</h3>
+        <div id="mtiDrillSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" id="mtiDrillClose" aria-label="Close"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="mtiDrillBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="searchModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="fas fa-magnifying-glass"></i> Search</h3>
+      <button class="modal-close" onclick="closeSearch()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, metrics…" oninput="performSearch()">
+      <div id="searchResults"><div class="search-hint">Type to search your logged days…</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addFieldModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus"></i> Manage Metrics</h3>
+      <button class="modal-close" onclick="closeAddFieldModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="add-field-hint"><i class="fas fa-star"></i> pin to always show it, or use + / − to show it just for today</div>
+      <div id="addFieldList"></div>
+      <div class="add-cat-link" style="margin-top:10px;border-bottom:none" onclick="closeAddFieldModal();openSettings('metrics')"><i class="fas fa-gear"></i> Rename / create / delete metrics</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="categoryDetailModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="categoryDetailTitle" style="margin-bottom:2px">⚖️ Metric</h3>
+        <div id="categoryDetailSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" onclick="closeCategoryDetail()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="categoryDetailBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dayQuickViewModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <h3 id="dayQuickViewTitle" style="margin-bottom:2px"><i class="fas fa-calendar-day"></i> Day</h3>
+        <div id="dayQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
+      </div>
+      <button class="modal-close" onclick="closeDayQuickView()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="dayQuickViewBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="fas fa-gear"></i> Settings</h3>
+      <button class="modal-close" onclick="closeSettings()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="metrics" onclick="showSettingsTab('metrics')">Metrics</button>
+      <button class="modal-tab" data-tab="goals" onclick="showSettingsTab('goals')">Goals</button>
+      <button class="modal-tab" data-tab="profile" onclick="showSettingsTab('profile')">Profile</button>
+      <button class="modal-tab" data-tab="backup" onclick="showSettingsTab('backup')">Backup</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-pane active" id="pane-metrics">
+        <div class="settings-sub"><i class="fas fa-heart-pulse"></i> Every metric you can log per day. Pin to always show it in Day view.</div>
+        <div id="metricList"></div>
+        <div class="add-cat-row">
+          <input type="text" id="newMetIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
+          <input type="text" id="newMetLabel" class="cat-label-input" placeholder="New metric name" maxlength="30">
+          <button class="cat-add-btn" onclick="addMetric()" title="Add"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <div class="settings-pane" id="pane-goals">
+        <div class="settings-sub">Set personal targets — progress tracks against these in Insights &amp; the daily score</div>
+        <div class="field-row"><span class="field-label">Target Weight (kg)</span><input class="field-input" type="number" min="0" id="goalWeightInput" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Daily Water Goal (L)</span><input class="field-input" type="number" min="0" step="0.1" id="goalWaterInput" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Daily Steps Goal</span><input class="field-input" type="number" min="0" id="goalStepsInput" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Sleep Goal (hrs)</span><input class="field-input" type="number" min="0" step="0.5" id="goalSleepInput" placeholder="0"></div>
+        <button class="btn-primary" style="margin-top:10px" onclick="saveGoals()"><i class="fas fa-floppy-disk"></i> Save Goals</button>
+      </div>
+      <div class="settings-pane" id="pane-profile">
+        <div class="settings-sub">Used for BMI &amp; calorie estimates</div>
+        <div class="field-row"><span class="field-label">Height (cm)</span><input class="field-input" type="number" min="0" id="profHeightInput" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Age</span><input class="field-input" type="number" min="0" id="profAgeInput" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Sex</span>
+          <select class="field-input" id="profSexInput"><option value="male">Male</option><option value="female">Female</option></select>
+        </div>
+        <div class="field-row"><span class="field-label">Activity Level</span>
+          <select class="field-input" id="profActivityInput">
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Light</option>
+            <option value="1.55">Moderate</option>
+            <option value="1.725">Active</option>
+            <option value="1.9">Very Active</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="margin-top:10px" onclick="saveProfile()"><i class="fas fa-floppy-disk"></i> Save Profile</button>
+      </div>
+      <div class="settings-pane" id="pane-backup">
+        <div class="settings-sub">Download everything — metrics, goals, profile, and every day you've logged — as one file you can restore from later</div>
+        <button class="btn-primary" onclick="exportAllDataJSON()"><i class="fas fa-download"></i> Download Full Backup (JSON)</button>
+        <label class="btn-primary" style="display:block;text-align:center;margin-top:10px;cursor:pointer;box-sizing:border-box">
+          <i class="fas fa-upload"></i> Restore From Backup
+          <input type="file" accept=".json,application/json" style="display:none" onchange="importAllDataJSON(this)">
+        </label>
+        <div class="settings-sub" style="margin-top:22px">Export every logged day as a spreadsheet-friendly CSV file</div>
+        <button class="btn-primary" onclick="exportAllDataCSV()"><i class="fas fa-file-csv"></i> Export All Data (CSV)</button>
+        <div class="settings-sub" style="margin-top:22px;color:var(--danger)"><i class="fas fa-triangle-exclamation"></i> Permanently erase every day logged, plus metrics, goals and profile — on this device and in the cloud. Make sure you've downloaded a backup first.</div>
+        <button class="btn-danger" onclick="openRemoveDataModal()"><i class="fas fa-trash"></i> Remove All Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay center" id="removeDataModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3><i class="fas fa-trash"></i> Remove All Data</h3>
+      <button class="modal-close" onclick="closeRemoveDataModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="rd-stage" id="rdStage1">
+        <div class="rd-warning-box"><i class="fas fa-triangle-exclamation"></i> <strong>This cannot be undone.</strong><br>This will permanently delete every day you've logged, all metrics, goals, and your profile — both on this device and in your cloud backup.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" onclick="rdShowStage(2)">Agreed</button>
+        </div>
+      </div>
+      <div class="rd-stage" id="rdStage2" style="display:none">
+        <div class="rd-warning-box">You've agreed to permanently erase all stored data. Tap Delete below to continue.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" onclick="rdShowStage(3)"><i class="fas fa-trash"></i> Delete</button>
+        </div>
+      </div>
+      <div class="rd-stage" id="rdStage3" style="display:none">
+        <div class="rd-warning-box"><strong>Are you sure?</strong><br>All previously stored data will be deleted right now. This is your last chance to back out.</div>
+        <div class="rd-btn-row">
+          <button class="btn-outline" onclick="closeRemoveDataModal()">Cancel</button>
+          <button class="btn-danger" id="rdFinalBtn" onclick="confirmRemoveAllData()">Yes, Delete Everything</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon"><i class="fas fa-house"></i></span>Home</button>
+  <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon"><i class="fas fa-chart-column"></i></span>Monthly</button>
+  <button class="bnav-btn" id="bnav-yearly" onclick="switchView('yearly')"><span class="icon"><i class="fas fa-calendar-days"></i></span>Yearly</button>
+  <button class="bnav-btn" id="bnav-insights" onclick="switchView('insights')"><span class="icon"><i class="fas fa-chart-line"></i></span>Insights</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
+<script src="ht.js"></script>
+<script src="ht-insights.js"></script>
+<script src="footer.js"></script>
+</body>
+</html>

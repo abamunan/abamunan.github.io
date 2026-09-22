@@ -1,0 +1,173 @@
+/* ================================================================
+   ht.css — Health Tracker page-specific styles.
+   Reuses the shared app shell from mt.css (topbar, splash, modals,
+   settings, bottom-nav, cards, buttons, field-row, cat-row, etc.)
+   and layers on health-specific pieces only.
+   ================================================================ */
+
+:root{
+  --ht-accent: #0f766e;
+  --ht-accent-soft: rgba(15,118,110,.12);
+  --ht-under:  #2563eb; --ht-under-soft:  rgba(37,99,235,.12);
+  --ht-normal: #059669; --ht-normal-soft: rgba(5,150,105,.12);
+  --ht-over:   #b45309; --ht-over-soft:   rgba(180,83,9,.12);
+  --ht-obese:  #dc2626; --ht-obese-soft:  rgba(220,38,38,.12);
+  --ht-danger: #dc2626;
+}
+[data-theme="dark"]{
+  --ht-accent: #2dd4bf;
+  --ht-accent-soft: rgba(45,212,191,.14);
+}
+
+.ht-app .topbar-title i,
+.ht-app .mt-splash-title i { color: var(--ht-accent); }
+.ht-app .btn-primary { background: var(--ht-accent); }
+.ht-app .day-lock-bar.locked { background: var(--ht-accent-soft); }
+
+/* ── DAILY SCORE CARD ─────────────────────────────────────────── */
+.ht-score-card{
+  background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
+  padding:18px; text-align:center; backdrop-filter:blur(10px); margin-bottom:14px;
+}
+.ht-score-ring-wrap{ position:relative; width:110px; height:110px; margin:0 auto 8px; }
+.ht-score-ring{ width:100%; height:100%; transform:rotate(-90deg); }
+.ht-score-bg{ fill:none; stroke:var(--card-border); stroke-width:8; }
+.ht-score-fg{
+  fill:none; stroke:var(--ht-accent); stroke-width:8; stroke-linecap:round;
+  stroke-dasharray:264; stroke-dashoffset:264; transition:stroke-dashoffset .6s ease;
+}
+.ht-score-num{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:1.6rem; font-weight:800; letter-spacing:-.02em;
+}
+.ht-score-label{ font-weight:700; font-size:.9rem; margin-top:2px; }
+.ht-score-sub{ font-size:.75rem; color:var(--text-soft); margin-top:2px; }
+
+/* ── METRIC GROUPS (Day view) ─────────────────────────────────── */
+.ht-group{
+  background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
+  padding:14px 14px 6px; backdrop-filter:blur(10px); margin-bottom:14px;
+}
+.ht-group-head{
+  display:flex; align-items:center; gap:8px; font-weight:700; font-size:.88rem;
+  margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--card-border);
+}
+.ht-group-head i{ color:var(--ht-accent); width:16px; text-align:center; }
+
+/* Generic numeric/text metric row, mirrors .field-row */
+.ht-metric-row{
+  display:flex; align-items:center; gap:8px; padding:7px 0;
+}
+.ht-metric-icon{ font-size:1.1rem; width:22px; text-align:center; flex-shrink:0; }
+.ht-metric-label{ flex:1; font-size:.82rem; font-weight:600; color:var(--text-muted); }
+.ht-metric-input{
+  width:78px; text-align:right; padding:7px 9px; border-radius:9px;
+  border:1px solid var(--card-border); background:rgba(255,255,255,.5); color:var(--text-main);
+  font-size:.85rem; font-weight:600;
+}
+[data-theme="dark"] .ht-metric-input{ background:rgba(255,255,255,.06); }
+.ht-metric-unit{ font-size:.72rem; color:var(--text-soft); width:28px; }
+.ht-metric-note-btn{
+  border:none; background:transparent; font-size:.95rem; cursor:pointer; opacity:.55; flex-shrink:0;
+}
+.ht-metric-note-btn.has-note{ opacity:1; }
+
+/* Blood pressure paired input */
+.ht-bp-row{ display:flex; align-items:center; gap:6px; }
+.ht-bp-row .ht-metric-input{ width:56px; }
+.ht-bp-sep{ font-weight:700; color:var(--text-soft); }
+
+/* Sleep quality + generic 1-5 scale pills */
+.ht-scale{ display:flex; gap:4px; }
+.ht-scale-btn{
+  width:26px; height:26px; border-radius:8px; border:1px solid var(--card-border);
+  background:transparent; color:var(--text-soft); font-size:.72rem; font-weight:700; cursor:pointer;
+}
+.ht-scale-btn.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+
+/* Mood picker */
+.ht-mood-row{ display:flex; justify-content:space-between; gap:4px; padding:8px 0; }
+.ht-mood-btn{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  border:1px solid transparent; background:transparent; border-radius:10px; padding:6px 2px;
+  cursor:pointer; font-size:1.3rem; opacity:.5; transition:var(--trans);
+}
+.ht-mood-btn.active{ opacity:1; background:var(--ht-accent-soft); border-color:var(--ht-accent); }
+.ht-mood-btn span{ font-size:.6rem; color:var(--text-soft); font-weight:600; }
+
+/* Meds/supplements checklist */
+.ht-med-row{ display:flex; align-items:center; gap:8px; padding:6px 0; }
+.ht-med-check{
+  width:20px; height:20px; border-radius:6px; border:1.5px solid var(--card-border);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:.7rem;
+  color:transparent;
+}
+.ht-med-check.checked{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+.ht-med-label{ flex:1; font-size:.82rem; font-weight:600; }
+.ht-med-del{ border:none; background:transparent; color:var(--text-soft); cursor:pointer; opacity:.6; }
+
+.ht-note-row{
+  max-height:0; overflow:hidden; transition:max-height .25s ease;
+}
+.ht-note-row.open{ max-height:60px; padding-bottom:6px; }
+.ht-note-row input{
+  width:100%; padding:7px 10px; border-radius:9px; border:1px solid var(--card-border);
+  background:rgba(255,255,255,.4); color:var(--text-main); font-size:.78rem;
+}
+[data-theme="dark"] .ht-note-row input{ background:rgba(255,255,255,.05); }
+
+/* ── STATUS BADGES (BMI / BP category chips) ──────────────────── */
+.ht-badge{
+  display:inline-flex; align-items:center; gap:4px; font-size:.68rem; font-weight:700;
+  padding:3px 9px; border-radius:999px;
+}
+.ht-badge.under{ background:var(--ht-under-soft); color:var(--ht-under); }
+.ht-badge.normal{ background:var(--ht-normal-soft); color:var(--ht-normal); }
+.ht-badge.over{ background:var(--ht-over-soft); color:var(--ht-over); }
+.ht-badge.obese{ background:var(--ht-obese-soft); color:var(--ht-obese); }
+
+/* ── SUMMARY STAT CARDS (reuse .sum-card look, add metric colors) ── */
+.ht-stat-icon{ font-size:1.1rem; margin-bottom:4px; }
+
+/* Mood summary chips */
+.ht-mood-summary{ display:flex; flex-wrap:wrap; gap:8px; }
+.ht-mood-chip{
+  display:flex; align-items:center; gap:6px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:12px; padding:8px 12px; font-size:.8rem; font-weight:600;
+}
+.ht-mood-chip .cnt{ color:var(--ht-accent); font-weight:800; }
+
+/* Daily list row (summary section) */
+.ht-day-row{
+  display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--card-border);
+  cursor:pointer;
+}
+.ht-day-row:last-child{ border-bottom:none; }
+.ht-day-row .dr-day{ width:34px; font-weight:700; font-size:.85rem; }
+.ht-day-row .dr-tags{ flex:1; display:flex; flex-wrap:wrap; gap:5px; font-size:.68rem; color:var(--text-soft); }
+.ht-day-row .dr-tags span{ background:var(--ht-accent-soft); color:var(--ht-accent); padding:2px 7px; border-radius:999px; font-weight:700; }
+.ht-day-row .dr-mood{ font-size:1.05rem; }
+
+/* ── ADD-METRIC MODAL quick add row ───────────────────────────── */
+.ht-quickadd-row{ display:flex; gap:6px; margin-top:6px; }
+.ht-quickadd-row input{ flex:1; }
+
+/* Metric picker chips for Trends tab */
+.mti-metric-picker{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.mti-metric-chip{
+  border:1px solid var(--card-border); background:var(--card-bg); border-radius:999px;
+  padding:5px 12px; font-size:.72rem; font-weight:700; color:var(--text-muted); cursor:pointer;
+}
+.mti-metric-chip.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+
+/* Correlation card scatter-ish bars */
+.ht-corr-row{ display:flex; align-items:center; gap:8px; font-size:.78rem; padding:5px 0; }
+.ht-corr-label{ width:110px; color:var(--text-soft); flex-shrink:0; }
+.ht-corr-bar-track{ flex:1; height:8px; border-radius:99px; background:var(--card-border); overflow:hidden; }
+.ht-corr-bar-fill{ height:100%; border-radius:99px; background:var(--ht-accent); }
+.ht-corr-val{ width:44px; text-align:right; font-weight:700; }
+
+@media (max-width:480px){
+  .ht-metric-label{ font-size:.78rem; }
+  .ht-corr-label{ width:82px; }
+}
