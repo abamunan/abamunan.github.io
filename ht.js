@@ -782,7 +782,7 @@ function switchSummaryTab(tab){
   activeSummaryTab=tab;
   document.querySelectorAll('#summarySubTabBar .mti-tab').forEach(b=>{
     const active=b.dataset.summaryTab===tab;
-    b.classList.toggle('mti-active',active);
+    b.classList.toggle('active',active);
     b.setAttribute('aria-selected',String(active));
   });
   document.querySelectorAll('[data-summary-pane]').forEach(p=>{
