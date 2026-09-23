@@ -123,7 +123,7 @@ const MOODS = [
 const DEFAULT_PINNED_IDS = DEFAULT_METRICS.filter(m=>m.pinned).map(m=>m.id);
 
 let METRICS = [];
-let SAVINGS_GOALS = { weight:0, water:0, steps:0, sleep:0 };
+let SAVINGS_GOALS = { weight:0, water:0, steps:0, sleep:0 }; // flexible map: metricId -> target value (any METRICS id can have a goal)
 let PROFILE = { height:0, age:0, sex:'male', activity:1.375 };
 let extraShownIds = new Set();
 
@@ -178,8 +178,8 @@ function loadGoalsLocal(){
   try{
     const raw=localStorage.getItem('ht_goals_v1');
     const parsed=raw?JSON.parse(raw):null;
-    SAVINGS_GOALS=parsed&&typeof parsed==='object'?Object.assign({weight:0,water:0,steps:0,sleep:0},parsed):{weight:0,water:0,steps:0,sleep:0};
-  }catch{ SAVINGS_GOALS={weight:0,water:0,steps:0,sleep:0}; }
+    SAVINGS_GOALS=parsed&&typeof parsed==='object'?parsed:{};
+  }catch{ SAVINGS_GOALS={}; }
 }
 function saveGoalsLocalOnly(){ localStorage.setItem('ht_goals_v1', JSON.stringify(SAVINGS_GOALS)); }
 function loadProfileLocal(){
@@ -212,7 +212,7 @@ async function loadSettingsRemote(){
     if(snap.exists()){
       const data=snap.data();
       if(Array.isArray(data.metrics)&&data.metrics.length) METRICS=data.metrics;
-      if(data.goals&&typeof data.goals==='object') SAVINGS_GOALS=Object.assign({weight:0,water:0,steps:0,sleep:0},data.goals);
+      if(data.goals&&typeof data.goals==='object') SAVINGS_GOALS=data.goals;
       if(data.profile&&typeof data.profile==='object') PROFILE=Object.assign({height:0,age:0,sex:'male',activity:1.375},data.profile);
       migratePinnedMetrics();
       saveMetricsLocal(); saveGoalsLocalOnly(); saveProfileLocalOnly();
@@ -223,6 +223,7 @@ async function loadSettingsRemote(){
 }
 
 let currentDay=1, navOffset=0;
+let activeSummaryTab='monthly';
 let curYear=new Date().getFullYear(), curMonth=new Date().getMonth();
 
 function isLeap(y){return (y%4===0&&y%100!==0)||y%400===0;}
@@ -332,8 +333,8 @@ async function onMonthChange(){
   navOffset=0;
   showToast('Loading…');
   await selectDay(currentDay);
-  if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
-  if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='yearly') renderYearly();
   if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
 }
 
@@ -754,8 +755,8 @@ function refreshAfterMetricChange(){
   extraShownIds=computeExtraShownForData(data);
   renderFieldRows();
   applyDayValuesToDOM(data);
-  if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
-  if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='yearly') renderYearly();
   if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
 }
 
@@ -764,18 +765,90 @@ let _lastRenderedView=null;
 function switchView(view){
   document.getElementById('daySection').className=(view==='day'?'':'hidden');
   document.getElementById('summarySection').className='summary-section'+(view==='summary'?' active':'');
-  document.getElementById('yearlySection').className='yearly-section'+(view==='yearly'?' active':'');
   document.getElementById('insightsSection').className='insights-section'+(view==='insights'?' active':'');
-  ['day','summary','yearly','insights'].forEach(v=>{
+  document.getElementById('guideSection').className='guide-section'+(view==='guide'?' active':'');
+  ['day','summary','insights','guide'].forEach(v=>{
     document.getElementById('bnav-'+v).className='bnav-btn'+(v===view?' active':'');
   });
   if(view!==_lastRenderedView){
-    if(view==='summary') renderSummary();
-    if(view==='yearly') renderYearly();
+    if(view==='summary') renderSummaryTab();
     if(view==='insights') renderInsightsTab();
+    if(view==='guide') renderGuideTab();
     _lastRenderedView=view;
   }
   closeNavDrawer();
+}
+function switchSummaryTab(tab){
+  activeSummaryTab=tab;
+  document.querySelectorAll('#summarySubTabBar .mti-tab').forEach(b=>{
+    const active=b.dataset.summaryTab===tab;
+    b.classList.toggle('mti-active',active);
+    b.setAttribute('aria-selected',String(active));
+  });
+  document.querySelectorAll('[data-summary-pane]').forEach(p=>{
+    p.classList.toggle('mti-active', p.dataset.summaryPane===tab);
+  });
+  if(tab==='monthly') renderSummary();
+  if(tab==='yearly') renderYearly();
+}
+function renderSummaryTab(){
+  renderSummary();
+  renderYearly();
+}
+
+// ─── GUIDE TAB (read-only reference; personalizes off logged weight + Profile) ──
+function ht_guideLatestWeight(){
+  let best=null;
+  allDayEntries().forEach(e=>{
+    if(e.data && e.data.weight>0){
+      if(!best || e.y>best.y || (e.y===best.y&&e.m>best.m) || (e.y===best.y&&e.m===best.m&&e.d>best.d)){
+        best={y:e.y,m:e.m,d:e.d,v:e.data.weight};
+      }
+    }
+  });
+  return best;
+}
+function renderGuideTab(){
+  const grid=document.getElementById('guideMacroGrid');
+  const noteEl=document.getElementById('guideWeightNote');
+  if(!grid||!noteEl) return;
+
+  const wEntry=ht_guideLatestWeight();
+  const usingExample=!wEntry;
+  const w=wEntry?wEntry.v:70;
+
+  const pLow=Math.round(w*1.6), pHigh=Math.round(w*2.2);
+  const fLow=Math.round(w*0.5), fHigh=Math.round(w*1.5);
+  const cLow=Math.round(w*3), cHigh=Math.round(w*5);
+  const gainLow=(w*0.0025).toFixed(2), gainHigh=(w*0.005).toFixed(2);
+
+  const hasProfile=PROFILE.height>0 && PROFILE.age>0;
+  let kcalCard, tdeeLine;
+  if(hasProfile){
+    const bmr=PROFILE.sex==='female'
+      ? (10*w+6.25*PROFILE.height-5*PROFILE.age-161)
+      : (10*w+6.25*PROFILE.height-5*PROFILE.age+5);
+    const tdee=bmr*(PROFILE.activity||1.375);
+    const surLow=Math.round(tdee*1.10), surHigh=Math.round(tdee*1.20);
+    kcalCard=`<div class="ins-stat-card"><div class="ins-stat-label">Calorie Target</div><div class="ins-stat-val">${surLow.toLocaleString()}–${surHigh.toLocaleString()}</div><div class="ins-stat-sub">kcal/day</div></div>`;
+    tdeeLine=`Estimated TDEE ~${Math.round(tdee).toLocaleString()} kcal/day (Mifflin-St Jeor, from your Profile).`;
+  } else {
+    kcalCard=`<div class="ins-stat-card"><div class="ins-stat-label">Calorie Target</div><div class="ins-stat-val">TDEE ×1.10–1.20</div><div class="ins-stat-sub">add Profile for kcal</div></div>`;
+    tdeeLine=`Add your height, age &amp; activity level under Settings → Profile to see a personalized calorie target.`;
+  }
+
+  grid.innerHTML=`
+    <div class="ins-stat-card"><div class="ins-stat-label">Protein</div><div class="ins-stat-val">${pLow}–${pHigh}g</div><div class="ins-stat-sub">1.6–2.2 g/kg</div></div>
+    <div class="ins-stat-card"><div class="ins-stat-label">Fat</div><div class="ins-stat-val">${fLow}–${fHigh}g</div><div class="ins-stat-sub">0.5–1.5 g/kg</div></div>
+    <div class="ins-stat-card"><div class="ins-stat-label">Carbs</div><div class="ins-stat-val">${cLow}–${cHigh}g+</div><div class="ins-stat-sub">≥3–5 g/kg</div></div>
+    ${kcalCard}
+    <div class="ins-stat-card"><div class="ins-stat-label">Weekly Gain</div><div class="ins-stat-val">${gainLow}–${gainHigh}kg</div><div class="ins-stat-sub">0.25–0.50%/wk</div></div>
+  `;
+
+  const weightLine=usingExample
+    ? `Using an example bodyweight of 70 kg — log your weight in Day view to personalize these numbers.`
+    : `Based on your last logged weight: ${w} kg (${MONTHS[wEntry.m].slice(0,3)} ${wEntry.d}, ${wEntry.y}).`;
+  noteEl.innerHTML=`${weightLine}<br>${tdeeLine}`;
 }
 
 function toggleNavDrawer(){
@@ -818,16 +891,50 @@ function showSettingsTab(tab){
   document.querySelectorAll('.modal-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.settings-pane').forEach(p=>p.classList.toggle('active', p.id==='pane-'+tab));
 }
-function saveGoals(){
-  SAVINGS_GOALS={
-    weight: Math.max(0,parseFloat(document.getElementById('goalWeightInput').value)||0),
-    water: Math.max(0,parseFloat(document.getElementById('goalWaterInput').value)||0),
-    steps: Math.max(0,parseFloat(document.getElementById('goalStepsInput').value)||0),
-    sleep: Math.max(0,parseFloat(document.getElementById('goalSleepInput').value)||0),
-  };
+function goalableMetrics(){
+  return METRICS.filter(m=>m.type==='number'||m.type==='scale');
+}
+function metricLabelFor(id){
+  const m=METRICS.find(x=>x.id===id);
+  return m ? `${m.icon} ${m.label}${m.unit?' ('+m.unit+')':''}` : id;
+}
+function addGoal(){
+  const sel=document.getElementById('newGoalMetric');
+  const valEl=document.getElementById('newGoalValue');
+  const id=sel.value;
+  const val=Math.max(0,parseFloat(valEl.value)||0);
+  if(!id){ showToast('Pick a metric first','error'); return; }
+  if(!val){ showToast('Enter a target value','error'); return; }
+  SAVINGS_GOALS[id]=val;
   saveSettingsRemote();
-  showToast('Goals saved');
-  if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
+  valEl.value='';
+  renderGoalList();
+  showToast('Goal saved');
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+}
+function removeGoal(id){
+  delete SAVINGS_GOALS[id];
+  saveSettingsRemote();
+  renderGoalList();
+  showToast('Goal removed');
+  if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+}
+function renderGoalMetricOptions(){
+  const sel=document.getElementById('newGoalMetric');
+  if(!sel) return;
+  const opts=goalableMetrics().filter(m=>!(m.id in SAVINGS_GOALS));
+  sel.innerHTML = opts.length
+    ? opts.map(m=>`<option value="${m.id}">${escHtml(m.icon+' '+m.label)}</option>`).join('')
+    : `<option value="">All metrics have goals</option>`;
+}
+function renderGoalList(){
+  const box=document.getElementById('goalList');
+  if(!box) return;
+  const entries=Object.entries(SAVINGS_GOALS).filter(([id,val])=>val>0 && METRICS.some(m=>m.id===id));
+  box.innerHTML = entries.length
+    ? entries.map(([id,val])=>`<div class="cat-row"><span class="field-icon">${escHtml((METRICS.find(m=>m.id===id)||{}).icon||'🎯')}</span><span class="cat-label-static" style="flex:1">${escHtml((METRICS.find(m=>m.id===id)||{}).label||id)}</span><span style="font-weight:700;color:var(--ht-accent);margin-right:6px">${val}${(METRICS.find(m=>m.id===id)||{}).unit?' '+(METRICS.find(m=>m.id===id)||{}).unit:''}</span><button class="cat-del-btn" onclick="removeGoal('${id}')" title="Remove goal"><i class="fas fa-trash"></i></button></div>`).join('')
+    : `<div class="ins-empty">No goals set yet — pick a metric below</div>`;
+  renderGoalMetricOptions();
 }
 function saveProfile(){
   PROFILE={
@@ -895,10 +1002,7 @@ function renderSettingsLists(){
     if(ml) ml.innerHTML=METRICS.map(metRowHTML).join('');
     _renderedSettingsListsSig=sig;
   }
-  const gw=document.getElementById('goalWeightInput'); if(gw) gw.value=SAVINGS_GOALS.weight||'';
-  const gwa=document.getElementById('goalWaterInput'); if(gwa) gwa.value=SAVINGS_GOALS.water||'';
-  const gs=document.getElementById('goalStepsInput'); if(gs) gs.value=SAVINGS_GOALS.steps||'';
-  const gsl=document.getElementById('goalSleepInput'); if(gsl) gsl.value=SAVINGS_GOALS.sleep||'';
+  renderGoalList();
   const ph=document.getElementById('profHeightInput'); if(ph) ph.value=PROFILE.height||'';
   const pa=document.getElementById('profAgeInput'); if(pa) pa.value=PROFILE.age||'';
   const ps=document.getElementById('profSexInput'); if(ps) ps.value=PROFILE.sex||'male';
@@ -954,7 +1058,7 @@ async function importAllDataJSON(fileInput){
   await yieldToUI();
   try{
     if(Array.isArray(payload.metrics)&&payload.metrics.length){ METRICS=payload.metrics; migratePinnedMetrics(); }
-    if(payload.goals&&typeof payload.goals==='object') SAVINGS_GOALS=Object.assign({weight:0,water:0,steps:0,sleep:0},payload.goals);
+    if(payload.goals&&typeof payload.goals==='object') SAVINGS_GOALS=payload.goals;
     if(payload.profile&&typeof payload.profile==='object') PROFILE=Object.assign({height:0,age:0,sex:'male',activity:1.375},payload.profile);
     await saveSettingsRemote();
 
@@ -974,8 +1078,8 @@ async function importAllDataJSON(fileInput){
     renderSettingsLists();
     extraShownIds=new Set();
     loadDay(currentDay);
-    if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
-    if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+    if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+    if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='yearly') renderYearly();
     if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
     showToast('Backup restored');
     closeSettings();
@@ -1054,15 +1158,15 @@ async function confirmRemoveAllData(){
       }
     }
     METRICS=DEFAULT_METRICS.map(m=>({...m}));
-    SAVINGS_GOALS={weight:0,water:0,steps:0,sleep:0};
+    SAVINGS_GOALS={};
     PROFILE={height:0,age:0,sex:'male',activity:1.375};
     saveMetricsLocal(); saveGoalsLocalOnly(); saveProfileLocalOnly();
     extraShownIds=new Set();
     renderFieldRows();
     renderSettingsLists();
     loadDay(currentDay);
-    if(document.getElementById('summarySection').classList.contains('active')) renderSummary();
-    if(document.getElementById('yearlySection').classList.contains('active')) renderYearly();
+    if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='monthly') renderSummary();
+    if(document.getElementById('summarySection').classList.contains('active') && activeSummaryTab==='yearly') renderYearly();
     if(document.getElementById('insightsSection').classList.contains('active')) renderInsightsTab();
     showToast('All data removed');
     closeRemoveDataModal();

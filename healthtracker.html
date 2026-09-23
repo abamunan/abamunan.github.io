@@ -90,13 +90,21 @@
   </div>
 </div>
 
-<!-- MONTHLY SUMMARY -->
+<!-- SUMMARY (Monthly / Yearly sub-tabs) -->
 <div class="summary-section" id="summarySection">
   <div class="main">
     <div class="day-header" style="margin-top:10px">
-      <h2>Monthly Summary</h2>
+      <h2>Summary</h2>
       <p id="summarySubtitle"></p>
     </div>
+
+    <div class="mti-tabbar" id="summarySubTabBar" role="tablist" aria-label="Summary period">
+      <button type="button" class="mti-tab active" data-summary-tab="monthly" role="tab" aria-selected="true" onclick="switchSummaryTab('monthly')"><i class="fas fa-calendar-days"></i> Monthly</button>
+      <button type="button" class="mti-tab" data-summary-tab="yearly" role="tab" aria-selected="false" onclick="switchSummaryTab('yearly')"><i class="fas fa-calendar"></i> Yearly</button>
+    </div>
+
+    <!-- ══ MONTHLY ══ -->
+    <div class="mti-pane mti-active" id="summaryPane-monthly" data-summary-pane="monthly">
     <div class="summary-grid" id="summaryStatGrid"></div>
     <div id="goalCardContainer"></div>
     <div class="section-title">Weight Trend</div>
@@ -111,14 +119,12 @@
     <div id="moodSummary"></div>
     <div class="section-title">Day by Day</div>
     <div id="dailyList"></div>
-  </div>
-</div>
+    </div>
 
-<!-- YEARLY SUMMARY -->
-<div class="yearly-section" id="yearlySection">
-  <div class="main">
-    <div class="day-header" style="margin-top:10px">
-      <h2 id="yearlyTitle">Yearly Summary</h2>
+    <!-- ══ YEARLY ══ -->
+    <div class="mti-pane" id="summaryPane-yearly" data-summary-pane="yearly">
+    <div class="day-header" style="margin-top:0">
+      <h2 id="yearlyTitle" style="font-size:1.1rem">Yearly Summary</h2>
       <p id="yearlySubtitle"></p>
     </div>
     <div class="yearly-grid" id="yearlyStatGrid"></div>
@@ -128,8 +134,10 @@
     <div class="chart-card"><canvas id="yearlyConsistencyChart"></canvas></div>
     <div class="section-title">Monthly Breakdown</div>
     <div id="monthlyBreakdown"></div>
+    </div>
   </div>
 </div>
+
 
 <!-- INSIGHTS -->
 <div class="insights-section" id="insightsSection">
@@ -183,6 +191,151 @@
       <div class="ins-card" id="insCorrWaterWeightCard"></div>
       <div class="ins-card" id="insCorrStepsSleepCard"></div>
     </div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="guide-section" id="guideSection">
+  <div class="main">
+    <div class="day-header" style="margin-top:10px">
+      <h2><i class="fas fa-book-open"></i> Guide</h2>
+      <p>Lean mass &amp; healthy weight gain, on a Dhaka budget</p>
+    </div>
+
+    <div class="ins-forecast-note" style="margin-bottom:14px">
+      <i class="fas fa-circle-info"></i> General nutrition &amp; training reference based on published research — not personalized medical advice. Check with a doctor before starting a new program.
+    </div>
+
+    <!-- ENERGY & MACROS -->
+    <div class="section-title">Energy &amp; Macro Targets</div>
+    <div class="ins-card">
+      <div class="ins-card-title"><i class="fas fa-bolt"></i> Surplus Formula</div>
+      <div class="ht-guide-body-text">Target intake = TDEE × 1.10–1.20 — a 250–500 kcal/day surplus. This supports roughly 0.25–0.50% bodyweight gain per week, mostly as muscle when paired with resistance training.</div>
+      <div class="ins-stat-grid" id="guideMacroGrid"></div>
+      <div class="ins-forecast-note" id="guideWeightNote"></div>
+    </div>
+
+    <!-- PROTEIN COST TABLE -->
+    <div class="section-title">Dhaka Protein Cost Guide</div>
+    <div class="ins-card">
+      <div class="ins-card-title"><i class="fas fa-coins"></i> Cost per 20g Protein <span style="font-weight:600;font-size:.66rem;color:var(--text-soft);margin-left:auto">cheapest first</span></div>
+      <div class="ht-guide-food-list">
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🫘</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Soya Chunks <span class="ht-badge normal">Best value</span></div>
+            <div class="ht-guide-food-sub">50g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳6–12</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🧆</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Chickpeas (Chola Boot)</div>
+            <div class="ht-guide-food-sub">19g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳11–21</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🥜</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Raw Peanuts (China Badam)</div>
+            <div class="ht-guide-food-sub">25g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳19–22</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🍗</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Farm Chicken (Broiler)</div>
+            <div class="ht-guide-food-sub">18g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳21–24</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🥚</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Chicken Eggs (Layer)</div>
+            <div class="ht-guide-food-sub">12.6g protein / egg</div>
+          </div>
+          <div class="ht-guide-food-cost">৳31–36</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🐟</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Cultured Pangas</div>
+            <div class="ht-guide-food-sub">15g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳40–53</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🐠</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Cultured Tilapia</div>
+            <div class="ht-guide-food-sub">16g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳41–59</div>
+        </div>
+        <div class="ht-guide-food-row">
+          <div class="ht-guide-food-ico">🎣</div>
+          <div class="ht-guide-food-info">
+            <div class="ht-guide-food-name">Cultured Rui / Rohu</div>
+            <div class="ht-guide-food-sub">17g protein / 100g</div>
+          </div>
+          <div class="ht-guide-food-cost">৳44–56</div>
+        </div>
+      </div>
+      <div class="ins-forecast-note">Soya and every animal source above (egg, chicken, fish) are complete proteins. Legumes like chickpeas are low in methionine — pair with rice/wheat or an egg to cover all essential amino acids.</div>
+    </div>
+
+    <!-- SAMPLE MEAL PLAN -->
+    <div class="section-title">Sample Meal Plan <span style="font-weight:600;font-size:.68rem;color:var(--text-soft)">~70kg target, 1.8g/kg protein</span></div>
+    <div class="ins-card">
+      <div class="ht-guide-meal">
+        <div class="ht-guide-meal-head"><span>🍳 Breakfast · 8:00 AM</span><span>৳45–55</span></div>
+        <div class="ht-guide-meal-food">3 whole eggs (boiled/fried), 2 roti (lal atta), 1 banana (sagor kola)</div>
+        <div class="ht-guide-meal-macro">~30g protein · ~65g carbs · ~16g fat · ~500 kcal</div>
+      </div>
+      <div class="ht-guide-meal">
+        <div class="ht-guide-meal-head"><span>🍛 Lunch · 1:00 PM</span><span>৳50–65</span></div>
+        <div class="ht-guide-meal-food">100g pangas/tilapia curry, 250g parboiled rice, 50g cooked musur dal</div>
+        <div class="ht-guide-meal-macro">~32g protein · ~85g carbs · ~12g fat · ~650 kcal</div>
+      </div>
+      <div class="ht-guide-meal">
+        <div class="ht-guide-meal-head"><span>🥤 Post-Workout Snack · 5:00 PM</span><span>৳25–35</span></div>
+        <div class="ht-guide-meal-food">50g soya chunks (boiled &amp; seasoned), 50g raw/roasted peanuts</div>
+        <div class="ht-guide-meal-macro">~37g protein · ~30g carbs · ~25g fat · ~520 kcal</div>
+      </div>
+      <div class="ht-guide-meal" style="border-bottom:none">
+        <div class="ht-guide-meal-head"><span>🍽️ Dinner · 9:00 PM</span><span>৳50–65</span></div>
+        <div class="ht-guide-meal-food">100g broiler chicken or cultured rui, 200g parboiled rice, mixed salad</div>
+        <div class="ht-guide-meal-macro">~27g protein · ~60g carbs · ~10g fat · ~550 kcal</div>
+      </div>
+      <div class="ht-guide-meal-total">
+        <span>Daily total</span>
+        <span>~126g protein · 2,220–2,420 kcal · ৳170–220</span>
+      </div>
+    </div>
+
+    <div class="mti-tip mti-tip-good">
+      <i class="fas fa-clock mti-tip-ico"></i>
+      <span class="mti-tip-text">Spread 20–40g protein across meals every 3–4 hours to repeatedly hit the leucine threshold — 3–4 meals a day beats one or two big ones.</span>
+    </div>
+
+    <!-- TRAINING TARGETS -->
+    <div class="section-title">Training Targets</div>
+    <div class="ins-stat-grid">
+      <div class="ins-stat-card"><div class="ins-stat-label">Weekly Volume</div><div class="ins-stat-val">10–20</div><div class="ins-stat-sub">sets / muscle / week</div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Load &amp; Reps</div><div class="ins-stat-val">60–80%</div><div class="ins-stat-sub">1RM · 8–12 reps</div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Prox. to Failure</div><div class="ins-stat-val">1–3</div><div class="ins-stat-sub">reps in reserve</div></div>
+      <div class="ins-stat-card"><div class="ins-stat-label">Frequency</div><div class="ins-stat-val">2–3×</div><div class="ins-stat-sub">per muscle / week</div></div>
+    </div>
+    <div class="ins-card">
+      <div class="ins-card-title"><i class="fas fa-dumbbell"></i> Compound Lifts vs. Bodyweight</div>
+      <div class="ht-guide-body-text">Favor multi-joint compound lifts — squats, deadlifts, bench press, overhead press, rows — when you have gym access; they recruit the most muscle per set. No gym? Dumbbells, resistance bands, or bodyweight moves (weighted push-ups, inverted rows, Bulgarian split squats) work too — just train closer to failure (0–1 RIR) since the load is lighter.</div>
+    </div>
+
+    <div class="ins-forecast-note" style="margin-top:4px;margin-bottom:20px">Ranges drawn from sports-nutrition &amp; resistance-training research; Dhaka price data reflects wet-market &amp; retail rates and will drift over time — check current prices before budgeting.</div>
   </div>
 </div>
 
@@ -263,11 +416,12 @@
       </div>
       <div class="settings-pane" id="pane-goals">
         <div class="settings-sub">Set personal targets — progress tracks against these in Insights &amp; the daily score</div>
-        <div class="field-row"><span class="field-label">Target Weight (kg)</span><input class="field-input" type="number" min="0" id="goalWeightInput" placeholder="0"></div>
-        <div class="field-row"><span class="field-label">Daily Water Goal (L)</span><input class="field-input" type="number" min="0" step="0.1" id="goalWaterInput" placeholder="0"></div>
-        <div class="field-row"><span class="field-label">Daily Steps Goal</span><input class="field-input" type="number" min="0" id="goalStepsInput" placeholder="0"></div>
-        <div class="field-row"><span class="field-label">Sleep Goal (hrs)</span><input class="field-input" type="number" min="0" step="0.5" id="goalSleepInput" placeholder="0"></div>
-        <button class="btn-primary" style="margin-top:10px" onclick="saveGoals()"><i class="fas fa-floppy-disk"></i> Save Goals</button>
+        <div id="goalList"></div>
+        <div class="add-cat-row" style="align-items:center">
+          <select id="newGoalMetric" class="cat-label-input" style="flex:1.3"></select>
+          <input type="number" id="newGoalValue" class="cat-icon-input" style="width:64px;text-align:center" placeholder="0" step="0.1">
+          <button class="cat-add-btn" onclick="addGoal()" title="Add goal"><i class="fas fa-plus"></i></button>
+        </div>
       </div>
       <div class="settings-pane" id="pane-profile">
         <div class="settings-sub">Used for BMI &amp; calorie estimates</div>
@@ -337,9 +491,9 @@
 
 <div class="bottom-nav" id="bottomNav">
   <button class="bnav-btn active" id="bnav-day" onclick="switchView('day')"><span class="icon"><i class="fas fa-house"></i></span>Home</button>
-  <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon"><i class="fas fa-chart-column"></i></span>Monthly</button>
-  <button class="bnav-btn" id="bnav-yearly" onclick="switchView('yearly')"><span class="icon"><i class="fas fa-calendar-days"></i></span>Yearly</button>
+  <button class="bnav-btn" id="bnav-summary" onclick="switchView('summary')"><span class="icon"><i class="fas fa-chart-column"></i></span>Summary</button>
   <button class="bnav-btn" id="bnav-insights" onclick="switchView('insights')"><span class="icon"><i class="fas fa-chart-line"></i></span>Insights</button>
+  <button class="bnav-btn" id="bnav-guide" onclick="switchView('guide')"><span class="icon"><i class="fas fa-book-open"></i></span>Guide</button>
 </div>
 
 <div class="toast" id="toast"></div>

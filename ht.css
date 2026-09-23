@@ -24,6 +24,9 @@
 .ht-app .btn-primary { background: var(--ht-accent); }
 .ht-app .day-lock-bar.locked { background: var(--ht-accent-soft); }
 
+.guide-section { display:none; }
+.guide-section.active { display:block; }
+
 /* ── DAILY SCORE CARD ─────────────────────────────────────────── */
 .ht-score-card{
   background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
@@ -166,6 +169,33 @@
 .ht-corr-bar-track{ flex:1; height:8px; border-radius:99px; background:var(--card-border); overflow:hidden; }
 .ht-corr-bar-fill{ height:100%; border-radius:99px; background:var(--ht-accent); }
 .ht-corr-val{ width:44px; text-align:right; font-weight:700; }
+
+/* ── GUIDE TAB ─────────────────────────────────────────────────── */
+.ht-guide-body-text{ font-size:.78rem; color:var(--text-muted); line-height:1.55; margin-bottom:10px; }
+
+.ht-guide-food-list{ display:flex; flex-direction:column; }
+.ht-guide-food-row{
+  display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--card-border);
+}
+.ht-guide-food-row:last-child{ border-bottom:none; }
+.ht-guide-food-ico{ font-size:1.3rem; width:26px; text-align:center; flex-shrink:0; }
+.ht-guide-food-info{ flex:1; min-width:0; }
+.ht-guide-food-name{ font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.ht-guide-food-sub{ font-size:.68rem; color:var(--text-soft); margin-top:2px; }
+.ht-guide-food-cost{ font-size:.85rem; font-weight:800; color:var(--ht-accent); flex-shrink:0; white-space:nowrap; }
+
+.ht-guide-meal{ padding:10px 0; border-bottom:1px solid var(--card-border); }
+.ht-guide-meal-head{
+  display:flex; justify-content:space-between; align-items:center; font-size:.82rem; font-weight:700; margin-bottom:4px;
+}
+.ht-guide-meal-head span:last-child{ color:var(--ht-accent); font-weight:800; }
+.ht-guide-meal-food{ font-size:.76rem; color:var(--text-muted); line-height:1.4; }
+.ht-guide-meal-macro{ font-size:.68rem; color:var(--text-soft); margin-top:3px; font-weight:600; }
+.ht-guide-meal-total{
+  display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:2px;
+  font-size:.78rem; font-weight:800;
+}
+.ht-guide-meal-total span:last-child{ color:var(--ht-accent); }
 
 @media (max-width:480px){
   .ht-metric-label{ font-size:.78rem; }
