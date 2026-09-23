@@ -23,3 +23,13 @@
 @media (min-width:640px){
   .ins-stat-grid{ grid-template-columns:repeat(4,1fr); }
 }
+
+/* ── SUBTAB BARS (Summary: Monthly/Yearly · Insights: Overview/Streaks/Trends/Forecast) ──
+   Scoped to .ht-app only, so this doesn't affect .mti-tabbar in other mt-apps.
+   1) Scrolls with the page instead of sticking to the viewport.
+   2) Active subtab gets a clear filled state, same on both bars. ── */
+.ht-app .mti-tabbar{ position:static; }
+.ht-app .mti-tab.active{
+  background:var(--ht-accent); border-color:var(--ht-accent); color:#fff;
+}
+.ht-app .mti-tab.active i{ color:#fff; }
