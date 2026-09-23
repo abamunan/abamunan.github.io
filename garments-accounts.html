@@ -133,6 +133,7 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--accent);color:#fff;padding:10px 18px;border-radius:999px;font:600 .78rem var(--font);box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
 .toast.err{background:var(--danger)}
+.fltbar{margin-bottom:10px}.fltbar .row{margin-top:0}.fltbar input[type=search]{-webkit-appearance:none}
 
 /* ========================================================================
    Floating Calculator (integrated from floating-calculator.html)
@@ -492,6 +493,7 @@ tbody[id^="tbl_"] td:first-child{white-space:nowrap}
  <div id="tab-stock" class="tabpanel"></div>
  <div id="tab-capital" class="tabpanel"></div>
  <div id="tab-inventory" class="tabpanel"></div>
+ <div id="tab-history" class="tabpanel"></div>
  <div id="tab-settings" class="tabpanel"></div>
 </div>
 <!-- Reports & Export: Excel engine (used by the Excel report button in the Settings tab) -->
@@ -878,7 +880,7 @@ function buildCrudPanel(key){
 function renderTab(key){
  const cfg=TAB_CONFIGS[key];
  if(editing[key]&&!state[key].some(r=>r.id===editing[key])){editing[key]=null;updateFormMode(key);}   // someone deleted it meanwhile
- const rows=sortRows(state[key],sortBy[key],cfg.amount,cfg.qty);
+ const all=state[key],rows=sortRows(applyFilter(key,all),sortBy[key],cfg.amount,cfg.qty);syncFltUi(key,rows.length,all.length);
  $('tbl_'+key).innerHTML=rows.length?rows.map(r=>`<tr class="${editing[key]===r.id?'editing':''}">${cfg.columns.map(c=>`<td>${c.fmt(r)}</td>`).join('')}<td class="rowbtns"><button class="edit" data-act="edit" data-key="${key}" data-id="${esc(r.id)}" aria-label="Edit entry">✎</button><button class="del" data-act="del" data-key="${key}" data-id="${esc(r.id)}" aria-label="Delete entry">✕</button></td></tr>`).join('')
   :`<tr><td colspan="${cfg.columns.length+1}" class="empty">No entries yet.</td></tr>`;
 }
@@ -893,6 +895,10 @@ function refreshAutoStamp(){   // date + time follow the clock until a partner c
 }
 function setSort(key,mode){sortBy[key]=mode;if(key==='cash')renderAccounts();else renderTab(key);}
 function startEdit(key,id){
+ {const r0=state[key].find(r=>r.id===id);
+  if(r0&&!isOwner(r0)){
+   if(key!=='sales'){alert('This entry was entered by '+(r0.enteredBy||'another partner')+'. Only that partner can edit it.');return;}
+   showToast('Entered by '+(r0.enteredBy||'another partner')+' — you can change Money Received / Received On only');}}
  const rec=state[key].find(r=>r.id===id);if(!rec)return;
  editing[key]=id;loadIntoForm(key,rec);updateFormMode(key);renderTab(key);
  $('form_'+key).scrollIntoView({behavior:'smooth',block:'center'});
@@ -961,20 +967,138 @@ async function addTabRecord(key){
  }finally{btn.disabled=false;}
 }
 
+/* ===== Ownership · History log · Bin · Search & filter (added) ===== */
+const SHARED_FIELDS=['received','receivedDate','editedBy'];   // what another partner may still change on someone else's ORDER. Add more field names here (e.g. 'status') if needed, and in firestore.rules too.
+const ownerEmail=r=>String((r&&r.enteredEmail)||'').toLowerCase();
+const isOwner=r=>{const o=ownerEmail(r);return !o||!!(me&&o===me.email);};   // entries saved before logins have no owner and stay open to every partner
+const sameVal=(a,b)=>(a==null?'':String(a))===(b==null?'':String(b));
+function changedKeys(a,b){a=a||{};b=b||{};return Array.from(new Set(Object.keys(a).concat(Object.keys(b)))).filter(k=>k!=='id'&&!sameVal(a[k],b[k]));}
+function mayChange(key,old,next){return !old||isOwner(old)||(key==='sales'&&changedKeys(old,next).every(k=>SHARED_FIELDS.includes(k)));}
+const LOG_LABEL={sales:'Sale',expenses:'Expense',stock:'Stock',capital:'Accounts'};
+function briefOf(key,r){
+ if(!r)return '';
+ if(key==='sales')return (r.orderNo||'')+' · '+(r.product||'')+' × '+(r.qty||0)+' · '+money(num(r.qty)*num(r.unitPrice));
+ if(key==='expenses')return (r.category||'')+' · '+(r.item||'')+' · '+money(r.amount);
+ if(key==='stock')return (r.product||'')+' × '+(r.qty||0)+' @ '+money(r.buyingPrice);
+ return (r.type||'')+' · '+(r.partner||'')+' · '+money(r.amount);
+}
+async function logEvent(action,key,id,before,after){   // append-only History log; true = written
+ if(!db||!me)return true;
+ try{
+  await db.collection('log').add({at:Date.now(),by:me.name,email:me.email,action,tab:key,entryId:id||'',summary:briefOf(key,after||before),
+   before:before?JSON.stringify(before):'',after:after?JSON.stringify(after):''});
+  return true;
+ }catch(e){return false;}
+}
+let LOG=[],BIN=[],histBuilt=false;const HF={who:'',tab:'',act:''};
+function fmtAt(ms){const d=new Date(+ms||0);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+fmtTime(pad(d.getHours())+':'+pad(d.getMinutes()));}
+function changeText(l){
+ if(l.action!=='edit'||!l.before||!l.after)return '';
+ try{const b=JSON.parse(l.before),a=JSON.parse(l.after);
+  return changedKeys(b,a).filter(k=>!['editedBy','createdAt'].includes(k)).map(k=>esc(k)+': '+esc(b[k]==null||b[k]===''?'—':b[k])+' → '+esc(a[k]==null||a[k]===''?'—':a[k])).join('<br>');}catch(e){return '';}
+}
+function renderHistory(){
+ if(!histBuilt){
+  const opt=(a)=>a.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  $('tab-history').innerHTML=`<div class="section">${secHead('Bin — deleted entries')}<div id="binBody"></div>
+   <div class="hint">Deleting an entry moves it here. Restore puts it back exactly as it was, still under its original owner. Nothing in the Bin or the History log can be edited or removed.</div></div>
+   <div class="section">${secHead('History log')}
+    <div class="row">
+     <div class="field"><label>Who</label><select data-hf="who">${opt([['','Everyone']].concat(Object.values(ALLOWED).map(n=>[n,n])))}</select></div>
+     <div class="field"><label>What</label><select data-hf="act">${opt([['','All'],['add','Added'],['edit','Edited'],['delete','Deleted'],['restore','Restored']])}</select></div>
+     <div class="field"><label>Tab</label><select data-hf="tab">${opt([['','All'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts']])}</select></div>
+    </div><div id="histBody"></div></div>`;
+  histBuilt=true;
+ }
+ const bins=BIN.filter(b=>!b.restoredAt).sort((a,b)=>num(b.deletedAt)-num(a.deletedAt));
+ $('binBody').innerHTML=bins.length?`<div class="tablewrap"><table><thead><tr><th>Deleted</th><th>By</th><th>Entry</th><th></th></tr></thead><tbody>${bins.map(b=>{let r={};try{r=JSON.parse(b.data);}catch(e){}
+  return `<tr><td>${esc(fmtAt(b.deletedAt))}</td><td><span class="by">${esc(b.deletedBy)}</span></td><td>${esc(LOG_LABEL[b.key]||b.key)}: ${esc(briefOf(b.key,r))}</td><td class="rowbtns"><button class="edit" data-bin-restore="${esc(b.id)}">Restore</button></td></tr>`;}).join('')}</tbody></table></div>`:'<div class="hint">The Bin is empty.</div>';
+ const rows=LOG.filter(l=>(!HF.who||l.by===HF.who)&&(!HF.act||l.action===HF.act)&&(!HF.tab||l.tab===HF.tab)).sort((a,b)=>num(b.at)-num(a.at));
+ const shown=rows.slice(0,150);
+ $('histBody').innerHTML=shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Entry</th></tr></thead><tbody>${shown.map(l=>{const ch=changeText(l);
+  return `<tr><td>${esc(fmtAt(l.at))}</td><td><span class="by">${esc(l.by)}</span></td><td><span class="badge ${l.action==='delete'?'b-bad':(l.action==='add'||l.action==='restore')?'b-ok':'b-soft'}">${esc(l.action)}</span></td><td>${esc(LOG_LABEL[l.tab]||l.tab)}: ${esc(l.summary)}${ch?`<span class="sub">${ch}</span>`:''}</td></tr>`;}).join('')}</tbody></table></div>${rows.length>150?`<div class="hint">Showing the latest 150 of ${rows.length}.</div>`:''}`:'<div class="hint">No history yet.</div>';
+}
+async function restoreBin(binId){
+ const b=BIN.find(x=>x.id===binId);if(!b||b.restoredAt||!db)return;
+ if(state[b.key]&&state[b.key].some(r=>r.id===b.entryId)){alert('This entry is already back.');return;}
+ if(!confirm('Restore this entry?'))return;
+ try{
+  const data=JSON.parse(b.data);delete data.id;
+  await db.collection(b.key).doc(b.entryId).set(data);
+  const doc=Object.assign({},b);delete doc.id;doc.restoredAt=Date.now();doc.restoredBy=me.name;
+  await db.collection('bin').doc(binId).set(doc);
+  await logEvent('restore',b.key,b.entryId,null,Object.assign({id:b.entryId},data));
+  showToast('Entry restored');
+ }catch(e){saveFailed(e);}
+}
+/* search & filter (Sales, Expenses, Stock) */
+const FLT={};
+const fltOf=k=>FLT[k]||(FLT[k]={q:'',status:'',courier:'',from:'',to:''});
+const fltActive=f=>!!(f.q||f.status||f.courier||f.from||f.to);
+function applyFilter(key,rows){
+ const f=fltOf(key);if(!fltActive(f))return rows;
+ const q=norm(f.q),qd=String(f.q).replace(/\D/g,'');
+ return rows.filter(r=>{
+  if(f.status&&st(r)!==f.status)return false;
+  if(f.courier&&(r.courier||'')!==f.courier)return false;
+  if(f.from&&(r.date||'')<f.from)return false;
+  if(f.to&&(r.date||'')>f.to)return false;
+  if(q){
+   const hay=norm(['orderNo','customerName','customer','customerPhone','customerAddress','product','supplier','category','item','note','courier','paidBy','enteredBy'].map(k=>r[k]).join(' '));
+   const ph=String(r.customerPhone||'').replace(/\D/g,'');
+   if(!hay.includes(q)&&!(qd.length>=3&&ph.includes(qd)))return false;
+  }
+  return true;
+ });
+}
+function addFilterBar(key){
+ if(!['sales','expenses','stock'].includes(key))return;
+ const wrap=$('tbl_'+key).closest('.tablewrap');if(!wrap)return;
+ const sales=key==='sales'?`<div class="field"><label>Status</label><select data-flt="status" data-key="${key}"><option value="">All</option><option>Pending</option><option>Delivered</option><option>Returned</option><option>Lost</option></select></div><div class="field"><label>Courier</label><select data-flt="courier" data-key="${key}"></select></div>`:'';
+ wrap.insertAdjacentHTML('beforebegin',`<div class="fltbar" id="flt_${key}"><div class="field wide"><input type="search" data-flt="q" data-key="${key}" placeholder="Search order no, name, phone, product…" aria-label="Search"></div>
+  <div class="row">${sales}<div class="field"><label>From</label><input type="date" data-flt="from" data-key="${key}"></div><div class="field"><label>To</label><input type="date" data-flt="to" data-key="${key}"></div></div>
+  <div class="hint" id="fltinfo_${key}"></div><button type="button" class="ghostbtn hidden" data-flt-clear="${key}" id="fltclr_${key}">Clear filters</button></div>`);
+}
+function syncFltUi(key,shown,total){
+ const bar=$('flt_'+key);if(!bar)return;
+ const f=fltOf(key),sel=bar.querySelector('[data-flt=courier]');
+ if(sel){const list=courierBuckets(),sig=list.join('|');if(sel.dataset.sig!==sig){sel.dataset.sig=sig;sel.innerHTML='<option value="">All</option>'+list.map(c=>`<option>${esc(c)}</option>`).join('');sel.value=f.courier;}}
+ $('fltinfo_'+key).textContent=fltActive(f)?`Showing ${shown} of ${total}`:'';
+ $('fltclr_'+key).classList.toggle('hidden',!fltActive(f));
+}
+['input','change'].forEach(ev=>document.addEventListener(ev,e=>{
+ const t=e.target,k=t.dataset&&t.dataset.flt;
+ if(k&&t.dataset.key){fltOf(t.dataset.key)[k]=t.value;renderTab(t.dataset.key);}
+}));
+document.addEventListener('change',e=>{const t=e.target,h=t.dataset&&t.dataset.hf;if(h){HF[h]=t.value;renderHistory();}});
+document.addEventListener('click',e=>{
+ const c=e.target.closest&&e.target.closest('[data-flt-clear]');
+ if(c){const k=c.dataset.fltClear;FLT[k]={q:'',status:'',courier:'',from:'',to:''};document.querySelectorAll('#flt_'+k+' [data-flt]').forEach(el=>{el.value='';});renderTab(k);return;}
+ const b=e.target.closest&&e.target.closest('[data-bin-restore]');if(b)restoreBin(b.dataset.binRestore);
+});
+
 /* ---------- saving: shared db when available, this device otherwise. Failures are never silent. ---------- */
 async function addRecord(key,data){
- if(db){try{await db.collection(key).add(clone(data));setStatus('synced');return true;}catch(e){saveFailed(e);return false;}}
+ if(db){try{const ref=await db.collection(key).add(clone(data));setStatus('synced');logEvent('add',key,ref.id,null,Object.assign({id:ref.id},data)).then(ok=>{if(!ok)showToast('Saved, but the History log could not be written',true);});return true;}catch(e){saveFailed(e);return false;}}
  state[key].push(Object.assign({id:'local_'+uid()},clone(data)));saveLocal();refreshActive();return true;
 }
-async function updateRecord(key,id,data,quiet){   // quiet = the caller lists failures itself (batch receive), so no pop-up per record
+async function updateRecord(key,id,data,quiet){
+ {const old0=state[key].find(r=>r.id===id);
+  if(old0&&!mayChange(key,old0,data)){if(!quiet)alert('This entry was entered by '+(old0.enteredBy||'another partner')+'. Only that partner can change it'+(key==='sales'?' (you can change Money Received / Received On only)':'')+'.');return false;}
+  if(db&&!isLocalId(id)&&old0&&changedKeys(old0,data).some(k=>!['editedBy','createdAt'].includes(k))&&!(await logEvent('edit',key,id,old0,Object.assign({id},data)))){if(!quiet)alert('The History log could not be written, so nothing was changed. Check your connection and try again.');return false;}}   // quiet = the caller lists failures itself (batch receive), so no pop-up per record
  if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).set(clone(data));setStatus('synced');return true;}catch(e){if(quiet){setStatus('error');return false;}saveFailed(e);return false;}}
  const i=state[key].findIndex(r=>r.id===id);if(i<0)return false;
  state[key][i]=Object.assign({id},clone(data));saveLocal();refreshActive();return true;
 }
 async function delRecord(key,id){
+ const rec=state[key].find(r=>r.id===id);
+ if(rec&&!isOwner(rec)){alert('This entry was entered by '+(rec.enteredBy||'another partner')+'. Only that partner can delete it.');return;}
  if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==id)))return;
- if(!confirm('Delete this entry?\nIt will disappear for every partner and cannot be undone.'))return;
- if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).delete();setStatus('synced');}catch(e){saveFailed(e);return;}}
+ if(!confirm('Delete this entry?\nIt moves to the Bin (History tab), where it can be restored.'))return;
+ if(db&&!isLocalId(id)){try{
+  await db.collection('bin').add({key,entryId:id,deletedBy:me.name,deletedEmail:me.email,deletedAt:Date.now(),data:JSON.stringify(rec||{})});
+  if(!(await logEvent('delete',key,id,rec,null))){alert('The History log could not be written, so nothing was deleted.');return;}
+  await db.collection(key).doc(id).delete();setStatus('synced');}catch(e){saveFailed(e);return;}}
  else{state[key]=state[key].filter(r=>r.id!==id);saveLocal();}
  if(editing[key]===id){editing[key]=null;clearForm(key,false);updateFormMode(key);}
  refreshActive();
@@ -1738,7 +1862,7 @@ function showTab(key){
  if(key!=='settings'){listUnlocked.products=false;listUnlocked.categories=false;listUnlocked.couriers=false;}   // lists lock again when you leave Settings
  document.querySelectorAll('.tabpanel').forEach(p=>p.style.display=p.id==='tab-'+key?'block':'none');
  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
- if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);built[key]=true;}
+ if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);addFilterBar(key);built[key]=true;}
  if(TAB_CONFIGS[key])refreshAutoStamp();
  if(key==='settings'&&!built.settings){buildSettings();built.settings=true;}
  refreshActive();
@@ -1747,11 +1871,12 @@ function refreshActive(fromSync){   // never rebuilds a form, so nobody loses wh
  const key=activeTab;
  if(key==='summary')renderSummary();
  else if(key==='inventory')renderInventory();
+ else if(key==='history')renderHistory();
  else if(key==='settings')renderSettingsLists(fromSync);
  else if(TAB_CONFIGS[key]){refreshSelects(key);renderTab(key);if(key==='capital')renderAccounts();if(TAB_CONFIGS[key].dupWarn)$('dupWarn_'+key).innerHTML=renderWarnings(duplicateWarnings(key));}
 }
 function buildTabbar(){
- const TABS=[['summary','Summary'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts'],['inventory','Inventory'],['settings','Settings']];
+ const TABS=[['summary','Summary'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts'],['inventory','Inventory'],['history','History'],['settings','Settings']];
  $('tabbar').innerHTML=TABS.map(([k,l])=>`<button class="tabbtn" data-act="tab" data-tab="${k}">${l}</button>`).join('');
 }
 
@@ -2172,6 +2297,8 @@ async function connect(){
    setStatus('synced');cacheLocal();refreshActive(true);
   },()=>setStatus('error'));}catch(e){setStatus('error');}
  });
+ try{db.collection('log').onSnapshot(snap=>{LOG=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id}));if(activeTab==='history')renderHistory();},()=>{});}catch(e){}
+ try{db.collection('bin').onSnapshot(snap=>{BIN=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id}));if(activeTab==='history')renderHistory();},()=>{});}catch(e){}
  try{db.doc('settings/main').onSnapshot(snap=>{
   if(snap.exists){S=Object.assign({},S,clone(snap.data()));normalizeSettings();cacheLocal();}
   refreshActive(true);
