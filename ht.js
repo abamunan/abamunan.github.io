@@ -1358,12 +1358,18 @@ function bpCategory(sys,dia){
 // ─── SUMMARY (MONTHLY) VIEW ───────────────────────────────────────
 let _weightChart=null,_bpChart=null,_sleepWaterChart=null,_activityChart=null;
 function destroyChart(ref){ if(ref) ref.destroy(); return null; }
+function chartLibReady(){ return typeof Chart!=='undefined'; }
 function chartOrEmpty(canvasId,hasData){
   const el=document.getElementById(canvasId);
-  if(el) el.style.display=hasData?'':'none';
+  const show = hasData && chartLibReady();
+  if(el) el.style.display=show?'':'none';
   let empty=el&&el.parentElement.querySelector('.chart-empty');
-  if(!hasData){
-    if(!empty){ empty=document.createElement('div'); empty.className='chart-empty'; empty.textContent='No data logged yet this month'; el.parentElement.appendChild(empty); }
+  if(!show){
+    if(!empty){
+      empty=document.createElement('div'); empty.className='chart-empty';
+      empty.textContent = hasData && !chartLibReady() ? 'Chart library failed to load' : 'No data logged yet this month';
+      el.parentElement.appendChild(empty);
+    }
   } else if(empty){ empty.remove(); }
 }
 function renderSummary(){
@@ -1402,14 +1408,14 @@ function renderSummary(){
   // Charts
   const weightData=m.weights.map(w=>({x:w.d,y:w.v}));
   chartOrEmpty('weightTrendChart', weightData.length>0);
-  if(weightData.length){
+  if(weightData.length && chartLibReady()){
     _weightChart=destroyChart(_weightChart);
     _weightChart=new Chart(document.getElementById('weightTrendChart'),{type:'line',data:{labels:weightData.map(p=>p.x),datasets:[{label:'Weight (kg)',data:weightData.map(p=>p.y),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.15)',tension:.3,fill:true,pointRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
   }
 
   const hasBpOrHr=m.sys.length>0||m.hrs.length>0;
   chartOrEmpty('bpTrendChart', hasBpOrHr);
-  if(hasBpOrHr){
+  if(hasBpOrHr && chartLibReady()){
     _bpChart=destroyChart(_bpChart);
     const labels=Array.from({length:m.days},(_, i)=>i+1);
     const sysMap={}, diaMap={}, hrMap={};
@@ -1423,7 +1429,7 @@ function renderSummary(){
 
   const hasSleepWater=m.sleeps.length>0||m.waters.length>0;
   chartOrEmpty('sleepWaterChart', hasSleepWater);
-  if(hasSleepWater){
+  if(hasSleepWater && chartLibReady()){
     _sleepWaterChart=destroyChart(_sleepWaterChart);
     const labels=Array.from({length:m.days},(_, i)=>i+1);
     const sleepMap={}, waterMap={};
@@ -1436,7 +1442,7 @@ function renderSummary(){
 
   const hasActivity=m.steps.length>0||m.calIn.length>0||m.calOut.length>0;
   chartOrEmpty('activityChart', hasActivity);
-  if(hasActivity){
+  if(hasActivity && chartLibReady()){
     _activityChart=destroyChart(_activityChart);
     const labels=Array.from({length:m.days},(_, i)=>i+1);
     const stepMap={}, inMap={}, outMap={};
@@ -1495,13 +1501,13 @@ function renderYearly(){
   `;
 
   chartOrEmpty('yearlyWeightChart', allWeights.length>0);
-  if(allWeights.length){
+  if(allWeights.length && chartLibReady()){
     _yearlyWeightChart=destroyChart(_yearlyWeightChart);
     _yearlyWeightChart=new Chart(document.getElementById('yearlyWeightChart'),{type:'line',data:{labels:allWeights.map(w=>w.label),datasets:[{label:'Weight (kg)',data:allWeights.map(w=>w.v),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.12)',tension:.3,fill:true,pointRadius:2}]},options:{responsive:true,plugins:{legend:{display:false}}}});
   }
 
   chartOrEmpty('yearlyConsistencyChart', totalLoggedDays>0);
-  if(totalLoggedDays>0){
+  if(totalLoggedDays>0 && chartLibReady()){
     _yearlyConsistencyChart=destroyChart(_yearlyConsistencyChart);
     _yearlyConsistencyChart=new Chart(document.getElementById('yearlyConsistencyChart'),{type:'bar',data:{labels:MONTHS.map(m=>m.slice(0,3)),datasets:[{label:'Days Logged',data:monthStats.map(s=>s.loggedDays),backgroundColor:'#0f766e'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:31}}}});
   }

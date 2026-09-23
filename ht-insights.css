@@ -1,0 +1,25 @@
+/* ================================================================
+   ht-insights.css — pieces not already provided by mt-insights.css
+   (.ins-card, .mti-tabbar, .mti-tab, .mti-pane, .mti-hm-*, .mti-tip
+   already exist there and are reused as-is).
+   ================================================================ */
+
+.ins-card-title{ font-weight:700; font-size:.85rem; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.ins-card-title i{ color:var(--ht-accent); }
+.ins-empty{ font-size:.78rem; color:var(--text-soft); text-align:center; padding:14px 6px; }
+.ins-forecast-note{ font-size:.72rem; color:var(--text-soft); margin-top:8px; line-height:1.45; }
+
+.ins-stat-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+}
+.ins-stat-card{
+  background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px;
+  padding:12px; backdrop-filter:blur(10px);
+}
+.ins-stat-label{ font-size:.68rem; color:var(--text-soft); font-weight:600; margin-bottom:4px; }
+.ins-stat-val{ font-size:1.3rem; font-weight:800; color:var(--ht-accent); }
+.ins-stat-sub{ font-size:.66rem; color:var(--text-soft); margin-top:2px; }
+
+@media (min-width:640px){
+  .ins-stat-grid{ grid-template-columns:repeat(4,1fr); }
+}
