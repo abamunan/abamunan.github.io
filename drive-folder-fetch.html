@@ -766,8 +766,10 @@
     if (!currentTree.length) return;
     const mode = (document.querySelector('input[name="driveMode"]:checked') || {}).value || 'copy';
     const scope = mode === 'copy' ? SCOPE_FULL : SCOPE_UPLOAD;
+    setStatus('Opening Google sign-in popup… (allow popups for this site if nothing appears)', 'muted');
     try { await getAccessToken(clientId, scope); }
-    catch (e){ setStatus('Sign-in failed: ' + e.message, 'err'); return; }
+    catch (e){ setStatus('Sign-in failed: ' + e.message + ' — check the Client ID and Authorized JavaScript origin.', 'err'); return; }
+    setStatus('Signed in. Starting…', 'ok');
 
     const files = flatten(currentTree).filter(f => isDownloadable(f.mimeType));
     const stamp = new Date().toISOString().slice(0,10);
@@ -836,6 +838,7 @@
   }
 
   dlDriveBtn.addEventListener('click', saveToMyDrive);
+  clientIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveToMyDrive(); });
 
   const localBox = $('localBox'), driveBox = $('driveBox');
   $('destToggle').addEventListener('click', e => {
