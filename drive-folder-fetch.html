@@ -218,13 +218,6 @@
         <li>Optional but recommended: restrict the key to the Drive API.</li>
         <li>Make sure the Drive folder is shared as <b>"Anyone with the link"</b> — an API key can only read public files, not private ones.</li>
       </ol>
-      <p style="margin-top:12px;"><b>For saving into your own Drive:</b></p>
-      <ol>
-        <li>Same project → <b>APIs &amp; Services → Credentials → Create credentials → OAuth client ID</b> → type <b>Web application</b>.</li>
-        <li>Under <b>Authorized JavaScript origins</b> add the address this page is served from (e.g. <code>https://yoursite.com</code> or <code>http://localhost:8000</code>). It won't work from a <code>file://</code> page.</li>
-        <li>On the <b>OAuth consent screen</b>, add your own Google account as a <b>Test user</b>.</li>
-        <li>Paste the Client ID above. The app only gets access to files it creates itself (<code>drive.file</code> scope).</li>
-      </ol>
       <p class="help-contact">Don't want to set this up? <a href="contact.html">Ask Munan</a> for a one-time API key instead.</p>
     </div>
     <div class="status muted" id="status"></div>
@@ -250,7 +243,24 @@
       </div>
       <div id="driveBox" style="display:none;">
         <label for="clientId">Google OAuth Client ID</label>
-        <input type="text" id="clientId" placeholder="123456-abc.apps.googleusercontent.com" autocomplete="off">
+        <input type="text" id="clientId" placeholder="123456-abc.apps.googleusercontent.com" autocomplete="off" style="margin-bottom:6px;">
+        <button type="button" class="help-toggle" id="clientHelpToggle" style="margin-bottom:12px;">how do I get a Client ID?</button>
+        <div class="help-body" id="clientHelpBody" style="margin-bottom:14px;">
+          <ol>
+            <li>Open <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> and select the same project you used for the API key (or create a new one).</li>
+            <li>Make sure the <b>Google Drive API</b> is enabled: <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">open the Drive API page</a> and click <b>Enable</b> if you see that button (if it says <b>Manage</b>, it's already on).</li>
+            <li>Go to <b>Google Auth Platform</b> (search for it in the top bar), or <b>APIs &amp; Services → OAuth consent screen</b>. If you see a <b>Get started</b> button, click it, enter any app name and your email, choose <b>External</b> as the audience, and finish the wizard.</li>
+            <li>Open <b>Audience → Test users → Add users</b>, enter <b>your own Gmail address</b> (the Drive you want to save into), and click <b>Save</b>. While the app is in "Testing", only listed test users can sign in.</li>
+            <li>Open <b>Clients → Create client</b>. Choose <b>Application type: Web application</b> and give it any name.</li>
+            <li>Under <b>Authorized JavaScript origins</b>, click <b>Add URI</b> and enter the address this page is opened from. For this page that is:<br>
+              <code id="currentOrigin" style="font-family:var(--mono);"></code><br>
+              Use only the site address — no page name and no trailing <code>/</code>. Examples: <code>https://yoursite.com</code> or <code>http://localhost:8000</code>. Leave <b>Authorized redirect URIs</b> empty.</li>
+            <li>Click <b>Create</b>, copy the <b>Client ID</b> (it ends with <code>.apps.googleusercontent.com</code>) and paste it above. You don't need the Client secret.</li>
+          </ol>
+          <p class="help-contact" style="margin-top:12px;">
+            <b>Good to know:</b> the page must be opened from <code>http(s)://</code> (a hosted site or <code>localhost</code>), not as a <code>file://</code> file. Origin changes can take a few minutes to apply. If Google shows "This app isn't verified", click <b>Advanced → Go to (app name)</b> — that's normal for apps in Testing. The sign-in token lasts about an hour and is never stored. You can revoke access anytime at <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.
+          </p>
+        </div>
         <label>Method</label>
         <div style="font-size:13px; line-height:1.7; margin-bottom:12px; color:var(--text-main);">
           <label style="text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; display:flex; gap:8px; align-items:flex-start; cursor:pointer; margin-bottom:4px;">
@@ -893,6 +903,12 @@
   });
 
   dlDriveBtn.addEventListener('click', saveToMyDrive);
+
+  const clientHelpBody = $('clientHelpBody'), currentOriginEl = $('currentOrigin');
+  $('clientHelpToggle').addEventListener('click', () => clientHelpBody.classList.toggle('open'));
+  currentOriginEl.textContent = location.protocol.startsWith('http')
+    ? location.origin
+    : '(this page is opened as a local file — serve it from http://localhost:8000 or a hosted site first)';
   clientIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveToMyDrive(); });
 
   const localBox = $('localBox'), driveBox = $('driveBox');
