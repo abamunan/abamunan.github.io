@@ -234,6 +234,11 @@
     <div class="tree" id="tree"></div>
     <div id="actions">
       <div class="meta" id="meta" style="margin-bottom:12px;"></div>
+      <label>Export file list</label>
+      <div class="row-inline" style="margin-bottom:14px;">
+        <button class="ghost" id="listTxtBtn"><i class="fa-solid fa-file-lines"></i> Save list as .txt</button>
+        <button class="ghost" id="listPdfBtn"><i class="fa-solid fa-file-pdf"></i> Save list as PDF</button>
+      </div>
       <label>Save to</label>
       <div class="dest-toggle" id="destToggle">
         <button type="button" class="dest-btn active" data-dest="local"><i class="fa-solid fa-laptop"></i> This computer</button>
@@ -836,6 +841,56 @@
       opHide(1800);
     }
   }
+
+  // ---------- export the folder tree as a .txt / PDF ----------
+  function treeToLines(tree, prefix){
+    prefix = prefix || '';
+    let lines = [];
+    tree.forEach((node, i) => {
+      const last = i === tree.length - 1;
+      const connector = last ? '└─ ' : '├─ ';
+      if (node.type === 'folder'){
+        lines.push(prefix + connector + node.name + '/');
+        lines = lines.concat(treeToLines(node.children, prefix + (last ? '   ' : '│  ')));
+      } else {
+        lines.push(prefix + connector + node.name + (node.size != null ? '  [' + formatSize(node.size) + ']' : ''));
+      }
+    });
+    return lines;
+  }
+  function buildListText(){
+    const flat = flatten(currentTree);
+    const total = flat.reduce((n, f) => n + (f.size || 0), 0);
+    const head = [
+      'Drive folder listing',
+      'Date: ' + new Date().toLocaleString(),
+      flat.length + ' file(s) · ' + formatSize(total),
+      '',
+      '/'
+    ];
+    return head.concat(treeToLines(currentTree)).join('\n');
+  }
+  $('listTxtBtn').addEventListener('click', () => {
+    if (!currentTree.length) return;
+    const blob = new Blob(['\ufeff' + buildListText()], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'drive-folder-list.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+  $('listPdfBtn').addEventListener('click', () => {
+    if (!currentTree.length) return;
+    const w = window.open('', '_blank');
+    if (!w){ alert('Popup blocked — allow popups for this site and try again.'); return; }
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>drive-folder-list</title>' +
+      '<style>body{margin:24px;font-family:Consolas,"Courier New",monospace;font-size:11px;line-height:1.55;color:#000;}' +
+      'pre{white-space:pre-wrap;word-break:break-word;margin:0;}@page{margin:14mm;}</style></head><body><pre>' +
+      escapeHtml(buildListText()) + '</pre></body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400); // choose "Save as PDF" as the destination in the print dialog
+  });
 
   dlDriveBtn.addEventListener('click', saveToMyDrive);
   clientIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveToMyDrive(); });
