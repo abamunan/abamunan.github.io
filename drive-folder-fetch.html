@@ -95,6 +95,10 @@
   .status.muted{color:var(--text-soft);}
 
   #actions{display:none;}
+  .dest-toggle{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .dest-btn{flex:1; min-width:150px;}
+  .dest-btn.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  #localBox{margin-bottom:10px;}
   #actions .row-inline{margin-bottom:10px;}
   .meta{font-family:var(--mono); font-size:12px; color:var(--text-muted);}
 
@@ -214,6 +218,13 @@
         <li>Optional but recommended: restrict the key to the Drive API.</li>
         <li>Make sure the Drive folder is shared as <b>"Anyone with the link"</b> — an API key can only read public files, not private ones.</li>
       </ol>
+      <p style="margin-top:12px;"><b>For saving into your own Drive:</b></p>
+      <ol>
+        <li>Same project → <b>APIs &amp; Services → Credentials → Create credentials → OAuth client ID</b> → type <b>Web application</b>.</li>
+        <li>Under <b>Authorized JavaScript origins</b> add the address this page is served from (e.g. <code>https://yoursite.com</code> or <code>http://localhost:8000</code>). It won't work from a <code>file://</code> page.</li>
+        <li>On the <b>OAuth consent screen</b>, add your own Google account as a <b>Test user</b>.</li>
+        <li>Paste the Client ID above. The app only gets access to files it creates itself (<code>drive.file</code> scope).</li>
+      </ol>
       <p class="help-contact">Don't want to set this up? <a href="contact.html">Ask Munan</a> for a one-time API key instead.</p>
     </div>
     <div class="status muted" id="status"></div>
@@ -222,10 +233,34 @@
   <div class="panel" id="treePanel" style="display:none;">
     <div class="tree" id="tree"></div>
     <div id="actions">
-      <div class="row-inline">
+      <div class="meta" id="meta" style="margin-bottom:12px;"></div>
+      <label>Save to</label>
+      <div class="dest-toggle" id="destToggle">
+        <button type="button" class="dest-btn active" data-dest="local"><i class="fa-solid fa-laptop"></i> This computer</button>
+        <button type="button" class="dest-btn" data-dest="drive"><i class="fa-brands fa-google-drive"></i> My Google Drive</button>
+      </div>
+      <div id="localBox" class="row-inline">
         <button class="primary" id="dlFolderBtn">Download all → choose folder</button>
         <button class="ghost" id="dlIndivBtn">Download individually</button>
-        <span class="meta" id="meta"></span>
+      </div>
+      <div id="driveBox" style="display:none;">
+        <label for="clientId">Google OAuth Client ID</label>
+        <input type="text" id="clientId" placeholder="123456-abc.apps.googleusercontent.com" autocomplete="off">
+        <label>Method</label>
+        <div style="font-size:13px; line-height:1.7; margin-bottom:12px; color:var(--text-main);">
+          <label style="text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; display:flex; gap:8px; align-items:flex-start; cursor:pointer; margin-bottom:4px;">
+            <input type="radio" name="driveMode" value="copy" checked style="margin-top:5px;">
+            <span>Fast copy <span style="font-weight:400;color:var(--text-muted);">— copied on Google's servers, no download/upload. Needs full Drive access.</span></span>
+          </label>
+          <label style="text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; display:flex; gap:8px; align-items:flex-start; cursor:pointer; margin:0;">
+            <input type="radio" name="driveMode" value="upload" style="margin-top:5px;">
+            <span>Download &amp; upload <span style="font-weight:400;color:var(--text-muted);">— goes through your browser (slower). Limited access: only files this app creates.</span></span>
+          </label>
+        </div>
+        <div class="row-inline">
+          <button class="primary" id="dlDriveBtn"><i class="fa-brands fa-google-drive"></i> Save to my Google Drive</button>
+        </div>
+        <div class="note">Creates a <b>Drive Folder Fetch &lt;date&gt;</b> folder in My Drive with the same subfolders. Fast copy falls back to download &amp; upload automatically if a file can't be copied (e.g. the owner disabled copying). Google may show an "unverified app" warning — add your account as a Test user and continue.</div>
       </div>
       <div class="note" id="fsaNote"></div>
     </div>
@@ -277,7 +312,7 @@
   const apiKeyInput = $('apiKey'), linkInput = $('link'), loadBtn = $('loadBtn');
   const statusEl = $('status'), treePanel = $('treePanel'), treeEl = $('tree');
   const actionsEl = $('actions'), metaEl = $('meta');
-  const dlFolderBtn = $('dlFolderBtn'), dlIndivBtn = $('dlIndivBtn');
+  const dlFolderBtn = $('dlFolderBtn'), dlIndivBtn = $('dlIndivBtn'), dlDriveBtn = $('dlDriveBtn'), clientIdInput = $('clientId');
   const helpToggle = $('helpToggle'), helpBody = $('helpBody'), fsaNote = $('fsaNote');
 
   const opOverlay = $('opOverlay'), opTitle = $('opTitle'), opPercent = $('opPercent'),
@@ -655,6 +690,163 @@
     opHide(1500);
   }
 
+  // ---------- save straight into the user's own Google Drive ----------
+  const SCOPE_UPLOAD = 'https://www.googleapis.com/auth/drive.file';
+  const SCOPE_FULL = 'https://www.googleapis.com/auth/drive';
+  let oauthToken = '', oauthExpiry = 0, oauthScope = '';
+
+  function getAccessToken(clientId, scope){
+    return new Promise((resolve, reject) => {
+      const scopeOk = oauthScope === scope || oauthScope === SCOPE_FULL;
+      if (oauthToken && scopeOk && Date.now() < oauthExpiry - 60000) return resolve(oauthToken);
+      if (!(window.google && google.accounts && google.accounts.oauth2)){
+        return reject(new Error('Google sign-in script not loaded yet — check your connection and retry.'));
+      }
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: scope,
+        callback: resp => {
+          if (resp.error) return reject(new Error(resp.error_description || resp.error));
+          oauthToken = resp.access_token;
+          oauthScope = scope;
+          oauthExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000;
+          resolve(oauthToken);
+        },
+        error_callback: err => reject(new Error(err.message || err.type || 'Sign-in cancelled'))
+      });
+      client.requestAccessToken();
+    });
+  }
+
+  async function authFetch(url, opts, tries){
+    tries = tries || 4;
+    for (let i = 0; i < tries; i++){
+      const o = Object.assign({}, opts);
+      o.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + oauthToken });
+      const res = await fetch(url, o);
+      if (res.ok) return res;
+      if ([403,429,500,502,503].includes(res.status) && i < tries - 1){ await sleep(600 * Math.pow(2, i)); continue; }
+      const body = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} ${body.slice(0,150)}`);
+    }
+  }
+
+  async function createDriveFolder(name, parentId){
+    const meta = { name: sanitize(name), mimeType: 'application/vnd.google-apps.folder' };
+    if (parentId) meta.parents = [parentId];
+    const res = await authFetch('https://www.googleapis.com/drive/v3/files?fields=id', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta)
+    });
+    return (await res.json()).id;
+  }
+
+  async function uploadToDrive(blob, name, parentId){
+    const init = await authFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': blob.type || 'application/octet-stream' },
+      body: JSON.stringify({ name: sanitize(name), parents: [parentId] })
+    });
+    const loc = init.headers.get('Location');
+    if (!loc) throw new Error('No upload session URL returned');
+    const up = await fetch(loc, { method: 'PUT', headers: { 'Content-Type': blob.type || 'application/octet-stream' }, body: blob });
+    if (!up.ok) throw new Error(`Upload failed: HTTP ${up.status}`);
+  }
+
+  async function copyInDrive(file, parentId){
+    const res = await authFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/copy?supportsAllDrives=true&fields=id`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: sanitize(file.name), parents: [parentId] })
+    }, 2);
+    return res.json();
+  }
+
+  async function saveToMyDrive(){
+    const clientId = clientIdInput.value.trim();
+    if (!clientId){ setStatus('Enter your Google OAuth Client ID first (see "how do I get an API key?").', 'err'); return; }
+    if (!currentTree.length) return;
+    const mode = (document.querySelector('input[name="driveMode"]:checked') || {}).value || 'copy';
+    const scope = mode === 'copy' ? SCOPE_FULL : SCOPE_UPLOAD;
+    try { await getAccessToken(clientId, scope); }
+    catch (e){ setStatus('Sign-in failed: ' + e.message, 'err'); return; }
+
+    const files = flatten(currentTree).filter(f => isDownloadable(f.mimeType));
+    const stamp = new Date().toISOString().slice(0,10);
+    dlFolderBtn.disabled = dlIndivBtn.disabled = dlDriveBtn.disabled = true;
+    opShow('Saving to your Google Drive…');
+    opUpdateProgress(0, files.length);
+
+    const failed = [];
+    let done = 0, fallbacks = 0;
+    try {
+      const rootId = await createDriveFolder('Drive Folder Fetch ' + stamp, null);
+      // create folder structure first (sequential), cache path -> Drive folder id
+      const dirIds = new Map([['', rootId]]);
+      async function ensureDriveDir(path){
+        if (dirIds.has(path)) return dirIds.get(path);
+        const parts = path.split('/').filter(Boolean);
+        const parentPath = parts.slice(0, -1).join('/') + (parts.length > 1 ? '/' : '');
+        const parentId = await ensureDriveDir(parentPath);
+        const id = await createDriveFolder(parts[parts.length - 1], parentId);
+        dirIds.set(path, id);
+        return id;
+      }
+      for (const f of files) await ensureDriveDir(f.path);
+
+      let idx = 0;
+      async function worker(){
+        while (idx < files.length){
+          const file = files[idx++];
+          try {
+            if (Date.now() > oauthExpiry - 60000) await getAccessToken(clientId, scope);
+            let copied = false;
+            if (mode === 'copy'){
+              try { await copyInDrive(file, dirIds.get(file.path)); copied = true; }
+              catch (e){ fallbacks++; console.warn('Copy failed, falling back to download & upload:', file.name, e.message); }
+            }
+            if (!copied){
+              const res = await fetchWithRetry(getDownloadUrl(file));
+              const blob = await res.blob();
+              await uploadToDrive(blob, outputName(file), dirIds.get(file.path));
+            }
+          } catch (e){
+            failed.push({name: file.path + file.name, error: e.message});
+          }
+          done++;
+          opUpdateProgress(done, files.length);
+        }
+      }
+      await Promise.all(Array.from({length: Math.min(3, files.length)}, worker));
+    } catch (e){
+      failed.push({name: '(setup)', error: e.message});
+    }
+
+    dlFolderBtn.disabled = dlIndivBtn.disabled = dlDriveBtn.disabled = false;
+    if (failed.length){
+      console.warn('Failed files:', failed);
+      opSetTitle(`Done with ${failed.length} error(s)`);
+      opSub.textContent = failed[0].error.slice(0, 120);
+      setStatus(`Saved ${done - failed.length} of ${files.length} file(s) to Drive; ${failed.length} failed (see console).`, 'warn');
+      opHide(3500);
+    } else {
+      opSetTitle('Saved to your Google Drive');
+      opSub.textContent = 'Look for the "Drive Folder Fetch ' + stamp + '" folder in My Drive';
+      setStatus(`Saved ${files.length} file(s) to My Drive → "Drive Folder Fetch ${stamp}".` + (fallbacks ? ` (${fallbacks} used download & upload fallback.)` : ''), 'ok');
+      opHide(1800);
+    }
+  }
+
+  dlDriveBtn.addEventListener('click', saveToMyDrive);
+
+  const localBox = $('localBox'), driveBox = $('driveBox');
+  $('destToggle').addEventListener('click', e => {
+    const btn = e.target.closest('.dest-btn');
+    if (!btn) return;
+    const toDrive = btn.dataset.dest === 'drive';
+    document.querySelectorAll('.dest-btn').forEach(b => b.classList.toggle('active', b === btn));
+    localBox.style.display = toDrive ? 'none' : 'flex';
+    driveBox.style.display = toDrive ? 'block' : 'none';
+    fsaNote.style.display = toDrive ? 'none' : 'block';
+  });
   dlFolderBtn.addEventListener('click', downloadAllToFolder);
   dlIndivBtn.addEventListener('click', downloadAllIndividually);
 
@@ -717,6 +909,7 @@
   linkInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFolder(); });
 })();
 </script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="footer.js"></script>
 </body>
 </html>
