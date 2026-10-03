@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>English Fluency Tracker</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1f2328;--mut:#6b7280;--line:#e4e2db;--ac:#2f7d5b;--ac2:#cfe8dc;--warn:#e8b4a8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181a;--card:#202326;--ink:#ecebe6;--mut:#9aa0a6;--line:#33373b;--ac:#4cc38a;--ac2:#1f4535;--warn:#6b3a30}}
+:root[data-theme="dark"]{--bg:#16181a;--card:#202326;--ink:#ecebe6;--mut:#9aa0a6;--line:#33373b;--ac:#4cc38a;--ac2:#1f4535;--warn:#6b3a30}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0}h2{font-size:15px;margin:0 0 10px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{text-align:center;padding:8px 4px}.stat b{display:block;font-size:24px}.stat span{font-size:12px;color:var(--mut)}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--ac)}
+label.step{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+label.step:last-of-type{border:0}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac)}
+input[type=text],input[type=number],input[type=date],textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sc{display:flex;align-items:center;gap:10px;margin:6px 0}.sc span:first-child{width:110px;font-size:14px}.sc input{flex:1;accent-color:var(--ac)}.sc output{width:36px;text-align:right;font-weight:600}
+button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(14px,1fr));gap:3px}
+.cell{aspect-ratio:1;border-radius:3px;background:var(--line);cursor:pointer;border:1px solid transparent}
+.cell.p{background:var(--ac2)}.cell.d{background:var(--ac)}.cell.m{background:var(--warn)}.cell.sel{border-color:var(--ink)}
+.note{font-size:13px;color:var(--mut)}.flex{display:flex;gap:8px;flex-wrap:wrap}
+.owed{background:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px;margin-top:8px}
+svg{width:100%;height:120px}
+.li{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.li button{padding:2px 10px}.bd{display:inline-block;padding:4px 10px;border-radius:20px;background:var(--ac2);font-size:13px;margin:2px}.bd.off{opacity:.35}.tt{font-size:44px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.col{min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px}.txt{white-space:pre-wrap;word-wrap:break-word;font-size:14px;margin:4px 0 10px}select{width:100%;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.sm{padding:3px 10px;font-size:13px}.fc{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px}ul{margin:4px 0;padding-left:20px}
+.cell.mk{position:relative}.cell.mk::after{content:"";position:absolute;inset:30%;border-radius:50%;background:var(--ink)}
+
+/* ===== App shell: tabs, sub-tabs, modern look ===== */
+[hidden]{display:none!important}
+:root{--sh:0 1px 2px rgba(20,30,25,.05),0 6px 18px rgba(20,30,25,.05);--onac:#fff;--h1:#2f7d5b;--h2:#1d5a41}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sh:0 1px 2px rgba(0,0,0,.4);--onac:#0c2217;--h1:#1f4535;--h2:#153024}}
+:root[data-theme="dark"]{--sh:0 1px 2px rgba(0,0,0,.4);--onac:#0c2217;--h1:#1f4535;--h2:#153024}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));-webkit-tap-highlight-color:transparent}
+main{max-width:760px;padding:14px 16px 24px}
+button{color:var(--onac);min-height:42px;border-radius:12px;transition:transform .08s,opacity .15s}
+button:active{transform:scale(.97)}
+button.ghost{color:var(--ink)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{border-radius:12px;padding:11px 12px}
+.card{border-radius:18px;box-shadow:var(--sh);padding:18px;margin:12px 0}
+.card h2{font-size:12.5px;margin-bottom:12px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+@supports (backdrop-filter:blur(8px)){.top{background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}}
+.top .in{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:6px}
+.top h1{flex:1;min-width:0;font-size:16px;line-height:1.2;margin:0}
+.pill{display:inline-flex;align-items:center;gap:4px;background:var(--ac2);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;white-space:nowrap}
+.ib{min-width:40px;height:40px;min-height:40px;padding:0 10px;display:inline-grid;place-items:center;font-size:14px}
+.top svg,.nav svg{width:22px;height:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 20px rgba(20,30,25,.05)}
+.nav button{flex:1;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;padding:4px 2px;min-height:52px}
+.nav .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .15s}
+.nav button.on{color:var(--ac)}
+.nav button.on .ic{background:var(--ac2)}
+.nav .deskonly{display:none}
+.subnav{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 4px;padding:2px 16px 8px;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.subnav button{flex:0 0 auto;background:var(--card);color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:8px 18px;min-height:38px;font-size:14px}
+.subnav button.on{background:var(--ac);color:var(--onac);border-color:var(--ac)}
+.pane,.sub{animation:fadeIn .18s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.pane,.sub{animation:none}button{transition:none}}
+.hero{background:linear-gradient(135deg,var(--h1),var(--h2));color:#fff;border:0}
+.hero h2{color:rgba(255,255,255,.78);font-size:13px}
+.hero .hnote{font-size:15px;color:rgba(255,255,255,.92)}
+.hero button{background:#fff;color:#1d5a41}
+.hero button.ghost{background:rgba(255,255,255,.18);color:#fff;border:0}
+.back{margin:2px 0 4px;padding:8px 16px;min-height:38px;border-radius:999px;font-size:14px}
+.stat{background:var(--bg);border-radius:14px;padding:12px 4px}
+.stat b{font-size:26px}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (min-width:900px){
+ body{padding-bottom:24px}
+ .shell{margin-left:216px}
+ .nav{top:0;right:auto;width:216px;flex-direction:column;gap:4px;border-top:0;border-right:1px solid var(--line);padding:20px 12px;box-shadow:none}
+ .nav button{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:6px 10px;min-height:46px}
+ .nav .ic{width:34px;height:34px;border-radius:10px}
+ .nav .deskonly{display:flex;margin-top:auto}
+ .top .gear{display:none}
+ .toast{bottom:28px;left:calc(50% + 108px)}
+ .subnav{margin:0 0 4px;padding:2px 0 8px}
+}
+
+/* ===== Cloud sync UI ===== */
+.sdot{width:10px;height:10px;border-radius:50%;background:#9aa0a6;display:inline-block;flex:none}
+.sdot.ok{background:#2f9e6b}.sdot.wait{background:#e0a030}.sdot.err{background:#d5584a}
+.linkbtn{display:inline-flex;align-items:center;min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600}
+.adv{margin:12px 0}.adv summary{cursor:pointer;color:var(--mut);font-weight:600;padding:8px 2px}
+.cov{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center}
+.cbox{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--mut);font-weight:600}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ac);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+</style></head><body><div class="shell">
+<header class="top"><div class="in">
+<h1>English Fluency Tracker</h1>
+<span class="sdot" id="syncDot" title="Sync status"></span><span class="pill" title="Day streak">🔥 <b id="hStreak">0</b></span>
+<button type="button" class="ghost ib" id="lg">বাংলা</button>
+<button type="button" class="ghost ib" id="th" title="Theme" aria-label="Theme">🌓</button>
+<button type="button" class="ghost ib gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div></header>
+<main>
+<section class="pane" data-pane="home">
+<div class="card hero"><h2>Today's session</h2>
+<div class="hnote">30 min a day · Read → Summarize → Listen → Speak · 365 sessions</div>
+<div class="flex" style="margin-top:14px"><button type="button" data-go="today" data-subtab-go="log">Start today's session</button><button type="button" class="ghost" data-go="practice" data-subtab-go="quiz">Daily quiz</button></div></div>
+<div class="card"><div class="stats">
+<div class="stat"><b id="sDone">0</b><span>sessions done</span></div>
+<div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+<div class="stat"><b id="sMin">0</b><span>total minutes</span></div></div>
+<div class="bar"><i id="prog"></i></div>
+<div class="note" id="progTxt"></div><div id="dueTxt" style="font-weight:600;margin-top:4px"></div><div id="owed"></div><div id="plan"></div></div><div class="card"><h2>Level &amp; badges</h2><div id="lvl" style="font-weight:600"></div><label class="note">Goal level<select id="goal"><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select></label><div id="badges" style="margin-top:8px"></div></div>
+<div class="card"><h2>Journey map <span class="note" style="text-transform:none">(tap a day)</span></h2><div class="grid" id="grid"></div>
+<div class="note" style="margin-top:8px">Green = done · light = partial · red = missed (make it up!)</div></div>
+<div class="card"><h2>Streak freeze</h2><div id="fz"></div></div>
+</section>
+<section class="pane" data-pane="today" hidden>
+<div class="subnav" role="tablist"><button type="button" role="tab" data-subtab="log">Log</button><button type="button" role="tab" data-subtab="timer">Timer</button><button type="button" role="tab" data-subtab="listen">Listen</button><button type="button" role="tab" data-subtab="record">Record</button></div>
+<div class="sub" data-sub="log">
+<div class="card"><h2>Session</h2>
+<label class="note">Date<input type="date" id="date"></label>
+<div style="margin-top:8px">
+<label class="step"><input type="checkbox" id="read"> 1. Read an article</label>
+<label class="step"><input type="checkbox" id="sum"> 2. Write a summary</label>
+<label class="step"><input type="checkbox" id="listen"> 3. Listen to AI read it back</label>
+<label class="step"><input type="checkbox" id="speak"> 4. Speak about the topic</label></div>
+<div class="row" style="margin-top:8px">
+<label class="note">Minutes<input type="number" id="mins" min="0" max="300" placeholder="30"></label>
+<label class="note">Topic<input type="text" id="topic" placeholder="e.g. Climate policy"></label></div>
+<label class="note" style="display:block;margin-top:8px">Article title / link<input type="text" id="title"></label>
+<label class="note" style="display:block;margin-top:8px">My written summary <span id="w1"></span><textarea id="text" rows="6" placeholder="Write your summary here..."></textarea><button type="button" class="ghost sm" data-sayid="text" style="margin-top:6px">🔊 Listen</button></label>
+<label class="note" style="display:block;margin-top:8px">What I said (speaking transcript / key points) <span id="w2"></span><textarea id="talk" rows="5" placeholder="Type or paste what you spoke..."></textarea><button type="button" class="ghost sm" data-sayid="talk" style="margin-top:6px">🔊 Listen</button></label></div>
+<div class="card"><h2>AI evaluation (1–100)</h2>
+<div id="scores"></div>
+<label class="note" style="display:block;margin-top:8px">Paste AI feedback (scores auto-fill)<textarea id="fb" rows="3" placeholder="Grammar: 72/100, Vocabulary: 65/100..."></textarea></label><button class="ghost" id="fill" style="margin-top:6px">Auto-fill scores</button>
+<label class="note" style="display:block;margin-top:10px">Or upload the AI report file (.json)<input type="file" id="rf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label>
+<label class="note" style="display:block;margin-top:8px">Feedback / mistakes to remember<textarea id="notes" rows="3"></textarea></label>
+<div id="tgt" style="margin-top:10px"></div><div id="ws" style="margin-top:8px"></div></div>
+<div class="card"><div class="flex" style="margin-top:12px"><button id="save">Save</button><button class="ghost" id="copyP">Copy AI prompt (with this day's entry)</button></div>
+<div class="note" id="msg" style="margin-top:6px"></div></div>
+</div>
+<div class="sub" data-sub="timer">
+<div class="card"><h2>Study timer</h2><div class="tt" id="tt">30:00</div>
+<div class="row" style="margin-top:8px"><select id="tsel"><option value="30">Full session · 30 min</option><option value="10">Read · 10 min</option><option value="8">Write · 8 min</option><option value="4">Listen · 4 min</option><option value="8">Speak · 8 min</option><option value="5">Quick · 5 min</option></select><div class="flex"><button id="tgo">Start</button><button class="ghost" id="trs">Reset</button></div></div>
+<div class="note" style="margin-top:6px">When time is up, minutes are added to today's session.</div><div class="note" id="tmMirror" style="margin-top:6px;font-weight:600"></div></div>
+</div>
+<div class="sub" data-sub="listen">
+<div class="card"><h2>Read aloud</h2><div class="row"><select id="vsel" aria-label="Voice"></select><select id="rsel" aria-label="Speed"><option value="0.7">0.7x</option><option value="0.85">0.85x</option><option value="1">1x</option></select></div><div class="flex" style="margin-top:8px"><button class="ghost" id="sstop">⏹ Stop</button></div><div class="note" id="sayMsg" style="margin-top:6px">Tap 🔊 Listen next to your summary, transcript, words or phrases.</div></div>
+</div>
+<div class="sub" data-sub="record">
+<div class="card"><h2>Speaking recorder</h2><div class="flex"><button id="rbtn">● Record</button></div><div class="note" id="rmsg" style="margin-top:6px">Recordings are kept in memory only and are lost when you close or reload this page.</div><div id="rpl" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px"></div></div>
+</div>
+</section>
+<section class="pane" data-pane="practice" hidden>
+<div class="subnav" role="tablist"><button type="button" role="tab" data-subtab="quiz">Quiz</button><button type="button" role="tab" data-subtab="dictation">Dictation</button><button type="button" role="tab" data-subtab="cloze">Cloze</button><button type="button" role="tab" data-subtab="shadowing">Shadowing</button></div>
+<div class="sub" data-sub="quiz">
+<div class="card"><h2>Daily quiz</h2><div id="qz"></div></div>
+</div>
+<div class="sub" data-sub="dictation">
+<div class="card"><h2>Dictation</h2><div id="dc"><button id="dn">Start</button></div></div>
+</div>
+<div class="sub" data-sub="cloze">
+<div class="card"><h2>Cloze quiz</h2><div id="cc"><button id="cn">Start</button></div></div>
+</div>
+<div class="sub" data-sub="shadowing">
+<div class="card"><h2>Shadowing</h2><div id="sh"><button class="ghost" id="sn">Start</button></div></div>
+</div>
+</section>
+<section class="pane" data-pane="progress" hidden>
+<div class="subnav" role="tablist"><button type="button" role="tab" data-subtab="overview">Overview</button><button type="button" role="tab" data-subtab="goals">Goals</button><button type="button" role="tab" data-subtab="review">Review</button></div>
+<div class="sub" data-sub="overview">
+<div class="card"><h2>Score trend (last 30 sessions)</h2><svg id="chart" viewBox="0 0 300 120" preserveAspectRatio="none"></svg>
+<div id="avgs" class="note"></div></div>
+<div class="card"><h2>Skill radar</h2><div id="rd"></div></div>
+</div>
+<div class="sub" data-sub="goals">
+<div class="card"><h2>Daily targets</h2><div id="tset"></div></div>
+<div class="card"><h2>Monthly milestone</h2><div id="ms"></div></div>
+</div>
+<div class="sub" data-sub="review">
+<div class="card"><h2>Monthly review</h2>
+<button class="ghost" id="mrCopy">Copy monthly review prompt</button>
+<label class="note" style="display:block;margin-top:8px">Upload monthly_review.json<input type="file" id="mrFile" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label>
+<textarea id="mrTxt" rows="3" placeholder="...or paste the JSON here" style="margin-top:6px"></textarea><button id="mrGo" style="margin-top:6px">Save review</button>
+<div class="note" id="mrMsg"></div><div id="mrView" style="margin-top:8px"></div></div>
+<div class="card"><h2>Weekly progress card</h2><button id="wkb">Create card</button><div class="note" style="margin-top:6px">Long-press the image to save or share it.</div><img id="wki" alt="Weekly progress card" style="width:100%;margin-top:8px;border-radius:12px;display:none"></div>
+</div>
+</section>
+<section class="pane" data-pane="library" hidden>
+<div class="subnav" role="tablist"><button type="button" role="tab" data-subtab="reports">Reports</button><button type="button" role="tab" data-subtab="words">Words</button><button type="button" role="tab" data-subtab="mistakes">Mistakes</button><button type="button" role="tab" data-subtab="compare">Compare</button></div>
+<div class="sub" data-sub="reports">
+<div class="card"><h2>Reports</h2><div id="rep"></div><h2 style="margin-top:14px">Articles read</h2><div id="art"></div></div>
+</div>
+<div class="sub" data-sub="words">
+<div class="card"><h2>Vocabulary list</h2>
+<div class="row"><input type="text" id="vw" placeholder="Word"><input type="text" id="vm" placeholder="Meaning"></div>
+<input type="text" id="vx" placeholder="Example sentence" style="margin:8px 0"><input type="text" id="vb" placeholder="Bangla meaning (optional)" style="margin-bottom:8px"><button id="va">Add word</button>
+<div class="flex" style="margin-top:10px"><button class="ghost" id="vp">Copy AI prompt</button><button class="ghost" id="vex">Copy my list (JSON)</button></div>
+<label class="note" style="display:block;margin-top:8px">Upload vocabulary file (.json)<input type="file" id="vf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="vmsg"></div><input type="text" id="vs" placeholder="Search words..." style="margin-top:6px"><div id="vl" style="margin-top:8px"></div></div>
+</div>
+<div class="sub" data-sub="mistakes">
+<div class="card"><h2>Mistake notebook</h2>
+<div class="row"><input type="text" id="mw" placeholder="What I said (wrong)"><input type="text" id="mc" placeholder="Correct version"></div>
+<button id="ma" style="margin-top:8px">Add mistake</button>
+<div class="flex" style="margin-top:10px"><button class="ghost" id="mp">Copy AI prompt</button><button class="ghost" id="mex">Copy my list (JSON)</button></div>
+<label class="note" style="display:block;margin-top:8px">Upload mistakes file (.json)<input type="file" id="mf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="mmsg"></div><input type="text" id="mqs" placeholder="Search mistakes..." style="margin-top:6px"><div id="ml" style="margin-top:8px"></div></div>
+</div>
+<div class="sub" data-sub="compare">
+<div class="card"><h2>Compare my writing</h2>
+<div class="row"><select id="ca"></select><select id="cb"></select></div>
+<div class="cmp" id="cmp"></div><div class="note" id="cnone">Save a summary or transcript to compare days.</div></div>
+</div>
+</section>
+<section class="pane" data-pane="settings" hidden>
+<button type="button" class="ghost back" id="backBtn">← <span>Back</span></button>
+<div class="card" id="acct"><h2>Account</h2>
+<div class="note">Signed in as</div><div id="acctEmail" style="font-weight:600;word-break:break-all">—</div>
+<div class="flex" style="margin-top:10px;align-items:center"><span class="sdot" id="syncDot2"></span><span class="note" id="syncTxt">Waiting to sync…</span></div>
+<div class="flex" style="margin-top:12px"><button type="button" class="ghost" id="syncNow">Sync now</button><button type="button" class="ghost" id="signOut">Sign out</button><a class="linkbtn" href="dashboard.html">Munan.hub</a></div>
+<div class="note" style="margin-top:10px">Your sessions, words, mistakes and settings are saved to your account and sync across your devices.</div></div>
+<div class="card"><h2>Settings &amp; backup</h2>
+<label class="note">Journey start date<input type="date" id="start"></label>
+<div class="flex" style="margin-top:10px"><button class="ghost" id="exp">Copy backup</button><button class="ghost" id="imp">Restore from backup</button></div>
+<textarea id="bk" rows="3" placeholder="Paste backup JSON here to restore" style="display:none"></textarea>
+<div class="note" style="margin-top:6px">Your data is saved to your account and cached in this browser. A manual backup is still a good idea.</div></div>
+<div class="card"><h2>Reminder</h2><div class="note">A web page cannot ring in the background. Ask Claude to set a phone alarm with this sentence:</div><label class="note">Time<input type="time" id="rt" value="20:00"></label><div class="fc" id="rs"></div><button class="ghost" id="rcp" style="margin-top:8px">Copy sentence</button><div class="note" id="rm2"></div></div>
+<details class="adv"><summary>Manual sync code (advanced)</summary>
+<div class="card"><h2>Phone &amp; laptop sync</h2><div class="flex"><button class="ghost" id="syOut">Copy sync code</button><button class="ghost" id="syIn">Merge pasted code</button></div><textarea id="sy" rows="3" placeholder="Sync code appears here, or paste a code from your other device" style="margin-top:8px"></textarea><div class="note" id="syMsg"></div></div>
+</details>
+</section>
+</main>
+</div>
+<nav class="nav" aria-label="Main"><button type="button" data-go="home" ><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg></span><span>Home</span></button><button type="button" data-go="today" ><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><span>Today</span></button><button type="button" data-go="practice" ><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><span>Practice</span></button><button type="button" data-go="progress" ><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><span>Progress</span></button><button type="button" data-go="library" ><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg></span><span>Library</span></button><button type="button" data-go="settings" class="deskonly"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>Settings</span></button></nav>
+<div class="cov" id="cloudOv"><div class="cbox"><div class="spin"></div><div>Loading your data…</div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const KEY='eng-tracker-v1',DIM=['Grammar','Vocabulary','Fluency','Pronunciation','Coherence'],ST=['read','sum','listen','speak'];
+const $=id=>document.getElementById(id);
+let S={start:null,days:{}};
+try{const r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const today=iso(new Date());
+if(!S.start){S.start=today}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{window.__onPersist&&window.__onPersist()}catch(e){}};
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5);
+const done=e=>e&&ST.every(k=>e[k]);
+const avg=e=>{if(!e||!e.sc)return null;const v=DIM.map(d=>e.sc[d]).filter(x=>x>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+let cur=today;
+
+$('scores').innerHTML=DIM.map(d=>`<div class="sc"><span>${d}</span><input type="range" min="0" max="100" value="0" data-d="${d}"><output>0</output></div>`).join('');
+document.querySelectorAll('#scores input').forEach(i=>i.oninput=()=>i.nextElementSibling.textContent=i.value==0?'–':i.value);
+
+function load(d){cur=d;$('date').value=d;const e=S.days[d]||{};
+ST.forEach(k=>$(k).checked=!!e[k]);$('mins').value=e.mins||'';$('topic').value=e.topic||'';$('title').value=e.title||'';$('notes').value=e.notes||'';$('text').value=e.text||'';$('talk').value=e.talk||'';wc();
+document.querySelectorAll('#scores input').forEach(i=>{const v=(e.sc||{})[i.dataset.d]||0;i.value=v;i.nextElementSibling.textContent=v?v:'–'});
+render()}
+
+function render(){
+const days=S.days,list=Object.keys(days).filter(d=>d>=S.start);
+const doneN=list.filter(d=>done(days[d])).length,mins=list.reduce((a,d)=>a+(+days[d].mins||0),0);
+let st=0,d=today;if(!done(days[d]))d=addDays(d,-1);while(d>=S.start&&(done(days[d])||FZ(d))){if(done(days[d]))st++;d=addDays(d,-1)}
+$('sDone').textContent=doneN;$('sStreak').textContent=st;$('sMin').textContent=mins;
+$('prog').style.width=Math.min(100,doneN/365*100)+'%';
+const dayNo=Math.max(1,diff(S.start,today)+1);
+$('progTxt').textContent=`Day ${Math.min(dayNo,999)} of the calendar · ${doneN}/365 sessions · ${Math.max(0,365-doneN)} to go`;
+const owed=Math.max(0,Math.min(dayNo,365)-doneN-(done(days[today])?0:0));
+const owedAdj=Math.max(0,Math.min(dayNo-1,365)-doneN-FZN()+(done(days[today])?1:0)*0);
+$('owed').innerHTML=owedAdj>0?`<div class="owed">You owe <b>${owedAdj}</b> catch-up session${owedAdj>1?'s':''}. Pick a red day below to make it up.</div>`:'';
+MK=planUI(owedAdj);let h='';for(let i=0;i<365;i++){const dt=addDays(S.start,i),e=days[dt];
+let c='';if(done(e))c='d';else if(e&&(ST.some(k=>e[k])||e.mins))c='p';else if(FZ(dt))c='p';else if(dt<today)c='m';
+h+=`<div class="cell ${c} ${dt===cur?'sel':''} ${MK.has(dt)?'mk':''}" data-d="${dt}" title="Day ${i+1} · ${dt}"></div>`}
+$('grid').innerHTML=h;
+document.querySelectorAll('.cell').forEach(c=>c.onclick=()=>{load(c.dataset.d);goTab('today','log')});
+// chart
+const pts=list.sort().map(d=>[d,avg(days[d])]).filter(p=>p[1]!=null).slice(-30);
+const sv=$('chart');
+if(pts.length<1){sv.innerHTML='<text x="150" y="60" text-anchor="middle" font-size="10" fill="currentColor" opacity=".5">No scores yet</text>'}
+else{const x=i=>pts.length>1?10+i*280/(pts.length-1):150,y=v=>110-(v/100)*100;
+sv.innerHTML=`<polyline fill="none" stroke="var(--ac)" stroke-width="2" vector-effect="non-scaling-stroke" points="${pts.map((p,i)=>x(i)+','+y(p[1])).join(' ')}"/>`+pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p[1])}" r="2.5" fill="var(--ac)"/>`).join('')}
+const tot={};DIM.forEach(k=>{const v=list.map(d=>(days[d].sc||{})[k]).filter(x=>x>0);tot[k]=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'–'});
+$('avgs').textContent='Averages: '+DIM.map(k=>k+' '+tot[k]).join(' · ');
+$('start').value=S.start;renderCmp();extras()}
+
+const W=t=>(t||'').trim()?t.trim().split(/\s+/).length:0;
+const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function wc(){$('w1').textContent='('+W($('text').value)+' words)';$('w2').textContent='('+W($('talk').value)+' words)'}
+$('text').oninput=$('talk').oninput=wc;
+function renderCmp(){const ds=Object.keys(S.days).filter(d=>S.days[d].text||S.days[d].talk).sort();
+const a=$('ca'),b=$('cb'),pa=a.value,pb=b.value,o=ds.map(d=>`<option>${d}</option>`).join('');
+a.innerHTML=o;b.innerHTML=o;a.value=ds.includes(pa)?pa:(ds[0]||'');b.value=ds.includes(pb)?pb:(ds[ds.length-1]||'');drawCmp(ds.length)}
+function col(d){const e=S.days[d];if(!e)return'';const s=avg(e);
+return `<div class="col"><b>${d}</b><div class="note">Score ${s?s.toFixed(1):'–'} · ${W(e.text)} / ${W(e.talk)} words</div><h2 style="margin-top:8px">Summary</h2><div class="txt">${esc(e.text)||'–'}</div><h2>Speaking</h2><div class="txt">${esc(e.talk)||'–'}</div><h2>Feedback</h2><div class="txt">${esc(e.notes)||'–'}</div></div>`}
+function drawCmp(n){$('cnone').style.display=n?'none':'block';$('cmp').innerHTML=n?col($('ca').value)+col($('cb').value):''}
+$('ca').onchange=$('cb').onchange=()=>drawCmp(1);
+const LV=['A1','A2','B1','B2','C1','C2'],lv=v=>v<30?0:v<45?1:v<60?2:v<75?3:v<90?4:5;
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function rg(n){const f=addDays(today,-(n-1)),l=Object.keys(S.days).filter(d=>d>=f&&d<=today).map(d=>S.days[d]);
+const m=mean(l.map(avg).filter(x=>x!=null)),dim={};DIM.forEach(k=>{const v=mean(l.map(e=>(e.sc||{})[k]).filter(x=>x>0));if(v!=null)dim[k]=v});
+const ks=Object.keys(dim).sort((a,b)=>dim[a]-dim[b]);
+return `${l.filter(done).length} done · ${l.reduce((a,e)=>a+(+e.mins||0),0)} min · avg ${m?m.toFixed(1):'–'}`+(ks.length?` · weakest ${ks[0]}`:'')}
+function extras(){S.cards=S.cards||{};S.reviews=S.reviews||{};dueUI();S.vocab=S.vocab||[];S.mist=S.mist||[];S.goal=S.goal||'C1';
+const sc=Object.keys(S.days).sort().map(d=>avg(S.days[d])).filter(x=>x!=null).slice(-7),m=mean(sc);
+$('lvl').textContent=m?`Level estimate: ${LV[lv(m)]} → goal ${S.goal}`:'Level estimate: add AI scores to see it';$('goal').value=S.goal;
+$('rep').innerHTML=`<div class="li"><span>7 days</span><span>${rg(7)}</span></div><div class="li"><span>30 days</span><span>${rg(30)}</span></div>`;
+let best=0,c=0;for(let i=0;i<=diff(S.start,today);i++){if(done(S.days[addDays(S.start,i)])){c++;best=Math.max(best,c)}else if(!FZ(addDays(S.start,i)))c=0}
+const tot=Object.keys(S.days).filter(d=>done(S.days[d])).length;
+$('badges').innerHTML=[7,30,100,365].map(n=>`<span class="bd ${best>=n?'':'off'}">🏅 ${n}-day streak</span>`).join('')+[50,200].map(n=>`<span class="bd ${tot>=n?'':'off'}">⭐ ${n} sessions</span>`).join('');
+const ar=Object.keys(S.days).sort().reverse().filter(d=>S.days[d].title).slice(0,10);
+$('art').innerHTML=ar.map(d=>`<div class="li"><span>${esc(S.days[d].title)}<br><span class="note">${esc(S.days[d].topic||'')}</span></span><span class="note">${d}</span></div>`).join('')||'<div class="note">No articles yet.</div>';
+$('vl').innerHTML=S.vocab.map((v,i)=>!vq(v)?'':`<div class="li"><span><b>${esc(v.w)}</b> – ${esc(v.m)}${v.bn?' · '+esc(v.bn):''}<br><i>${esc(v.x)}</i><br><button class="ghost sm" data-sw="${i}">🔊 Phrase</button>${v.x?` <button class="ghost sm" data-sv="${i}">🔊 Example</button>`:''}</span><button class="ghost" data-v="${i}">✕</button></div>`).join('')||'<div class="note">No words yet.</div>';
+$('ml').innerHTML=S.mist.map((v,i)=>!mq(v)?'':`<div class="li"><span>❌ ${esc(v.a)}<br>✅ ${esc(v.b)} <button class="ghost sm" data-sm="${i}">🔊</button>${v.r?`<br><span class="note">${esc(v.r)}</span>`:''}</span><button class="ghost" data-m="${i}">✕</button></div>`).join('')||'<div class="note">No mistakes saved yet.</div>'}
+$('goal').onchange=()=>{S.goal=$('goal').value;persist();extras()};
+$('va').onclick=()=>{const w=$('vw').value.trim();if(!w)return;S.vocab.unshift({w,m:$('vm').value,x:$('vx').value,bn:$('vb').value.trim()});['vw','vm','vx','vb'].forEach(i=>$(i).value='');persist();extras()};
+$('vl').onclick=e=>{const i=e.target.dataset.v;if(i!==undefined){S.vocab.splice(i,1);persist();extras()}};
+$('ma').onclick=()=>{const a=$('mw').value.trim(),b=$('mc').value.trim();if(!a&&!b)return;S.mist.unshift({a,b});$('mw').value=$('mc').value='';persist();extras()};
+$('ml').onclick=e=>{const i=e.target.dataset.m;if(i!==undefined){S.mist.splice(i,1);persist();extras()}};
+$('fill').onclick=()=>{const t=$('fb').value;if(/[\[{]\s*"/.test(t)){importReport(t);return}let n=0;document.querySelectorAll('#scores input').forEach(i=>{const m=t.match(new RegExp(i.dataset.d+'\\D{0,20}?(\\d+(?:\\.\\d+)?)','i'));if(m){const v=Math.min(100,Math.round(+m[1]));i.value=v;i.nextElementSibling.textContent=v;n++}});if(t&&!$('notes').value)$('notes').value=t;$('msg').textContent=n+' scores filled. Tap Save.'};
+let tm=null,left=1800,tot0=1800,endAt=0;
+const tdraw=()=>$('tt').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');
+$('tsel').onchange=()=>{clearInterval(tm);tm=null;$('tgo').textContent='Start';tot0=left=+$('tsel').value*60;tdraw()};
+$('tgo').onclick=()=>{if(tm){clearInterval(tm);tm=null;$('tgo').textContent='Start';return}
+endAt=Date.now()+left*1000;$('tgo').textContent='Pause';
+tm=setInterval(()=>{left=Math.max(0,Math.round((endAt-Date.now())/1000));tdraw();if(left<=0){clearInterval(tm);tm=null;$('tgo').textContent='Start';$('mins').value=(+$('mins').value||0)+tot0/60;left=tot0;tdraw();$('msg').textContent='Time is up! Minutes added. Tap Save.';try{navigator.vibrate&&navigator.vibrate(600)}catch(e){}}},500)};
+$('trs').onclick=()=>{clearInterval(tm);tm=null;$('tgo').textContent='Start';left=tot0;tdraw()};
+$('th').onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');S.theme=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;persist()};
+if(S.theme)document.documentElement.dataset.theme=S.theme;
+function applyReport(r){const d=/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')?r.date:cur,e=S.days[d]=S.days[d]||{};e.sc=e.sc||{};
+e.ts=Date.now();const sc=r.scores||{};DIM.forEach(k=>{const key=Object.keys(sc).find(x=>x.toLowerCase()===k.toLowerCase());if(key&&+sc[key]>=0)e.sc[k]=Math.min(100,Math.round(+sc[key]))});
+const n=[r.feedback,r.focus_tomorrow&&'Focus: '+r.focus_tomorrow,r.level&&'Level: '+r.level].filter(Boolean).join('\n');
+if(n&&!(e.notes||'').includes(n))e.notes=(e.notes?e.notes+'\n\n':'')+n;
+['title','topic'].forEach(k=>{if(r[k]&&!e[k])e[k]=r[k]});if(r.summary&&!e.text)e.text=r.summary;if(r.transcript&&!e.talk)e.talk=r.transcript;
+S.mist=S.mist||[];(r.mistakes||[]).forEach(m=>{const a=m.wrong||m.a||'',b=m.correct||m.b||'';if((a||b)&&!S.mist.some(x=>x.a===a&&x.b===b))S.mist.unshift({a,b})});
+S.vocab=S.vocab||[];(r.better_phrases||r.vocabulary||[]).forEach(v=>{const w=v.word||v.w||'';if(w&&!S.vocab.some(x=>x.w===w))S.vocab.unshift({w,m:v.meaning||v.m||'',x:v.example||v.x||'',bn:v.bangla||v.bn||''})});if(Object.keys(e.sc).length){ST.forEach(k=>e[k]=true);if(!e.mins)e.mins=30}return d}
+function importReport(t){try{t=t.replace(/```(?:json)?/g,'');const i=t.search(/[\[{]/),j=JSON.parse(t.slice(i,Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'))+1)),arr=Array.isArray(j)?j:(j.days||[j]);let last=cur;arr.forEach(r=>last=applyReport(r));persist();load(last);$('msg').textContent='Imported '+arr.length+' report(s) for '+last+'. Review it, then tap Save if you edit anything.'}catch(e){$('msg').textContent='Could not read that. Use the JSON file the AI created.'}}
+$('rf').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{importReport(String(r.result));e.target.value=''};r.readAsText(f)};
+function parseJ(t){t=t.replace(/```(?:json)?/g,'');const i=t.search(/[\[{]/);return JSON.parse(t.slice(i,Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'))+1))}
+function importList(t,k,mid){try{const j=parseJ(t),a=Array.isArray(j)?j:(j[k==='v'?'vocabulary':'mistakes']||[]);let n=0;
+if(k==='v'){S.vocab=S.vocab||[];a.forEach(v=>{const w=v.word||v.w||'';if(w&&!S.vocab.some(x=>x.w.toLowerCase()===w.toLowerCase())){S.vocab.unshift({w,m:v.meaning||v.m||'',x:v.example||v.x||'',bn:v.bangla||v.bn||''});n++}})}
+else{S.mist=S.mist||[];a.forEach(m=>{const x=m.wrong||m.a||'',y=m.correct||m.b||'';if((x||y)&&!S.mist.some(z=>z.a===x&&z.b===y)){S.mist.unshift({a:x,b:y,r:m.rule||m.r||''});n++}})}
+persist();extras();$(mid).textContent=n+' new item(s) added'+(a.length>n?' ('+(a.length-n)+' duplicates skipped)':'')+'.'}catch(e){$(mid).textContent='Could not read that file. Use the JSON the AI created.'}}
+const fileTo=(id,k,mid)=>$(id).onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{importList(String(r.result),k,mid);e.target.value=''};r.readAsText(f)};
+fileTo('vf','v','vmsg');fileTo('mf','m','mmsg');
+$('vex').onclick=()=>copy(JSON.stringify({vocabulary:(S.vocab||[]).map(v=>({word:v.w,meaning:v.m,example:v.x,...(v.bn?{bangla:v.bn}:{})}))},null,1),'List copied.','vmsg');
+$('mex').onclick=()=>copy(JSON.stringify({mistakes:(S.mist||[]).map(v=>({wrong:v.a,correct:v.b,rule:v.r||''}))},null,1),'List copied.','mmsg');
+$('vp').onclick=()=>copy(`I am learning English (goal: C1). Make a vocabulary list from the words or text I paste below. If I paste nothing, pick 10 useful words from the articles and topics in this chat. Skip words already in my list if I send it.
+
+Return a downloadable file named vocabulary.json. If you cannot create files, reply with the same JSON in one code block. Only valid JSON, exactly this shape:
+{"vocabulary":[{"word":"word or phrase","meaning":"simple English meaning","example":"example sentence"}]}
+
+WORDS / TEXT:
+[paste here]`,'Prompt copied. Paste it into your AI chat, then upload the .json file.','vmsg');
+$('mp').onclick=()=>copy(`Review the mistakes I paste below. If I paste nothing, use my mistakes from earlier days in this chat. Group repeated mistakes into one item and add a short rule for each.
+
+Return a downloadable file named mistakes.json. If you cannot create files, reply with the same JSON in one code block. Only valid JSON, exactly this shape:
+{"mistakes":[{"wrong":"what I said","correct":"correct version","rule":"short grammar rule"}]}
+
+MY MISTAKES:
+[paste here]`,'Prompt copied. Paste it into your AI chat, then upload the .json file.','mmsg');
+$('date').onchange=e=>e.target.value&&load(e.target.value);
+$('save').onclick=()=>{const e={};ST.forEach(k=>e[k]=$(k).checked);e.mins=+$('mins').value||0;e.topic=$('topic').value;e.title=$('title').value;e.notes=$('notes').value;e.text=$('text').value;e.talk=$('talk').value;
+e.sc={};document.querySelectorAll('#scores input').forEach(i=>e.sc[i.dataset.d]=+i.value);
+e.ts=Date.now();S.days[cur]=e;persist();render();$('msg').textContent=done(e)?'Saved. Session complete ✓':'Saved (not all 4 steps checked yet).'};
+$('start').onchange=e=>{if(e.target.value){S.start=e.target.value;persist();render()}};
+function buildP(){const f=id=>$(id).value.trim();
+return `You are my English coach for a 1-year fluency journey (30 min/day: read an article, write a summary, listen to AI, speak about it). Be strict and use the same standard every day.
+
+DATE: ${cur}
+ARTICLE (title/link): ${f('title')||'[paste here]'}
+TOPIC: ${f('topic')||'[optional]'}
+
+MY WRITTEN SUMMARY:
+${f('text')||'[paste here]'}
+
+WHAT I SAID (speaking transcript):
+${f('talk')||'[paste here]'}
+
+TASK: Evaluate my summary and speaking. Score each from 1-100: Grammar, Vocabulary, Fluency, Pronunciation, Coherence. If we have earlier days in this chat, compare and tell me if I am improving.
+
+OUTPUT: Return a downloadable file named report-${cur}.json. If you cannot create files, reply with the same JSON in one code block. Only valid JSON, exactly this shape:
+{
+  "date": "${cur}",
+  "title": "article title and link",
+  "topic": "short topic",
+  "summary": "my summary, copied exactly",
+  "transcript": "what I said, copied exactly",
+  "scores": {"Grammar": 0, "Vocabulary": 0, "Fluency": 0, "Pronunciation": 0, "Coherence": 0},
+  "level": "B1",
+  "feedback": "short overall feedback",
+  "focus_tomorrow": "one focus point",
+  "mistakes": [{"wrong": "what I said", "correct": "correct version"}],
+  "better_phrases": [{"word": "word or phrase", "meaning": "meaning", "example": "example sentence"}]
+}
+Scores must be integers from 1 to 100.`}
+function copy(t,ok,id){const done=()=>$(id||'msg').textContent=ok;try{navigator.clipboard.writeText(t).then(done,()=>fb())}catch(e){fb()}
+function fb(){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){}a.remove()}}
+$('copyP').onclick=()=>copy(buildP(),'Prompt copied. Paste it into your AI chat, get the .json file, then upload it below.');
+$('exp').onclick=()=>copy(JSON.stringify(S),'Backup copied to clipboard.');
+$('imp').onclick=()=>{const b=$('bk');if(b.style.display==='none'){b.style.display='block';$('msg').textContent='Paste backup, then tap Restore again.';return}
+try{const o=JSON.parse(b.value);if(o&&o.days){S=o;persist();load(today);b.value='';b.style.display='none';$('msg').textContent='Restored.'}}catch(e){$('msg').textContent='Invalid backup.'}};
+
+/* ===== Round 1: quiz, read aloud, monthly review ===== */
+const INT=[1,2,4,8,16],iKey=i=>i.t+':'+(i.t==='m'?i.a+'|'+i.b:i.w.toLowerCase());
+function allItems(){const o=[];(S.mist||[]).forEach(m=>{if(m.a&&m.b)o.push({t:'m',a:m.a,b:m.b,r:m.r||''})});(S.vocab||[]).forEach(v=>{if(v.w)o.push({t:'v',w:v.w,m:v.m||'',x:v.x||'',bn:v.bn||''})});return o}
+function dueList(){S.cards=S.cards||{};return allItems().filter(i=>{const c=S.cards[iKey(i)];return !c||c.due<=today})}
+let Q=null;
+function dueUI(){$('dueTxt').textContent='Due today: '+dueList().length;qIdle();mrShow();tgtUI();tsetUI();msUI();recUI();fzUI();rdUI();wsUI()}
+function qIdle(){if(Q)return;const n=dueList().length;$('qz').innerHTML=n?`<div>${n} card${n>1?'s':''} due today (up to 10 per session, mistakes first).</div><button id="qgo" style="margin-top:8px">Start quiz</button>`:'<div class="note">Nothing due today. Add words or mistakes, or come back tomorrow.</div>';if(n)$('qgo').onclick=()=>{Q={q:dueList().slice(0,10),i:0,ok:0,show:false,typed:''};qDraw()}}
+function qDraw(){const c=Q.q[Q.i];if(!c)return qEnd();
+let h=`<div class="note">Card ${Q.i+1} of ${Q.q.length}</div><div class="fc">`;
+if(c.t==='v')h+=`<div style="font-size:20px;font-weight:700">${esc(c.w)}</div>`+(Q.show?`<div style="margin-top:6px">${esc(c.m)}${c.bn?' · '+esc(c.bn):''}</div><div><i>${esc(c.x)}</i></div><button class="ghost sm" data-sq="1" style="margin-top:6px">🔊 Listen</button>`:'<div class="note" style="margin-top:6px">Recall the meaning, then check.</div>');
+else h+=`<div class="note">Fix this sentence:</div><div>❌ ${esc(c.a)}</div><input type="text" id="qin" placeholder="Type the correct version" style="margin-top:6px">`+(Q.show?`<div style="margin-top:8px">✅ ${esc(c.b)}</div>${c.r?`<div class="note">${esc(c.r)}</div>`:''}<button class="ghost sm" data-sq="1" style="margin-top:6px">🔊 Listen</button>`:'');
+h+='</div><div class="flex" style="margin-top:10px">'+(Q.show?'<button id="qy">I knew it</button><button class="ghost" id="qn">Missed it</button>':'<button id="qs">Show answer</button>')+'</div>';
+$('qz').innerHTML=h;const qi=$('qin');if(qi){qi.value=Q.typed;qi.oninput=()=>Q.typed=qi.value}
+if(Q.show){$('qy').onclick=()=>qMark(true);$('qn').onclick=()=>qMark(false)}else $('qs').onclick=()=>{Q.show=true;qDraw()}}
+function qMark(ok){const c=Q.q[Q.i],k=iKey(c),pv=S.cards[k]?S.cards[k].box:1,box=ok?Math.min(5,pv+1):1;
+S.cards[k]={box,due:addDays(today,INT[box-1])};if(ok)Q.ok++;Q.i++;Q.show=false;Q.typed='';persist();dueUI0();qDraw()}
+function dueUI0(){$('dueTxt').textContent='Due today: '+dueList().length}
+function qEnd(){const n=Q.q.length,tm=addDays(today,1),t=allItems().filter(i=>{const c=S.cards[iKey(i)];return !c||c.due<=tm}).length;
+$('qz').innerHTML=`<div style="font-size:20px;font-weight:700">${Math.round(Q.ok/n*100)}% correct</div><div class="note">${Q.ok} of ${n} cards known · Cards due tomorrow: ${t}</div><button id="qd" style="margin-top:8px">Done</button>`;$('qd').onclick=()=>{Q=null;dueUI()}}
+/* read aloud */
+const SY=typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined';let vcs=[],sayId=0,sayBtn=null;
+function fillV(){if(!SY)return;vcs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));$('vsel').innerHTML=vcs.length?vcs.map((v,i)=>`<option value="${i}">${esc(v.name)} (${esc(v.lang)})</option>`).join(''):'<option value="">Default voice</option>';const k=vcs.findIndex(v=>v.voiceURI===S.voice);if(k>=0)$('vsel').value=k}
+if(SY){fillV();speechSynthesis.onvoiceschanged=fillV;$('rsel').value=String(S.rate||1);
+$('vsel').onchange=()=>{const v=vcs[+$('vsel').value];S.voice=v?v.voiceURI:'';persist()};$('rsel').onchange=()=>{S.rate=+$('rsel').value;persist()}}
+else{$('vsel').disabled=$('rsel').disabled=$('sstop').disabled=true;$('sayMsg').textContent='Read aloud is not supported in this browser. Try Chrome, Edge or Safari.'}
+function say(t,b){if(!SY){$('sayMsg').textContent='Read aloud is not supported in this browser. Try Chrome, Edge or Safari.';return}
+if(speechSynthesis.speaking&&sayBtn===b){speechSynthesis.cancel();sayId++;$('sayMsg').textContent='Stopped.';return}
+t=(t||'').trim();if(!t){$('sayMsg').textContent='Nothing to read yet. Write something first.';return}
+speechSynthesis.cancel();sayBtn=b;const id=++sayId,u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=+S.rate||1;const v=vcs[+$('vsel').value];if(v){u.voice=v;u.lang=v.lang}
+u.onend=u.onerror=()=>{if(id===sayId)$('sayMsg').textContent='Ready.'};$('sayMsg').textContent='Reading...';speechSynthesis.speak(u)}
+$('sstop').onclick=()=>{if(SY)speechSynthesis.cancel();sayId++;$('sayMsg').textContent='Stopped.'};
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+if(d.sayid)say($(d.sayid).value,b);else if(d.sv!==undefined){const v=S.vocab[+d.sv];if(v)say(v.x,b)}else if(d.sw!==undefined){const v=S.vocab[+d.sw];if(v)say(v.w,b)}else if(d.sm!==undefined){const m=S.mist[+d.sm];if(m)say(m.b,b)}else if(d.sq){const c=Q&&Q.q[Q.i];if(c)say(c.t==='v'?c.w+'. '+(c.x||c.m):c.b,b)}});
+/* monthly review */
+const MD=(f,t)=>Object.keys(S.days).filter(d=>d>=f&&d<=t).sort().map(d=>{const e=S.days[d];return{date:d,scores:Object.assign({},e.sc||{}),mins:+e.mins||0,done:!!done(e),feedback:(e.notes||'').slice(0,600)}});
+function mrPrompt(){const f=addDays(today,-29),prev=MD(addDays(today,-59),addDays(today,-30)),mon=today.slice(0,7),pa={};
+DIM.forEach(k=>{const v=prev.map(x=>x.scores[k]).filter(x=>x>0);pa[k]=v.length?+mean(v).toFixed(1):null});
+const data={period:{from:f,to:today},days:MD(f,today),mistakes:(S.mist||[]).slice(0,40).map(m=>({wrong:m.a,correct:m.b,rule:m.r||''})),new_words:(S.vocab||[]).slice(0,40).map(v=>({word:v.w,meaning:v.m})),previous_30_days:{sessions:prev.length,days_done:prev.filter(x=>x.done).length,minutes:prev.reduce((a,x)=>a+x.mins,0),avg_scores:pa}};
+return `You are my English coach. Below is my last 30 days of data from my English Fluency Tracker (scores 1-100; level bands A1 <30, A2 30-44, B1 45-59, B2 60-74, C1 75-89, C2 90+). Goal level: ${S.goal||'C1'}.
+
+TASK: 1) Compare this month with the previous 30 days. 2) List my strengths. 3) Find mistakes that keep repeating. 4) Write a 30-day plan, week by week, with a focus and tasks. 5) Set realistic next-month target scores (1-100) for each skill.
+
+OUTPUT: Return a downloadable file named monthly_review.json. If you cannot create files, reply with the same JSON in one code block. Only valid JSON, exactly this shape:
+{"month":"YYYY-MM","summary":"","improved":[""],"still_weak":[""],"plan":[{"week":1,"focus":"","tasks":[""]}],"targets":{"Grammar":0,"Vocabulary":0,"Fluency":0,"Pronunciation":0,"Coherence":0}}
+Use month ${mon}. The plan has 4 weeks. Targets are integers from 1 to 100.
+
+DATA (mistakes and words come from my notebook, newest first, not dated):
+${JSON.stringify(data)}`}
+function mrImport(t){try{const j=parseJ(t),m=/^\d{4}-\d{2}$/.test(j.month||'')?j.month:today.slice(0,7),arr=x=>Array.isArray(x)?x.map(String):[];
+const r={summary:String(j.summary||''),improved:arr(j.improved),still_weak:arr(j.still_weak),plan:(Array.isArray(j.plan)?j.plan:[]).map((p,i)=>({week:+p.week||i+1,focus:String(p.focus||''),tasks:arr(p.tasks)})),targets:{},saved:today};
+DIM.forEach(k=>{const v=Math.round(+(j.targets||{})[k]);if(v>=1&&v<=100)r.targets[k]=v});
+S.reviews=S.reviews||{};S.reviews[m]=r;S.targets=S.targets||{};S.targets.score=Object.assign({},S.targets.score,r.targets);persist();mrShow();$('mrTxt').value='';
+$('mrMsg').textContent='Saved review for '+m+'.'+(Object.keys(r.targets).length?' Targets updated.':'')}catch(e){$('mrMsg').textContent='Could not read that. Use the monthly_review.json the AI created.'}}
+function mrShow(){const ks=Object.keys(S.reviews||{}).sort(),k=ks[ks.length-1],el=$('mrView');if(!k){el.innerHTML='<div class="note">No review saved yet.</div>';return}
+const r=S.reviews[k],ul=a=>a&&a.length?'<ul>'+a.map(x=>`<li>${esc(String(x))}</li>`).join('')+'</ul>':'<div class="note">-</div>',tg=r.targets||{};
+el.innerHTML=`<b>${esc(k)}</b><p>${esc(r.summary)}</p><b>Improved</b>${ul(r.improved)}<b>Still weak</b>${ul(r.still_weak)}<b>Plan</b>`+(r.plan||[]).map(p=>`<div style="margin:6px 0"><b>Week ${esc(String(p.week))}: ${esc(p.focus)}</b>${ul(p.tasks)}</div>`).join('')+(DIM.some(d=>tg[d])?`<div class="note">Targets: ${DIM.filter(d=>tg[d]).map(d=>d+' '+tg[d]).join(' · ')}</div>`:'')}
+$('mrCopy').onclick=()=>copy(mrPrompt(),'Prompt copied. Paste it into your AI chat, then upload monthly_review.json here.','mrMsg');
+$('mrGo').onclick=()=>mrImport($('mrTxt').value);
+$('mrFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{mrImport(String(r.result));e.target.value=''};r.readAsText(f)};
+
+/* ===== Round 2: make-up planner, targets, recorder ===== */
+let MK=new Set();const isWE=d=>{const w=new Date(d+'T00:00:00').getDay();return w===0||w===6};
+function planUI(n){const el=$('plan'),m=S.mode==='weekend'?'weekend':'daily';if(n<=0){el.innerHTML='';return new Set()}
+const ds=[];let d=today;for(let g=0;ds.length<n&&g<1500;g++,d=addDays(d,1)){if(m==='daily'||isWE(d))ds.push(d)}
+el.innerHTML=`<div class="fc"><b>Make-up plan</b><div style="margin-top:4px">${n} session${n>1?'s':''} to catch up. `+(m==='daily'?`Suggested: +1 extra session per day (2 per day) for ${n} day${n>1?'s':''}.`:`Weekends only: +1 extra session on each Saturday and Sunday (${n} weekend day${n>1?'s':''}).`)+` Projected finish: <b>${ds[ds.length-1]}</b>.</div><select id="pm" style="margin-top:8px"><option value="daily"${m==='daily'?' selected':''}>1 extra per day</option><option value="weekend"${m==='weekend'?' selected':''}>Weekends only</option></select><div class="note" style="margin-top:4px">Dots on the map mark the suggested make-up days.</div></div>`;return new Set(ds)}
+$('plan').onchange=e=>{if(e.target.id==='pm'){S.mode=e.target.value;persist();render()}};
+function TG(){const t=S.targets=S.targets||{},sc={};DIM.forEach(k=>sc[k]=(t.score&&t.score[k])||70);return{w:t.minWords==null?80:t.minWords,r:t.maxRepeat==null?3:t.maxRepeat,sc}}
+function repN(){const tx=($('text').value+' '+$('talk').value).toLowerCase();return(S.mist||[]).filter(m=>m.a&&tx.includes(m.a.toLowerCase())).length}
+function pb(l,v,t,ok){return `<div style="margin:6px 0"><div class="note">${l}: ${v} / ${t} ${ok?'✅':''}</div><div class="bar"><i style="width:${Math.min(100,v/(t||1)*100)}%"></i></div></div>`}
+function tgtUI(){const T=TG(),w=W($('text').value),r=repN();let ok=w>=T.w&&r<=T.r,h=pb('Summary words',w,T.w,w>=T.w)+`<div class="note">Repeated notebook mistakes in today's text: ${r} (max ${T.r}) ${r<=T.r?'✅':'⚠️'}</div>`;
+document.querySelectorAll('#scores input').forEach(i=>{const k=i.dataset.d,v=+i.value,g=v>=T.sc[k];if(!g)ok=false;h+=pb(k,v,T.sc[k],g)});
+$('tgt').innerHTML=`<div style="font-weight:600">${ok?'✅ This day meets all targets':'Targets for this day'}</div>`+h}
+function tsetUI(){const T=TG();$('tset').innerHTML=`<div class="row"><label class="note">Min summary words<input type="number" id="tw" min="0" value="${T.w}"></label><label class="note">Max repeated mistakes<input type="number" id="tr" min="0" value="${T.r}"></label></div><div class="note" style="margin-top:8px">Score targets (1-100)</div>`+DIM.map(k=>`<div class="sc"><span>${k}</span><input type="number" min="1" max="100" data-ts="${k}" value="${T.sc[k]}"></div>`).join('')}
+$('tset').onchange=e=>{const t=S.targets=S.targets||{},i=e.target;if(i.id==='tw')t.minWords=Math.max(0,+i.value||0);else if(i.id==='tr')t.maxRepeat=Math.max(0,+i.value||0);else if(i.dataset.ts){t.score=t.score||{};t.score[i.dataset.ts]=Math.min(100,Math.max(1,Math.round(+i.value)||70))}persist();tsetUI();tgtUI();msUI()};
+function msUI(){const T=TG(),mo=today.slice(0,7),ds=Object.keys(S.days).filter(d=>d.slice(0,7)===mo);
+$('ms').innerHTML=DIM.map(k=>{const v=mean(ds.map(d=>(S.days[d].sc||{})[k]).filter(x=>x>0));return v==null?`<div class="note" style="margin:6px 0">${k}: no scores yet (target ${T.sc[k]})</div>`:pb(k+' · avg '+v.toFixed(1),Math.round(v),T.sc[k],v>=T.sc[k])}).join('')}
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#text,#talk,#scores')){tgtUI();wsUI()}});
+/* recorder (memory only) */
+const REC={};let mrec=null,mstr=null,rKey=null;
+function recUI(){const y=addDays(cur,-1),a=(l,u)=>u?`<div><div class="note">${l}</div><audio controls src="${u}" style="width:100%"></audio></div>`:'';$('rpl').innerHTML=a(cur,REC[cur])+a('Yesterday ('+y+')',REC[y])}
+$('rbtn').onclick=async()=>{const m=$('rmsg');if(mrec&&mrec.state==='recording'){mrec.stop();return}
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){m.textContent='Recording is not supported in this browser or view.';return}
+try{mstr=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){const n=e&&e.name;m.textContent=(n==='NotAllowedError'||n==='SecurityError')?'Microphone access was blocked. Allow the microphone in your browser or phone settings, then try again.':'No microphone found, or it could not start.';return}
+const ch=[];rKey=cur;mrec=new MediaRecorder(mstr);mrec.ondataavailable=ev=>{if(ev.data&&ev.data.size)ch.push(ev.data)};
+mrec.onstop=()=>{mstr.getTracks().forEach(t=>t.stop());const b=new Blob(ch,{type:mrec.mimeType||'audio/webm'});if(REC[rKey])URL.revokeObjectURL(REC[rKey]);REC[rKey]=URL.createObjectURL(b);$('rbtn').textContent='● Record';m.textContent='Saved in memory only. It is lost when you close or reload this page.';recUI()};
+mrec.start();$('rbtn').textContent='⏹ Stop';m.textContent='Recording...'};
+
+/* ===== Round 3: weekly card, Bangla labels, reminder, sync ===== */
+function wkCard(){try{const f=addDays(today,-6),es=[0,1,2,3,4,5,6].map(i=>S.days[addDays(f,i)]),d7=es.filter(e=>done(e)).length,mins=es.reduce((a,e)=>a+(e?+e.mins||0:0),0),av={};
+DIM.forEach(k=>av[k]=mean(es.map(e=>e&&e.sc?e.sc[k]:0).filter(x=>x>0)));const tr=es.map(e=>e?avg(e):null),all=mean(tr.filter(x=>x!=null));
+let st=0,d=today;if(!done(S.days[d]))d=addDays(d,-1);while(d>=S.start&&(done(S.days[d])||FZ(d))){if(done(S.days[d]))st++;d=addDays(d,-1)}
+const c=document.createElement('canvas');c.width=720;c.height=900;const g=c.getContext('2d'),F=(w,z)=>g.font=w+' '+z+'px system-ui,sans-serif';
+g.fillStyle='#f6f5f1';g.fillRect(0,0,720,900);g.fillStyle='#2f7d5b';g.fillRect(0,0,720,150);g.fillStyle='#fff';F(700,40);g.fillText('Weekly progress',40,70);F(400,24);g.fillText(f+'  to  '+today,40,115);
+[['Sessions',d7+'/7'],['Minutes',mins],['Streak',st+' d'],['Level',all?LV[lv(all)]:'-']].forEach((q,i)=>{const x=40+i*165;g.fillStyle='#1f2328';F(700,44);g.fillText(String(q[1]),x,235);g.fillStyle='#6b7280';F(400,20);g.fillText(q[0],x,267)});
+DIM.forEach((k,i)=>{const y=345+i*58,v=av[k]||0;g.fillStyle='#1f2328';F(400,22);g.fillText(k,40,y);g.fillStyle='#e4e2db';g.fillRect(210,y-20,400,18);g.fillStyle='#2f7d5b';g.fillRect(210,y-20,400*v/100,18);g.fillStyle='#1f2328';g.fillText(v?String(Math.round(v)):'-',630,y)});
+g.fillStyle='#6b7280';F(400,20);g.fillText('Trend (daily average score)',40,655);g.strokeStyle='#e4e2db';g.lineWidth=2;g.beginPath();g.moveTo(40,850);g.lineTo(680,850);g.stroke();
+g.strokeStyle='#2f7d5b';g.fillStyle='#2f7d5b';g.lineWidth=4;g.beginPath();let pen=false;tr.forEach((v,i)=>{if(v==null)return;const x=70+i*100,y=850-v/100*170;pen?g.lineTo(x,y):g.moveTo(x,y);pen=true});g.stroke();
+tr.forEach((v,i)=>{if(v==null)return;g.beginPath();g.arc(70+i*100,850-v/100*170,6,0,7);g.fill()});
+const im=$('wki');im.src=c.toDataURL('image/png');im.style.display='block'}catch(e){alert('Could not draw the card in this browser.')}}
+$('wkb').onclick=wkCard;
+/* Bangla labels */
+const BN={'English Fluency Tracker':'ইংরেজি ফ্লুয়েন্সি ট্র্যাকার','sessions done':'সেশন সম্পন্ন','day streak':'দিনের ধারা','total minutes':'মোট মিনিট','Goal level':'লক্ষ্য স্তর','Journey map':'যাত্রার মানচিত্র','(tap a day)':'(একটি দিনে ট্যাপ করুন)','Daily quiz':'দৈনিক কুইজ','Study timer':'পড়ার টাইমার','Start':'শুরু','Pause':'বিরতি','Reset':'রিসেট','Read aloud':'জোরে শোনা','⏹ Stop':'⏹ থামান','Speaking recorder':'স্পিকিং রেকর্ডার','● Record':'● রেকর্ড','Session':'সেশন','Date':'তারিখ','1. Read an article':'১. একটি আর্টিকেল পড়ুন','2. Write a summary':'২. সারাংশ লিখুন','3. Listen to AI read it back':'৩. AI-এর পড়া শুনুন','4. Speak about the topic':'৪. বিষয়টি নিয়ে বলুন','Minutes':'মিনিট','Topic':'বিষয়','Article title / link':'আর্টিকেলের শিরোনাম / লিংক','My written summary':'আমার লেখা সারাংশ','What I said (speaking transcript / key points)':'আমি যা বলেছি (ট্রান্সক্রিপ্ট / মূল পয়েন্ট)','🔊 Listen':'🔊 শুনুন','Paste AI feedback (scores auto-fill)':'AI ফিডব্যাক পেস্ট করুন (স্কোর অটো-ফিল)','Auto-fill scores':'স্কোর অটো-ফিল','Or upload the AI report file (.json)':'অথবা AI রিপোর্ট ফাইল (.json) আপলোড করুন','Feedback / mistakes to remember':'ফিডব্যাক / মনে রাখার ভুল','Save':'সেভ',"Copy AI prompt (with this day's entry)":'AI প্রম্পট কপি (এই দিনের এন্ট্রিসহ)','Score trend (last 30 sessions)':'স্কোরের ধারা (শেষ ৩০ সেশন)','Reports':'রিপোর্ট','Articles read':'পড়া আর্টিকেল','Vocabulary list':'শব্দভান্ডার','Add word':'শব্দ যোগ করুন','Copy AI prompt':'AI প্রম্পট কপি','Copy my list (JSON)':'আমার তালিকা কপি (JSON)','Upload vocabulary file (.json)':'শব্দভান্ডার ফাইল (.json) আপলোড','Mistake notebook':'ভুলের খাতা','Add mistake':'ভুল যোগ করুন','Upload mistakes file (.json)':'ভুলের ফাইল (.json) আপলোড','Compare my writing':'আমার লেখার তুলনা','Settings & backup':'সেটিংস ও ব্যাকআপ','Journey start date':'যাত্রা শুরুর তারিখ','Copy backup':'ব্যাকআপ কপি','Restore from backup':'ব্যাকআপ থেকে রিস্টোর','Daily targets':'দৈনিক টার্গেট','Monthly milestone':'মাসিক মাইলস্টোন','Monthly review':'মাসিক রিভিউ','Copy monthly review prompt':'মাসিক রিভিউ প্রম্পট কপি','Upload monthly_review.json':'monthly_review.json আপলোড','Save review':'রিভিউ সেভ','Min summary words':'সর্বনিম্ন সারাংশ শব্দ','Max repeated mistakes':'সর্বোচ্চ বারবার ভুল','Score targets (1-100)':'স্কোর টার্গেট (১-১০০)','Start quiz':'কুইজ শুরু','Show answer':'উত্তর দেখুন','I knew it':'আমি জানতাম','Missed it':'পারিনি','Done':'শেষ','Make-up plan':'মেক-আপ পরিকল্পনা','1 extra per day':'প্রতিদিন ১টি অতিরিক্ত','Weekends only':'শুধু সাপ্তাহিক ছুটি','Weekly progress card':'সাপ্তাহিক অগ্রগতি কার্ড','Create card':'কার্ড তৈরি করুন','Long-press the image to save or share it.':'সেভ বা শেয়ার করতে ছবিতে লং-প্রেস করুন।','Reminder':'রিমাইন্ডার','Time':'সময়','Copy sentence':'বাক্য কপি','Phone & laptop sync':'ফোন ও ল্যাপটপ সিঙ্ক','Copy sync code':'সিঙ্ক কোড কপি','Merge pasted code':'পেস্ট করা কোড মার্জ','A web page cannot ring in the background. Ask Claude to set a phone alarm with this sentence:':'ওয়েব পেজ ব্যাকগ্রাউন্ডে বাজতে পারে না। এই বাক্যটি দিয়ে Claude-কে ফোনের অ্যালার্ম সেট করতে বলুন:'};
+const BP={'Write your summary here...':'এখানে সারাংশ লিখুন...','Type or paste what you spoke...':'যা বলেছেন তা লিখুন বা পেস্ট করুন...','Word':'শব্দ','Meaning':'অর্থ','Example sentence':'উদাহরণ বাক্য','Type the correct version':'সঠিক বাক্যটি লিখুন'};
+const dyn=k=>{let m;if(m=k.match(/^Due today: (\d+)$/))return'আজ রিভিউ বাকি: '+m[1];if(m=k.match(/^Card (\d+) of (\d+)$/))return'কার্ড '+m[1]+'/'+m[2];return null};
+function trAll(){const bn=S.lang==='bn',w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const t=n.nodeValue,pt=n.parentNode&&n.parentNode.nodeName;if(pt==='SCRIPT'||pt==='STYLE'||pt==='TEXTAREA'||!t.trim())continue;
+let o=n._o;if(o===undefined||(t!==n._t&&t!==o))o=n._o=t;const kk=o.trim(),b=bn?(BN[kk]||dyn(kk)):null,nv=b?o.replace(kk,()=>b):o;n._t=nv;if(nv!==t)n.nodeValue=nv}
+document.querySelectorAll('[placeholder]').forEach(el=>{if(el.dataset.ph===undefined)el.dataset.ph=el.placeholder;const o=el.dataset.ph;el.placeholder=bn&&BP[o]?BP[o]:o})}
+let trT=null;new MutationObserver(()=>{clearTimeout(trT);trT=setTimeout(trAll,60)}).observe(document.body,{childList:true,subtree:true,characterData:true});
+function applyLang(){$('lg').textContent=S.lang==='bn'?'English':'বাংলা';trAll()}
+$('lg').onclick=()=>{S.lang=S.lang==='bn'?'en':'bn';persist();applyLang()};
+/* reminder */
+function rsUI(){$('rs').textContent='Please set a daily alarm on my phone at '+($('rt').value||'20:00')+' called "English practice: read, write, listen, speak".'}
+$('rt').oninput=rsUI;rsUI();$('rcp').onclick=()=>copy($('rs').textContent,'Sentence copied. Paste it into a chat with Claude on your phone.','rm2');
+/* sync */
+const b64e=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const b64d=t=>{const s=atob(t.replace(/\s/g,'')),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
+async function gz(u,C){return new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new C('gzip'))).arrayBuffer())}
+$('syOut').onclick=async()=>{const m=$('syMsg'),u=new TextEncoder().encode(JSON.stringify(S));let c;try{c='EFT1:'+b64e(await gz(u,CompressionStream))}catch(e){c='EFT0:'+b64e(u)}
+$('sy').value=c;$('sy').select();let ok=false;try{await navigator.clipboard.writeText(c);ok=true}catch(e){}m.textContent=ok?'Sync code copied. Paste it on your other device.':'Code is in the box. Select all and copy it.'};
+function mergeS(o){if(!o||typeof o!=='object'||!o.days)throw 0;let n=0;const sz=e=>ST.filter(k=>e[k]).length*1000+(e.text||'').length+(e.talk||'').length;
+Object.keys(o.days).forEach(d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;const a=S.days[d],b=o.days[d];if(!b||typeof b!=='object')return;if(!a){S.days[d]=b;n++;return}const ta=a.ts||0,tb=b.ts||0;if(tb>ta||(tb===ta&&sz(b)>sz(a))){S.days[d]=b;n++}});
+S.vocab=S.vocab||[];(o.vocab||[]).forEach(v=>{if(v&&v.w&&!S.vocab.some(x=>x.w.toLowerCase()===v.w.toLowerCase()))S.vocab.push(v)});
+S.mist=S.mist||[];(o.mist||[]).forEach(m=>{if(m&&!S.mist.some(x=>x.a===m.a&&x.b===m.b))S.mist.push(m)});
+S.cards=S.cards||{};Object.keys(o.cards||{}).forEach(k=>{const a=S.cards[k],b=o.cards[k];if(b&&(!a||b.due>a.due))S.cards[k]=b});
+S.reviews=S.reviews||{};Object.keys(o.reviews||{}).forEach(k=>{const a=S.reviews[k],b=o.reviews[k];if(b&&(!a||(b.saved||'')>(a.saved||'')))S.reviews[k]=b});
+S.freeze=Object.assign({},o.freeze,S.freeze);if(o.start&&o.start<S.start)S.start=o.start;persist();load(cur);return n}
+$('syIn').onclick=async()=>{const m=$('syMsg'),t=$('sy').value.trim();try{let u;if(t.startsWith('EFT1:'))u=await gz(b64d(t.slice(5)),DecompressionStream);else if(t.startsWith('EFT0:'))u=b64d(t.slice(5));else throw 0;
+const n=mergeS(JSON.parse(new TextDecoder().decode(u)));m.textContent='Merged. '+n+' day(s) updated from the code.';$('sy').value=''}catch(e){m.textContent='That sync code could not be read. Copy it again from the other device.'}};
+
+/* ===== Round 4: dictation, cloze, shadowing, radar, freeze, Bangla meaning, writing stats ===== */
+const FZ=d=>!!(S.freeze&&S.freeze[d]),FZN=()=>Object.keys(S.freeze||{}).filter(d=>d>=S.start&&d<today&&!done(S.days[d])).length;
+const escRe=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),tk=t=>(t.toLowerCase().match(/[a-z0-9']+/g)||[]);
+const vq=v=>{const q=($('vs').value||'').toLowerCase();return!q||[v.w,v.m,v.x,v.bn].join(' ').toLowerCase().includes(q)},mq=v=>{const q=($('mqs').value||'').toLowerCase();return!q||[v.a,v.b,v.r].join(' ').toLowerCase().includes(q)};
+$('vs').oninput=()=>extras();$('mqs').oninput=()=>extras();
+function pool(){const o=[],add=t=>{t=(t||'').trim();const n=W(t);if(n>=4&&n<=30&&!o.includes(t))o.push(t)};(S.mist||[]).forEach(m=>add(m.b));(S.vocab||[]).forEach(v=>add(v.x));
+Object.keys(S.days).sort().slice(-5).forEach(d=>((S.days[d].text||'').match(/[^.!?\n]+[.!?]?/g)||[]).forEach(add));return o}
+const pick=(a,not)=>{if(!a.length)return'';let t;for(let i=0;i<6;i++){t=a[Math.floor(Math.random()*a.length)];if(t!==not)break}return t};
+/* dictation */
+let DS='';
+function dDraw(){$('dc').innerHTML=DS?`<button class="ghost" data-sd="1">▶ Play sentence</button> <button class="ghost" id="dn">New sentence</button><textarea id="dIn" rows="2" placeholder="Type what you hear" style="margin-top:8px"></textarea><div class="flex" style="margin-top:6px"><button id="dck">Check</button></div><div id="dOut" style="margin-top:8px"></div>`:'<div class="note">Add vocabulary examples or mistakes, or save a summary, first.</div><button class="ghost" id="dn" style="margin-top:6px">Try again</button>'}
+function dDiff(a,b){const A=a.split(/\s+/).filter(Boolean),ta=A.map(x=>(x.toLowerCase().match(/[a-z0-9']+/g)||[''])[0]),tb=tk(b),n=ta.length,m=tb.length,L=Array.from({length:n+1},()=>Array(m+1).fill(0));
+for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)L[i][j]=ta[i]===tb[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+const ok=Array(n).fill(false);let i=0,j=0;while(i<n&&j<m){if(ta[i]===tb[j]){ok[i]=true;i++;j++}else if(L[i+1][j]>=L[i][j+1])i++;else j++}
+return{pct:n?Math.round(ok.filter(Boolean).length/n*100):0,html:A.map((w,k)=>ok[k]?`<span style="color:var(--ac)">${esc(w)}</span>`:`<span style="color:#d64545;text-decoration:underline">${esc(w)}</span>`).join(' ')}}
+$('dc').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.sd)say(DS,b);else if(b.id==='dn'){DS=pick(pool(),DS);dDraw()}else if(b.id==='dck'){const r=dDiff(DS,$('dIn').value);$('dOut').innerHTML=`<b>${r.pct}%</b> matched<div style="margin-top:4px">${r.html}</div>`}};
+/* cloze */
+let CZ=null;
+function cNew(){const vs=(S.vocab||[]).filter(v=>v.w&&v.x&&new RegExp(escRe(v.w),'i').test(v.x));if(!vs.length){CZ=null;return cDraw()}
+const v=vs[Math.floor(Math.random()*vs.length)],oth=(S.vocab||[]).map(x=>x.w).filter(w=>w&&w.toLowerCase()!==v.w.toLowerCase()),o=[v.w];
+while(o.length<4&&oth.length){const k=oth.splice(Math.floor(Math.random()*oth.length),1)[0];if(!o.includes(k))o.push(k)}
+o.sort(()=>Math.random()-.5);CZ={w:v.w,x:v.x,bn:v.bn||'',q:v.x.replace(new RegExp(escRe(v.w),'i'),'_____'),o};cDraw()}
+function cDraw(){$('cc').innerHTML=CZ?`<div class="fc">${esc(CZ.q)}</div>`+(CZ.bn?`<div class="note">${esc(CZ.bn)}</div>`:'')+`<div class="flex" style="margin-top:8px">${CZ.o.map((x,i)=>`<button class="ghost" data-co="${i}">${esc(x)}</button>`).join('')}</div><div class="row" style="margin-top:8px"><input type="text" id="cin" placeholder="...or type the word"><button id="cck">Check</button></div><div id="cres" style="margin-top:8px"></div><button class="ghost" id="cn" style="margin-top:6px">Next</button>`:'<div class="note">Add vocabulary words whose example sentence contains the word.</div><button class="ghost" id="cn" style="margin-top:6px">Try again</button>'}
+function cAns(a){if(!CZ)return;const ok=a.trim().toLowerCase()===CZ.w.toLowerCase();$('cres').innerHTML=ok?`✅ Correct! <i>${esc(CZ.x)}</i>`:'❌ Not quite. Try again or tap Next.'}
+$('cc').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='cn')cNew();else if(b.dataset.co!==undefined&&CZ)cAns(CZ.o[+b.dataset.co]);else if(b.id==='cck')cAns($('cin').value)};
+/* shadowing */
+let SS='',SU='',SHr=null,SHs=null;
+function shDraw(){$('sh').innerHTML=SS?`<div class="fc">${esc(SS)}</div><div class="cmp"><div><div class="note">Original</div><button class="ghost" data-ss="1">🔊 Listen</button></div><div><div class="note">You</div><button id="sr">● Record</button>${SU?`<audio controls src="${SU}" style="width:100%;margin-top:6px"></audio>`:''}</div></div><div class="note" id="sm">Recordings stay in memory only.</div><button class="ghost" id="sn" style="margin-top:6px">New sentence</button>`:'<div class="note">Add vocabulary examples or mistakes first.</div><button class="ghost" id="sn" style="margin-top:6px">Try again</button>'}
+$('sh').onclick=async e=>{const b=e.target.closest('button');if(!b)return;
+if(b.id==='sn'){SS=pick(pool(),SS);SU='';return shDraw()}if(b.dataset.ss)return say(SS,b);
+if(b.id==='sr'){const m=$('sm');if(SHr&&SHr.state==='recording'){SHr.stop();return}
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){m.textContent='Recording is not supported in this browser or view.';return}
+try{SHs=await navigator.mediaDevices.getUserMedia({audio:true})}catch(er){m.textContent='Microphone access was blocked. Allow it in your settings and try again.';return}
+const ch=[];SHr=new MediaRecorder(SHs);SHr.ondataavailable=v=>{if(v.data&&v.data.size)ch.push(v.data)};SHr.onstop=()=>{SHs.getTracks().forEach(t=>t.stop());if(SU)URL.revokeObjectURL(SU);SU=URL.createObjectURL(new Blob(ch,{type:SHr.mimeType||'audio/webm'}));shDraw()};SHr.start();b.textContent='⏹ Stop';m.textContent='Recording...'}};
+/* streak freeze */
+function fzUI(){const mo=cur.slice(0,7),used=Object.keys(S.freeze||{}).find(d=>d.slice(0,7)===mo),fr=FZ(cur);
+$('fz').innerHTML=`<div class="note">One freeze per month keeps your streak alive on a sick or busy day. Selected day: <b>${cur}</b>. ${used?'Used this month on '+used+'.':'Available this month.'}</div><div class="flex" style="margin-top:8px">`+(fr?'<button class="ghost" id="fzx">Remove freeze</button>':(!used?'<button id="fzo">Freeze this day</button>':''))+'</div><div class="note" id="fzm"></div>'}
+$('fz').onclick=e=>{const id=e.target.id;if(id==='fzo'){if(cur>today||cur<S.start||done(S.days[cur])){$('fzm').textContent='Pick today or a past day that is not completed.';return}S.freeze=S.freeze||{};S.freeze[cur]=1;persist();render()}else if(id==='fzx'){delete S.freeze[cur];persist();render()}};
+/* radar */
+function rdUI(){const mk=m=>{const ds=Object.keys(S.days).filter(d=>d.slice(0,7)===m),o={};DIM.forEach(k=>o[k]=mean(ds.map(d=>(S.days[d].sc||{})[k]).filter(x=>x>0))||0);return o},
+t=today.slice(0,7),pv=iso(new Date(+today.slice(0,4),+today.slice(5,7)-2,1)).slice(0,7),a=mk(t),b=mk(pv),
+pt=(o,k,i,z=1)=>{const an=(-90+72*i)*Math.PI/180,r=(o[k]||0)/100*110*z;return(150+r*Math.cos(an)).toFixed(1)+','+(150+r*Math.sin(an)).toFixed(1)},poly=o=>DIM.map((k,i)=>pt(o,k,i)).join(' ');
+let g='';[25,50,75,100].forEach(l=>g+=`<polygon points="${DIM.map((k,i)=>pt({[k]:l},k,i)).join(' ')}" fill="none" stroke="var(--line)"/>`);
+g+=DIM.map((k,i)=>{const q=pt({[k]:100},k,i,1.2).split(',');return`<text x="${q[0]}" y="${q[1]}" font-size="11" text-anchor="middle" fill="currentColor">${k}</text>`}).join('');
+$('rd').innerHTML=`<svg viewBox="-20 0 340 300" style="height:auto">${g}<polygon points="${poly(b)}" fill="none" stroke="var(--mut)" stroke-dasharray="4 3" stroke-width="2"/><polygon points="${poly(a)}" fill="var(--ac)" fill-opacity=".3" stroke="var(--ac)" stroke-width="2"/></svg><div class="note">Solid: ${t} · Dashed: ${pv}</div>`}
+/* writing stats */
+const STOP=new Set('the and but for with are was were been this that you she they your his her our their from not just very really like then than there here what which who when how about into out will would can could have has had does did'.split(' ')),FILL=['very','really','just','actually','basically','literally','like','stuff','things','thing','maybe'];
+function wsUI(){const t=tk($('text').value+' '+$('talk').value),c={},f={};t.forEach(w=>{if(w.length>3&&!STOP.has(w))c[w]=(c[w]||0)+1;if(FILL.includes(w))f[w]=(f[w]||0)+1});
+const rp=Object.keys(c).filter(w=>c[w]>=3).sort((a,b)=>c[b]-c[a]).slice(0,6),fl=Object.keys(f).sort((a,b)=>f[b]-f[a]);
+$('ws').innerHTML=t.length?`<div class="note">Writing stats: ${t.length} words · ${new Set(t).size} unique</div><div class="note">Repeated words: ${rp.length?rp.map(w=>esc(w)+' ×'+c[w]).join(', '):'none (3+ times)'}</div><div class="note">Filler words: ${fl.length?fl.map(w=>w+' ×'+f[w]).join(', '):'none'}</div>`:''}
+Object.assign(BN,{'Streak freeze':'স্ট্রিক ফ্রিজ','Dictation':'ডিক্টেশন','Cloze quiz':'ফাঁকা পূরণ কুইজ','Shadowing':'শ্যাডোইং','Skill radar':'স্কিল রাডার','▶ Play sentence':'▶ বাক্য শুনুন','New sentence':'নতুন বাক্য','Check':'যাচাই','Next':'পরবর্তী','Try again':'আবার চেষ্টা','Original':'আসল','You':'আপনি','Remove freeze':'ফ্রিজ সরান','Freeze this day':'এই দিন ফ্রিজ করুন','Recordings stay in memory only.':'রেকর্ডিং শুধু মেমোরিতে থাকে।'});
+Object.assign(BP,{'Bangla meaning (optional)':'বাংলা অর্থ (ঐচ্ছিক)','Search words...':'শব্দ খুঁজুন...','Search mistakes...':'ভুল খুঁজুন...','Type what you hear':'যা শুনছেন তা লিখুন','...or type the word':'...অথবা শব্দটি লিখুন'});
+persist();load(today);applyLang();
+</script>
+<script>
+/* ===== Navigation: main tabs + sub-tabs ===== */
+(function(){
+ const panes=[...document.querySelectorAll('.pane')];
+ const subs={today:'log',practice:'quiz',progress:'overview',library:'reports'};
+ let cur='home',prev='home';
+ function paint(){
+  panes.forEach(p=>{
+   const k=p.dataset.pane,on=k===cur;p.hidden=!on;
+   if(!on||!subs[k])return;
+   p.querySelectorAll('.sub').forEach(x=>x.hidden=x.dataset.sub!==subs[k]);
+   p.querySelectorAll('.subnav button').forEach(b=>{const a=b.dataset.subtab===subs[k];b.classList.toggle('on',a);b.setAttribute('aria-selected',a)});
+  });
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===cur));
+ }
+ window.goTab=function(t,s){
+  if(!document.querySelector('.pane[data-pane="'+t+'"]'))return;
+  if(t==='settings'&&cur!=='settings')prev=cur;
+  cur=t;if(s&&subs[t])subs[t]=s;
+  paint();window.scrollTo(0,0);
+ };
+ document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');
+  if(g){goTab(g.dataset.go,g.dataset.subtabGo);return}
+  const s=e.target.closest('.subnav button');
+  if(s){subs[cur]=s.dataset.subtab;paint();return}
+  if(e.target.closest('#backBtn'))goTab(prev==='settings'?'home':prev);
+ });
+ /* header streak badge mirrors the Home streak number */
+ const sN=document.getElementById('sStreak'),hN=document.getElementById('hStreak');
+ const syncStreak=()=>{hN.textContent=sN.textContent};
+ new MutationObserver(syncStreak).observe(sN,{childList:true,characterData:true,subtree:true});syncStreak();
+ /* timer message also shown inside the Timer tab */
+ const msg=document.getElementById('msg'),tm=document.getElementById('tmMirror');
+ new MutationObserver(()=>{tm.textContent=msg.textContent}).observe(msg,{childList:true,characterData:true,subtree:true});
+ /* read-aloud status appears as a toast when the Listen tab is not open */
+ const say=document.getElementById('sayMsg'),toast=document.getElementById('toast');let tt=null;
+ new MutationObserver(()=>{
+  const listenOpen=cur==='today'&&subs.today==='listen';
+  if(listenOpen||!say.textContent.trim())return;
+  toast.textContent=say.textContent;toast.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),2200);
+ }).observe(say,{childList:true,characterData:true,subtree:true});
+ paint();
+})();
+/* Bangla labels for the new navigation */
+Object.assign(BN,{"Home":"হোম","Today":"আজ","Practice":"অনুশীলন","Progress":"অগ্রগতি","Library":"লাইব্রেরি","Settings":"সেটিংস","Log":"লগ","Timer":"টাইমার","Listen":"শোনা","Record":"রেকর্ড","Quiz":"কুইজ","Dictation":"ডিক্টেশন","Cloze":"ক্লোজ","Shadowing":"শ্যাডোইং","Overview":"সারসংক্ষেপ","Goals":"লক্ষ্য","Review":"রিভিউ","Words":"শব্দ","Mistakes":"ভুল","Compare":"তুলনা","Back":"পেছনে","Today's session":"আজকের সেশন","Start today's session":"আজকের সেশন শুরু করুন","Level & badges":"স্তর ও ব্যাজ"});
+applyLang();
+</script>
+
+<script>
+/* ===== Firebase: login + cloud save (same project and path style as the rest of Munan.hub) ===== */
+(function(){
+ const FB='https://www.gstatic.com/firebasejs/10.12.0/';
+ const CFG={apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",authDomain:"login-system-309fc.firebaseapp.com",projectId:"login-system-309fc",storageBucket:"login-system-309fc.firebasestorage.app",messagingSenderId:"509365590175",appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"};
+ const LOGIN='login.html';
+ /* Firestore layout:  users/{uid}/english_days/{YYYY-MM-DD}   one doc per day
+                       users/{uid}/english_meta/{meta|vocab|mist|cards|reviews} */
+ const GROUPS=['meta','vocab','mist','cards','reviews'],OTHER=['days','vocab','mist','cards','reviews'];
+ const T={ok:'Synced',saving:'Saving…',wait:'Waiting to sync…',off:'Offline — saved on this device',err:'Sync error — will retry'};
+ const ov=$('cloudOv'),dots=[$('syncDot'),$('syncDot2')];
+ let fs,am,auth,db,uid=null,ready=false,timer=null,pushing=false,again=false,lastPull=0,retry=null,failed=false;
+ let lastDays={},lastG={};
+ const status=(k,t)=>{dots.forEach(d=>d.className='sdot '+k);$('syncTxt').textContent=t};
+ const hideOv=()=>{ov.hidden=true};
+ setTimeout(hideOv,12000);
+ const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+ const metaKeys=()=>Object.keys(S).filter(k=>!OTHER.includes(k)&&k[0]!=='_');
+ const gData=g=>{if(g==='meta'){const o={};metaKeys().forEach(k=>o[k]=S[k]);return o}return S[g]||(g==='vocab'||g==='mist'?[]:{})};
+ const gSet=(g,d)=>{if(g==='meta'){metaKeys().forEach(k=>delete S[k]);Object.assign(S,d)}else S[g]=d};
+ function mergeDays(rd){let n=0;const sz=e=>ST.filter(k=>e[k]).length*1000+(e.text||'').length+(e.talk||'').length;
+  Object.keys(rd).forEach(d=>{const a=S.days[d],b=rd[d];if(!b||typeof b!=='object')return;if(!a){S.days[d]=b;n++;return}
+   const ta=a.ts||0,tb=b.ts||0;if(tb>ta||(tb===ta&&sz(b)>sz(a))){S.days[d]=b;n++}});return n}
+ function union(g,d){
+  if(g==='vocab'){S.vocab=S.vocab||[];(d||[]).forEach(v=>{if(v&&v.w&&!S.vocab.some(x=>x.w.toLowerCase()===v.w.toLowerCase()))S.vocab.push(v)})}
+  else if(g==='mist'){S.mist=S.mist||[];(d||[]).forEach(m=>{if(m&&!S.mist.some(x=>x.a===m.a&&x.b===m.b))S.mist.push(m)})}
+  else if(g==='cards'){S.cards=S.cards||{};Object.keys(d||{}).forEach(k=>{const a=S.cards[k],b=d[k];if(b&&(!a||b.due>a.due))S.cards[k]=b})}
+  else if(g==='reviews'){S.reviews=S.reviews||{};Object.keys(d||{}).forEach(k=>{const a=S.reviews[k],b=d[k];if(b&&(!a||(b.saved||'')>(a.saved||'')))S.reviews[k]=b})}}
+ async function pull(){
+  const [ds,...gs]=await Promise.all([fs.getDocs(fs.collection(db,'users',uid,'english_days')),...GROUPS.map(g=>fs.getDoc(fs.doc(db,'users',uid,'english_meta',g)))]);
+  const rd={};
+  ds.docs.forEach(x=>{const v=x.data();try{rd[x.id]=JSON.parse(v.json);lastDays[x.id]=v.json}catch(e){}});
+  let n=mergeDays(rd);S._ts=S._ts||{};
+  GROUPS.forEach((g,i)=>{
+   const sn=gs[i];if(!sn.exists())return;
+   const v=sn.data();let d;try{d=JSON.parse(v.json)}catch(e){return}
+   lastG[g]=v.json;const lt=S._ts[g],rt=v.updated||0;
+   if(lt===undefined){ /* first time this device meets the cloud copy: combine */
+    if(g==='meta'){const ls=S.start;gSet('meta',d);if(ls&&(!S.start||ls<S.start))S.start=ls}else union(g,d);
+    S._ts[g]=rt;n++;
+   }else if(rt>lt){gSet(g,d);S._ts[g]=rt;n++}
+  });
+  if(!S.start)S.start=today;
+  S._uid=uid;saveLocal();lastPull=Date.now();return n}
+ async function push(){
+  timer=null;if(!ready)return;
+  if(pushing){again=true;return}
+  pushing=true;status('wait',T.saving);
+  try{
+   const w=[];
+   Object.keys(S.days).forEach(d=>{const j=JSON.stringify(S.days[d]);if(lastDays[d]!==j)w.push(fs.setDoc(fs.doc(db,'users',uid,'english_days',d),{date:d,ts:S.days[d].ts||0,updated:Date.now(),json:j}).then(()=>{lastDays[d]=j}))});
+   GROUPS.forEach(g=>{const j=JSON.stringify(gData(g));if(lastG[g]!==j){const t=Date.now();w.push(fs.setDoc(fs.doc(db,'users',uid,'english_meta',g),{updated:t,json:j}).then(()=>{lastG[g]=j;S._ts=S._ts||{};S._ts[g]=t}))}});
+   await Promise.all(w);saveLocal();failed=false;status('ok',T.ok);
+  }catch(e){console.error('Sync failed',e);failed=true;status('err',navigator.onLine?T.err:T.off);clearTimeout(retry);retry=setTimeout(push,15000)}
+  finally{pushing=false}
+  if(again){again=false;push()}}
+ window.__onPersist=()=>{if(!ready)return;status('wait',T.wait);clearTimeout(timer);timer=setTimeout(push,1200)};
+ function refreshUI(full){
+  if(S.theme)document.documentElement.dataset.theme=S.theme;
+  else if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark';
+  applyLang();full?load(cur):render()}
+ function retryPull(){setTimeout(async()=>{try{await pull();ready=true;failed=false;refreshUI(false);push()}catch(e){status('off',T.off);retryPull()}},20000)}
+ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ $('syncNow').onclick=async()=>{
+  try{
+   if(!ready){await pull();ready=true;refreshUI(false)}
+   clearTimeout(timer);await push();while(pushing)await sleep(100);
+   if(!failed){const n=await pull();if(n)refreshUI(false);status('ok',T.ok)}
+  }catch(e){status('off',T.off)}};
+ $('signOut').onclick=async()=>{
+  clearTimeout(timer);if(ready)await push();while(pushing)await sleep(100);
+  if(failed&&!confirm('Some changes are not synced yet. Sign out anyway?'))return;
+  try{await am.signOut(auth)}catch(e){}
+  ['munan_auth','isLoggedIn','loggedInUser',KEY].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  location.href=LOGIN};
+ document.addEventListener('visibilitychange',async()=>{
+  if(!ready)return;
+  if(document.visibilityState==='hidden'){if(timer){clearTimeout(timer);push()}return}
+  if(pushing||timer||Date.now()-lastPull<60000)return;
+  try{const n=await pull();if(n)refreshUI(false)}catch(e){}});
+ window.addEventListener('online',()=>{if(ready)push()});
+ /* keep the site-wide dark/light switch in step with this page's toggle */
+ $('th').addEventListener('click',()=>setTimeout(()=>{try{localStorage.setItem('theme',S.theme==='dark'?'dark':'light')}catch(e){}},0));
+ Object.assign(BN,{"Account":"অ্যাকাউন্ট","Signed in as":"লগইন করা আছে","Sync now":"এখনই সিঙ্ক","Sign out":"সাইন আউট","Synced":"সিঙ্ক হয়েছে","Saving…":"সেভ হচ্ছে…","Waiting to sync…":"সিঙ্কের অপেক্ষায়…","Offline — saved on this device":"অফলাইন — এই ডিভাইসে সেভ আছে","Sync error — will retry":"সিঙ্কে সমস্যা — আবার চেষ্টা হবে","Loading your data…":"আপনার ডেটা লোড হচ্ছে…","Manual sync code (advanced)":"ম্যানুয়াল সিঙ্ক কোড (অ্যাডভান্সড)","Your sessions, words, mistakes and settings are saved to your account and sync across your devices.":"আপনার সেশন, শব্দ, ভুল ও সেটিংস অ্যাকাউন্টে সেভ হয় এবং সব ডিভাইসে সিঙ্ক হয়।","Your data is saved to your account and cached in this browser. A manual backup is still a good idea.":"আপনার ডেটা অ্যাকাউন্টে সেভ হয় এবং এই ব্রাউজারে ক্যাশ থাকে। তবুও মাঝে মাঝে ম্যানুয়াল ব্যাকআপ রাখা ভালো।"});
+ status('wait',T.wait);applyLang();
+ (async()=>{
+  try{
+   const [a,b,c]=await Promise.all([import(FB+'firebase-app.js'),import(FB+'firebase-auth.js'),import(FB+'firebase-firestore.js')]);
+   const app=a.initializeApp(CFG);auth=b.getAuth(app);db=c.getFirestore(app);fs=c;am=b;
+  }catch(e){console.error('Firebase could not load',e);status('off',T.off);hideOv();return}
+  am.onAuthStateChanged(auth,async user=>{
+   if(!user){location.href=LOGIN;return}
+   if(uid===user.uid)return;
+   uid=user.uid;$('acctEmail').textContent=user.email||'';
+   if(S._uid&&S._uid!==uid){S={start:today,days:{}};lastDays={};lastG={}}
+   try{await pull();ready=true}catch(e){console.error('First load failed',e);status('off',T.off);retryPull()}
+   refreshUI(true);hideOv();
+   if(ready)push();
+  });
+ })();
+})();
+</script>
+</body></html>
