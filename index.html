@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Shared theme logic — blocking, must run before first paint -->
     <script src="theme.js"></script>
@@ -53,448 +53,436 @@
     }
     </script>
     <style>
-        /* ── INDEX-SPECIFIC STYLES ─── */
-        .hero { position:relative; z-index:1; padding:100px 20px 46px; text-align:center; }
-        .profile-wrap { display:flex; justify-content:center; margin-bottom:20px; animation:fadeDown .7s ease both; }
-        .profile-photo { width:92px; height:92px; border-radius:14px; border:1px solid var(--card-border); object-fit:cover; transition:var(--trans); }
-        .profile-photo:hover { transform:translateY(-2px); border-color:var(--accent); }
-        .hero-kicker { font-family:'Space Grotesk',sans-serif; font-size:.68rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-soft); margin-bottom:10px; animation:fadeDown .7s .05s ease both; }
-        .hero-kicker span { color:var(--accent); }
-        .hero-title { font-family:'Space Grotesk',sans-serif; font-size:clamp(1.7rem,5vw,2.5rem); font-weight:700; letter-spacing:-.02em; line-height:1.15; margin-bottom:10px; animation:fadeDown .7s .1s ease both; }
-        .hero-title span { color:var(--accent); }
-        .hero-tagline { font-size:1rem; color:var(--text-muted); margin-bottom:26px; height:28px; animation:fadeDown .7s .2s ease both; }
-        .typed-text { color:var(--accent); font-weight:600; }
-        .cursor { display:inline-block; width:2px; height:1em; background:var(--accent); margin-left:2px; vertical-align:middle; animation:blink .75s infinite; }
-        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
-        .intro-box { max-width:560px; margin:0 auto 16px; padding:4px 0 4px 18px; border-left:2px solid var(--accent); text-align:left; font-size:.92rem; color:var(--text-muted); animation:fadeDown .7s .3s ease both; }
+        /* ================================================================
+           HOME PAGE  —  field-notebook look
+           Tokens are scoped to this page; style.css stays untouched so
+           every other page looks exactly as before.
+           ================================================================ */
+        :root {
+            --bg:#EEF1EA;          /* bone */
+            --paper:#FAFBF7;       /* card surface */
+            --ink:#11221D;         /* text + inverse panels */
+            --muted:#44564E;
+            --soft:#5B6C64;
+            --line:#D3DBD0;
+            --lagoon:#0A6F48;      /* brand green */
+            --lagoon-tint:#DDEBE1;
+            --marker:#DDF25B;      /* the one loud colour */
+            --on-ink:#F1F5EE;
 
-        /* ── SECTION WRAPPERS ─── */
-        .container { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding-bottom:30px; }
+            /* legacy tokens read by shared components (navbar, footer, buttons) */
+            --accent:var(--lagoon);
+            --card-bg:var(--paper);
+            --card-border:var(--line);
+            --text-main:var(--ink);
+            --text-muted:var(--muted);
+            --text-soft:var(--soft);
+            --nav-bg:color-mix(in srgb,var(--bg) 84%,transparent);
 
-        /* ── QUICK LINKS: directory list, not a repeated card grid ─── */
-        .link-index { margin:0 5%; border:1px solid var(--card-border); border-radius:10px; overflow:hidden; background:var(--card-bg); }
-        .link-row { display:flex; align-items:center; gap:14px; padding:15px 20px; text-decoration:none; color:var(--text-main); border-bottom:1px solid var(--card-border); transition:var(--trans); animation:cardIn .5s ease both; }
-        .link-row:last-child { border-bottom:none; }
-        .link-row:hover { background:rgba(11,122,80,.06); padding-left:26px; }
-        [data-theme="dark"] .link-row:hover { background:rgba(53,200,140,.07); }
-        .link-index-num { font-family:'Space Grotesk',sans-serif; font-size:.72rem; font-weight:700; color:var(--accent); min-width:20px; flex-shrink:0; }
-        .link-row-icon { width:26px; text-align:center; color:var(--text-soft); font-size:.95rem; flex-shrink:0; }
-        .link-row-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-        .link-row-title { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:.92rem; }
-        .link-row-desc { font-size:.78rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .link-row-arrow { color:var(--text-soft); font-size:.75rem; transition:var(--trans); flex-shrink:0; }
-        .link-row:hover .link-row-arrow { color:var(--accent); transform:translateX(3px); }
-        @media (max-width:480px) { .link-row-desc { display:none; } }
-
-        /* ── PROJECTS SECTION ─── */
-        .projects-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
-        .projects-wrapper {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-top: 3px solid var(--accent);
-            border-radius: 14px;
-            padding: 28px 28px 22px;
-            box-shadow: 0 2px 16px rgba(15,31,23,.05);
-            position: relative;
-            overflow: hidden;
+            --display:'Bricolage Grotesque','Hind Siliguri',system-ui,sans-serif;
+            --body:'Figtree','Hind Siliguri',system-ui,-apple-system,'Segoe UI',sans-serif;
+            --wrap:1120px;
         }
-        .projects-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-        .projects-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
-        .projects-title i { color:var(--accent); }
-        .projects-subtitle { font-size:.75rem; color:var(--text-soft); font-weight:400; margin-left:4px; opacity:.7; }
-        .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
-        .project-card { background:var(--bg); border:1px solid var(--card-border); border-left:3px solid var(--card-border); border-radius:8px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:10px; transition:all var(--trans); animation:cardIn .5s ease both; }
-        .project-card:hover { border-left-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 22px rgba(15,31,23,.08); }
-        [data-theme="dark"] .project-card:hover { box-shadow:0 8px 22px rgba(0,0,0,.3); }
-        .project-card-top { display:flex; align-items:flex-start; gap:12px; }
-        .project-icon { width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; color:#fff; flex-shrink:0; background:var(--accent); }
-        .project-info { flex:1; }
-        .project-name { font-family:'Space Grotesk',sans-serif; font-size:.9rem; font-weight:700; color:var(--text-main); margin-bottom:3px; letter-spacing:-.01em; }
-        .project-desc { font-size:.75rem; color:var(--text-muted); line-height:1.5; }
-        .project-tags { display:flex; flex-wrap:wrap; gap:10px; }
-        .project-tag { font-size:.68rem; color:var(--text-soft); }
-        .project-tag:not(:last-child)::after { content:'/'; margin-left:10px; color:var(--card-border); }
-        .project-btn { display:inline-flex; align-items:center; gap:6px; background:transparent; color:var(--accent); border:1.5px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
-        .project-btn:hover { background:var(--accent); color:#fff; }
-        .projects-view-all { display:inline-flex; align-items:center; gap:7px; background:transparent; border:1.5px solid var(--card-border); border-radius:8px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); transition:var(--trans); text-decoration:none; }
-        .projects-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-        /* "View All Projects" CTA block inside the projects grid */
-        .view-all-card { text-decoration:none; cursor:pointer; border-style:dashed; justify-content:space-between; }
-        .view-all-card:hover { border-style:solid; }
-        .view-all-arrow { display:inline-flex; align-items:center; gap:6px; color:var(--accent); font-size:.72rem; font-weight:700; margin-top:2px; }
-
-        /* ── ACADEMIC SECTION ─── */
-        .academic-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:10px 5% 30px; }
-        .academic-wrapper {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-top: 3px solid var(--accent-warm);
-            border-radius: 14px;
-            padding: 28px 28px 22px;
-            box-shadow: 0 2px 16px rgba(15,31,23,.05);
-            position: relative;
-            overflow: hidden;
+        :root[data-theme="dark"] {
+            --bg:#0D1512;
+            --paper:#131E19;
+            --ink:#E7EFEA;
+            --muted:#B3C1B9;
+            --soft:#8FA097;
+            --line:#243229;
+            --lagoon:#3FD39A;
+            --lagoon-tint:#173126;
+            --marker:#DDF25B;
+            --on-ink:#0D1512;
+            --nav-bg:rgba(13,21,18,.9);
         }
-        .academic-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-        .academic-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
-        .academic-title i { color:var(--accent); }
-        .academic-subtitle { font-size:.75rem; color:var(--text-soft); font-weight:400; margin-left:4px; opacity:.7; }
-        .academic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
 
-        /* Blog preview */
-        .blog-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
-        .blog-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
-        .blog-section-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
-        .blog-section-title i { color:var(--accent); }
-        .blog-view-all { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:6px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); transition:var(--trans); }
-        .blog-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
-        .blog-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; overflow:hidden; box-shadow:0 2px 14px rgba(11,122,80,.06); transition:all var(--trans); animation:cardIn .5s ease both; display:flex; flex-direction:column; text-decoration:none; }
-        .blog-card:hover { transform:translateY(-6px) scale(1.013); border-color:var(--accent); box-shadow:0 18px 40px rgba(11,122,80,.18); }
-        [data-theme="dark"] .blog-card:hover { background:rgba(255,255,255,.07); }
-        .blog-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0B7A50),var(--strip-b,#35C88C)); }
-        .blog-card-body { padding:20px 20px 16px; flex:1; display:flex; flex-direction:column; }
-        .blog-meta { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
-        .blog-tag { font-size:.68rem; font-weight:700; color:var(--accent); }
-        .blog-date { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
-        .blog-card-title { font-size:.98rem; font-weight:700; line-height:1.35; color:var(--text-main); margin-bottom:9px; letter-spacing:-.01em; }
-        .blog-card-excerpt { font-size:.8rem; color:var(--text-muted); line-height:1.6; flex:1; margin-bottom:16px; }
-        .blog-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
-        .blog-read-time { font-size:.68rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
-        .blog-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(11,122,80,.1); border:1px solid rgba(11,122,80,.25); border-radius:6px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
-        .blog-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .blog-empty { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:10px; padding:44px 24px; text-align:center; }
-        .blog-empty i { font-size:2rem; color:var(--text-soft); margin-bottom:12px; display:block; }
-        .blog-empty p { color:var(--text-muted); font-size:.88rem; line-height:1.7; }
-        .blog-empty strong { color:var(--accent); }
+        html { scroll-behavior:smooth; }
+        body.home { background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.6; }
+        body.home::before { display:none; }               /* turn off the animated mesh behind the page */
+        ::selection { background:var(--marker); color:#11221D; }
+        a:focus-visible, button:focus-visible, .theme-toggle:focus-visible { outline:3px solid var(--lagoon); outline-offset:3px; border-radius:6px; }
+        :root[data-theme="dark"] a:focus-visible, :root[data-theme="dark"] .theme-toggle:focus-visible { outline-color:var(--marker); }
 
-        /* Webcomic preview */
-        .webcomic-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 5% 20px; }
-        .webcomic-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
-        .webcomic-section-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
-        .webcomic-section-title i { color:var(--accent); }
-        .webcomic-view-all { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:6px; padding:6px 16px; font-size:.75rem; font-weight:700; color:var(--accent); transition:var(--trans); }
-        .webcomic-view-all:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .webcomic-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
-        .webcomic-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; overflow:hidden; box-shadow:0 2px 14px rgba(11,122,80,.06); transition:all var(--trans); animation:cardIn .5s ease both; display:flex; flex-direction:column; cursor:pointer; text-decoration:none; }
-        .webcomic-card:hover { transform:translateY(-6px) scale(1.013); border-color:var(--accent); box-shadow:0 18px 40px rgba(11,122,80,.18); }
-        [data-theme="dark"] .webcomic-card:hover { background:rgba(255,255,255,.07); }
-        .webcomic-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0B7A50),var(--strip-b,#35C88C)); }
-        .webcomic-card-body { padding:20px 20px 16px; flex:1; display:flex; flex-direction:column; }
-        .webcomic-meta { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
-        .webcomic-tag { font-size:.68rem; font-weight:700; color:var(--accent); }
-        .webcomic-status { font-size:.7rem; color:var(--text-soft); display:flex; align-items:center; gap:4px; }
-        .webcomic-status.ongoing { color:var(--accent); }
-        .webcomic-card-title { font-size:.98rem; font-weight:700; line-height:1.35; color:var(--text-main); margin-bottom:9px; letter-spacing:-.01em; }
-        .webcomic-card-excerpt { font-size:.8rem; color:var(--text-muted); line-height:1.6; flex:1; margin-bottom:16px; }
-        .webcomic-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
-        .webcomic-ep-count { font-size:.68rem; color:var(--text-soft); display:flex; align-items:center; gap:5px; }
-        .webcomic-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(11,122,80,.1); border:1px solid rgba(11,122,80,.25); border-radius:6px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:var(--trans); }
-        .webcomic-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .webcomic-empty { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:10px; padding:44px 24px; text-align:center; }
-        .webcomic-empty i { font-size:2rem; color:var(--text-soft); margin-bottom:12px; display:block; }
-        .webcomic-empty p { color:var(--text-muted); font-size:.88rem; line-height:1.7; }
-        .webcomic-empty strong { color:var(--accent); }
+        .skip { position:absolute; left:16px; top:-60px; z-index:2000; background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:8px; font-weight:600; }
+        .skip:focus { top:12px; }
 
-        @media (max-width:768px) {
-            .hero-title { font-size:1.6rem; }
-            .link-index { margin:0 4%; }
-            .blog-section { padding:30px 4% 10px; }
-            .blog-grid { grid-template-columns:1fr; }
-            .webcomic-section { padding:30px 4% 10px; }
-            .webcomic-grid { grid-template-columns:1fr; }
-            .projects-section { padding:10px 4% 24px; }
-            .projects-wrapper { padding:20px 16px 18px; border-radius:18px; }
-            .projects-grid { grid-template-columns:1fr; }
-            .academic-section { padding:10px 4% 24px; }
-            .academic-wrapper { padding:20px 16px 18px; border-radius:18px; }
-            .academic-grid { grid-template-columns:1fr; }
+        .wrap { max-width:var(--wrap); margin:0 auto; padding:0 24px; }
+
+        /* ── NAVBAR ─────────────────────────────────────────────── */
+        .home .navbar { height:64px; padding:0 max(24px, calc((100% - var(--wrap)) / 2 + 24px)); background:var(--nav-bg); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
+        .home .navbar-hidden { top:-72px; }
+        .home .nav-logo { font-family:var(--display); font-size:1.3rem; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+        .home .nav-logo span { color:var(--lagoon); }
+        .nav-links { display:flex; gap:4px; margin-left:auto; margin-right:18px; }
+        .nav-links a { color:var(--muted); font-weight:600; font-size:.92rem; padding:8px 12px; border-radius:8px; }
+        .nav-links a:hover { color:var(--ink); background:var(--lagoon-tint); }
+        .home .nav-right { gap:10px; }
+        .home .nav-login-btn { background:var(--ink); color:var(--bg); border:0; border-radius:999px; padding:9px 18px; font-size:.86rem; font-weight:700; backdrop-filter:none; }
+        .home .nav-login-btn:hover { background:var(--lagoon); color:#fff; transform:none; box-shadow:none; }
+        :root[data-theme="dark"] .home .nav-login-btn { background:var(--marker); color:#11221D; border:0; }
+        :root[data-theme="dark"] .home .nav-login-btn:hover { background:#fff; color:#11221D; }
+        .home .theme-toggle { width:40px; height:40px; background:transparent; border:1px solid var(--line); color:var(--ink); backdrop-filter:none; }
+        .home .theme-toggle:hover { background:var(--lagoon-tint); transform:none; }
+
+        /* ── HERO ───────────────────────────────────────────────── */
+        .hero { position:relative; z-index:1; padding:132px 0 72px; overflow-x:clip; }
+        .hero-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr); gap:64px; align-items:center; }
+        .hero-title { font-family:var(--display); font-weight:800; font-size:clamp(2.7rem,7.4vw,5.4rem); line-height:.98; letter-spacing:-.035em; margin-bottom:24px; }
+        .hero-lead { font-size:clamp(1.05rem,2vw,1.28rem); line-height:1.6; color:var(--muted); max-width:34em; margin-bottom:30px; }
+        .hero-lead strong { color:var(--ink); font-weight:600; }
+        .hero-cta { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:34px; }
+        .btn-solid, .btn-line { display:inline-flex; align-items:center; gap:10px; font-weight:700; font-size:.98rem; padding:14px 24px; border-radius:999px; transition:background .2s, color .2s, border-color .2s; }
+        .btn-solid { background:var(--ink); color:var(--bg); }
+        .btn-solid:hover { background:var(--lagoon); color:#fff; }
+        :root[data-theme="dark"] .btn-solid { background:var(--marker); color:#11221D; }
+        :root[data-theme="dark"] .btn-solid:hover { background:#fff; }
+        .btn-line { border:1.5px solid var(--ink); color:var(--ink); }
+        .btn-line:hover { background:var(--ink); color:var(--bg); }
+        .hero-typed { font-size:1rem; color:var(--soft); min-height:1.6em; }
+        .typed-text { color:var(--lagoon); font-weight:700; }
+        .cursor { display:inline-block; width:2px; height:1.1em; background:var(--lagoon); margin-left:3px; vertical-align:text-bottom; animation:blink .8s steps(1) infinite; }
+        @keyframes blink { 50% { opacity:0; } }
+
+        /* specimen tag — the memorable element */
+        .tag-wrap { display:flex; justify-content:center; padding-top:34px; }
+        .tag-card { position:relative; width:100%; max-width:360px; background:var(--paper); border:1.5px solid var(--ink); border-radius:10px; padding:30px 24px 20px; transform:rotate(-2deg); transform-origin:34px 0; box-shadow:8px 8px 0 var(--marker); transition:transform .35s ease; animation:swing 1.1s .35s cubic-bezier(.3,1.5,.5,1) both; }
+        .tag-card:hover { transform:rotate(0deg); }
+        .tag-card::before { content:''; position:absolute; left:33px; top:-40px; width:2px; height:48px; background:var(--ink); }
+        .tag-hole { position:absolute; left:24px; top:12px; width:20px; height:20px; border-radius:50%; background:var(--bg); border:1.5px solid var(--ink); }
+        .tag-head { display:flex; align-items:center; gap:14px; padding:14px 0 18px; border-bottom:1.5px dashed var(--line); margin-bottom:6px; }
+        .profile-photo { width:68px; height:68px; border-radius:12px; object-fit:cover; border:1.5px solid var(--ink); flex-shrink:0; }
+        .tag-name { font-family:var(--display); font-weight:800; font-size:1.6rem; letter-spacing:-.02em; line-height:1.1; }
+        .tag-full { font-size:.86rem; color:var(--soft); }
+        .tag-card dl > div { display:grid; grid-template-columns:84px 1fr; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+        .tag-card dt { color:var(--soft); font-size:.88rem; }
+        .tag-card dd { font-weight:600; font-size:.95rem; line-height:1.4; }
+        .tag-foot { padding-top:14px; font-family:var(--display); font-weight:700; font-size:.98rem; color:var(--lagoon); text-align:right; }
+        @keyframes swing { 0% { transform:rotate(9deg); opacity:0; } 100% { transform:rotate(-2deg); opacity:1; } }
+        @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+        .hero-copy > * { animation:rise .7s ease both; }
+        .hero-copy > :nth-child(2) { animation-delay:.08s; }
+        .hero-copy > :nth-child(3) { animation-delay:.16s; }
+        .hero-copy > :nth-child(4) { animation-delay:.24s; }
+
+        /* ── SECTIONS ───────────────────────────────────────────── */
+        .section { position:relative; z-index:1; padding:72px 0 8px; scroll-margin-top:72px; }
+        .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:30px; }
+        .section-title { font-family:var(--display); font-weight:800; font-size:clamp(1.8rem,4vw,2.5rem); letter-spacing:-.03em; line-height:1.1; }
+        .section-sub { color:var(--muted); font-size:1.02rem; margin-top:8px; max-width:34em; }
+        .more-link { display:inline-flex; align-items:center; gap:8px; font-weight:700; color:var(--lagoon); white-space:nowrap; padding:6px 0; border-bottom:2px solid var(--marker); }
+        .more-link:hover { color:var(--ink); }
+        .sub-title { font-family:var(--display); font-weight:700; font-size:1.2rem; letter-spacing:-.01em; margin:44px 0 16px; }
+
+        /* tools: trackers */
+        .tracker-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+        .tracker { position:relative; display:flex; flex-direction:column; gap:14px; background:var(--paper); border:1.5px solid var(--line); border-radius:20px; padding:26px 26px 22px; color:var(--ink); transition:border-color .2s, transform .2s; }
+        .tracker:hover { border-color:var(--ink); transform:translateY(-3px); }
+        .tracker-top { display:flex; align-items:center; justify-content:space-between; }
+        .tile { width:52px; height:52px; border-radius:14px; background:var(--lagoon-tint); color:var(--lagoon); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+        .go { width:40px; height:40px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.8rem; color:var(--ink); transition:background .2s, border-color .2s, transform .2s; flex-shrink:0; }
+        .tracker:hover .go, .util:hover .go, .link-row:hover .go { background:var(--marker); border-color:var(--marker); color:#11221D; transform:rotate(-45deg); }
+        .tracker h3 { font-family:var(--display); font-weight:700; font-size:1.35rem; letter-spacing:-.02em; line-height:1.2; }
+        .tracker p { color:var(--muted); font-size:.98rem; line-height:1.55; flex:1; }
+        .chips { display:flex; flex-wrap:wrap; gap:8px; }
+        .chip { font-size:.8rem; font-weight:600; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:3px 12px; }
+        .cta-text { font-weight:700; color:var(--lagoon); font-size:.95rem; }
+
+        /* tools: utilities list */
+        .util-list { border:1.5px solid var(--line); border-radius:20px; background:var(--paper); overflow:hidden; }
+        .util, .link-row { display:flex; align-items:center; gap:18px; padding:18px 24px; color:var(--ink); border-bottom:1px solid var(--line); transition:background .2s; }
+        .util:last-child, .link-row:last-child { border-bottom:0; }
+        .util:hover, .link-row:hover { background:var(--lagoon-tint); }
+        .util .tile, .link-row .tile { width:44px; height:44px; border-radius:12px; font-size:1.02rem; }
+        .row-body { flex:1; min-width:0; }
+        .row-title { font-family:var(--display); font-weight:700; font-size:1.08rem; letter-spacing:-.01em; line-height:1.3; }
+        .row-desc { color:var(--muted); font-size:.92rem; line-height:1.45; }
+        .util-all { background:transparent; }
+
+        /* writing */
+        .post-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
+        .post { display:flex; gap:20px; background:var(--paper); border:1.5px solid var(--line); border-radius:20px; padding:24px; color:var(--ink); transition:border-color .2s; }
+        .post:hover { border-color:var(--ink); }
+        .post-bar { width:6px; border-radius:6px; background:linear-gradient(180deg,var(--a,#059669),var(--b,#10b981)); flex-shrink:0; }
+        .post-body { display:flex; flex-direction:column; gap:10px; min-width:0; flex:1; }
+        .post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; font-size:.84rem; color:var(--soft); }
+        .post-tag { font-weight:700; color:var(--lagoon); background:var(--lagoon-tint); border-radius:999px; padding:2px 12px; }
+        .post h3 { font-family:var(--display); font-weight:700; font-size:1.3rem; line-height:1.25; letter-spacing:-.02em; }
+        .post p { color:var(--muted); font-size:.96rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .post-read { margin-top:auto; font-weight:700; color:var(--lagoon); font-size:.92rem; }
+
+        /* comics */
+        .comic-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+        .comic { display:flex; flex-direction:column; background:var(--paper); border:1.5px solid var(--line); border-radius:20px; overflow:hidden; color:var(--ink); transition:border-color .2s; }
+        .comic:hover { border-color:var(--ink); }
+        .comic-cover { position:relative; aspect-ratio:16/9; background:linear-gradient(135deg,var(--a,#0284c7),var(--b,#0ea5e9)); display:flex; align-items:flex-end; padding:18px 20px; color:#fff; isolation:isolate; }
+        .comic-cover::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.6)); z-index:-1; }
+        .comic-cover > i { position:absolute; right:18px; top:14px; font-size:2.6rem; opacity:.28; }
+        .comic-cover h3 { font-family:var(--display); font-weight:800; font-size:1.45rem; line-height:1.15; letter-spacing:-.02em; text-shadow:0 1px 10px rgba(0,0,0,.4); }
+        .comic-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:14px; flex:1; }
+        .comic-body p { color:var(--muted); font-size:.95rem; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .comic-foot { margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:.88rem; color:var(--soft); }
+        .comic-status { display:inline-flex; align-items:center; gap:6px; font-weight:600; }
+        .comic-status.ongoing { color:var(--lagoon); }
+        @media (min-width:761px) {
+            .comic-grid > .comic:only-child { grid-column:1/-1; flex-direction:row; }
+            .comic-grid > .comic:only-child .comic-cover { aspect-ratio:auto; flex:0 0 46%; min-height:240px; }
+            .comic-grid > .comic:only-child .comic-body { justify-content:center; padding:28px 32px; }
+            .comic-grid > .comic:only-child .comic-body p { -webkit-line-clamp:4; font-size:1rem; }
+        }
+        .empty { grid-column:1/-1; border:1.5px dashed var(--line); border-radius:20px; padding:44px 24px; text-align:center; color:var(--muted); }
+        .empty i { display:block; font-size:1.8rem; color:var(--soft); margin-bottom:12px; }
+        .empty strong { color:var(--lagoon); }
+
+        /* notes band */
+        .notes-band { display:grid; grid-template-columns:auto 1fr auto; gap:28px; align-items:center; background:var(--ink); color:var(--on-ink); border-radius:28px; padding:40px 44px; }
+        :root[data-theme="dark"] .notes-band { background:var(--paper); color:var(--ink); border:1.5px solid var(--line); }
+        .notes-icon { width:72px; height:72px; border-radius:20px; background:var(--marker); color:#11221D; display:flex; align-items:center; justify-content:center; font-size:1.8rem; }
+        .notes-band h2 { font-family:var(--display); font-weight:800; font-size:clamp(1.5rem,3.2vw,2.1rem); letter-spacing:-.025em; line-height:1.15; margin-bottom:8px; }
+        .notes-band p { opacity:.82; max-width:36em; }
+        .notes-band .btn-solid { background:var(--marker); color:#11221D; white-space:nowrap; }
+        .notes-band .btn-solid:hover { background:#fff; color:#11221D; }
+
+        /* contact + links */
+        .connect { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:56px; align-items:start; }
+        .connect h2 { font-family:var(--display); font-weight:800; font-size:clamp(2rem,4.6vw,3.1rem); letter-spacing:-.03em; line-height:1.05; margin-bottom:14px; }
+        .connect p { color:var(--muted); font-size:1.06rem; margin-bottom:26px; max-width:26em; }
+
+        /* ── FOOTER (injected by footer.js) ─────────────────────── */
+        body.home footer.site-footer { max-width:var(--wrap); width:auto; margin:88px auto 0; padding:36px 24px 44px; background:transparent; color:var(--ink); border-top:1.5px solid var(--line); text-align:left; display:grid; grid-template-columns:1fr auto; grid-template-areas:"name socials" "bottom bottom"; align-items:center; gap:10px 24px; }
+        body.home .footer-divider, body.home .footer-dev { display:none; }
+        body.home .footer-name { grid-area:name; font-family:var(--display); font-size:1.4rem; font-weight:800; color:var(--ink); margin:0; }
+        body.home .footer-name span { color:var(--lagoon); }
+        body.home .footer-socials { grid-area:socials; margin:0; gap:8px; justify-content:flex-end; }
+        body.home .footer-socials a { width:40px; height:40px; font-size:.95rem; background:transparent; border:1.5px solid var(--line); color:var(--ink); }
+        body.home .footer-socials a:hover { background:var(--marker); border-color:var(--marker); color:#11221D; transform:none; }
+        body.home .footer-bottom { grid-area:bottom; font-size:.88rem; opacity:1; color:var(--soft); }
+
+        /* ── RESPONSIVE ─────────────────────────────────────────── */
+        @media (max-width:980px) {
+            .hero-grid { grid-template-columns:1fr; gap:48px; }
+            .tag-wrap { justify-content:flex-start; }
+            .connect { grid-template-columns:1fr; gap:36px; }
+        }
+        @media (max-width:760px) {
+            .nav-links { display:none; }
+            .home .nav-right { margin-left:auto; }
+            .hero { padding:104px 0 48px; }
+            .section { padding-top:56px; }
+            .section-head { flex-direction:column; align-items:flex-start; gap:12px; }
+            .tracker-grid { grid-template-columns:1fr; }
+            .post-grid, .comic-grid { grid-template-columns:1fr; }
+            .notes-band { grid-template-columns:1fr; padding:30px 26px; gap:20px; }
+            .tag-wrap { padding-top:40px; }
+            .tag-card { max-width:none; width:calc(100% - 10px); box-shadow:5px 5px 0 var(--marker); }
+            .util, .link-row { padding:16px 18px; gap:14px; }
+            body.home footer.site-footer { grid-template-columns:1fr; grid-template-areas:"name" "socials" "bottom"; }
+            body.home .footer-socials { justify-content:flex-start; }
+        }
+        @media (max-width:480px) {
+            .wrap { padding:0 18px; }
+            .home .navbar { padding:0 18px; }
+            .row-desc { display:none; }
+            .btn-solid, .btn-line { padding:13px 20px; }
+        }
+        @media (prefers-reduced-motion:reduce) {
+            html { scroll-behavior:auto; }
+            .hero-copy > *, .tag-card { animation:none; }
+            .cursor { animation:none; }
+            .tracker:hover, .tracker:hover .go, .util:hover .go, .link-row:hover .go { transform:none; }
         }
     </style>
 </head>
-<body>
+<body class="home">
+    <a class="skip" href="#main">Skip to content</a>
 
-    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
-
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" aria-label="Main">
         <div class="nav-logo">Munan<span>.hub</span></div>
+        <div class="nav-links">
+            <a href="#tools">Tools</a>
+            <a href="#writing">Writing</a>
+            <a href="#notes">Notes</a>
+            <a href="#contact">Contact</a>
+        </div>
         <div class="nav-right">
             <a href="login.html" class="nav-login-btn" id="authBtn">
                 <i class="fas fa-user-circle"></i> Login
             </a>
             <!-- Theme toggle ONLY on index.html -->
-            <div class="theme-toggle" id="themeBtn"><i class="fas fa-moon"></i></div>
+            <div class="theme-toggle" id="themeBtn" role="button" tabindex="0" aria-label="Switch light or dark theme"><i class="fas fa-moon"></i></div>
         </div>
     </nav>
 
+    <main id="main">
     <header class="hero">
-        <div class="profile-wrap">
-            <img src="Image.jpeg" alt="Abdullah All Munan — developer and builder from Bangladesh" class="profile-photo" width="92" height="92" fetchpriority="high">
-        </div>
-        <div class="hero-kicker">Dhaka, Bangladesh <span>·</span> Developer <span>·</span> Student <span>·</span> Builder</div>
-        <h1 class="hero-title">Knowledge &amp; <span>Creation</span> Zone</h1>
-        <div class="hero-tagline">I'm a <span class="typed-text" id="typed"></span><span class="cursor"></span></div>
-        <div class="intro-box">
-            <p>Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I love solving problems through code and learning something new every day.</p>
+        <div class="wrap hero-grid">
+            <div class="hero-copy">
+                <h1 class="hero-title">Knowledge &amp; Creation Zone</h1>
+                <p class="hero-lead">Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I solve problems with code and learn something new every day. This is where I keep what I build, write and study.</p>
+                <div class="hero-cta">
+                    <a href="#tools" class="btn-solid">See what I've built <i class="fas fa-arrow-down" style="font-size:.8rem;"></i></a>
+                    <a href="about.html" class="btn-line">About me</a>
+                </div>
+                <div class="hero-typed">I'm a <span class="typed-text" id="typed"></span><span class="cursor" aria-hidden="true"></span></div>
+            </div>
+
+            <div class="tag-wrap">
+                <div class="tag-card">
+                    <span class="tag-hole" aria-hidden="true"></span>
+                    <div class="tag-head">
+                        <img src="Image.jpeg" alt="Abdullah All Munan — developer and builder from Bangladesh" class="profile-photo" width="68" height="68" fetchpriority="high">
+                        <div>
+                            <div class="tag-name">Munan</div>
+                            <div class="tag-full">Abdullah All Munan</div>
+                        </div>
+                    </div>
+                    <dl>
+                        <div><dt>Based in</dt><dd>Dhaka, Bangladesh</dd></div>
+                        <div><dt>Studying</dt><dd>Zoology, University of Dhaka</dd></div>
+                        <div><dt>Building</dt><dd>Web apps in plain HTML &amp; JS</dd></div>
+                        <div><dt>Also</dt><dd>Blog posts and webcomics</dd></div>
+                    </dl>
+                    <div class="tag-foot">Tawakkul &amp; Grind</div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <section class="container">
-        <div class="section-label"><span role="heading" aria-level="2"><i class="fas fa-grip"></i>&nbsp; Quick Links</span></div>
-        <div class="link-index">
-            <a href="about.html" class="link-row" style="animation-delay:.03s">
-                <span class="link-index-num">01</span>
-                <span class="link-row-icon"><i class="fas fa-user"></i></span>
-                <span class="link-row-body"><span class="link-row-title">About Me</span><span class="link-row-desc">Who I am, what I build, and what drives me every day.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="tools.html" class="link-row" style="animation-delay:.06s">
-                <span class="link-index-num">02</span>
-                <span class="link-row-icon"><i class="fas fa-tools"></i></span>
-                <span class="link-row-body"><span class="link-row-title">My Toolbox</span><span class="link-row-desc">Software, extensions, and AI tools I use every day.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="https://github.com/abamunan" class="link-row" target="_blank" rel="noopener noreferrer" style="animation-delay:.09s">
-                <span class="link-index-num">03</span>
-                <span class="link-row-icon"><i class="fab fa-github"></i></span>
-                <span class="link-row-body"><span class="link-row-title">GitHub Profile</span><span class="link-row-desc">Explore my open-source contributions and active repositories.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="part1.html" class="link-row" style="animation-delay:.12s">
-                <span class="link-index-num">04</span>
-                <span class="link-row-icon"><i class="fas fa-folder-open"></i></span>
-                <span class="link-row-body"><span class="link-row-title">Files</span><span class="link-row-desc">My personal files and resources.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="blog.html" class="link-row" style="animation-delay:.15s">
-                <span class="link-index-num">05</span>
-                <span class="link-row-icon"><i class="fas fa-pen-nib"></i></span>
-                <span class="link-row-body"><span class="link-row-title">Blog</span><span class="link-row-desc">Thoughts, learnings, and stories from my journey in code and life.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="webcomic.html" class="link-row" style="animation-delay:.18s">
-                <span class="link-index-num">06</span>
-                <span class="link-row-icon"><i class="fas fa-book-open"></i></span>
-                <span class="link-row-body"><span class="link-row-title">My WebComics</span><span class="link-row-desc">Stories, manga-style comics and visual narratives I create.</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
-            <a href="contact.html" class="link-row" style="animation-delay:.21s">
-                <span class="link-index-num">07</span>
-                <span class="link-row-icon"><i class="fas fa-envelope"></i></span>
-                <span class="link-row-body"><span class="link-row-title">Get in Touch</span><span class="link-row-desc">Have a question or want to connect? I'll reply soon!</span></span>
-                <i class="fas fa-arrow-right link-row-arrow"></i>
-            </a>
+    <!-- Tools -->
+    <section class="section" id="tools">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Things I've built</h2>
+                    <p class="section-sub">Small web apps I made for my own daily use. Open one and try it.</p>
+                </div>
+                <a href="projects.html" class="more-link">All projects <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+
+            <div class="tracker-grid">
+                <a href="moneytracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-wallet"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Money Tracker</h3>
+                    <p>Manage income and expenses with monthly summaries and PDF or CSV export.</p>
+                    <div class="chips"><span class="chip">Finance</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="healthtracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-heart-pulse"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Health Tracker</h3>
+                    <p>Log weight, vitals, sleep, activity and mood, with insights, streaks and forecasts.</p>
+                    <div class="chips"><span class="chip">Health</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="english-tracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-language"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>English Fluency Tracker</h3>
+                    <p>A 365-day habit tracker: read, summarize, listen and speak daily, with AI scores, vocabulary, mistakes and quizzes.</p>
+                    <div class="chips"><span class="chip">Learning</span><span class="chip">Tracker</span><span class="chip">Syncs to your account</span></div>
+                </a>
+                <a href="diary.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-book"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Diary</h3>
+                    <p>Write dated, sectioned entries privately, and export them as a PDF anytime.</p>
+                    <div class="chips"><span class="chip">Journal</span><span class="chip">Private</span></div>
+                </a>
+            </div>
+
+            <h3 class="sub-title">Quick utilities</h3>
+            <div class="util-list">
+                <a href="TypeMaster.html" class="util">
+                    <span class="tile"><i class="fas fa-keyboard"></i></span>
+                    <span class="row-body"><span class="row-title">TypeMaster</span><br><span class="row-desc">Track your typing speed and accuracy in real time.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="photo-resizer.html" class="util">
+                    <span class="tile"><i class="fas fa-images"></i></span>
+                    <span class="row-body"><span class="row-title">Photo Resizer</span><br><span class="row-desc">Batch resize and compress photos. Nothing is uploaded.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="pdf-toolkit.html" class="util">
+                    <span class="tile"><i class="fas fa-file-pdf"></i></span>
+                    <span class="row-body"><span class="row-title">PDF Toolkit</span><br><span class="row-desc">Split, rotate, merge or unlock PDFs in your browser.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="projects.html" class="util util-all">
+                    <span class="tile"><i class="fas fa-layer-group"></i></span>
+                    <span class="row-body"><span class="row-title">Browse all projects</span><br><span class="row-desc">Every tool, app and experiment in one place.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
         </div>
     </section>
 
-    <!-- ── PROJECTS SECTION ── -->
-    <section class="projects-section">
-        <div class="projects-wrapper">
-            <div class="projects-header">
-                <div class="projects-title" role="heading" aria-level="2">
-                    <i class="fas fa-rocket"></i>
-                    My Projects
-                    <span class="projects-subtitle">— tools I built</span>
+    <!-- Writing -->
+    <section class="section" id="writing">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Writing and comics</h2>
+                    <p class="section-sub">Thoughts and lessons from code and life, plus stories I draw.</p>
                 </div>
-                <a href="projects.html" class="projects-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
             </div>
-            <div class="projects-grid">
 
-                <div class="project-card" style="animation-delay:.05s">
-                    <div class="project-card-top">
-                        <div class="project-icon">
-                            <i class="fas fa-keyboard"></i>
-                        </div>
-                        <div class="project-info">
-                            <div class="project-name" role="heading" aria-level="3">TypeMaster</div>
-                            <div class="project-desc">Track your WPM and accuracy in real-time — see your typing progress instantly.</div>
-                        </div>
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag">Typing</span>
-                        <span class="project-tag">Productivity</span>
-                        <span class="project-tag">HTML/JS</span>
-                    </div>
-                    <a href="TypeMaster.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-                </div>
-
-                <div class="project-card" style="animation-delay:.10s">
-                    <div class="project-card-top">
-                        <div class="project-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <div class="project-info">
-                            <div class="project-name" role="heading" aria-level="3">Money Tracker</div>
-                            <div class="project-desc">Manage income and expenses with monthly summaries, PDF/CSV export.</div>
-                        </div>
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag">Finance</span>
-                        <span class="project-tag">Tracker</span>
-                        <span class="project-tag">HTML/JS</span>
-                    </div>
-                    <a href="moneytracker.html" class="project-btn">Open <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-                </div>
-
-                <div class="project-card" style="animation-delay:.12s">
-                    <div class="project-card-top">
-                        <div class="project-icon">
-                            <i class="fas fa-heart-pulse"></i>
-                        </div>
-                        <div class="project-info">
-                            <div class="project-name" role="heading" aria-level="3">Health Tracker</div>
-                            <div class="project-desc">Log weight, vitals, sleep, activity &amp; mood with insights, streaks and forecasts.</div>
-                        </div>
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag">Health</span>
-                        <span class="project-tag">Tracker</span>
-                        <span class="project-tag">HTML/JS</span>
-                    </div>
-                    <a href="healthtracker.html" class="project-btn">Open <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-                </div>
-
-                <div class="project-card" style="animation-delay:.15s">
-                    <div class="project-card-top">
-                        <div class="project-icon">
-                            <i class="fas fa-images"></i>
-                        </div>
-                        <div class="project-info">
-                            <div class="project-name" role="heading" aria-level="3">Photo Resizer</div>
-                            <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
-                        </div>
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag">Image</span>
-                        <span class="project-tag">Utility</span>
-                        <span class="project-tag">HTML/JS</span>
-                    </div>
-                    <a href="photo-resizer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-                </div>
-<div class="project-card" style="animation-delay:.1s">
-    <div class="project-card-top">
-        <div class="project-icon">
-            <i class="fas fa-book"></i>
-        </div>
-        <div class="project-info">
-            <div class="project-name" role="heading" aria-level="3">Diary</div>
-            <div class="project-desc">Write dated, sectioned entries privately — track your days and export them as a PDF anytime.</div>
-        </div>
-    </div>
-    <div class="project-tags">
-        <span class="project-tag">Journal</span>
-        <span class="project-tag">Private</span>
-        <span class="project-tag">Firebase</span>
-    </div>
-    <a href="diary.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-</div>
-
-<div class="project-card" style="animation-delay:.15s">
-    <div class="project-card-top">
-        <div class="project-icon">
-            <i class="fas fa-language"></i>
-        </div>
-        <div class="project-info">
-            <div class="project-name" role="heading" aria-level="3">English Fluency Tracker</div>
-            <div class="project-desc">A 365-day habit tracker: read, summarize, listen and speak daily, with AI scores, vocabulary, mistakes and quizzes.</div>
-        </div>
-    </div>
-    <div class="project-tags">
-        <span class="project-tag">Learning</span>
-        <span class="project-tag">Tracker</span>
-        <span class="project-tag">Firebase</span>
-    </div>
-    <a href="english-tracker.html" class="project-btn">Open <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-</div>
-
-<div class="project-card" style="animation-delay:.2s">
-    <div class="project-card-top">
-        <div class="project-icon">
-            <i class="fas fa-file-pdf"></i>
-        </div>
-        <div class="project-info">
-            <div class="project-name" role="heading" aria-level="3">PDF Toolkit</div>
-            <div class="project-desc">Split, rotate, merge, or unlock your PDF files instantly — all in your browser, no upload needed.</div>
-        </div>
-    </div>
-    <div class="project-tags">
-        <span class="project-tag">Split</span>
-        <span class="project-tag">Rotate</span>
-        <span class="project-tag">Unlock</span>
-    </div>
-    <a href="pdf-toolkit.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-</div>
-
-<a href="projects.html" class="project-card view-all-card" style="animation-delay:.25s">
-    <div class="project-card-top">
-        <div class="project-icon">
-            <i class="fas fa-layer-group"></i>
-        </div>
-        <div class="project-info">
-            <div class="project-name" role="heading" aria-level="3">View All Projects</div>
-            <div class="project-desc">Browse the full collection — every tool, app and experiment I've built, all in one place.</div>
-        </div>
-    </div>
-    <span class="view-all-arrow">Explore all projects <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
-</a>
-
-                
+            <div class="section-head" style="margin-bottom:18px;">
+                <h3 class="sub-title" style="margin:0;">Latest from the blog</h3>
+                <a href="blog.html" class="more-link">All posts <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
             </div>
+            <div class="post-grid" id="blogPreviewGrid"></div>
+
+            <div class="section-head" style="margin:48px 0 18px;">
+                <h3 class="sub-title" style="margin:0;">Latest comics</h3>
+                <a href="webcomic.html" class="more-link">All comics <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+            <div class="comic-grid" id="webcomicPreviewGrid"></div>
         </div>
     </section>
 
     <!-- Academic -->
-    <section class="academic-section">
-        <div class="academic-wrapper">
-            <div class="academic-header">
-                <div class="academic-title" role="heading" aria-level="2">
-                    <i class="fas fa-graduation-cap"></i>
-                    Academic
-                    <span class="academic-subtitle">— study notes</span>
+    <section class="section" id="notes">
+        <div class="wrap">
+            <div class="notes-band">
+                <span class="notes-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></span>
+                <div>
+                    <h2>Study notes</h2>
+                    <p>PDF notes by subject. Read them online with bookmarks, a focus timer, and dark or sepia reading modes.</p>
                 </div>
-            </div>
-            <div class="academic-grid">
-
-                <div class="project-card" style="animation-delay:.05s">
-                    <div class="project-card-top">
-                        <div class="project-icon">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                        <div class="project-info">
-                            <div class="project-name" role="heading" aria-level="3">View Notes</div>
-                            <div class="project-desc">PDF study notes by subject — read online with bookmarks, a focus timer, and dark/sepia reading modes.</div>
-                        </div>
-                    </div>
-                    <div class="project-tags">
-                        <span class="project-tag">Study</span>
-                        <span class="project-tag">PDF</span>
-                        <span class="project-tag">Notes</span>
-                    </div>
-                    <a href="notes.html" class="project-btn">Browse <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-                </div>
-
+                <a href="notes.html" class="btn-solid">Browse notes <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
             </div>
         </div>
     </section>
 
-    <!-- Blog Preview -->
-    <section class="blog-section">
-        <div class="blog-section-header">
-            <div class="blog-section-title" role="heading" aria-level="2"><i class="fas fa-pen-nib"></i> Latest from the Blog</div>
-            <a href="blog.html" class="blog-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
+    <!-- Contact + links -->
+    <section class="section" id="contact">
+        <div class="wrap connect">
+            <div>
+                <h2>Let's talk</h2>
+                <p>Have a question or want to connect? Send a message and I'll reply soon.</p>
+                <a href="contact.html" class="btn-solid"><i class="fas fa-envelope"></i> Get in touch</a>
+            </div>
+            <div class="util-list">
+                <a href="about.html" class="link-row">
+                    <span class="tile"><i class="fas fa-user"></i></span>
+                    <span class="row-body"><span class="row-title">About me</span><br><span class="row-desc">Who I am, what I build, and what drives me.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="tools.html" class="link-row">
+                    <span class="tile"><i class="fas fa-tools"></i></span>
+                    <span class="row-body"><span class="row-title">My toolbox</span><br><span class="row-desc">Software, extensions and AI tools I use every day.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="https://github.com/abamunan" class="link-row" target="_blank" rel="noopener noreferrer">
+                    <span class="tile"><i class="fab fa-github"></i></span>
+                    <span class="row-body"><span class="row-title">GitHub</span><br><span class="row-desc">Open-source work and active repositories.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="part1.html" class="link-row">
+                    <span class="tile"><i class="fas fa-folder-open"></i></span>
+                    <span class="row-body"><span class="row-title">Files</span><br><span class="row-desc">My personal files and resources.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
         </div>
-        <div class="blog-grid" id="blogPreviewGrid"></div>
     </section>
-
-    <!-- Webcomics Preview -->
-    <section class="webcomic-section">
-        <div class="webcomic-section-header">
-            <div class="webcomic-section-title" role="heading" aria-level="2"><i class="fas fa-book-open"></i> Latest Comics</div>
-            <a href="webcomic.html" class="webcomic-view-all">View All <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
-        </div>
-        <div class="webcomic-grid" id="webcomicPreviewGrid"></div>
-    </section>
+    </main>
 
     <!-- Load shared data files -->
     <script src="posts.js"></script>
@@ -504,30 +492,24 @@
         function renderBlogPreview() {
             const grid = document.getElementById('blogPreviewGrid');
             if (typeof BLOG_POSTS === 'undefined' || !Array.isArray(BLOG_POSTS)) {
-                grid.innerHTML = `<div class="blog-empty"><i class="fas fa-feather-pointed"></i><p>Error loading posts<br><strong>posts.js may not be loaded correctly.</strong></p></div>`;
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>Posts could not load.<br><strong>Check that posts.js is in the same folder.</strong></p></div>`;
                 return;
             }
             const count = window.innerWidth <= 768 ? 1 : 2;
             const latest = BLOG_POSTS.slice(0, count);
             if (!latest.length) {
-                grid.innerHTML = `<div class="blog-empty"><i class="fas fa-feather-pointed"></i><p>No posts yet — check back soon!<br><strong>First blog post coming shortly.</strong></p></div>`;
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>No posts yet.<br><strong>The first one is on its way.</strong></p></div>`;
                 return;
             }
-            grid.innerHTML = latest.map((p, i) => `
-                <a href="blog.html#post-${p.id}" class="blog-card" style="animation-delay:${i*0.08}s">
-                    <div class="blog-card-strip" style="--strip-a:${p.stripA};--strip-b:${p.stripB}"></div>
-                    <div class="blog-card-body">
-                        <div class="blog-meta">
-                            <span class="blog-tag">${p.tag}</span>
-                            <span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>
-                        </div>
-                        <div class="blog-card-title" role="heading" aria-level="3">${p.title}</div>
-                        <div class="blog-card-excerpt">${p.excerpt}</div>
-                        <div class="blog-card-footer">
-                            <span class="blog-read-time"><i class="fas fa-clock"></i> ${p.readTime}</span>
-                            <span class="blog-read-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
-                        </div>
-                    </div>
+            grid.innerHTML = latest.map(p => `
+                <a href="blog.html#post-${p.id}" class="post" style="--a:${p.stripA};--b:${p.stripB}">
+                    <span class="post-bar"></span>
+                    <span class="post-body">
+                        <span class="post-meta"><span class="post-tag">${p.tag}</span><span><i class="far fa-calendar"></i> ${p.date}</span><span><i class="far fa-clock"></i> ${p.readTime}</span></span>
+                        <h3>${p.title}</h3>
+                        <p>${p.excerpt}</p>
+                        <span class="post-read">Read post <i class="fas fa-arrow-right" style="font-size:.75rem;"></i></span>
+                    </span>
                 </a>`).join('');
         }
         renderBlogPreview();
@@ -536,23 +518,18 @@
         function renderWebcomicPreview() {
             const grid = document.getElementById('webcomicPreviewGrid');
             if (typeof WEBCOMICS === 'undefined' || !Array.isArray(WEBCOMICS) || !WEBCOMICS.length) {
-                grid.innerHTML = `<div class="webcomic-empty"><i class="fas fa-book-open"></i><p>No webcomics yet<br><strong>First series coming soon!</strong></p></div>`;
+                grid.innerHTML = `<div class="empty"><i class="fas fa-book-open"></i><p>No webcomics yet.<br><strong>The first series is coming soon.</strong></p></div>`;
                 return;
             }
-            const latest = WEBCOMICS.slice(0, 3);
-            grid.innerHTML = latest.map((comic, i) => `
-                <a href="webcomic.html" class="webcomic-card" style="animation-delay:${i*0.08}s">
-                    <div class="webcomic-card-strip" style="--strip-a:${comic.stripA};--strip-b:${comic.stripB}"></div>
-                    <div class="webcomic-card-body">
-                        <div class="webcomic-meta">
-                            <span class="webcomic-tag">${comic.genre}</span>
-                            <span class="webcomic-status ${comic.status.toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${comic.status}</span>
-                        </div>
-                        <div class="webcomic-card-title" role="heading" aria-level="3">${comic.title}</div>
-                        <div class="webcomic-card-excerpt">${comic.description}</div>
-                        <div class="webcomic-card-footer">
-                            <span class="webcomic-ep-count"><i class="fas fa-images"></i> ${comic.episodes.length} ep${comic.episodes.length !== 1 ? 's' : ''}</span>
-                            <span class="webcomic-read-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
+            grid.innerHTML = WEBCOMICS.slice(0, 3).map(c => `
+                <a href="webcomic.html" class="comic" style="--a:${c.stripA};--b:${c.stripB}">
+                    <div class="comic-cover"><i class="fas fa-book-open" aria-hidden="true"></i><h3>${c.title}</h3></div>
+                    <div class="comic-body">
+                        <p>${c.description}</p>
+                        <div class="comic-foot">
+                            <span>${c.genre}</span>
+                            <span class="comic-status ${String(c.status).toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${c.status}</span>
+                            <span><i class="fas fa-images"></i> ${c.episodes.length} ep${c.episodes.length !== 1 ? 's' : ''}</span>
                         </div>
                     </div>
                 </a>`).join('');
@@ -561,53 +538,44 @@
 
         /* ── TYPING ANIMATION ─── */
         const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
-        let wi = 0, ci = 0, deleting = false;
         const typedEl = document.getElementById('typed');
-        function type() {
-            const word = words[wi];
-            if (!deleting) {
-                typedEl.textContent = word.slice(0, ++ci);
-                if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
-            } else {
-                typedEl.textContent = word.slice(0, --ci);
-                if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
-            }
-            setTimeout(type, deleting ? 60 : 100);
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            typedEl.textContent = 'Developer, student and builder';
+        } else {
+            let wi = 0, ci = 0, deleting = false;
+            (function type() {
+                const word = words[wi];
+                if (!deleting) {
+                    typedEl.textContent = word.slice(0, ++ci);
+                    if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+                } else {
+                    typedEl.textContent = word.slice(0, --ci);
+                    if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+                }
+                setTimeout(type, deleting ? 60 : 100);
+            })();
         }
-        setTimeout(type, 600);
 
         /* ── THEME TOGGLE (shared logic — see theme.js) ─── */
-        MunanTheme.bindToggle(document.getElementById('themeBtn'));
+        const themeBtn = document.getElementById('themeBtn');
+        MunanTheme.bindToggle(themeBtn);
+        themeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeBtn.click(); } });
 
         /* ── NAVBAR HIDE ON SCROLL ─── */
         let lastScroll = window.scrollY;
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) {
-                nav.classList.add('navbar-hidden');
-            } else {
-                nav.classList.remove('navbar-hidden');
-            }
+            if (window.scrollY > lastScroll && window.scrollY > 90) nav.classList.add('navbar-hidden');
+            else nav.classList.remove('navbar-hidden');
             lastScroll = window.scrollY;
-        });
+        }, { passive: true });
 
-        /* ── LOGIN / LOGOUT BUTTON ─── */
+        /* ── LOGIN / DASHBOARD BUTTON ─── */
         const authBtn = document.getElementById('authBtn');
-        function updateAuthBtn() {
-            const loggedIn = localStorage.getItem('munan_auth') === 'true';
-            if (loggedIn) {
-                authBtn.href = 'dashboard.html';
-                authBtn.className = 'nav-login-btn';
-                authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
-                authBtn.onclick = null;
-            } else {
-                authBtn.href = 'login.html';
-                authBtn.className = 'nav-login-btn';
-                authBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
-                authBtn.onclick = null;
-            }
+        if (localStorage.getItem('munan_auth') === 'true') {
+            authBtn.href = 'dashboard.html';
+            authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
         }
-        updateAuthBtn();
     </script>
     <script src="footer.js"></script>
 </body>
