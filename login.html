@@ -3,317 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Login or create your Munan.hub account.">
-    <meta name="theme-color" content="#0ea5e9">
-    <title>Login · Munan.hub</title>
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Log in or create your Munan.hub account.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Login | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/login.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}}());</script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/login.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Login | Munan.hub">
+    <meta property="og:description" content="Log in or create your Munan.hub account.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Login | Munan.hub">
+    <meta name="twitter:description" content="Log in or create your Munan.hub account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>
-        /* Safety reset in case style.css fails to load */
-        *, *::before, *::after { box-sizing: border-box; }
+        .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 36px) 18px 20px; }
+        .auth-card { width:100%; max-width:480px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; }
+        .auth-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .auth-inner { padding:30px 30px 24px; }
+        .auth-head { text-align:center; margin-bottom:22px; }
+        .auth-head .tile-lg { margin-bottom:14px; }
+        .auth-title { font-family:var(--display); font-weight:800; font-size:clamp(1.6rem,5vw,2rem); letter-spacing:-.03em; line-height:1.1; margin-bottom:6px; }
+        .auth-sub { color:var(--muted); font-size:.98rem; }
 
-        /* ── PAGE-SPECIFIC TOKENS ────────────────────────────── */
-        :root {
-            --input-bg:     rgba(255,255,255,0.7);
-            --input-border: rgba(14,165,233,0.3);
-            --input-focus:  rgba(2,132,199,0.55);
-            --success-bg:   rgba(22,163,74,0.12);
-            --success-clr:  #15803d;
-            --error-bg:     rgba(220,38,38,0.1);
-            --error-clr:    #dc2626;
-            --warn-clr:     #d97706;
-        }
-        [data-theme="dark"] {
-            --input-bg:     rgba(255,255,255,0.06);
-            --input-border: rgba(0,212,255,0.2);
-            --input-focus:  rgba(0,212,255,0.45);
-            --success-bg:   rgba(22,163,74,0.15);
-            --success-clr:  #4ade80;
-            --error-bg:     rgba(239,68,68,0.12);
-            --error-clr:    #f87171;
-            --warn-clr:     #fbbf24;
-        }
+        .auth-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:5px; margin-bottom:22px; border:1.5px solid var(--line); border-radius:999px; background:var(--bg); }
+        .tab-btn { min-height:44px; padding:8px 12px; border-radius:999px; font-weight:700; font-size:.95rem; color:var(--muted); background:transparent; border:1.5px solid transparent; transition:background var(--trans), color var(--trans); }
+        .tab-btn i { margin-right:6px; }
+        .tab-btn:hover { color:var(--ink); }
+        .tab-btn.active { background:var(--ink); color:var(--bg); }
+        :root[data-theme="dark"] .tab-btn.active { background:var(--marker); color:#11221D; }
 
-        body {
-            min-height:100vh;
-            align-items:stretch;
-        }
-/* ── NAVBAR OVERRIDE (page-specific nav buttons) ── */
-        .nav-links { display: flex; gap: 10px; }
-        .nav-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
-            border-radius: 12px; padding: 6px 14px 6px 10px;
-            font-size: .78rem; font-weight: 600; color: var(--text-main);
-            backdrop-filter: blur(8px); transition: var(--trans);
-        }
-        .nav-btn:hover { background: rgba(255,255,255,.85); border-color: #7ec8e8; }
-        .nav-btn-icon {
-            width: 24px; height: 24px; border-radius: 6px;
-            background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: .7rem; flex-shrink: 0;
-        }
-        /* ── PAGE WRAPPER ──────────────────────────────────── */
-        .page-wrap {
-            position:relative; z-index:1;
-            min-height:100vh;
-            display:flex; flex-direction:column;
-            align-items:center; justify-content:center;
-            padding:80px 20px 50px;
-        }
-
-        /* ── AUTH CARD ─────────────────────────────────────── */
-        .auth-card {
-            width:100%; max-width:440px;
-            background:var(--card-bg);
-            border:1px solid var(--card-border);
-            border-radius:24px;
-            backdrop-filter:blur(18px);
-            box-shadow:0 8px 40px rgba(2,132,199,.12);
-            overflow:hidden;
-            animation:cardIn .55s cubic-bezier(.4,0,.2,1) both;
-        }
-        @keyframes cardIn { from { opacity:0; transform:translateY(24px) scale(.97); } to { opacity:1; transform:none; } }
-
-        /* Gradient top strip */
-        .auth-strip {
-            height:4px;
-            background:linear-gradient(90deg,#0284c7,#0ea5e9,#38bdf8,#0284c7);
-            background-size:200% 100%;
-            animation:shimmer 3s linear infinite;
-        }
-        @keyframes shimmer { 0% { background-position:0% 0%; } 100% { background-position:200% 0%; } }
-
-        .auth-inner { padding:32px 32px 28px; }
-        @media (max-width:480px) { .auth-inner { padding:24px 20px 22px; } }
-
-        /* ── LOGO BADGE ────────────────────────────────────── */
-        .auth-brand {
-            display:flex; align-items:center; justify-content:center; gap:10px;
-            margin-bottom:24px;
-        }
-        .auth-brand-icon {
-            width:44px; height:44px; border-radius:12px;
-            background:linear-gradient(135deg,#0284c7,#38bdf8);
-            display:flex; align-items:center; justify-content:center;
-            color:#fff; font-size:1.15rem;
-            box-shadow:0 4px 14px rgba(2,132,199,.35);
-        }
-        .auth-brand-name { font-size:1.25rem; font-weight:800; letter-spacing:.5px; }
-        .auth-brand-name span { color:var(--accent); }
-
-        /* ── TABS ──────────────────────────────────────────── */
-        .auth-tabs {
-            display:grid; grid-template-columns:1fr 1fr;
-            background:rgba(0,0,0,.05);
-            border-radius:12px; padding:4px; gap:3px;
-            margin-bottom:26px;
-        }
-        [data-theme="dark"] .auth-tabs { background:rgba(255,255,255,.05); }
-        .tab-btn {
-            padding:9px; border:none; border-radius:9px;
-            font-family:'Poppins',sans-serif; font-size:.82rem; font-weight:700;
-            cursor:pointer; transition:var(--trans);
-            color:var(--text-soft); background:transparent;
-        }
-        .tab-btn.active {
-            background:var(--card-bg);
-            color:var(--accent);
-            box-shadow:0 2px 10px rgba(2,132,199,.15);
-            border:1px solid var(--card-border);
-        }
-        [data-theme="dark"] .tab-btn.active { background:rgba(0,212,255,.08); }
-
-        /* ── FORMS ─────────────────────────────────────────── */
         .auth-form { display:none; }
-        .auth-form.active { display:block; animation:fadeIn .3s ease; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+        .auth-form.active { display:block; animation:authIn .25s ease; }
+        @keyframes authIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        @media (prefers-reduced-motion:reduce) { .auth-form.active { animation:none; } }
 
-        .field { margin-bottom:16px; }
-        .field label {
-            display:block; font-size:.75rem; font-weight:700;
-            color:var(--text-muted); margin-bottom:6px; letter-spacing:.04em;
-        }
-        .field label .req { color:var(--accent); margin-left:2px; }
+        .auth-card .field > label .req { color:var(--err); font-weight:700; }
+        .auth-card .field > label .opt { font-weight:400; color:var(--soft); font-size:.82rem; }
         .input-wrap { position:relative; }
-        .input-wrap i {
-            position:absolute; left:13px; top:50%; transform:translateY(-50%);
-            color:var(--text-soft); font-size:.85rem; pointer-events:none;
-            transition:color var(--trans);
-        }
-        .input-wrap input {
-            width:100%; padding:11px 38px 11px 38px;
-            background:var(--input-bg);
-            border:1.5px solid var(--input-border);
-            border-radius:10px;
-            font-family:'Poppins',sans-serif; font-size:.85rem;
-            color:var(--text-main);
-            transition:var(--trans);
-            outline:none;
-        }
-        .input-wrap input::placeholder { color:var(--text-soft); opacity:.8; }
-        .input-wrap input:focus {
-            border-color:var(--accent);
-            box-shadow:0 0 0 3px var(--input-focus);
-            background:rgba(255,255,255,.85);
-        }
-        [data-theme="dark"] .input-wrap input:focus { background:rgba(0,212,255,.06); }
-        .input-wrap input:focus + i,
-        .input-wrap:focus-within i { color:var(--accent); }
-
-        /* Password toggle eye */
-        .eye-btn {
-            position:absolute; right:4px; top:50%; transform:translateY(-50%);
-            background:none; border:none; cursor:pointer;
-            color:var(--text-soft); font-size:.85rem; transition:color var(--trans);
-            width:34px; height:34px; margin:0; padding:0; line-height:1; z-index:2;
-            display:flex; align-items:center; justify-content:center;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .input-wrap > i { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--soft); font-size:.9rem; pointer-events:none; }
+        .input-wrap input { width:100%; min-height:48px; padding:11px 46px 11px 42px; background:var(--paper); color:var(--ink); border:1.5px solid var(--line); border-radius:var(--r-input); transition:border-color var(--trans), box-shadow var(--trans); }
+        .input-wrap input::placeholder { color:var(--soft); opacity:.8; }
+        .input-wrap input:hover { border-color:var(--soft); }
+        .input-wrap input:focus { outline:none; border-color:var(--lagoon); box-shadow:0 0 0 4px var(--lagoon-tint); }
+        .eye-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; color:var(--soft); display:flex; align-items:center; justify-content:center; transition:color var(--trans), background var(--trans); }
         .eye-btn i { pointer-events:none; }
-        .eye-btn:hover { color:var(--accent); }
+        .eye-btn:hover { color:var(--ink); background:var(--lagoon-tint); }
+        .forgot-link { display:inline-block; margin-top:6px; font-size:.88rem; font-weight:700; color:var(--lagoon); padding:4px 0; }
+        .forgot-link:hover { color:var(--ink); text-decoration:underline; text-decoration-color:var(--marker); text-decoration-thickness:3px; text-underline-offset:4px; }
+        .right { text-align:right; }
 
-        /* ── MESSAGE BAR ───────────────────────────────────── */
-        .msg-bar {
-            display:none; align-items:center; gap:9px;
-            padding:10px 14px; border-radius:10px;
-            font-size:.8rem; font-weight:600; margin-top:14px;
-            border:1px solid transparent;
-            animation:fadeIn .3s ease;
-        }
+        .submit-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:999px; font-weight:700; font-size:1rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
+        .submit-btn:hover { background:var(--lagoon); color:#fff; }
+        :root[data-theme="dark"] .submit-btn { background:var(--marker); color:#11221D; }
+        :root[data-theme="dark"] .submit-btn:hover { background:#fff; }
+        .google-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:10px; border-radius:999px; font-weight:700; border:1.5px solid var(--ink); color:var(--ink); background:transparent; transition:background var(--trans), color var(--trans); }
+        .google-btn:hover { background:var(--ink); color:var(--bg); }
+        :root[data-theme="dark"] .google-btn { border-color:var(--line); }
+        :root[data-theme="dark"] .google-btn:hover { border-color:var(--ink); }
+        .google-btn img { width:18px; height:18px; background:#fff; border-radius:50%; padding:1px; }
+        .divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--soft); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--line); }
+
+        .msg-bar { display:none; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:14px; font-size:.92rem; font-weight:600; line-height:1.45; margin-top:14px; border:1.5px solid transparent; }
         .msg-bar.show { display:flex; }
-        .msg-bar.success { background:var(--success-bg); color:var(--success-clr); border-color:rgba(22,163,74,.25); }
-        .msg-bar.error   { background:var(--error-bg);   color:var(--error-clr);   border-color:rgba(220,38,38,.22); }
-        .msg-bar.loading { background:rgba(2,132,199,.1); color:var(--accent); border-color:rgba(2,132,199,.25); }
-        .msg-bar i { flex-shrink:0; }
-        .spin { animation:spin .8s linear infinite; display:inline-block; }
+        .msg-bar i { flex-shrink:0; margin-top:3px; }
+        .msg-bar.success { background:var(--ok-bg); color:var(--ok); border-color:var(--ok); }
+        .msg-bar.error { background:var(--err-bg); color:var(--err); border-color:var(--err); }
+        .msg-bar.loading { background:var(--info-bg); color:var(--info); border-color:var(--info); }
+        .spin { display:inline-block; animation:spin .8s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spin { animation-duration:2.4s; } }
 
-        /* ── SUBMIT BUTTON ─────────────────────────────────── */
-        .submit-btn {
-            width:100%; padding:12px;
-            background:linear-gradient(135deg,#0284c7,#0ea5e9);
-            border:none; border-radius:11px;
-            color:#fff; font-family:'Poppins',sans-serif;
-            font-size:.9rem; font-weight:700; letter-spacing:.03em;
-            cursor:pointer; transition:var(--trans);
-            box-shadow:0 4px 16px rgba(2,132,199,.35);
-            margin-top:4px;
-        }
-        .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(2,132,199,.45); }
-        .submit-btn:active { transform:translateY(0); }
-        .submit-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+        .pwd-strength { margin-top:8px; }
+        .pwd-bars { display:flex; gap:5px; margin-bottom:5px; }
+        .pwd-bar { flex:1; height:5px; border-radius:5px; background:var(--line); transition:background .3s; }
+        .pwd-label { font-size:.8rem; color:var(--soft); font-weight:700; }
 
-        /* ── DIVIDER ───────────────────────────────────────── */
-        .divider {
-            display:flex; align-items:center; gap:10px;
-            margin:18px 0; color:var(--text-soft); font-size:.72rem; font-weight:600;
-        }
-        .divider::before, .divider::after {
-            content:''; flex:1; height:1px; background:var(--card-border);
-        }
+        .back-link { display:inline-flex; align-items:center; gap:8px; min-height:40px; margin-bottom:10px; font-weight:700; font-size:.92rem; color:var(--muted); padding:0; }
+        .back-link:hover { color:var(--ink); }
+        .forgot-text { color:var(--muted); font-size:.95rem; margin-bottom:12px; }
+        .forgot-note { margin-bottom:16px; font-size:.88rem; }
+        .timer-text { display:none; text-align:center; font-size:.86rem; color:var(--soft); margin-top:10px; font-weight:700; }
 
-        /* ── GOOGLE BUTTON ─────────────────────────────────── */
-        .google-btn {
-            width:100%; padding:11px;
-            background:var(--input-bg);
-            border:1.5px solid var(--card-border);
-            border-radius:11px;
-            display:flex; align-items:center; justify-content:center; gap:10px;
-            font-family:'Poppins',sans-serif; font-size:.85rem; font-weight:700;
-            color:var(--text-main); cursor:pointer; transition:var(--trans);
-        }
-        .google-btn:hover { border-color:var(--accent); background:rgba(255,255,255,.82); box-shadow:0 4px 16px rgba(2,132,199,.12); }
-        [data-theme="dark"] .google-btn:hover { background:rgba(0,212,255,.07); }
-        .google-btn img { width:18px; height:18px; }
+        .verify-state { display:none; text-align:center; padding:6px 0 2px; }
+        .verify-state.show { display:block; animation:authIn .3s ease; }
+        .verify-icon { width:72px; height:72px; margin:0 auto 14px; border-radius:20px; background:var(--marker); color:#11221D; display:flex; align-items:center; justify-content:center; font-size:1.7rem; box-shadow:4px 4px 0 var(--ink); }
+        .verify-title { font-family:var(--display); font-weight:800; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:8px; }
+        .verify-sub { color:var(--muted); font-size:.96rem; margin-bottom:14px; }
+        .verify-sub strong { color:var(--ink); overflow-wrap:anywhere; }
+        .resend-btn { font-weight:700; font-size:.92rem; color:var(--lagoon); text-decoration:underline; text-underline-offset:4px; min-height:40px; padding:0 8px; }
+        .resend-btn:hover { color:var(--ink); }
+        .resend-btn:disabled { text-decoration:none; }
+        .verify-state .btn-solid { width:100%; margin-top:16px; }
 
-        /* ── PASSWORD STRENGTH ─────────────────────────────── */
-        .pwd-strength { margin-top:6px; }
-        .pwd-bars { display:flex; gap:4px; margin-bottom:4px; }
-        .pwd-bar { flex:1; height:3px; border-radius:2px; background:rgba(0,0,0,.1); transition:background .3s; }
-        [data-theme="dark"] .pwd-bar { background:rgba(255,255,255,.1); }
-        .pwd-label { font-size:.68rem; color:var(--text-soft); font-weight:600; }
-
-        /* ── VERIFICATION WAITING STATE ────────────────────── */
-        .verify-state {
-            display:none; text-align:center; padding:10px 0 4px;
-            animation:fadeIn .35s ease;
-        }
-        .verify-state.show { display:block; }
-        .verify-icon {
-            width:62px; height:62px; border-radius:50%;
-            background:linear-gradient(135deg,#0284c7,#38bdf8);
-            display:flex; align-items:center; justify-content:center;
-            margin:0 auto 14px; font-size:1.6rem; color:#fff;
-            box-shadow:0 6px 20px rgba(2,132,199,.35);
-            animation:pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse { 0%,100% { box-shadow:0 6px 20px rgba(2,132,199,.35); } 50% { box-shadow:0 6px 32px rgba(2,132,199,.6); } }
-        .verify-title { font-size:1rem; font-weight:800; margin-bottom:7px; }
-        .verify-sub { font-size:.8rem; color:var(--text-muted); line-height:1.6; max-width:280px; margin:0 auto 18px; }
-        .resend-btn {
-            background:none; border:none; font-family:'Poppins',sans-serif;
-            font-size:.78rem; font-weight:700; color:var(--accent);
-            cursor:pointer; text-decoration:underline; transition:var(--trans);
-        }
-        .resend-btn:hover { opacity:.75; }
-
-        /* ── FOOTER NOTE ───────────────────────────────────── */
-        .auth-footer { text-align:center; margin-top:18px; font-size:.72rem; color:var(--text-soft); }
-        .auth-footer a { color:var(--accent); font-weight:700; }
-        .auth-footer a:hover { text-decoration:underline; }
-
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:none; } }
-        @media (max-width:480px) {
-            .auth-card { border-radius:18px; }
-            .back-btn span { display:none; }
-        }
+        .auth-footer { margin-top:22px; padding-top:16px; border-top:1px solid var(--line); text-align:center; font-size:.86rem; color:var(--soft); }
+        .auth-footer a { color:var(--lagoon); font-weight:700; }
+        .auth-footer a:hover { color:var(--ink); }
+        @media (max-width:480px) { .auth-inner { padding:24px 18px 20px; } }
     </style>
 </head>
-<body>
-
-    <!-- Background layers -->
-    <div class="blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-    </div>
-    <div class="particles" id="particles"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-logo">Munan<span>.hub</span></div>
-        <div class="nav-links">
-            <a href="index.html" class="nav-btn">
-                <span class="nav-btn-icon"><i class="fas fa-home"></i></span>
-                Home
-            </a>
-        </div>
-    </nav>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
 
     <!-- ── AUTH CARD ──────────────────────────────────────── -->
-    <main class="page-wrap">
+    <main class="auth-wrap" id="main">
         <div class="auth-card">
             <div class="auth-strip"></div>
             <div class="auth-inner">
 
-                <!-- Brand badge -->
-                <div class="auth-brand">
-                    <div class="auth-brand-icon"><i class="fas fa-layer-group"></i></div>
-                    <div class="auth-brand-name">Munan<span>.hub</span></div>
+                <div class="auth-head">
+                    <span class="tile-lg" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                    <h1 class="auth-title">Welcome to Munan<span style="color:var(--lagoon)">.hub</span></h1>
+                    <p class="auth-sub">Log in to your account or create a new one.</p>
                 </div>
 
                 <!-- Tabs -->
-                <div class="auth-tabs">
-                    <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">
-                        <i class="fas fa-sign-in-alt" style="margin-right:6px;"></i>Login
+                <div class="auth-tabs" role="group" aria-label="Choose login or sign up">
+                    <button type="button" class="tab-btn active" id="tabLogin" onclick="switchTab('login')" aria-current="true">
+                        <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Login
                     </button>
-                    <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">
-                        <i class="fas fa-user-plus" style="margin-right:6px;"></i>Sign Up
+                    <button type="button" class="tab-btn" id="tabSignup" onclick="switchTab('signup')">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>Sign Up
                     </button>
                 </div>
 
@@ -321,74 +143,71 @@
                 <div class="auth-form active" id="formLogin">
 
                     <div class="field">
-                        <label for="loginEmail">Email <span class="req">*</span></label>
+                        <label for="loginEmail">Email <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
-                            <i class="fas fa-envelope"></i>
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
                             <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
                         </div>
                     </div>
 
                     <div class="field">
-                        <label for="loginPassword">Password <span class="req">*</span></label>
+                        <label for="loginPassword">Password <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
-                            <i class="fas fa-lock"></i>
+                            <i class="fas fa-lock" aria-hidden="true"></i>
                             <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
-                            <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this,event)" tabindex="-1">
+                            <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
                                 <i class="fas fa-eye"></i>
                             </button>
-                       </div>
-                       <div style="text-align:right;margin-top:6px;">
-                           <a href="#" onclick="openForgotPassword(event)" style="font-size:.78rem;color:var(--accent);text-decoration:none;font-weight:600;">Forgot password?</a>
-                       </div>
+                        </div>
+                        <div class="right">
+                            <a href="#" class="forgot-link" onclick="openForgotPassword(event)">Forgot password?</a>
+                        </div>
                     </div>
 
                     <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
-                        <i class="fas fa-sign-in-alt" style="margin-right:7px;"></i>Login
+                        <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Login
                     </button>
 
-                    <div id="loginMsg" class="msg-bar"></div>
+                    <div id="loginMsg" class="msg-bar" role="status" aria-live="polite"></div>
 
                     <div class="divider">or</div>
 
                     <button class="google-btn" onclick="handleGoogle()">
-                        <!-- Google colour logo via SVG data URI -->
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="Google">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="" width="18" height="18">
                         Continue with Google
                     </button>
 
                 </div><!-- /formLogin -->
 
-                <!-- Forgot Password Modal -->
+                <!-- Forgot password panel -->
                 <div class="auth-form" id="formForgot" style="display:none;">
-                    <button type="button" onclick="closeForgotPassword()" style="background:none;border:none;color:var(--text-soft);font-size:.8rem;font-weight:600;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:6px;padding:0;">
-                        <i class="fas fa-arrow-left"></i> Back to Login
+                    <button type="button" class="back-link" onclick="closeForgotPassword()">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Login
                     </button>
 
-                    <p style="font-size:.84rem;color:var(--text-soft);margin-bottom:10px;line-height:1.5;">
+                    <p class="forgot-text">
                         Enter your email address and we'll send you a link to reset your password.
                     </p>
-                    <div style="display:flex;align-items:flex-start;gap:8px;background:rgba(2,132,199,.06);border:1px solid rgba(2,132,199,.18);border-radius:10px;padding:10px 12px;margin-bottom:16px;">
-                        <i class="fas fa-circle-info" style="color:var(--accent);font-size:.8rem;margin-top:2px;"></i>
-                        <p style="font-size:.74rem;color:var(--text-soft);line-height:1.5;margin:0;">
-                            Signed up with Google? Use <strong>Continue with Google</strong> to log in instead — there's no password to reset.
-                        </p>
+                    <div class="alert alert-info forgot-note">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>Signed up with Google? Use <strong>Continue with Google</strong> to log in instead — there's no password to reset.</span>
                     </div>
 
                     <div class="field">
-                        <label for="forgotEmail">Email <span class="req">*</span></label>
+                        <label for="forgotEmail">Email <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
-                            <i class="fas fa-envelope"></i>
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
                             <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
                         </div>
                     </div>
 
                     <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
-                        <i class="fas fa-paper-plane" style="margin-right:7px;"></i>Send Reset Link
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>Send Reset Link
                     </button>
 
-                    <p id="forgotTimer" style="display:none;text-align:center;font-size:.76rem;color:var(--text-soft);margin-top:10px;font-weight:600;"></p>
+                    <p id="forgotTimer" class="timer-text" style="display:none;"></p>
 
-                    <div id="forgotMsg" class="msg-bar"></div>
+                    <div id="forgotMsg" class="msg-bar" role="status" aria-live="polite"></div>
                 </div><!-- /formForgot -->
 
                 <!-- ─────────────── SIGNUP FORM ─────────────── -->
@@ -396,21 +215,21 @@
 
                     <!-- Verification waiting state (hidden by default) -->
                     <div class="verify-state" id="verifyState">
-                        <div class="verify-icon"><i class="fas fa-envelope-open-text"></i></div>
+                        <div class="verify-icon" aria-hidden="true"><i class="fas fa-envelope-open-text"></i></div>
                         <div class="verify-title">Check your inbox!</div>
                         <p class="verify-sub">
                             We sent a verification link to <strong id="verifyEmail"></strong>.
                             Click it to activate your account. If you don't see it, please check your spam folder too.
-                            Then log in with your email & password from the Login tab.
+                            Then log in with your email &amp; password from the Login tab.
                         </p>
                         <button class="resend-btn" id="resendBtn" onclick="handleResend()">
-                            <i class="fas fa-redo" style="margin-right:4px;font-size:.7rem;"></i>Resend email
+                            <i class="fas fa-rotate-right" aria-hidden="true"></i> Resend email
                         </button>
-                        <p id="resendTimer" style="display:none;text-align:center;font-size:.74rem;color:var(--text-soft);margin-top:8px;font-weight:600;"></p>
-                        <div id="resendMsg" class="msg-bar" style="margin-top:10px;"></div>
+                        <p id="resendTimer" class="timer-text" style="display:none;"></p>
+                        <div id="resendMsg" class="msg-bar" role="status" aria-live="polite"></div>
 
-                        <button onclick="switchTab('login')" style="margin-top:18px;width:100%;padding:11px;background:linear-gradient(135deg,#0284c7,#0ea5e9);border:none;border-radius:11px;color:#fff;font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(2,132,199,.35);transition:var(--trans);">
-                            <i class="fas fa-sign-in-alt" style="margin-right:7px;"></i>Go to Login
+                        <button type="button" class="btn-solid" onclick="switchTab('login')">
+                            <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Go to Login
                         </button>
                     </div>
 
@@ -418,35 +237,35 @@
                     <div id="signupFields">
 
                         <div class="field">
-                            <label for="signupName">Full Name <span class="req">*</span></label>
+                            <label for="signupName">Full Name <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-user" aria-hidden="true"></i>
                                 <input type="text" id="signupName" placeholder="Abdullah Al Munan" autocomplete="name">
                             </div>
                         </div>
 
                         <div class="field">
-                            <label for="signupEmail">Email <span class="req">*</span></label>
+                            <label for="signupEmail">Email <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
-                                <i class="fas fa-envelope"></i>
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
                                 <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
                             </div>
                         </div>
 
                         <div class="field">
-                            <label for="signupPhone">Phone Number <span style="font-weight:400;font-size:.7rem;opacity:.7;">(optional)</span></label>
+                            <label for="signupPhone">Phone Number <span class="opt">(optional)</span></label>
                             <div class="input-wrap">
-                                <i class="fas fa-phone"></i>
+                                <i class="fas fa-phone" aria-hidden="true"></i>
                                 <input type="tel" id="signupPhone" placeholder="+880 1XXX-XXXXXX" autocomplete="tel">
                             </div>
                         </div>
 
                         <div class="field">
-                            <label for="signupPassword">Password <span class="req">*</span></label>
+                            <label for="signupPassword">Password <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
-                                <i class="fas fa-lock"></i>
+                                <i class="fas fa-lock" aria-hidden="true"></i>
                                 <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
-                                <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this,event)" tabindex="-1">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -463,26 +282,26 @@
                         </div>
 
                         <div class="field">
-                            <label for="signupConfirm">Re-enter Password <span class="req">*</span></label>
+                            <label for="signupConfirm">Re-enter Password <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
-                                <i class="fas fa-shield-alt"></i>
+                                <i class="fas fa-shield-halved" aria-hidden="true"></i>
                                 <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
-                                <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this,event)" tabindex="-1">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this,event)" tabindex="-1" aria-label="Show or hide password">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
                         </div>
 
                         <button class="submit-btn" id="signupBtn" onclick="handleSignup()">
-                            <i class="fas fa-user-plus" style="margin-right:7px;"></i>Create Account
+                            <i class="fas fa-user-plus" aria-hidden="true"></i>Create Account
                         </button>
 
-                        <div id="signupMsg" class="msg-bar"></div>
+                        <div id="signupMsg" class="msg-bar" role="status" aria-live="polite"></div>
 
                         <div class="divider">or</div>
 
                         <button class="google-btn" onclick="handleGoogle()">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="Google">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="" width="18" height="18">
                             Continue with Google
                         </button>
 
@@ -501,7 +320,7 @@
     <!-- Firebase Auth (ESM via CDN — works on GitHub Pages) -->
     <script type="module" src="auth.js"></script>
 
-    <script>
+<script>
     // ── TAB SWITCHER ─────────────────────────────────────────
     function switchTab(tab) {
         document.getElementById('formLogin').classList.toggle('active', tab === 'login');
@@ -796,27 +615,6 @@
         }
     }
 
-    // ── PARTICLES ────────────────────────────────────────────
-    const pContainer = document.getElementById('particles');
-    for (let i = 0; i < 16; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const s = Math.random() * 9 + 3;
-        p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
-        pContainer.appendChild(p);
-    }
-
-    // ── BUBBLES ──────────────────────────────────────────────
-    for (let i = 0; i < 14; i++) {
-        const b = document.createElement('div');
-        b.className = 'bubble';
-        const s = Math.random() * 70 + 30;
-        b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*95}%;animation-duration:${Math.random()*20+14}s;animation-delay:${Math.random()*18}s;`;
-        document.body.appendChild(b);
-    }
-
-
-
     // ── ENTER KEY SUPPORT ────────────────────────────────────
     document.addEventListener('keydown', e => {
         if (e.key !== 'Enter') return;
@@ -824,9 +622,17 @@
         else handleSignup();
     });
     </script>
+    <script>
+    // Keeps aria-current in step with the tab buttons (additive; does not touch the auth logic above)
+    (function () {
+        var tabs = [document.getElementById('tabLogin'), document.getElementById('tabSignup')];
+        function sync() { tabs.forEach(function (t) { if (t.classList.contains('active')) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); }); }
+        var mo = new MutationObserver(sync);
+        tabs.forEach(function (t) { mo.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+        sync();
+    })();
+    </script>
+    <script src="nav.js"></script>
     <script src="footer.js"></script>
 </body>
-</html>                         
-                            
-                            
-                          
+</html>

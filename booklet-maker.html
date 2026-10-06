@@ -1,367 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Booklet Maker — Saddle-Stitch Page Imposition</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<style>
-  :root{
-    --ink:#1E2A33;
-    --ink-soft:#4A5A63;
-    --paper:#ECEAE2;
-    --paper-card:#F7F5EF;
-    --kraft:#C9B48C;
-    --thread:#B8402A;
-    --thread-dark:#8F311F;
-    --brass:#A9832F;
-    --line:#D9D3C4;
-    --ok:#3E6B4F;
-    --radius:2px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--ink);
-    background-image:
-      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.04), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(255,255,255,0.03), transparent 40%);
-    color:var(--ink);
-    font-family:'IBM Plex Sans', sans-serif;
-    min-height:100vh;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:32px 16px 64px;
-  }
-  .stack{
-    position:relative;
-    width:100%;
-    max-width:560px;
-  }
-  .stack::before,
-  .stack::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:var(--kraft);
-    border-radius:var(--radius);
-    pointer-events:none;
-    z-index:0;
-  }
-  .stack::before{
-    transform:rotate(-1.6deg) translate(-3px, 6px);
-    opacity:0.55;
-  }
-  .stack::after{
-    transform:rotate(1.1deg) translate(4px, 3px);
-    opacity:0.35;
-  }
-  .card{
-    position:relative;
-    z-index:1;
-    background:var(--paper-card);
-    border-radius:var(--radius);
-    padding:36px 30px 30px;
-    box-shadow:0 24px 48px rgba(0,0,0,0.35);
-  }
-  .eyebrow{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.14em;
-    text-transform:uppercase;
-    color:var(--brass);
-    margin:0 0 10px;
-  }
-  h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:34px;
-    line-height:1.05;
-    margin:0 0 6px;
-    color:var(--ink);
-  }
-  .subtitle-bn{
-    font-size:14px;
-    color:var(--ink-soft);
-    margin:0 0 18px;
-  }
-  .stitch{
-    height:1px;
-    border:none;
-    background:none;
-    border-top:2px dashed var(--thread);
-    opacity:0.55;
-    margin:0 0 26px;
-  }
-  .drop{
-    border:2px dashed var(--line);
-    border-radius:var(--radius);
-    padding:34px 20px;
-    text-align:center;
-    cursor:pointer;
-    transition:border-color .15s ease, background .15s ease;
-    background:rgba(255,255,255,0.4);
-  }
-  .drop.drag{
-    border-color:var(--thread);
-    background:rgba(184,64,42,0.06);
-  }
-  .drop svg{ width:34px; height:34px; margin-bottom:10px; color:var(--brass); }
-  .drop p{ margin:0; font-size:15px; color:var(--ink); font-weight:500; }
-  .drop span{ display:block; margin-top:4px; font-size:12.5px; color:var(--ink-soft); }
-  input[type="file"]{ display:none; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Turn any PDF into a print-ready saddle-stitch booklet. Pages are reordered for duplex printing, folding and stapling. Nothing is uploaded.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Booklet Maker | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/booklet-maker.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/booklet-maker.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Booklet Maker | Munan.hub">
+    <meta property="og:description" content="Turn any PDF into a print-ready saddle-stitch booklet. Pages are reordered for duplex printing, folding and stapling. Nothing is uploaded.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Booklet Maker | Munan.hub">
+    <meta name="twitter:description" content="Turn any PDF into a print-ready saddle-stitch booklet. Pages are reordered for duplex printing, folding and stapling. Nothing is uploaded.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="tool.css?v=2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        /* Page-only layout. Colours, fonts and buttons come from site.css / tool.css. */
+        input[type="file"] { display: none; }
 
-  .status{
-    margin-top:18px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color:var(--ink-soft);
-    display:none;
-  }
-  .status.show{ display:block; }
-  .spinner{
-    display:inline-block;
-    width:12px; height:12px;
-    border:2px solid var(--line);
-    border-top-color:var(--thread);
-    border-radius:50%;
-    animation:spin .7s linear infinite;
-    margin-right:8px;
-    vertical-align:-1px;
-  }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
+        /* Drop zone (site .dropzone + the classes the script toggles) */
+        .drop.drag { border-color: var(--lagoon); background: var(--lagoon-tint); }
+        .drop svg { width: 38px; height: 38px; color: var(--lagoon); }
+        .drop p { margin: 0; font-weight: 700; color: var(--ink); font-size: 1.02rem; }
+        .drop span { font-size: .88rem; color: var(--soft); }
 
-  .error{
-    display:none;
-    margin-top:18px;
-    padding:14px 16px;
-    background:rgba(184,64,42,0.08);
-    border-left:3px solid var(--thread);
-    font-size:13.5px;
-    color:var(--thread-dark);
-    border-radius:var(--radius);
-  }
-  .error.show{ display:block; }
+        /* Status + error (script toggles .show) */
+        .status { display: none; align-items: center; gap: 10px; margin-top: 18px; font-family: var(--mono); font-size: .86rem; color: var(--muted); }
+        .status.show { display: flex; }
+        .status .spinner { width: 16px; height: 16px; border-width: 2px; }
+        .error { display: none; margin-top: 18px; }
+        .error.show { display: flex; }
 
-  .result{ display:none; margin-top:26px; }
-  .result.show{ display:block; }
+        /* Result (script toggles .show) */
+        .result { display: none; margin-top: 26px; }
+        .result.show { display: block; }
+        .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 26px; }
+        .stats .stat { text-align: center; padding: 14px 8px; }
+        .stats .stat span { display: block; font-size: .78rem; font-weight: 600; margin-top: 2px; }
 
-  .stats{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:1px;
-    background:var(--line);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    overflow:hidden;
-    margin-bottom:24px;
-  }
-  .stat{
-    background:var(--paper-card);
-    padding:14px 10px;
-    text-align:center;
-  }
-  .stat b{
-    display:block;
-    font-family:'Fraunces', serif;
-    font-size:24px;
-    font-weight:600;
-    color:var(--ink);
-  }
-  .stat span{
-    display:block;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-top:3px;
-  }
+        .sig-label { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lagoon); margin-bottom: 10px; }
+        .sheet { position: relative; display: flex; overflow: hidden; margin-bottom: 10px; background: var(--bg); border: 1.5px solid var(--ink); border-radius: 12px; }
+        .sheet::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px dashed var(--soft); }
+        .half { flex: 1; padding: 14px 8px; text-align: center; }
+        .half-tag { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin-bottom: 4px; }
+        .half .pg { font-family: var(--display); font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
+        .half .blank { font-family: var(--mono); font-size: .8rem; font-weight: 400; color: var(--soft); font-style: italic; }
+        .sheet-caption { font-size: .86rem; color: var(--soft); text-align: center; margin: 4px 0 22px; }
 
-  .sig-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--brass);
-    margin:0 0 8px;
-  }
-  .sheet{
-    border:1.5px solid var(--ink);
-    border-radius:var(--radius);
-    display:flex;
-    margin-bottom:8px;
-    background:#fff;
-    position:relative;
-    overflow:hidden;
-  }
-  .sheet::after{
-    content:"";
-    position:absolute;
-    top:0; bottom:0; left:50%;
-    width:0;
-    border-left:1.5px dashed var(--thread);
-  }
-  .half{
-    flex:1;
-    padding:14px 8px;
-    text-align:center;
-  }
-  .half .tag{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:9.5px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:4px;
-  }
-  .half .pg{
-    font-family:'Fraunces', serif;
-    font-size:22px;
-    font-weight:600;
-  }
-  .half .blank{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--ink-soft);
-    font-style:italic;
-  }
-  .sheet-caption{
-    font-size:12px;
-    color:var(--ink-soft);
-    text-align:center;
-    margin:0 0 22px;
-  }
+        .result .btn-solid { width: 100%; }
+        .result .btn-ghost { display: flex; margin: 10px auto 0; }
 
-  .download{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    width:100%;
-    padding:14px;
-    background:var(--thread);
-    color:#fff;
-    border:none;
-    border-radius:var(--radius);
-    font-family:'IBM Plex Sans', sans-serif;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-    transition:background .15s ease;
-  }
-  .download:hover{ background:var(--thread-dark); }
-  .download svg{ width:16px; height:16px; }
-
-  .reset{
-    display:block;
-    margin:14px auto 0;
-    background:none;
-    border:none;
-    color:var(--ink-soft);
-    font-size:12.5px;
-    text-decoration:underline;
-    cursor:pointer;
-    font-family:'IBM Plex Sans', sans-serif;
-  }
-
-  details{
-    margin-top:20px;
-    border-top:1px solid var(--line);
-    padding-top:14px;
-  }
-  summary{
-    cursor:pointer;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .order-list{
-    margin-top:10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    color:var(--ink-soft);
-    line-height:1.7;
-    word-break:break-word;
-  }
-
-  .howto{
-    margin-top:26px;
-    padding-top:18px;
-    border-top:1px solid var(--line);
-  }
-  .howto p{
-    font-size:13px;
-    color:var(--ink-soft);
-    line-height:1.6;
-    margin:0 0 6px;
-  }
-  .howto .bn{
-    font-size:12.5px;
-    color:var(--ink-soft);
-    opacity:0.85;
-  }
-  .howto b{ color:var(--ink); }
-</style>
+        details { margin-top: 22px; border-top: 1.5px solid var(--line); padding-top: 14px; }
+        summary { cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--muted); }
+        .order-list { margin-top: 10px; font-family: var(--mono); font-size: .8rem; color: var(--muted); line-height: 1.7; word-break: break-word; }
+    </style>
 </head>
-<body>
+<body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+    <header class="page-head">
+        <div class="wrap">
+            <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="projects.html">Projects</a></li><li aria-hidden="true">/</li><li aria-current="page">Booklet Maker</li></ol>
+            <span class="kicker">Tools · PDF · Saddle-stitch imposition</span>
+            <h1 class="page-title">Booklet Maker</h1>
+            <p class="page-lead">Upload a PDF and get it back with the pages reordered, ready to print, fold and staple as a booklet.</p>
+            <p class="page-lead" lang="bn" style="margin-top:6px;">পিডিএফ আপলোড করুন — বই বাঁধাইয়ের জন্য পাতা সাজিয়ে দেবে</p>
+            <p class="tool-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> Your PDF is processed in your browser and never uploaded.</p>
+        </div>
+    </header>
 
-<div class="stack">
-  <div class="card">
-    <p class="eyebrow">Saddle-Stitch Imposition</p>
-    <h1>Booklet Maker</h1>
-    <p class="subtitle-bn">পিডিএফ আপলোড করুন — বই বাঁধাইয়ের জন্য পাতা সাজিয়ে দেবে</p>
-    <hr class="stitch">
+    <div class="tool-wrap">
+        <div class="tool-split">
+            <section class="panel" aria-label="Booklet maker">
+                <div class="dropzone drop" id="drop" role="button" tabindex="0" aria-label="Upload PDF">
+                    <input type="file" id="file" accept="application/pdf,.pdf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                    <p>Drop your PDF here, or tap to choose a file</p>
+                    <span>Any page count — odd or even. Nothing leaves your browser.</span>
+                </div>
 
-    <div class="drop" id="drop" role="button" tabindex="0" aria-label="Upload PDF">
-      <input type="file" id="file" accept="application/pdf,.pdf">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-      <p>Drop your PDF here, or tap to choose a file</p>
-      <span>Any page count — odd or even. Nothing leaves your browser.</span>
+                <div class="status" id="status" role="status"><span class="spinner" aria-hidden="true"></span>Processing…</div>
+                <div class="error alert alert-err" id="error" role="alert"></div>
+
+                <div class="result" id="result">
+                    <div class="stats">
+                        <div class="stat"><b id="statN">–</b><span>Original pages</span></div>
+                        <div class="stat"><b id="statPad">–</b><span>Blanks added</span></div>
+                        <div class="stat"><b id="statSheets">–</b><span>Sheets to print</span></div>
+                    </div>
+
+                    <p class="sig-label">Sheet 1 of N — outer signature</p>
+                    <div class="sheet">
+                        <div class="half"><div class="half-tag">Front · Left</div><div class="pg" id="fl">–</div></div>
+                        <div class="half"><div class="half-tag">Front · Right</div><div class="pg" id="fr">–</div></div>
+                    </div>
+                    <div class="sheet">
+                        <div class="half"><div class="half-tag">Back · Left</div><div class="pg" id="bl">–</div></div>
+                        <div class="half"><div class="half-tag">Back · Right</div><div class="pg" id="br">–</div></div>
+                    </div>
+                    <p class="sheet-caption">Dashed line = fold. This is how sheet 1 will print — every sheet follows the same rule.</p>
+
+                    <button class="download btn-solid" id="download">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+                        Download booklet-ready PDF
+                    </button>
+                    <button class="reset btn-ghost btn-sm" id="reset">Start over with another file</button>
+
+                    <details>
+                        <summary>Show full page order</summary>
+                        <div class="order-list" id="orderList"></div>
+                    </details>
+                </div>
+            </section>
+
+            <aside class="panel tool-howto" aria-label="How to print">
+                <h2>How to print</h2>
+                <p>Open the downloaded PDF → print with <b>2 pages per sheet</b> + <b>double-sided (duplex)</b> → fold each sheet in half → nest the sheets together in order → staple the spine.</p>
+                <p lang="bn"><b>প্রিন্ট করার নিয়ম:</b> ডাউনলোড করা পিডিএফ প্রিন্ট করুন — ২ পাতা প্রতি শিটে, দুই পাশে (ডুপ্লেক্স) — তারপর প্রতিটি শিট মাঝখান থেকে ভাঁজ করে একটার ভেতর একটা রেখে স্টেপল করুন।</p>
+            </aside>
+        </div>
     </div>
-
-    <div class="status" id="status"><span class="spinner"></span>Processing…</div>
-    <div class="error" id="error"></div>
-
-    <div class="result" id="result">
-      <div class="stats">
-        <div class="stat"><b id="statN">–</b><span>Original pages</span></div>
-        <div class="stat"><b id="statPad">–</b><span>Blanks added</span></div>
-        <div class="stat"><b id="statSheets">–</b><span>Sheets to print</span></div>
-      </div>
-
-      <p class="sig-label">Sheet 1 of N — outer signature</p>
-      <div class="sheet">
-        <div class="half"><div class="tag">Front · Left</div><div class="pg" id="fl">–</div></div>
-        <div class="half"><div class="tag">Front · Right</div><div class="pg" id="fr">–</div></div>
-      </div>
-      <div class="sheet">
-        <div class="half"><div class="tag">Back · Left</div><div class="pg" id="bl">–</div></div>
-        <div class="half"><div class="tag">Back · Right</div><div class="pg" id="br">–</div></div>
-      </div>
-      <p class="sheet-caption">Dashed line = fold. This is how sheet 1 will print — every sheet follows the same rule.</p>
-
-      <button class="download" id="download">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
-        Download booklet-ready PDF
-      </button>
-      <button class="reset" id="reset">Start over with another file</button>
-
-      <details>
-        <summary>Show full page order</summary>
-        <div class="order-list" id="orderList"></div>
-      </details>
-    </div>
-
-    <div class="howto">
-      <p><b>How to print:</b> open the downloaded PDF → print with <b>2 pages per sheet</b> + <b>double-sided (duplex)</b> → fold each sheet in half → nest the sheets together in order → staple the spine.</p>
-      <p class="bn"><b>প্রিন্ট করার নিয়ম:</b> ডাউনলোড করা পিডিএফ প্রিন্ট করুন — ২ পাতা প্রতি শিটে, দুই পাশে (ডুপ্লেক্স) — তারপর প্রতিটি শিট মাঝখান থেকে ভাঁজ করে একটার ভেতর একটা রেখে স্টেপল করুন।</p>
-    </div>
-  </div>
-</div>
+</main>
 
 <script>
 const dropEl = document.getElementById('drop');
@@ -517,5 +290,7 @@ resetBtn.addEventListener('click', () => {
   clearError();
 });
 </script>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
 </body>
 </html>

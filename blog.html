@@ -3,187 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Blog — Abdullah All Munan. Thoughts, learnings, and stories.">
-    <meta name="theme-color" content="#0ea5e9">
-    <title>Blog — Munan</title>
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Blog | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/blog.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <!-- Early theme script: prevent flash of wrong theme -->
-    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}}());</script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/blog.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Blog | Munan.hub">
+    <meta property="og:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Blog | Munan.hub">
+    <meta name="twitter:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>
-        /* ── BLOG PAGE SPECIFIC ── */
-        body { min-height: 100vh; }
+        .post { position:relative; }
+        .post:hover { transform:translateY(-3px); transition:border-color .2s, transform .2s; }
+        .post h3 a { color:inherit; }
+        .post-grid.listing-grid { margin-top:24px; }
+        .result-count { margin-top:4px; color:var(--soft); font-size:.88rem; font-weight:600; min-height:1.3em; }
 
-        .blobs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
-        .blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:.30; animation:drift 9s ease-in-out infinite alternate; }
-        .blob-1 { width:560px; height:560px; background:#7dd3fc; top:-160px; left:-120px; }
-        .blob-2 { width:440px; height:440px; background:#bae6fd; top:35%; right:-100px; animation-delay:-3s; }
-        .blob-3 { width:360px; height:360px; background:#e0f2fe; bottom:-80px; left:30%; animation-delay:-6s; }
-        @keyframes drift { from { transform:translate(0,0) scale(1); } to { transform:translate(25px,18px) scale(1.07); } }
-
-        .page { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:88px 22px 80px; }
-
-        .blog-hero { text-align:center; margin-bottom:48px; animation:fadeUp .65s ease both; }
-        .badge-pill { display:inline-flex; align-items:center; gap:7px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:50px; padding:5px 18px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); backdrop-filter:blur(8px); margin-bottom:16px; }
-        .blog-hero h1 { font-size:clamp(2rem,5vw,3rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin-bottom:12px; }
-        .blog-hero h1 span { color:var(--accent); }
-        .blog-hero p { font-size:.95rem; color:var(--text-muted); max-width:480px; margin:0 auto 28px; font-weight:300; line-height:1.7; }
-
-        .filter-row { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:40px; animation:fadeUp .65s .1s ease both; }
-        .chip { display:inline-flex; align-items:center; gap:6px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:50px; padding:6px 16px; font-size:.74rem; font-weight:600; color:var(--text-muted); cursor:pointer; backdrop-filter:blur(6px); transition:0.3s cubic-bezier(.4,0,.2,1); user-select:none; }
-        .chip:hover { border-color:var(--accent); color:var(--accent); }
-        .chip.active { background:rgba(2,132,199,.1); border-color:rgba(2,132,199,.45); color:var(--accent); box-shadow:0 4px 14px rgba(2,132,199,.12); }
-        .chip-count { background:rgba(2,132,199,.15); color:var(--accent); font-size:.62rem; font-weight:700; border-radius:20px; padding:1px 7px; }
-
-        .search-wrap { display:flex; justify-content:center; margin-bottom:36px; animation:fadeUp .65s .05s ease both; }
-        .search-box { display:flex; align-items:center; gap:10px; background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:50px; padding:11px 20px; width:100%; max-width:400px; backdrop-filter:blur(12px); box-shadow:0 4px 20px rgba(2,132,199,.08); transition:0.3s cubic-bezier(.4,0,.2,1); }
-        .search-box:focus-within { border-color:var(--accent); box-shadow:0 4px 24px rgba(2,132,199,.18),0 0 0 4px rgba(2,132,199,.08); }
-        .search-box i { color:var(--text-muted); font-size:.88rem; }
-        .search-box input { flex:1; border:none; background:transparent; outline:none; font-family:'Poppins',sans-serif; font-size:.92rem; color:var(--text-main); }
-        .search-box input::placeholder { color:#94a3b8; }
-
-        .blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:22px; }
-
-        .blog-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 2px 16px rgba(2,132,199,.06); transition:all 0.3s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; animation:cardIn .5s ease both; cursor:pointer; }
-        .blog-card:hover { transform:translateY(-7px) scale(1.014); border-color:var(--accent); box-shadow:0 20px 50px rgba(2,132,199,.18); }
-        .blog-card-strip { height:5px; background:linear-gradient(90deg,var(--strip-a,#0284c7),var(--strip-b,#0ea5e9)); transition:height 0.3s; }
-        .blog-card:hover .blog-card-strip { height:7px; }
-        .blog-card-body { padding:22px 22px 18px; flex:1; display:flex; flex-direction:column; }
-        .blog-meta { display:flex; align-items:center; gap:10px; margin-bottom:13px; flex-wrap:wrap; }
-        .blog-tag { display:inline-flex; align-items:center; gap:5px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:3px 10px; font-size:.64rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
-        .blog-date { font-size:.7rem; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
-        .blog-card-title { font-size:1rem; font-weight:700; line-height:1.35; color:var(--text-main); margin-bottom:10px; letter-spacing:-.01em; }
-        .blog-card-excerpt { font-size:.81rem; color:var(--text-muted); line-height:1.65; flex:1; margin-bottom:18px; font-weight:300; }
-        .blog-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid var(--card-border); }
-        .blog-read-time { font-size:.68rem; color:var(--text-muted); display:flex; align-items:center; gap:5px; }
-        .blog-read-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:5px 14px; font-size:.72rem; font-weight:700; color:var(--accent); transition:0.3s; }
-        .blog-read-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-        .empty-state { grid-column:1/-1; background:var(--card-bg); border:1.5px dashed var(--card-border); border-radius:18px; padding:56px 24px; text-align:center; backdrop-filter:blur(10px); animation:fadeUp .5s ease both; }
-        .empty-state i { font-size:2.4rem; color:var(--text-muted); margin-bottom:14px; display:block; }
-        .empty-state h3 { font-size:1.1rem; font-weight:700; margin-bottom:8px; }
-        .empty-state p { font-size:.85rem; color:var(--text-muted); line-height:1.7; }
-
-        .post-count { text-align:center; margin-bottom:20px; font-size:.72rem; color:var(--text-muted); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
-
-        /* ── MODAL ── */
-        .modal-overlay { position:fixed; inset:0; z-index:2000; background:rgba(15,23,42,0.45); display:none; align-items:flex-start; justify-content:center; padding:60px 20px 40px; overflow-y:auto; }   .modal-overlay.open { display:flex; }
-        .modal { background:var(--card-bg); border:1.5px solid var(--card-border); border-radius:24px; width:100%; max-width:720px; box-shadow:0 30px 80px rgba(2,132,199,.18); animation:popUp .45s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; backdrop-filter:blur(20px); }
-        @keyframes popUp { from { opacity:0; transform:scale(.93) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
-        .modal-strip { height:6px; background:linear-gradient(90deg,var(--modal-strip-a,#0284c7),var(--modal-strip-b,#0ea5e9)); }
-        .modal-header { padding:28px 32px 0; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
-        .modal-close { width:34px; height:34px; flex-shrink:0; background:rgba(2,132,199,.08); border:1px solid var(--card-border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted); font-size:.85rem; transition:0.3s; margin-top:4px; }
-        .modal-close:hover { background:#ef4444; color:#fff; border-color:#ef4444; transform:rotate(90deg); }
-        .modal-meta { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
-        .modal-title { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; line-height:1.2; color:var(--text-main); margin-bottom:6px; }
-        .modal-byline { display:flex; align-items:center; gap:14px; font-size:.74rem; color:var(--text-muted); padding-bottom:20px; border-bottom:1px solid var(--card-border); flex-wrap:wrap; }
-        .modal-byline span { display:flex; align-items:center; gap:5px; }
-        .modal-body { padding:24px 32px 32px; font-family:'Lora',Georgia,serif; font-size:1rem; color:var(--text-muted); line-height:1.85; }
-        .modal-body h2 { font-family:'Poppins',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text-main); margin:28px 0 12px; letter-spacing:-.01em; }
-        .modal-body h3 { font-family:'Poppins',sans-serif; font-size:1rem; font-weight:700; color:var(--text-main); margin:22px 0 8px; }
-        .modal-body p { margin-bottom:18px; }
-        .modal-body strong { color:var(--text-main); font-weight:600; font-family:'Poppins',sans-serif; }
-        .modal-body em { color:var(--accent); font-style:italic; }
-        .modal-body a { color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
-        .modal-body a:hover { opacity:.75; }
-        .modal-body ul, .modal-body ol { padding-left:22px; margin-bottom:18px; }
-        .modal-body li { margin-bottom:6px; }
-        .modal-body blockquote { border-left:3px solid var(--accent); padding:10px 20px; margin:22px 0; background:rgba(2,132,199,.06); border-radius:0 10px 10px 0; font-style:italic; color:var(--text-muted); }
-        .modal-body code { background:rgba(2,132,199,.08); border:1px solid rgba(2,132,199,.18); border-radius:5px; padding:2px 7px; font-size:.88em; font-family:'Courier New',monospace; color:var(--accent); }
-        .modal-body pre { background:#0f172a; color:#e2e8f0; border-radius:12px; padding:18px 20px; overflow-x:auto; font-family:'Courier New',monospace; font-size:.85rem; line-height:1.7; margin-bottom:18px; }
-        .modal-body pre code { background:none; border:none; padding:0; color:#7dd3fc; font-size:inherit; }
-        .modal-body hr { border:none; border-top:1px solid var(--card-border); margin:28px 0; }
-        .modal-footer { display:flex; justify-content:space-between; align-items:center; padding:16px 32px 28px; flex-wrap:wrap; gap:12px; }
-        .modal-share { display:flex; gap:8px; align-items:center; }
-        .modal-share span { font-size:.72rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
-        .share-btn { width:32px; height:32px; border-radius:50%; background:rgba(2,132,199,.1); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:.8rem; cursor:pointer; transition:0.3s; }
-        .share-btn:hover { background:var(--accent); color:#fff; }
-        .modal-close-bottom { display:inline-flex; align-items:center; gap:7px; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.25); border-radius:20px; padding:7px 18px; font-size:.78rem; font-weight:700; color:var(--accent); cursor:pointer; transition:0.3s; }
-        .modal-close-bottom:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-        @keyframes fadeUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
-        @keyframes cardIn  { from { opacity:0; transform:translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
-
-        @media (max-width:640px) {
-            .blog-grid { grid-template-columns:1fr; }
-            .modal-header { padding:22px 20px 0; }
-            .modal-body { padding:20px 20px 24px; font-size:.94rem; }
-            .modal-footer { padding:14px 20px 22px; }
-            .modal-title { font-size:1.3rem; }
-            .modal-overlay { padding:52px 10px 30px; }
-        }
+        .article-card { max-width:680px; padding:0; position:relative; }
+        .article-bar { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); border-radius:18px 18px 0 0; }
+        .article-in { padding:30px 34px 10px; }
+        .article-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; font-size:.86rem; color:var(--soft); margin-bottom:14px; }
+        .article-meta .post-tag { font-weight:700; color:var(--lagoon); background:var(--lagoon-tint); border-radius:999px; padding:2px 12px; }
+        .article-in h2 { font-size:clamp(1.6rem,4.4vw,2.2rem); letter-spacing:-.03em; line-height:1.12; margin-bottom:10px; padding-right:36px; }
+        .article-by { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--soft); font-size:.9rem; margin-bottom:22px; padding-bottom:20px; border-bottom:1.5px solid var(--line); }
+        .article-by i { color:var(--lagoon); margin-right:6px; }
+        .article-body { max-width:none; font-size:1.06rem; line-height:1.75; }
+        .article-body h2 { font-size:1.5rem; padding-right:0; margin-bottom:.6em; }
+        .article-body blockquote { margin:1.4em 0; padding:14px 20px; border-left:6px solid var(--marker); background:var(--lagoon-tint); border-radius:0 14px 14px 0; color:var(--ink); font-weight:500; }
+        .article-body blockquote p { margin:0; color:inherit; }
+        .article-foot { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; padding:18px 34px 26px; border-top:1.5px solid var(--line); margin-top:18px; }
+        .share { display:flex; align-items:center; gap:8px; font-size:.88rem; color:var(--soft); font-weight:600; }
+        .share-btn { width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); background:var(--paper); transition:border-color .2s, background .2s; }
+        .share-btn:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        .modal-x { position:absolute; right:14px; top:22px; width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); background:var(--paper); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); z-index:2; }
+        .modal-x:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        @media (max-width:560px) { .article-in { padding:24px 20px 6px; } .article-foot { padding:16px 20px 22px; } .modal { padding:10px; } }
     </style>
 </head>
-<body>
-
-    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
-
-    <nav class="navbar" id="navbar">
-        <div class="logo">Munan<span>.hub</span></div>
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
-    </nav>
-
-    <div class="page">
-        <div class="blog-hero">
-            <div class="badge-pill"><i class="fas fa-pen-nib"></i> Writing &amp; Thoughts</div>
-            <h1>The <span>Blog</span></h1>
-            <p>Ideas, learnings, and stories from my journey in code, science, and life.</p>
-        </div>
-
-        <div class="search-wrap">
-            <div class="search-box">
-                <i class="fas fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Search posts…" autocomplete="off">
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Blog</li></ol>
+                <span class="kicker">Writing &amp; thoughts</span>
+                <h1 class="page-title">The blog</h1>
+                <p class="page-lead">Ideas, learnings, and stories from my journey in code, science, and life.</p>
             </div>
-        </div>
+        </header>
 
-        <div class="filter-row" id="filterRow"></div>
-        <div class="post-count" id="postCount"></div>
-        <div class="blog-grid" id="blogGrid"></div>
-    </div>
-
-    <!-- Full Post Modal -->
-    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
-        <div class="modal" id="modal">
-            <div class="modal-strip" id="modalStrip"></div>
-            <div class="modal-header">
-                <div style="flex:1">
-                    <div class="modal-meta" id="modalMeta"></div>
-                    <div class="modal-title" id="modalTitle"></div>
-                    <div class="modal-byline" id="modalByline"></div>
+        <section class="wrap listing" aria-label="Posts">
+            <div class="list-tools">
+                <div class="searchbar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" id="searchInput" placeholder="Search posts…" autocomplete="off" aria-label="Search posts">
                 </div>
-                <div class="modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></div>
+                <div class="fchips" id="filterRow" role="group" aria-label="Filter posts by tag"></div>
             </div>
-            <div class="modal-body" id="modalBody"></div>
-            <div class="modal-footer">
-                <div class="modal-share">
+            <div class="result-count" id="postCount" aria-live="polite"></div>
+            <div class="post-grid listing-grid" id="blogGrid"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>Posts need JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
+
+    <!-- Full post -->
+    <div class="modal" id="modalOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="handleOverlayClick(event)">
+        <article class="modal-card article-card" id="modal">
+            <div class="article-bar" id="modalStrip"></div>
+            <button type="button" class="modal-x" id="modalClose" onclick="closeModal()" aria-label="Close post"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            <div class="article-in">
+                <div class="article-meta" id="modalMeta"></div>
+                <h2 id="modalTitle"></h2>
+                <div class="article-by" id="modalByline"></div>
+                <div class="prose article-body" id="modalBody"></div>
+            </div>
+            <div class="article-foot">
+                <div class="share">
                     <span>Share</span>
-                    <div class="share-btn" title="Copy link" onclick="copyLink()"><i class="fas fa-link"></i></div>
-                    <a class="share-btn" id="shareFb" href="#" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i></a>
-                    <a class="share-btn" id="shareX"  href="#" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
+                    <button type="button" class="share-btn" id="copyBtn" title="Copy link" aria-label="Copy link" onclick="copyLink()"><i class="fas fa-link" aria-hidden="true"></i></button>
+                    <a class="share-btn" id="shareFb" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+                    <a class="share-btn" id="shareX" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><i class="fab fa-x-twitter" aria-hidden="true"></i></a>
                 </div>
-                <div class="modal-close-bottom" onclick="closeModal()"><i class="fas fa-arrow-left"></i> Back to Blog</div>
+                <button type="button" class="btn-line btn-sm" onclick="closeModal()"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to blog</button>
             </div>
-        </div>
+        </article>
     </div>
 
     <!-- Load shared posts FIRST -->
     <script src="posts.js"></script>
     <script>
         let activeFilter = 'All';
+        let lastFocus = null;
 
         function buildFilters() {
             const row = document.getElementById('filterRow');
             const tags = ['All', ...new Set(BLOG_POSTS.map(p => p.tag))];
             row.innerHTML = '';
-            tags.forEach((tag, i) => {
+            tags.forEach((tag) => {
                 const count = tag === 'All' ? BLOG_POSTS.length : BLOG_POSTS.filter(p => p.tag === tag).length;
-                const chip = document.createElement('span');
-                chip.className = 'chip' + (tag === activeFilter ? ' active' : '');
-                chip.style.animationDelay = (i * 0.06) + 's';
-                chip.innerHTML = `${tag}<span class="chip-count">${count}</span>`;
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'fchip';
+                chip.setAttribute('aria-pressed', tag === activeFilter ? 'true' : 'false');
+                chip.innerHTML = `${tag}<span class="n">${count}</span>`;
                 chip.onclick = () => { activeFilter = tag; buildFilters(); render(document.getElementById('searchInput').value); };
                 row.appendChild(chip);
             });
@@ -200,58 +137,62 @@
             });
             countEl.textContent = filtered.length ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}` : '';
             if (!filtered.length) {
-                grid.innerHTML = `<div class="empty-state"><i class="fas fa-feather-pointed"></i><h3>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</h3><p>${BLOG_POSTS.length === 0 ? 'The first post is coming soon.<br>Check back shortly!' : `No posts match "<strong>${q || activeFilter}</strong>"`}</p></div>`;
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${q || activeFilter}</b>"`}</div>`;
                 return;
             }
-            grid.innerHTML = filtered.map((p, i) => `
-                <div class="blog-card" id="post-${p.id}" style="animation-delay:${i*0.07}s" onclick="openPost('${p.id}')">
-                    <div class="blog-card-strip" style="--strip-a:${p.stripA};--strip-b:${p.stripB}"></div>
-                    <div class="blog-card-body">
-                        <div class="blog-meta">
-                            <span class="blog-tag">${p.tag}</span>
-                            <span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>
+            grid.innerHTML = filtered.map((p) => `
+                <article class="post stretch" id="post-${p.id}" style="--a:${p.stripA};--b:${p.stripB}">
+                    <span class="post-bar" aria-hidden="true"></span>
+                    <div class="post-body">
+                        <div class="post-meta">
+                            <span class="post-tag">${p.tag}</span>
+                            <span><i class="far fa-calendar" aria-hidden="true"></i> ${p.date}</span>
+                            <span><i class="far fa-clock" aria-hidden="true"></i> ${p.readTime}</span>
                         </div>
-                        <div class="blog-card-title">${p.title}</div>
-                        <div class="blog-card-excerpt">${p.excerpt}</div>
-                        <div class="blog-card-footer">
-                            <span class="blog-read-time"><i class="fas fa-clock"></i> ${p.readTime}</span>
-                            <span class="blog-read-btn">Read <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></span>
-                        </div>
+                        <h3><a class="stretch-link" href="#post-${p.id}" onclick="event.preventDefault();openPost('${p.id}')">${p.title}</a></h3>
+                        <p>${p.excerpt}</p>
+                        <span class="post-read">Read post <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
                     </div>
-                </div>`).join('');
+                </article>`).join('');
         }
 
         function openPost(id) {
             const p = BLOG_POSTS.find(x => x.id === id);
             if (!p) return;
+            lastFocus = document.activeElement;
             document.getElementById('modalStrip').style.background = `linear-gradient(90deg,${p.stripA},${p.stripB})`;
-            document.getElementById('modalMeta').innerHTML = `<span class="blog-tag">${p.tag}</span><span class="blog-date"><i class="fas fa-calendar-alt"></i> ${p.date}</span>`;
+            document.getElementById('modalMeta').innerHTML = `<span class="post-tag">${p.tag}</span><span><i class="far fa-calendar" aria-hidden="true"></i> ${p.date}</span>`;
             document.getElementById('modalTitle').textContent = p.title;
-            document.getElementById('modalByline').innerHTML = `<span><i class="fas fa-user"></i> Abdullah All Munan</span><span><i class="fas fa-clock"></i> ${p.readTime}</span>`;
+            document.getElementById('modalByline').innerHTML = `<span><i class="fas fa-user" aria-hidden="true"></i>Abdullah All Munan</span><span><i class="far fa-clock" aria-hidden="true"></i>${p.readTime}</span>`;
             document.getElementById('modalBody').innerHTML = p.content || '<p>Content coming soon.</p>';
             const url = encodeURIComponent(window.location.href.split('#')[0] + '#post-' + p.id);
             const title = encodeURIComponent(p.title);
             document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
             document.getElementById('shareX').href  = `https://x.com/intent/tweet?text=${title}&url=${url}`;
-            document.getElementById('modalOverlay').classList.add('open');
+            document.getElementById('modalOverlay').hidden = false;
+            document.getElementById('modal').scrollTop = 0;
+            document.getElementById('modalClose').focus();
             document.body.style.overflow = 'hidden';
             history.pushState(null, '', `#post-${id}`);
         }
 
         function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('open');
+            const ov = document.getElementById('modalOverlay');
+            if (ov.hidden) return;
+            ov.hidden = true;
             document.body.style.overflow = '';
             history.pushState(null, '', window.location.pathname);
+            if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
         }
 
         function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
         function copyLink() {
             navigator.clipboard.writeText(window.location.href).then(() => {
-                const btn = document.querySelector('.share-btn[title="Copy link"]');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.style.cssText = 'background:#16a34a;color:#fff;';
-                setTimeout(() => { btn.innerHTML = '<i class="fas fa-link"></i>'; btn.style.cssText = ''; }, 1800);
+                const btn = document.getElementById('copyBtn');
+                btn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
+                btn.style.cssText = 'background:var(--marker);color:#11221D;border-color:var(--marker);';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-link" aria-hidden="true"></i>'; btn.style.cssText = ''; }, 1800);
             });
         }
 
@@ -264,17 +205,10 @@
 
         document.getElementById('searchInput').addEventListener('input', e => render(e.target.value));
 
-        let lastScroll = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
-            else nav.classList.remove('navbar-hidden');
-            lastScroll = window.scrollY;
-        });
-
         buildFilters();
         render();
     </script>
+    <script src="nav.js"></script>
     <script src="footer.js"></script>
 </body>
 </html>

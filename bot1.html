@@ -3,300 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messenger to Telegram Bot - Complete Implementation Guide</title>
-
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Complete guide: forward Messenger group messages to a Telegram group for free, with code, setup steps and deployment.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Messenger to Telegram Bot Guide | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/bot1.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/bot1.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Messenger to Telegram Bot Guide | Munan.hub">
+    <meta property="og:description" content="Complete guide: forward Messenger group messages to a Telegram group for free, with code, setup steps and deployment.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Messenger to Telegram Bot Guide | Munan.hub">
+    <meta name="twitter:description" content="Complete guide: forward Messenger group messages to a Telegram group for free, with code, setup steps and deployment.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #38bdf8;
-            --accent-green: #4ade80;
-            --accent-purple: #c084fc;
-            --border-color: #334155;
-            --code-bg: #090d16;
+        [hidden] { display:none !important; }
+        .doc-head { padding:calc(var(--nav-h) + 40px) 0 20px; }
+        .dl-btn { margin-top:14px; }
+        .doc-head h1 { max-width:20em; }
+        .doc-meta { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; color:var(--soft); font-size:.9rem; margin-top:6px; }
+        .state-box { max-width:520px; margin:40px auto 60px; text-align:center; }
+        .loading-state { display:flex; align-items:center; justify-content:center; gap:14px; padding:40px 0; color:var(--muted); font-weight:600; }
+        .spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--lagoon); animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spinner { animation-duration:2.4s; } }
+
+        .doc-layout { display:grid; grid-template-columns:240px minmax(0,1fr); gap:36px; align-items:start; padding-bottom:20px; }
+        .toc { position:sticky; top:calc(var(--nav-h) + 20px); max-height:calc(100vh - var(--nav-h) - 40px); overflow:auto; border-left:1.5px solid var(--line); padding:2px 0 2px 16px; font-size:.9rem; }
+        .toc h2 { font-family:var(--body); font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; color:var(--soft); margin-bottom:10px; }
+        .toc ol { list-style:none; display:grid; gap:2px; }
+        .toc a { display:block; padding:5px 0; color:var(--muted); font-weight:600; line-height:1.35; }
+        .toc a:hover { color:var(--ink); }
+        .toc a.active { color:var(--lagoon); }
+        .toc .sub a { padding-left:14px; font-weight:500; font-size:.86rem; }
+        .toc-toggle { display:none; }
+
+        .doc-body { min-width:0; max-width:760px; font-size:1.02rem; line-height:1.7; }
+        .doc-body > :first-child { margin-top:0; }
+        .doc-body .lead { font-size:1.15rem; color:var(--ink); margin-bottom:1.4em; }
+        .doc-body h2 { font-size:1.7rem; margin:1.8em 0 .6em; scroll-margin-top:calc(var(--nav-h) + 20px); display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
+        .doc-body h3 { font-size:1.2rem; margin:1.6em 0 .5em; scroll-margin-top:calc(var(--nav-h) + 20px); }
+        .doc-body p, .doc-body ul, .doc-body ol { margin-bottom:1em; color:var(--muted); }
+        .doc-body ul, .doc-body ol { padding-left:1.4em; }
+        .doc-body li { margin-bottom:.4em; }
+        .doc-body strong { color:var(--ink); }
+        .doc-body a { color:var(--lagoon); font-weight:600; border-bottom:2px solid var(--marker); }
+        .doc-body code { font-family:var(--mono); font-size:.88em; background:var(--lagoon-tint); padding:2px 7px; border-radius:6px; color:var(--ink); overflow-wrap:anywhere; }
+        .doc-body .card, .doc-body .callout { background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-card); padding:22px 24px; margin-bottom:20px; }
+        .doc-body .card > :last-child, .doc-body .callout > :last-child { margin-bottom:0; }
+        .doc-body .card > h2:first-child, .doc-body .card > h3:first-child { margin-top:0; }
+        .doc-body .callout { border-left:8px solid var(--marker); background:var(--lagoon-tint); color:var(--ink); }
+        .doc-body blockquote { margin:1.2em 0; padding:12px 18px; border-left:6px solid var(--marker); background:var(--lagoon-tint); border-radius:0 14px 14px 0; color:var(--ink); }
+        .doc-body blockquote p { margin:0; color:inherit; }
+        .code-block { position:relative; margin-bottom:1.2em; }
+        .doc-body pre { font-family:var(--mono); font-size:.84rem; line-height:1.6; background:var(--ink); color:var(--on-ink); padding:18px 20px; border-radius:16px; overflow-x:auto; margin:0; }
+        .doc-body pre code { background:none; padding:0; color:inherit; font-size:inherit; overflow-wrap:normal; }
+        .copy-btn { position:absolute; right:10px; top:10px; min-height:34px; padding:4px 12px; border-radius:999px; font-size:.78rem; font-weight:700; background:rgba(255,255,255,.14); color:var(--on-ink); border:1px solid rgba(255,255,255,.25); }
+        .copy-btn:hover { background:var(--marker); color:#11221D; border-color:var(--marker); }
+        :root[data-theme="dark"] .doc-body pre { background:#050A08; border:1.5px solid var(--line); }
+        .doc-body .table-wrapper { overflow-x:auto; margin-bottom:1em; border:1.5px solid var(--line); border-radius:16px; }
+        .doc-body table { width:100%; border-collapse:collapse; font-size:.92rem; min-width:560px; }
+        .doc-body th, .doc-body td { text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--muted); }
+        .doc-body th { color:var(--ink); background:var(--lagoon-tint); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; }
+        .doc-body tr:last-child td { border-bottom:0; }
+        .doc-body .badge-human { background:var(--warn-bg); color:var(--warn); }
+        .doc-body .badge-ai { background:var(--info-bg); color:var(--info); }
+        .doc-body .badge { font-family:var(--body); font-size:.74rem; letter-spacing:0; }
+        .doc-body .motto { text-align:center; color:var(--soft); font-weight:600; margin-top:2em; }
+
+        @media (max-width:960px) {
+            .doc-layout { grid-template-columns:1fr; gap:18px; }
+            .toc { position:static; max-height:none; border:1.5px solid var(--line); border-radius:16px; padding:0; background:var(--paper); }
+            .toc-toggle { display:flex; width:100%; align-items:center; justify-content:space-between; min-height:48px; padding:10px 16px; font-weight:700; }
+            .toc nav { display:none; padding:0 16px 14px; }
+            .toc.open nav { display:block; }
+            .toc > h2 { display:none; }
         }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 32px 16px;
-        }
-
-        main {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h1, h2, h3 {
-            color: var(--accent-blue);
-        }
-
-        h1 {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-left: 8px;
-            text-transform: uppercase;
-        }
-
-        .badge-human {
-            background-color: #065f46;
-            color: #6ee7b7;
-            border: 1px solid #047857;
-        }
-
-        .badge-ai {
-            background-color: #581c87;
-            color: #e9d5ff;
-            border: 1px solid #6b21a8;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0;
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        th {
-            background-color: #0284c7;
-            color: white;
-        }
-
-        code, pre {
-            font-family: "Courier New", Courier, monospace;
-            background-color: var(--code-bg);
-            border-radius: 6px;
-        }
-
-        code {
-            padding: 2px 6px;
-            color: var(--accent-green);
-        }
-
-        pre {
-            padding: 15px;
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-            white-space: pre;
-        }
-
-        pre code {
-            padding: 0;
-            color: #f1f5f9;
-        }
-
-        ol, ul {
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 10px;
-        }
-
-        .toolbar {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        #downloadBtn {
-            padding: 10px 18px;
-            border: 1px solid var(--accent-blue);
-            border-radius: 6px;
-            background: var(--accent-blue);
-            color: #0f172a;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        #downloadBtn:hover {
-            opacity: 0.85;
-        }
-
-        #downloadBtn:focus-visible {
-            outline: 3px solid white;
-            outline-offset: 3px;
-        }
-
-        .motto {
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            font-style: italic;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 24px 12px;
-            }
-
-            .card {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 1.7rem;
-            }
-
-            h2 {
-                font-size: 1.35rem;
-            }
-
-            .toolbar {
-                justify-content: stretch;
-            }
-
-            #downloadBtn {
-                width: 100%;
-            }
-        }
+        @media (max-width:560px) { .doc-body .card, .doc-body .callout { padding:18px 16px; } }
     </style>
 </head>
-
-<body>
-    <main>
-        <div class="toolbar">
-            <button id="downloadBtn" type="button">
-                ⬇️ Download HTML
-            </button>
-        </div>
-
-        <header>
-            <h1>Messenger to Telegram Bot: End-to-End Technical Blueprint</h1>
-
-            <p>
-                This document contains the complete technical architecture, codebases, configuration instructions, and cloud deployment steps to route messages from a Facebook Messenger Group to a Telegram Group for 0$ total cost.
-            </p>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="doc-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Guide</li></ol>
+                <span class="kicker">Guide</span>
+                <h1 class="page-title">Messenger to Telegram Bot: End-to-End Technical Blueprint</h1>
+                <button type="button" class="btn-line btn-sm dl-btn" id="downloadBtn"><i class="fas fa-download" aria-hidden="true"></i> Download HTML</button>
+            </div>
         </header>
 
-        <section class="card">
-            <h2>Architecture &amp; Division of Responsibilities</h2>
+        <div class="wrap">
+            <div class="doc-layout">
+                <aside class="toc" id="toc" aria-label="Table of contents">
+                    <button type="button" class="toc-toggle" id="tocToggle" aria-expanded="false" aria-controls="tocNav">
+                        <span>On this page</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <h2>On this page</h2>
+                    <nav id="tocNav" aria-label="Sections"><ol id="tocList"></ol></nav>
+                </aside>
+                <article class="doc-body" id="docBody">
+<p class="lead">This document contains the complete technical architecture, codebases, configuration instructions, and cloud deployment steps to route messages from a Facebook Messenger Group to a Telegram Group for 0$ total cost.</p>
 
-            <p>
-                Because automated user accounts are outside Meta's official API framework, tasks are split strictly between human environment setup and AI automated processing engine execution.
-            </p>
+<section class="card">
+    <h2>Architecture &amp; Division of Responsibilities</h2>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Task Phase</th>
-                            <th>Description</th>
-                            <th>Executed By</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Credentials &amp; API Setup</td>
-                            <td>Telegram Bot token acquisition, Telegram Chat ID extraction, Messenger Thread ID resolution.</td>
-                            <td><span class="badge badge-human">Human Task</span></td>
-                        </tr>
-                        <tr>
-                            <td>Session Authorization</td>
-                            <td>Extracting browser cookies (<code>appstate.json</code>) to authenticate as a Facebook user.</td>
-                            <td><span class="badge badge-human">Human Task</span></td>
-                        </tr>
-                        <tr>
-                            <td>Core Message Engine</td>
-                            <td>MQTT continuous socket listening, event payload handling, attachments extraction, Sender Name resolution.</td>
-                            <td><span class="badge badge-ai">AI Engine Code</span></td>
-                        </tr>
-                        <tr>
-                            <td>Dispatch Engine</td>
-                            <td>Formatting markdown captions and executing HTTP API calls to Telegram server endpoints.</td>
-                            <td><span class="badge badge-ai">AI Engine Code</span></td>
-                        </tr>
-                        <tr>
-                            <td>Deployment &amp; Hosting</td>
-                            <td>Repository initialization, pushing to GitHub, configuring environment variables on Koyeb/Render for 24/7 runtime.</td>
-                            <td><span class="badge badge-human">Human Task</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <p>
+        Because automated user accounts are outside Meta's official API framework, tasks are split strictly between human environment setup and AI automated processing engine execution.
+    </p>
 
-        <section>
-            <h2>Phase 1: Environment &amp; Credential Setup <span class="badge badge-human">Human Task</span></h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Task Phase</th>
+                    <th>Description</th>
+                    <th>Executed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Credentials &amp; API Setup</td>
+                    <td>Telegram Bot token acquisition, Telegram Chat ID extraction, Messenger Thread ID resolution.</td>
+                    <td><span class="badge badge-human">Human Task</span></td>
+                </tr>
+                <tr>
+                    <td>Session Authorization</td>
+                    <td>Extracting browser cookies (<code>appstate.json</code>) to authenticate as a Facebook user.</td>
+                    <td><span class="badge badge-human">Human Task</span></td>
+                </tr>
+                <tr>
+                    <td>Core Message Engine</td>
+                    <td>MQTT continuous socket listening, event payload handling, attachments extraction, Sender Name resolution.</td>
+                    <td><span class="badge badge-ai">AI Engine Code</span></td>
+                </tr>
+                <tr>
+                    <td>Dispatch Engine</td>
+                    <td>Formatting markdown captions and executing HTTP API calls to Telegram server endpoints.</td>
+                    <td><span class="badge badge-ai">AI Engine Code</span></td>
+                </tr>
+                <tr>
+                    <td>Deployment &amp; Hosting</td>
+                    <td>Repository initialization, pushing to GitHub, configuring environment variables on Koyeb/Render for 24/7 runtime.</td>
+                    <td><span class="badge badge-human">Human Task</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-            <article class="card">
-                <h3>1. Telegram Bot &amp; Group Configuration</h3>
+<section>
+    <h2>Phase 1: Environment &amp; Credential Setup <span class="badge badge-human">Human Task</span></h2>
 
-                <ol>
-                    <li>Open Telegram and search for <code>@BotFather</code>.</li>
-                    <li>Send command <code>/newbot</code>, follow prompts to choose a Name and Username.</li>
-                    <li>Save the generated <strong>HTTP API Token</strong> (e.g., <code>7123456789:AAF...</code>).</li>
-                    <li>Create target Telegram Group, add your new Bot as a member, and grant it <strong>Admin Privileges</strong>.</li>
-                    <li>Add <code>@raw_data_bot</code> to the group to inspect payload data, locate <code>"chat": {"id": -100XXXXXXXXXX}</code>, copy this exact Chat ID including the minus sign, then kick <code>@raw_data_bot</code>.</li>
-                </ol>
+    <article class="card">
+        <h3>1. Telegram Bot &amp; Group Configuration</h3>
 
-                <h3>2. Messenger Credentials Extraction</h3>
+        <ol>
+            <li>Open Telegram and search for <code>@BotFather</code>.</li>
+            <li>Send command <code>/newbot</code>, follow prompts to choose a Name and Username.</li>
+            <li>Save the generated <strong>HTTP API Token</strong> (e.g., <code>7123456789:AAF...</code>).</li>
+            <li>Create target Telegram Group, add your new Bot as a member, and grant it <strong>Admin Privileges</strong>.</li>
+            <li>Add <code>@raw_data_bot</code> to the group to inspect payload data, locate <code>"chat": {"id": -100XXXXXXXXXX}</code>, copy this exact Chat ID including the minus sign, then kick <code>@raw_data_bot</code>.</li>
+        </ol>
 
-                <ol>
-                    <li>Open target Facebook Messenger group in desktop browser (e.g., <code>https://www.messenger.com/t/987654321098/</code>).</li>
-                    <li>Copy the tail end numerical sequence (<code>987654321098</code>). This is your <strong>Messenger Thread ID</strong>.</li>
-                    <li>Install browser extension <strong>c3c-fbstate</strong> (or EditThisCookie) in Chrome.</li>
-                    <li>With active Facebook session open, click extension -&gt; Export session state.</li>
-                    <li>Save output file as <code>appstate.json</code>.</li>
-                </ol>
-            </article>
-        </section>
+        <h3>2. Messenger Credentials Extraction</h3>
 
-        <section>
-            <h2>Phase 2: Codebase Structure <span class="badge badge-ai">AI Engine Code</span></h2>
+        <ol>
+            <li>Open target Facebook Messenger group in desktop browser (e.g., <code>https://www.messenger.com/t/987654321098/</code>).</li>
+            <li>Copy the tail end numerical sequence (<code>987654321098</code>). This is your <strong>Messenger Thread ID</strong>.</li>
+            <li>Install browser extension <strong>c3c-fbstate</strong> (or EditThisCookie) in Chrome.</li>
+            <li>With active Facebook session open, click extension -&gt; Export session state.</li>
+            <li>Save output file as <code>appstate.json</code>.</li>
+        </ol>
+    </article>
+</section>
 
-            <article class="card">
-                <p>Save these two files inside your project root folder alongside your generated <code>appstate.json</code>.</p>
+<section>
+    <h2>Phase 2: Codebase Structure <span class="badge badge-ai">AI Engine Code</span></h2>
 
-                <h3>File 1: <code>package.json</code></h3>
+    <article class="card">
+        <p>Save these two files inside your project root folder alongside your generated <code>appstate.json</code>.</p>
 
-                <pre><code>{
+        <h3>File 1: <code>package.json</code></h3>
+
+        <pre><code>{
   "name": "messenger-telegram-forwarder",
   "version": "1.0.0",
   "description": "24/7 Messenger to Telegram forwarding bot engine",
@@ -310,9 +212,9 @@
   }
 }</code></pre>
 
-                <h3>File 2: <code>index.js</code></h3>
+        <h3>File 2: <code>index.js</code></h3>
 
-                <pre><code>const login = require("@dongdev/fca-unofficial");
+        <pre><code>const login = require("@dongdev/fca-unofficial");
 const TelegramBot = require("node-telegram-bot-api");
 const fs = require("fs");
 const path = require("path");
@@ -348,11 +250,11 @@ async function getSenderName(api, senderID) {
   return new Promise((resolve) => {
     api.getUserInfo(senderID, (err, ret) => {
       if (err || !ret[senderID]) {
-        resolve("Unknown User");
+resolve("Unknown User");
       } else {
-        const name = ret[senderID].name || "Unknown User";
-        userNameCache.set(senderID, name);
-        resolve(name);
+const name = ret[senderID].name || "Unknown User";
+userNameCache.set(senderID, name);
+resolve(name);
       }
     });
   });
@@ -382,148 +284,171 @@ login({ appState }, (err, api) => {
     // Filter incoming payload for target thread ID and valid message types
     if (message.threadID === CONFIG.TARGET_FB_THREAD_ID && message.type === "message") {
       try {
-        const senderName = await getSenderName(api, message.senderID);
-        const textContent = message.body || "";
+const senderName = await getSenderName(api, message.senderID);
+const textContent = message.body || "";
 
-        let formattedCaption = `👤 *${senderName}*\n`;
-        if (textContent) {
-          formattedCaption += `💬 ${textContent}`;
-        }
+let formattedCaption = `👤 *${senderName}*\n`;
+if (textContent) {
+  formattedCaption += `💬 ${textContent}`;
+}
 
-        // Send Text-only payload
-        if (textContent && (!message.attachments || message.attachments.length === 0)) {
-          await tgBot.sendMessage(CONFIG.TELEGRAM_CHAT_ID, formattedCaption, { parse_mode: "Markdown" });
-        }
+// Send Text-only payload
+if (textContent && (!message.attachments || message.attachments.length === 0)) {
+  await tgBot.sendMessage(CONFIG.TELEGRAM_CHAT_ID, formattedCaption, { parse_mode: "Markdown" });
+}
 
-        // Process attachments array (Photos, Videos, Audio, Documents)
-        if (message.attachments && message.attachments.length > 0) {
-          for (let i = 0; i < message.attachments.length; i++) {
-            const att = message.attachments[i];
-            const caption = i === 0 ? formattedCaption : "";
+// Process attachments array (Photos, Videos, Audio, Documents)
+if (message.attachments && message.attachments.length > 0) {
+  for (let i = 0; i < message.attachments.length; i++) {
+    const att = message.attachments[i];
+    const caption = i === 0 ? formattedCaption : "";
 
-            if (att.type === "photo") {
-              await tgBot.sendPhoto(CONFIG.TELEGRAM_CHAT_ID, att.largePreviewUrl || att.url, { caption, parse_mode: "Markdown" });
-            } else if (att.type === "video") {
-              await tgBot.sendVideo(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
-            } else if (att.type === "audio") {
-              await tgBot.sendVoice(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
-            } else if (att.type === "file") {
-              await tgBot.sendDocument(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
-            }
-          }
-        }
+    if (att.type === "photo") {
+      await tgBot.sendPhoto(CONFIG.TELEGRAM_CHAT_ID, att.largePreviewUrl || att.url, { caption, parse_mode: "Markdown" });
+    } else if (att.type === "video") {
+      await tgBot.sendVideo(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+    } else if (att.type === "audio") {
+      await tgBot.sendVoice(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+    } else if (att.type === "file") {
+      await tgBot.sendDocument(CONFIG.TELEGRAM_CHAT_ID, att.url, { caption, parse_mode: "Markdown" });
+    }
+  }
+}
       } catch (dispatchError) {
-        console.error("❌ Forwarding Exception Failed:", dispatchError.message);
+console.error("❌ Forwarding Exception Failed:", dispatchError.message);
       }
     }
   });
 });</code></pre>
-            </article>
-        </section>
+    </article>
+</section>
 
-        <section>
-            <h2>Phase 3: Deployment &amp; Maintenance <span class="badge badge-human">Human Task</span></h2>
+<section>
+    <h2>Phase 3: Deployment &amp; Maintenance <span class="badge badge-human">Human Task</span></h2>
 
-            <article class="card">
-                <h3>1. Local Testing</h3>
+    <article class="card">
+        <h3>1. Local Testing</h3>
 
-                <pre><code># Open terminal inside project directory
+        <pre><code># Open terminal inside project directory
 npm install
 npm start</code></pre>
 
-                <h3>2. 24/7 Cloud Hosting Deployment (Free)</h3>
+        <h3>2. 24/7 Cloud Hosting Deployment (Free)</h3>
 
-                <ol>
-                    <li>Create a new <strong>Private GitHub Repository</strong> and push your files (Make sure NOT to make <code>appstate.json</code> public if repo is public).</li>
-                    <li>Sign up at <strong>Koyeb.com</strong> or <strong>Render.com</strong>.</li>
-                    <li>Connect your GitHub repository and select <code>Node.js</code> environment.</li>
-                    <li>Specify build command: <code>npm install</code> and start command: <code>node index.js</code>.</li>
-                    <li>Deploy instance. The cloud platform will run your bot continuous 24/7 without needing your PC to stay active.</li>
-                </ol>
+        <ol>
+            <li>Create a new <strong>Private GitHub Repository</strong> and push your files (Make sure NOT to make <code>appstate.json</code> public if repo is public).</li>
+            <li>Sign up at <strong>Koyeb.com</strong> or <strong>Render.com</strong>.</li>
+            <li>Connect your GitHub repository and select <code>Node.js</code> environment.</li>
+            <li>Specify build command: <code>npm install</code> and start command: <code>node index.js</code>.</li>
+            <li>Deploy instance. The cloud platform will run your bot continuous 24/7 without needing your PC to stay active.</li>
+        </ol>
 
-                <h3>3. Ongoing Maintenance Cycle</h3>
+        <h3>3. Ongoing Maintenance Cycle</h3>
 
-                <p>
-                    Because session tokens expire periodically due to Meta security updates, perform this routine every 1-3 months:
-                </p>
+        <p>
+            Because session tokens expire periodically due to Meta security updates, perform this routine every 1-3 months:
+        </p>
+
+        <ul>
+            <li>If bot stops receiving messages, re-extract fresh session cookies via Chrome extension.</li>
+            <li>Replace contents of <code>appstate.json</code> in your project folder/cloud environment and trigger app restart.</li>
+        </ul>
+    </article>
+</section>
+
+<section>
+    <h2>Context &amp; Technical Decisions Summary</h2>
+
+    <article class="card">
+        <p>Here is the contextual flow and key technical decisions established in our chat:</p>
+
+        <ul>
+            <li><strong>Core Goal:</strong> You want to build a system that automatically forwards messages from a specific Facebook Messenger group to a Telegram group.</li>
+
+            <li><strong>Feasibility &amp; Constraints:</strong> We established that this is fully possible using open-source libraries (<code>@dongdev/fca-unofficial</code> for Messenger listening and <code>node-telegram-bot-api</code> for Telegram sending). Official Meta Graph APIs do not allow reading personal group messages, so browser cookies (<code>appstate.json</code>) are used instead.</li>
+
+            <li><strong>Pricing &amp; Cloud Execution:</strong> The entire project can be built and run 100% free of charge without paid APIs or paid hosting (using platforms like Koyeb or Render for 24/7 uptime without keeping your local PC powered on).</li>
+
+            <li>
+                <strong>Division of Responsibilities:</strong>
 
                 <ul>
-                    <li>If bot stops receiving messages, re-extract fresh session cookies via Chrome extension.</li>
-                    <li>Replace contents of <code>appstate.json</code> in your project folder/cloud environment and trigger app restart.</li>
-                </ul>
-            </article>
-        </section>
-
-        <section>
-            <h2>Context &amp; Technical Decisions Summary</h2>
-
-            <article class="card">
-                <p>Here is the contextual flow and key technical decisions established in our chat:</p>
-
-                <ul>
-                    <li><strong>Core Goal:</strong> You want to build a system that automatically forwards messages from a specific Facebook Messenger group to a Telegram group.</li>
-
-                    <li><strong>Feasibility &amp; Constraints:</strong> We established that this is fully possible using open-source libraries (<code>@dongdev/fca-unofficial</code> for Messenger listening and <code>node-telegram-bot-api</code> for Telegram sending). Official Meta Graph APIs do not allow reading personal group messages, so browser cookies (<code>appstate.json</code>) are used instead.</li>
-
-                    <li><strong>Pricing &amp; Cloud Execution:</strong> The entire project can be built and run 100% free of charge without paid APIs or paid hosting (using platforms like Koyeb or Render for 24/7 uptime without keeping your local PC powered on).</li>
+                    <li>
+                        <span class="badge badge-ai">AI Scope</span>
+                        Generating the complete engine codebase (<code>index.js</code>, <code>package.json</code>), setting up media/text forwarding logic, sender name resolution, and exporting the setup documentation as a downloadable <code>.md</code> file.
+                    </li>
 
                     <li>
-                        <strong>Division of Responsibilities:</strong>
-
-                        <ul>
-                            <li>
-                                <span class="badge badge-ai">AI Scope</span>
-                                Generating the complete engine codebase (<code>index.js</code>, <code>package.json</code>), setting up media/text forwarding logic, sender name resolution, and exporting the setup documentation as a downloadable <code>.md</code> file.
-                            </li>
-
-                            <li>
-                                <span class="badge badge-human">Developer (Your) Scope</span>
-                                Creating the Telegram Bot via <code>@BotFather</code>, getting the Telegram Group Chat ID, extracting your Facebook <code>appstate.json</code> cookies, and putting the files together to run or deploy.
-                            </li>
-                        </ul>
+                        <span class="badge badge-human">Developer (Your) Scope</span>
+                        Creating the Telegram Bot via <code>@BotFather</code>, getting the Telegram Group Chat ID, extracting your Facebook <code>appstate.json</code> cookies, and putting the files together to run or deploy.
                     </li>
                 </ul>
-            </article>
-        </section>
+            </li>
+        </ul>
+    </article>
+</section>
 
-        <footer class="motto">
-            <!-- Motto: Knowledge & Creation Zone. -->
-            Knowledge &amp; Creation Zone — Learn, Build, and Create with Purpose.
-        </footer>
+<p class="motto">Knowledge &amp; Creation Zone — Learn, Build, and Create with Purpose.</p>
+
+                </article>
+            </div>
+        </div>
     </main>
 
     <script>
-        (function () {
-            const downloadButton = document.getElementById("downloadBtn");
+    (function () {
+        var $ = function (id) { return document.getElementById(id); };
+        var body = $('docBody'), used = {};
 
-            downloadButton.addEventListener("click", function () {
-                const clone = document.documentElement.cloneNode(true);
-                const button = clone.querySelector("#downloadBtn");
+        function slug(t) {
+            var s = t.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-').replace(/^-+|-+$/g, '') || 'section', o = s, i = 2;
+            while (used[o]) o = s + '-' + (i++);
+            used[o] = 1; return o;
+        }
 
-                if (button) {
-                    button.closest(".toolbar").remove();
-                }
+        var heads = body.querySelectorAll('h2, h3'), list = $('tocList');
+        heads.forEach(function (h) {
+            var c = h.cloneNode(true);
+            c.querySelectorAll('.badge').forEach(function (n) { n.remove(); });
+            var label = c.textContent.replace(/\s+/g, ' ').trim();
+            h.id = slug(label);
+            var li = document.createElement('li'); if (h.tagName === 'H3') li.className = 'sub';
+            var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = label;
+            li.appendChild(a); list.appendChild(li);
+        });
+        var links = Array.prototype.slice.call(list.querySelectorAll('a'));
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (es) {
+                es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (l) { l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id); }); });
+            }, { rootMargin: '-80px 0px -70% 0px' });
+            heads.forEach(function (h) { io.observe(h); });
+        }
 
-                const htmlContent =
-                    "<!DOCTYPE html>\n" +
-                    clone.outerHTML;
-
-                const blob = new Blob([htmlContent], {
-                    type: "text/html;charset=utf-8"
-                });
-
-                const downloadUrl = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-
-                link.href = downloadUrl;
-                link.download = "messenger-telegram-guide.html";
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-
-                URL.revokeObjectURL(downloadUrl);
+        body.querySelectorAll('pre').forEach(function (pre) {
+            var wrap = document.createElement('div'); wrap.className = 'code-block';
+            pre.parentNode.insertBefore(wrap, pre); wrap.appendChild(pre);
+            var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                navigator.clipboard.writeText(pre.innerText).then(function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); });
             });
-        })();
+            wrap.appendChild(btn);
+        });
+
+        $('tocToggle').addEventListener('click', function () {
+            var open = $('toc').classList.toggle('open'); $('tocToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        list.addEventListener('click', function (e) {
+            if (e.target.closest('a') && window.innerWidth <= 960) { $('toc').classList.remove('open'); $('tocToggle').setAttribute('aria-expanded', 'false'); }
+        });
+
+        $('downloadBtn').addEventListener('click', function () {
+            var blob = new Blob(['<!DOCTYPE html>\n<meta charset="utf-8"><title>Messenger to Telegram guide</title>\n' + body.innerHTML.replace(/<button class="copy-btn"[^>]*>.*?<\/button>/g, '')], { type: 'text/html;charset=utf-8' });
+            var url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url; a.download = 'messenger-telegram-guide.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        });
+    })();
     </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
 </body>
 </html>

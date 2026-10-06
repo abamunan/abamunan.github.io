@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invert Colors — PDF Toolkit</title>
+<title>Invert Colors | Munan.hub</title>
+<meta name="description" content="Invert PDF colours losslessly in your browser. Nothing is uploaded.">
+<meta name="robots" content="noindex">
 <!-- Blocking, must run before first paint so [data-theme] is set before any
      CSS below reads it — same theme.js used across the rest of the site,
      and since this page is embedded same-origin, it reads the same
@@ -11,7 +13,7 @@
      stays in sync automatically. -->
 <script src="theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <style>
   /* Tokens mapped from the toolkit's own style.css so this page (loaded via
@@ -21,27 +23,29 @@
      change, plus a couple of new tokens for the panel fill and button text
      colour, which the toolkit itself flips between light/dark. */
   :root {
-    --ink:      #0f172a;              /* = toolkit --text-main  */
-    --stone:    #334155;              /* = toolkit --text-muted */
-    --amber:    #0284c7;              /* = toolkit --accent     */
-    --hairline: rgba(14,165,233,.25); /* = toolkit --card-border */
-    --panel-bg: rgba(255,255,255,.55);/* = toolkit --card-bg    */
-    --btn-text: #ffffff;              /* text on accent-coloured buttons */
+    --ink:      #11221D;   /* = site --ink     */
+    --stone:    #44564E;   /* = site --muted   */
+    --amber:    #0A6F48;   /* = site --lagoon  */
+    --hairline: #D3DBD0;   /* = site --line    */
+    --panel-bg: #FAFBF7;   /* = site --paper   */
+    --btn-text: #FFFFFF;   /* text on lagoon buttons */
+    --ok:#17794A; --err:#B3382C;
   }
   [data-theme="dark"] {
-    --ink:      #f1f5f9;
-    --stone:    #cbd5e1;
-    --amber:    #00d4ff;
-    --hairline: rgba(0,212,255,.18);
-    --panel-bg: rgba(255,255,255,.07);
-    --btn-text: #020617;              /* toolkit uses dark text on its bright accent in dark mode */
+    --ink:      #E7EFEA;
+    --stone:    #B3C1B9;
+    --amber:    #3FD39A;
+    --hairline: #243229;
+    --panel-bg: #131E19;
+    --btn-text: #11221D;
+    --ok:#5FD596; --err:#FF8E80;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: transparent; /* the toolkit's own card wrapper supplies the fill behind this iframe */
     color: var(--ink);
-    font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+    font-family: 'Figtree', 'Hind Siliguri', system-ui, sans-serif;
   }
   .workspace { max-width: 900px; margin: 0 auto; padding: 12px 4px 28px; }
   .dropzone {
@@ -53,12 +57,11 @@
     font-size: 14px;
     cursor: pointer;
     background: var(--panel-bg);
-    backdrop-filter: blur(10px);
+    
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .dropzone:hover, .dropzone.dragover { border-color: var(--amber); color: var(--ink); box-shadow: 0 0 30px rgba(2,132,199,.12); }
-  [data-theme="dark"] .dropzone:hover, [data-theme="dark"] .dropzone.dragover { box-shadow: 0 0 30px rgba(0,212,255,.15); }
-  .dropzone input { display: none; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--amber); color: var(--ink);  }
+    .dropzone input { display: none; }
   .file-info {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
@@ -98,7 +101,7 @@
     position: absolute; bottom: 4px; right: 6px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; color: var(--stone);
-    background: rgba(250,249,246,0.9);
+    background: var(--panel-bg);
     padding: 1px 4px; border-radius: 2px;
   }
   .page-thumb.selected .pnum { color: var(--amber); }

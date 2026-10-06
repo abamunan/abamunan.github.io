@@ -1,0 +1,124 @@
+/* ============================================================
+   tool.css v2 — "Workbench" layer for tool pages (Round 4, extended in Round 5)
+   Load AFTER site.css, on <body class="v2 tool">.
+   Maps the old per-page variable names onto the Field Notebook
+   tokens so each tool keeps its own layout CSS but gets the new
+   palette, fonts and light/dark behaviour automatically.
+   ============================================================ */
+
+body.tool {
+    /* old names used by tool pages -> new tokens */
+    --accent: var(--lagoon);
+    --card-bg: var(--paper);
+    --card-border: var(--line);
+    --text-main: var(--ink);
+    --text-muted: var(--muted);
+    --text-soft: var(--soft);
+    --surface: var(--paper);
+    --border: var(--line);
+    --border-acc: var(--lagoon);
+    --correct: var(--ok);
+    --wrong: var(--err);
+    --wrong-bg: var(--err-bg);
+    --key-bg: var(--paper);
+    --key-shadow: var(--line);
+    --radius: var(--r-card);
+    --stone: var(--muted);
+    --stone-faint: var(--soft);
+    --on-accent: #fff;
+    --tint-weak: color-mix(in srgb, var(--lagoon) 8%, transparent);
+    --tint: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    font-family: var(--body);
+}
+:root[data-theme="dark"] body.tool { --on-accent: #11221D; }
+
+/* No glass, no glow on tool pages */
+body.tool *, body.tool *::before, body.tool *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+/* Tool header: page-head + one-line privacy note */
+.tool-note {
+    display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 16px; padding: 7px 16px;
+    font-size: .88rem; font-weight: 600; color: var(--muted);
+    background: var(--paper); border: 1.5px solid var(--line); border-radius: 999px;
+}
+.tool-note i { color: var(--lagoon); }
+body.tool .page-head { padding-bottom: 8px; }
+body.tool .page-title { margin-bottom: 10px; }
+
+/* Mono for code-like output */
+body.tool code, body.tool pre { font-family: var(--mono); }
+
+/* Mobile: comfortable touch targets */
+@media (max-width: 700px) {
+    body.tool button:not(.nav-burger):not(.theme-toggle) { min-height: 40px; }
+}
+
+/* Embedded page (invert-colors inside pdf-toolkit) uses its own copy
+   of these tokens; see invert-colors.html. */
+
+/* Keyboard focus, same as site */
+body.tool button:focus-visible, body.tool input:focus-visible,
+body.tool textarea:focus-visible, body.tool select:focus-visible,
+body.tool a:focus-visible { outline: 3px solid var(--lagoon); outline-offset: 2px; }
+:root[data-theme="dark"] body.tool button:focus-visible,
+:root[data-theme="dark"] body.tool a:focus-visible { outline-color: var(--marker); }
+
+/* Align each tool's content column with the page header (.wrap) */
+body.tool .resizer-wrap, body.tool .pdftk-wrap, body.tool .dff-wrap {
+    max-width: var(--wrap); margin-left: auto; margin-right: auto;
+    padding-left: 24px; padding-right: 24px;
+}
+@media (max-width: 480px) {
+    body.tool .resizer-wrap, body.tool .pdftk-wrap, body.tool .dff-wrap { padding-left: 18px; padding-right: 18px; }
+}
+
+
+/* ============================================================
+   Round 5 additions (standalone tools: booklet-maker,
+   poster-splitter, resolution-changer). Purely additive: the
+   Round 4 pages do not use these classes.
+   ============================================================ */
+
+/* Content column aligned with the page header (.wrap) */
+body.tool .tool-wrap { max-width: var(--wrap); margin: 0 auto; padding: 8px 24px 0; }
+@media (max-width: 480px) { body.tool .tool-wrap { padding-left: 18px; padding-right: 18px; } }
+
+/* Workbench + side column (steps or how-to). Stacks under 960px. */
+.tool-split { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.tool-split > * { min-width: 0; }
+@media (max-width: 960px) { .tool-split { grid-template-columns: minmax(0, 1fr); } }
+
+/* Numbered how-to cards */
+.tool-steps { display: grid; gap: 12px; }
+.tool-step { background: var(--paper); border: 1.5px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+.tool-step .num { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: -.01em; color: var(--lagoon); margin-bottom: 2px; }
+.tool-step p:last-child { margin: 0; color: var(--muted); font-size: .94rem; line-height: 1.55; }
+.tool-howto h2 { font-size: 1.25rem; }
+.tool-howto p { color: var(--muted); font-size: .94rem; line-height: 1.6; margin-bottom: 10px; }
+.tool-howto p:last-child { margin-bottom: 0; }
+.tool-howto b { color: var(--ink); }
+
+/* Preview image frame */
+.tool-preview { display: block; max-width: 100%; height: auto; border: 1.5px solid var(--line); border-radius: 12px; }
+
+/* Segmented option buttons and quick chips (JS toggles .active) */
+.tool-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 480px) { .tool-seg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tool-seg button, .tool-chips button {
+    background: var(--paper); border: 1.5px solid var(--line); border-radius: 999px;
+    color: var(--muted); font-weight: 600; font-size: .88rem; line-height: 1.3;
+    padding: 9px 14px; min-height: 40px; transition: border-color var(--trans), color var(--trans), background var(--trans);
+}
+.tool-seg button:hover, .tool-chips button:hover { border-color: var(--ink); color: var(--ink); }
+.tool-seg button.active, .tool-chips button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+:root[data-theme="dark"] .tool-seg button.active, :root[data-theme="dark"] .tool-chips button.active { background: var(--marker); color: #11221D; border-color: var(--marker); }
+.tool-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Disabled solid buttons */
+body.tool .btn-solid:disabled { opacity: .45; cursor: not-allowed; }
+body.tool .btn-solid:disabled:hover { background: var(--ink); color: var(--bg); }
+:root[data-theme="dark"] body.tool .btn-solid:disabled:hover { background: var(--marker); color: #11221D; }

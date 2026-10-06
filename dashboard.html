@@ -3,303 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0ea5e9">
-    <title>Dashboard · Munan.hub</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Your Munan.hub dashboard.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Dashboard | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/dashboard.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}}());</script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/dashboard.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Dashboard | Munan.hub">
+    <meta property="og:description" content="Your Munan.hub dashboard.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Dashboard | Munan.hub">
+    <meta name="twitter:description" content="Your Munan.hub dashboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>
-        body { min-height: 100vh; align-items: stretch; }
+        .loading-overlay { position:fixed; inset:0; z-index:1500; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:var(--muted); font-weight:600; }
+        .spin-icon { font-size:1.8rem; color:var(--lagoon); animation:spin .9s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spin-icon { animation-duration:2.6s; } }
 
-        /* ── PAGE WRAP ── */
-        .page-wrap {
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center;
-            padding: 80px 20px 60px;
-            position: relative; z-index: 1;
-        }
+        .dash { flex-direction:column; padding-bottom:8px; }
+        .dash-head { padding:calc(var(--nav-h) + 40px) 0 26px; }
+        .greeting { font-family:var(--display); font-weight:800; font-size:clamp(1.9rem,5vw,3rem); letter-spacing:-.03em; line-height:1.08; }
+        .dash-lead { color:var(--muted); margin-top:8px; }
+        .dash-grid { display:grid; grid-template-columns:320px minmax(0,1fr); gap:24px; align-items:start; }
 
-        /* ── GREETING ── */
-        .greeting {
-            font-size: .85rem; font-weight: 600;
-            color: var(--text-soft);
-            margin-bottom: 6px;
-            letter-spacing: .03em;
-        }
-        .greeting span { color: var(--accent); }
+        .profile-card { position:sticky; top:calc(var(--nav-h) + 20px); background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; }
+        .profile-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .profile-inner { padding:26px 24px 24px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; }
+        .avatar-wrap { position:relative; }
+        .avatar { width:96px; height:96px; border-radius:24px; overflow:hidden; border:1.5px solid var(--ink); box-shadow:5px 5px 0 var(--marker); background:var(--lagoon-tint); color:var(--lagoon); display:flex; align-items:center; justify-content:center; }
+        .avatar img { display:none; width:100%; height:100%; object-fit:cover; }
+        .avatar img.loaded { display:block; }
+        .avatar-letter { font-family:var(--display); font-weight:800; font-size:2.4rem; }
+        .user-name { font-family:var(--display); font-weight:800; font-size:1.35rem; letter-spacing:-.02em; margin-top:10px; overflow-wrap:anywhere; }
+        .user-email { color:var(--muted); font-size:.92rem; overflow-wrap:anywhere; }
+        .user-provider { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:700; padding:3px 12px; border-radius:999px; background:var(--lagoon-tint); color:var(--lagoon); }
+        .card-divider { width:100%; height:1px; background:var(--line); margin:8px 0 4px; }
+        .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+        .stat-box { border:1.5px solid var(--line); border-radius:14px; padding:10px 8px; background:var(--bg); }
+        .sb-label { font-size:.74rem; color:var(--soft); font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+        .sb-val { font-weight:700; font-size:.92rem; margin-top:2px; }
+        .logout-btn { width:100%; margin-top:8px; }
 
-        /* ── PROFILE CARD ── */
-        .profile-card {
-            width: 100%; max-width: 420px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            backdrop-filter: blur(18px);
-            box-shadow: 0 8px 40px rgba(2,132,199,.12);
-            overflow: hidden;
-            animation: cardIn .5s cubic-bezier(.4,0,.2,1) both;
-            margin-bottom: 20px;
-        }
-        @keyframes cardIn { from{opacity:0;transform:translateY(20px) scale(.97);}to{opacity:1;transform:none;} }
+        .dash-section + .dash-section { margin-top:36px; }
+        .dash-section h2 { font-size:1.35rem; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+        .dash-section h2 .badge { font-size:.74rem; }
+        .app-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .app-grid .tracker { padding:22px 22px 18px; }
+        .app-grid .tracker h3 { font-size:1.2rem; }
+        .app-grid .tracker p { font-size:.94rem; }
+        .app-grid .tile { width:46px; height:46px; }
+        .private-group { border:1.5px dashed var(--ink); border-radius:var(--r-card); padding:18px; background:var(--lagoon-tint); }
+        .private-group h2 { margin-bottom:12px; }
 
-        .profile-strip {
-            height: 4px;
-            background: linear-gradient(90deg,#0284c7,#0ea5e9,#38bdf8,#0284c7);
-            background-size: 200% 100%;
-            animation: shimmer 3s linear infinite;
-        }
-        @keyframes shimmer { 0%{background-position:0%}100%{background-position:200%} }
-
-        .profile-inner {
-            padding: 32px 28px 28px;
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-        }
-
-        /* ── AVATAR ── */
-        .avatar-wrap { position: relative; }
-        .avatar {
-            width: 90px; height: 90px; border-radius: 50%;
-            background: linear-gradient(135deg,#0284c7,#38bdf8);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; font-weight: 800; color: #fff;
-            box-shadow: 0 6px 24px rgba(2,132,199,.35);
-            overflow: hidden;
-            border: 3px solid rgba(255,255,255,.3);
-        }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .avatar img.loaded { display: block; }
-        .avatar .avatar-letter { pointer-events: none; }
-
-        .avatar-badge {
-            position: absolute; bottom: 2px; right: 2px;
-            width: 20px; height: 20px; border-radius: 50%;
-            background: #22c55e;
-            border: 2px solid var(--card-bg);
-            box-shadow: 0 2px 6px rgba(34,197,94,.4);
-        }
-
-        /* ── USER INFO ── */
-        .user-name {
-            font-size: 1.3rem; font-weight: 800;
-            color: var(--text-main); letter-spacing: -.02em;
-            text-align: center;
-        }
-        .user-email {
-            font-size: .78rem; color: var(--text-soft);
-            font-weight: 500; text-align: center;
-        }
-        .user-provider {
-            display: inline-flex; align-items: center; gap: 5px;
-            background: rgba(2,132,199,.08);
-            border: 1px solid rgba(2,132,199,.2);
-            border-radius: 20px; padding: 3px 10px;
-            font-size: .7rem; font-weight: 700; color: var(--accent);
-        }
-
-        /* ── DIVIDER ── */
-        .card-divider {
-            width: 100%; height: 1px;
-            background: var(--card-border);
-            margin: 4px 0;
-        }
-
-        /* ── STATS ROW ── */
-        .stats-row {
-            width: 100%; display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px; margin: 4px 0;
-        }
-        .stat-box {
-            background: rgba(2,132,199,.06);
-            border: 1px solid var(--card-border);
-            border-radius: 12px; padding: 10px 12px;
-            text-align: center;
-        }
-        [data-theme="dark"] .stat-box { background: rgba(0,212,255,.05); }
-        .stat-box .sb-label { font-size: .62rem; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
-        .stat-box .sb-val { font-size: .88rem; font-weight: 700; color: var(--text-main); }
-
-        /* ── LOGOUT BTN ── */
-        .logout-btn {
-            width: 100%; padding: 12px;
-            background: rgba(220,38,38,.08);
-            border: 1.5px solid rgba(220,38,38,.25);
-            border-radius: 12px;
-            color: #dc2626; font-family: 'Poppins',sans-serif;
-            font-size: .85rem; font-weight: 700;
-            cursor: pointer; transition: var(--trans);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            margin-top: 4px;
-        }
-        [data-theme="dark"] .logout-btn { color: #f87171; border-color: rgba(248,113,113,.25); background: rgba(248,113,113,.07); }
-        .logout-btn:hover { background: rgba(220,38,38,.15); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(220,38,38,.15); }
-
-        /* ── QUICK ACCESS GRID ── */
-        .section-label {
-            width: 100%; max-width: 420px;
-            font-size: .68rem; font-weight: 700;
-            color: var(--text-soft); letter-spacing: .1em;
-            text-transform: uppercase; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .section-label::after { content:''; flex:1; height:1px; background: linear-gradient(90deg,var(--card-border),transparent); }
-
-        .quick-grid {
-            width: 100%; max-width: 420px;
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 10px; margin-bottom: 20px;
-        }
-        .quick-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px; padding: 16px 14px;
-            display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
-            text-decoration: none; color: var(--text-main);
-            backdrop-filter: blur(12px);
-            transition: var(--trans);
-            animation: cardIn .5s cubic-bezier(.4,0,.2,1) both;
-        }
-        .quick-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 28px rgba(2,132,199,.13); }
-        .qc-icon {
-            width: 38px; height: 38px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-        }
-        .qc-title { font-size: .82rem; font-weight: 700; }
-        .qc-desc  { font-size: .68rem; color: var(--text-soft); font-weight: 500; line-height: 1.4; }
-
-        /* ── LOADING OVERLAY ── */
-        .loading-overlay {
-            position: fixed; inset: 0;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 14px;
-            z-index: 999;
-        }
-        .loading-overlay .spin-icon {
-            font-size: 2rem; color: var(--accent);
-            animation: spin .8s linear infinite;
-        }
-        @keyframes spin { to{transform:rotate(360deg)} }
-        .loading-overlay p { font-size: .85rem; color: var(--text-soft); font-weight: 600; }
-
-        /* ── PARTICLES ── */
-        .particle {
-            position: fixed; border-radius: 50%;
-            background: radial-gradient(circle,rgba(14,165,233,.5),transparent);
-            pointer-events: none; z-index: 0;
-            animation: floatUp linear infinite;
-        }
-        @keyframes floatUp {
-            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
-            10%  { opacity: .6; }
-            90%  { opacity: .3; }
-            100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
-        }
+        @media (max-width:960px) { .dash-grid { grid-template-columns:1fr; } .profile-card { position:static; } }
+        @media (max-width:560px) { .app-grid { grid-template-columns:1fr; } .dash-head { padding-top:calc(var(--nav-h) + 28px); } }
     </style>
 </head>
-<body>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
 
 <!-- Loading overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-    <i class="fas fa-circle-notch spin-icon"></i>
+<div class="loading-overlay" id="loadingOverlay" role="status">
+    <i class="fas fa-circle-notch spin-icon" aria-hidden="true"></i>
     <p>Loading your dashboard…</p>
 </div>
 
-<!-- Navbar -->
-<nav class="navbar">
-    <a href="index.html" class="nav-logo">Munan<span style="color:var(--accent)">.</span>hub</a>
-    <div style="display:flex;gap:8px;align-items:center;">
-        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-            <i class="fas fa-moon" id="themeIcon"></i>
-        </button>
-    </div>
-</nav>
+<main id="main">
+<div class="wrap dash" id="pageWrap" style="display:none;">
 
-<div class="page-wrap" id="pageWrap" style="display:none;">
+    <header class="dash-head">
+        <h1 class="greeting" id="greetMsg">Good morning, <span id="greetName">—</span> 👋</h1>
+        <p class="dash-lead">Your apps and tools in one place.</p>
+    </header>
 
-    <p class="greeting" id="greetMsg">Good morning, <span id="greetName">—</span> 👋</p>
+    <div class="dash-grid">
 
-    <!-- Profile Card -->
-    <div class="profile-card">
-        <div class="profile-strip"></div>
-        <div class="profile-inner">
+        <!-- Profile Card -->
+        <aside class="profile-card" aria-label="Your account">
+            <div class="profile-strip"></div>
+            <div class="profile-inner">
 
-            <!-- Avatar -->
-            <div class="avatar-wrap">
-                <div class="avatar" id="avatarEl">
-                    <img id="avatarImg" alt="Profile photo">
-                    <span class="avatar-letter" id="avatarLetter">?</span>
+                <div class="avatar-wrap">
+                    <div class="avatar" id="avatarEl">
+                        <img id="avatarImg" alt="Profile photo">
+                        <span class="avatar-letter" id="avatarLetter">?</span>
+                    </div>
                 </div>
-                <div class="avatar-badge"></div>
-            </div>
 
-            <!-- Name & email -->
-            <div>
-                <div class="user-name" id="displayName">—</div>
-                <div class="user-email" id="displayEmail">—</div>
-            </div>
-
-            <!-- Provider badge -->
-            <div class="user-provider" id="providerBadge">
-                <i class="fas fa-envelope"></i> Email
-            </div>
-
-            <div class="card-divider"></div>
-
-            <!-- Stats -->
-            <div class="stats-row">
-                <div class="stat-box">
-                    <div class="sb-label">Member since</div>
-                    <div class="sb-val" id="memberSince">—</div>
+                <div>
+                    <div class="user-name" id="displayName">—</div>
+                    <div class="user-email" id="displayEmail">—</div>
                 </div>
-                <div class="stat-box">
-                    <div class="sb-label">Last sign-in</div>
-                    <div class="sb-val" id="lastSignIn">—</div>
+
+                <div class="user-provider" id="providerBadge">
+                    <i class="fas fa-envelope"></i> Email
                 </div>
+
+                <div class="card-divider"></div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="sb-label">Member since</div>
+                        <div class="sb-val" id="memberSince">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="sb-label">Last sign-in</div>
+                        <div class="sb-val" id="lastSignIn">—</div>
+                    </div>
+                </div>
+
+                <button class="btn-line logout-btn" onclick="handleLogout()">
+                    <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sign Out
+                </button>
+
             </div>
+        </aside>
 
-            <!-- Logout -->
-            <button class="logout-btn" onclick="handleLogout()">
-                <i class="fas fa-right-from-bracket"></i> Sign Out
-            </button>
+        <div>
+            <!-- Apps -->
+            <section class="dash-section" aria-labelledby="h-apps">
+                <h2 id="h-apps">Your apps</h2>
+                <div class="app-grid">
+                    <a href="moneytracker.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-wallet" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Money Tracker</h3>
+                        <p>Track daily income &amp; expenses.</p>
+                    </a>
+                    <a href="healthtracker.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-heart-pulse" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Health Tracker</h3>
+                        <p>Log health numbers and see the trends.</p>
+                    </a>
+                    <a href="english-tracker.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-language" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>English Fluency Tracker</h3>
+                        <p>30 minutes a day: read, summarize, listen, speak.</p>
+                    </a>
+                    <a href="diary.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-book" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Diary</h3>
+                        <p>Write daily entries and export them as PDF.</p>
+                    </a>
+                    <a href="garments-accounts.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-shirt" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Garments Accounts</h3>
+                        <p>Shared accounts book for the garments business.</p>
+                    </a>
+                    <a href="TypeMaster.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-keyboard" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>TypeMaster</h3>
+                        <p>Practice your typing speed.</p>
+                    </a>
+                    <a href="drive-folder-fetch.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fa-brands fa-google-drive" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Drive Folder Fetch</h3>
+                        <p>Save every file of a public Drive folder.</p>
+                    </a>
+                </div>
+            </section>
 
+            <!-- Owner-only (hidden unless the verified owner is signed in; real protection is Firestore rules) -->
+            <section class="dash-section" data-owner-only aria-labelledby="h-private">
+                <div class="private-group">
+                    <h2 id="h-private"><i class="fas fa-lock" aria-hidden="true"></i> Private <span class="badge badge-marker">Owner only</span></h2>
+                    <div class="util-list">
+                        <a href="part1.html" class="link-row">
+                            <span class="tile"><i class="fab fa-google-drive" aria-hidden="true"></i></span>
+                            <span class="row-body"><span class="row-title">Private Drive</span><br><span class="row-desc">Password-protected folder.</span></span>
+                            <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent activity (placeholder) -->
+            <section class="dash-section" aria-labelledby="h-activity">
+                <h2 id="h-activity">Recent activity</h2>
+                <div class="empty" style="grid-column:auto;">
+                    <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                    Nothing to show yet. Your latest entries from the apps will appear here soon.
+                </div>
+            </section>
+
+            <!-- More -->
+            <section class="dash-section" aria-labelledby="h-more">
+                <h2 id="h-more">More</h2>
+                <div class="util-list">
+                    <a href="index.html" class="link-row">
+                        <span class="tile"><i class="fas fa-house" aria-hidden="true"></i></span>
+                        <span class="row-body"><span class="row-title">Home</span><br><span class="row-desc">Back to the main page.</span></span>
+                        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="contact.html" class="link-row">
+                        <span class="tile"><i class="fas fa-envelope" aria-hidden="true"></i></span>
+                        <span class="row-body"><span class="row-title">Contact</span><br><span class="row-desc">Get in touch with Munan.</span></span>
+                        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                </div>
+            </section>
         </div>
-    </div>
 
-    <!-- Quick Access -->
-    <div class="section-label">Quick Access</div>
-    <div class="quick-grid">
-        <a href="moneytracker.html" class="quick-card" style="animation-delay:.05s">
-            <div class="qc-icon" style="background:rgba(22,163,74,.12);color:#16a34a;">💰</div>
-            <div class="qc-title">Money Tracker</div>
-            <div class="qc-desc">Track daily income & expenses</div>
-        </a>
-        <a href="index.html" class="quick-card" style="animation-delay:.1s">
-            <div class="qc-icon" style="background:rgba(2,132,199,.1);color:var(--accent);">🏠</div>
-            <div class="qc-title">Home</div>
-            <div class="qc-desc">Back to main page</div>
-        </a>
-        <a href="TypeMaster.html" class="quick-card" style="animation-delay:.15s">
-            <div class="qc-icon" style="background:rgba(124,58,237,.1);color:#7c3aed;">⌨️</div>
-            <div class="qc-title">TypeMaster</div>
-            <div class="qc-desc">Practice your typing speed</div>
-        </a>
-        <a href="contact.html" class="quick-card" style="animation-delay:.2s">
-            <div class="qc-icon" style="background:rgba(217,119,6,.1);color:#d97706;">✉️</div>
-            <div class="qc-title">Contact</div>
-            <div class="qc-desc">Get in touch with Munan</div>
-        </a>
     </div>
-
 </div>
-
-<!-- Particles -->
-<div id="particles" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;"></div>
+</main>
 
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -323,6 +242,7 @@ onAuthStateChanged(auth, (user) => {
         return;
     }
     populateDashboard(user);
+    if (window.MunanOwner) window.MunanOwner.remember(window.MunanOwner.isOwner(user));
     document.getElementById('loadingOverlay').style.display = 'none';
     document.getElementById('pageWrap').style.display       = 'flex';
 });
@@ -388,32 +308,8 @@ window.handleLogout = async () => {
     localStorage.removeItem('isLoggedIn');
     window.location.href = "login.html";
 };
-
-// ── THEME TOGGLE ─────────────────────────────────────────────
-window.toggleTheme = () => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const next   = isDark ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    document.body.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    document.getElementById('themeIcon').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-};
-
-// Set correct icon on load
-const t = localStorage.getItem('theme');
-document.getElementById('themeIcon').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-
-// ── PARTICLES ────────────────────────────────────────────────
-const pc = document.getElementById('particles');
-for (let i = 0; i < 14; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const s = Math.random() * 10 + 4;
-    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
-    pc.appendChild(p);
-}
 </script>
-
-<script src="footer.js"></script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
 </body>
 </html>

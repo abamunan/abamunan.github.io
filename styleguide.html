@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Style guide | Munan.hub</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=1">
+</head>
+<body class="v2">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+    <header class="page-head">
+        <div class="wrap">
+            <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Style guide</li></ol>
+            <span class="kicker">Design system</span>
+            <h1 class="page-title">Field Notebook, in parts</h1>
+            <p class="page-lead">Every component in <code>site.css</code> on one page. Use it to check light and dark mode, and as a copy-paste reference for new pages.</p>
+        </div>
+    </header>
+
+    <div class="wrap">
+        <section class="panel">
+            <h2>Colour</h2>
+            <div class="grid-3" id="swatches"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Buttons and badges</h2>
+            <div class="flex wrap-flex gap-2 items-center">
+                <button class="btn-solid">Solid</button>
+                <button class="btn-line">Outline</button>
+                <button class="btn-ghost">Ghost</button>
+                <button class="btn-solid btn-sm">Small</button>
+                <button class="btn-danger btn-solid">Delete</button>
+                <button class="btn-solid" disabled>Disabled</button>
+            </div>
+            <div class="flex wrap-flex gap-1 mt-2">
+                <span class="badge">Default</span><span class="badge badge-marker">Highlight</span><span class="badge badge-ok">Saved</span><span class="badge badge-warn">Check</span><span class="badge badge-err">Failed</span>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Form controls</h2>
+            <div class="form-row">
+                <div class="field"><label for="g1">Name</label><input id="g1" class="input" placeholder="Abdullah All Munan"></div>
+                <div class="field"><label for="g2">Level</label><select id="g2" class="select"><option>B1</option><option>B2</option><option>C1</option></select></div>
+            </div>
+            <div class="field"><label for="g3">Message</label><textarea id="g3" class="textarea" placeholder="Write something"></textarea><span class="hint">Helper text sits here.</span></div>
+            <div class="field has-error"><label for="g4">Email</label><input id="g4" class="input" aria-invalid="true" value="not-an-email"><span class="field-error">Enter a valid email address.</span></div>
+            <div class="flex wrap-flex gap-3 items-center">
+                <label class="check"><input type="checkbox" checked> Remember me</label>
+                <label class="switch"><input type="checkbox" checked><span class="track"></span> Dark reader mode</label>
+            </div>
+            <label class="dropzone mt-3" tabindex="0"><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i><span><strong>Drop files here</strong> or click to choose</span><input type="file" class="sr-only"></label>
+        </section>
+
+        <section class="panel">
+            <h2>Tabs</h2>
+            <div class="tabs" role="tablist" data-tabs>
+                <button class="tab" role="tab" aria-selected="true" aria-controls="t1">Overview</button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="t2">Details</button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="t3">Export</button>
+            </div>
+            <div class="tab-panel" id="t1">Overview panel. Tabs use <code>aria-selected</code> and <code>hidden</code>.</div>
+            <div class="tab-panel" id="t2" hidden>Details panel.</div>
+            <div class="tab-panel" id="t3" hidden>Export panel.</div>
+            <div class="tabs pills mt-3" role="tablist"><button class="tab" aria-selected="true">Pill A</button><button class="tab" aria-selected="false">Pill B</button><button class="tab" aria-selected="false">Pill C</button></div>
+        </section>
+
+        <section class="panel">
+            <h2>Table and stats</h2>
+            <div class="grid-3" style="margin-bottom:20px">
+                <div class="stat"><b>128</b><span>Sessions</span></div>
+                <div class="stat"><b>14</b><span>Day streak</span></div>
+                <div class="stat"><b>3,840</b><span>Minutes</span></div>
+            </div>
+            <div class="table-wrap"><table class="table">
+                <thead><tr><th>Date</th><th>Topic</th><th class="num">Minutes</th></tr></thead>
+                <tbody><tr><td>2026-10-01</td><td>Climate policy</td><td class="num">30</td></tr><tr><td>2026-10-02</td><td>Space exploration</td><td class="num">35</td></tr><tr><td>2026-10-03</td><td>Urban farming</td><td class="num">30</td></tr></tbody>
+            </table></div>
+        </section>
+
+        <section class="panel">
+            <h2>Alerts and progress</h2>
+            <div class="alert alert-ok"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Saved.</strong> Your session is synced.</div></div>
+            <div class="alert alert-warn mt-1"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i><div><strong>Heads up.</strong> You have 2 missed days to make up.</div></div>
+            <div class="alert alert-err mt-1"><i class="fas fa-circle-xmark" aria-hidden="true"></i><div><strong>Could not save.</strong> Check your connection.</div></div>
+            <div class="alert alert-info mt-1"><i class="fas fa-circle-info" aria-hidden="true"></i><div>Files never leave your device.</div></div>
+            <div class="progress mt-3" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"><i style="width:62%"></i></div>
+            <div class="flex items-center gap-2 mt-3"><span class="spinner" aria-label="Loading"></span><span class="muted">Loading your data…</span></div>
+        </section>
+
+        <section class="panel">
+            <h2>Modal and toast</h2>
+            <div class="flex wrap-flex gap-2">
+                <button class="btn-solid" id="openModal">Open modal</button>
+                <button class="btn-line" id="showToast">Show toast</button>
+            </div>
+        </section>
+
+        <section class="panel prose">
+            <h2>Reading text</h2>
+            <p>Long text uses the <code>.prose</code> class: a 720px column, muted body colour, and <a href="index.html">links with a lime underline</a>.</p>
+            <ul><li>Headings use Bricolage Grotesque.</li><li>Body text uses Figtree.</li><li>Bangla falls back to Hind Siliguri: আমি বাংলায় লিখছি।</li></ul>
+            <pre><code>&lt;body class="v2"&gt;
+  &lt;script src="nav.js"&gt;&lt;/script&gt;
+  &lt;script src="footer.js"&gt;&lt;/script&gt;
+&lt;/body&gt;</code></pre>
+        </section>
+    </div>
+</main>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-card">
+        <h2 id="mTitle">Delete this entry?</h2>
+        <p class="muted">This cannot be undone.</p>
+        <div class="modal-actions"><button class="btn-line btn-sm" id="mCancel">Cancel</button><button class="btn-solid btn-danger btn-sm" id="mOk">Delete</button></div>
+    </div>
+</div>
+<div class="toast-stack" id="toasts" aria-live="polite"></div>
+
+<script>
+/* swatches (read live from CSS variables so dark mode shows too) */
+(function () {
+    var names = ['--bg','--paper','--ink','--muted','--soft','--line','--lagoon','--lagoon-tint','--marker','--ok','--warn','--err'];
+    var box = document.getElementById('swatches');
+    function draw() {
+        var cs = getComputedStyle(document.documentElement);
+        box.innerHTML = names.map(function (n) {
+            var v = cs.getPropertyValue(n).trim();
+            return '<div class="flex items-center gap-2"><span style="width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:' + v + '"></span><span><b>' + n + '</b><br><span class="soft">' + v + '</span></span></div>';
+        }).join('');
+    }
+    draw();
+    new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+/* tabs */
+document.querySelectorAll('.tabs').forEach(function (bar) {
+    bar.addEventListener('click', function (e) {
+        var t = e.target.closest('.tab'); if (!t) return;
+        bar.querySelectorAll('.tab').forEach(function (x) {
+            var on = x === t; x.setAttribute('aria-selected', on);
+            var id = x.getAttribute('aria-controls'); if (id) document.getElementById(id).hidden = !on;
+        });
+    });
+});
+/* modal */
+(function () {
+    var m = document.getElementById('modal');
+    function close() { m.hidden = true; document.getElementById('openModal').focus(); }
+    document.getElementById('openModal').onclick = function () { m.hidden = false; document.getElementById('mCancel').focus(); };
+    document.getElementById('mCancel').onclick = close;
+    document.getElementById('mOk').onclick = close;
+    m.addEventListener('click', function (e) { if (e.target === m) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) close(); });
+})();
+/* toast */
+document.getElementById('showToast').onclick = function () {
+    var t = document.createElement('div'); t.className = 'toast ok'; t.textContent = 'Saved to your account';
+    document.getElementById('toasts').appendChild(t); setTimeout(function () { t.remove(); }, 2400);
+};
+</script>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
+</body>
+</html>

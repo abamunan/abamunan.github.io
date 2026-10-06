@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>English Fluency Tracker</title>
+<title>English Fluency Tracker | Munan.hub</title>
+<meta name="description" content="Track your daily English practice: reading, summarising, listening and speaking, with streaks, scores and cloud sync.">
+<meta name="theme-color" content="#0A6F48">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="canonical" href="https://abamunan.github.io/english-tracker.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abamunan.github.io/english-tracker.html">
+<meta property="og:site_name" content="Munan.hub">
+<meta property="og:title" content="English Fluency Tracker | Munan.hub">
+<meta property="og:description" content="Track your daily English practice with streaks, scores and cloud sync.">
+<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta name="twitter:card" content="summary">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<script src="theme.js"></script>
+<script src="owner.js"></script>
+<link rel="stylesheet" href="site.css?v=2">
+<link rel="stylesheet" href="app.css?v=1">
 <style>
-:root{--bg:#f6f5f1;--card:#fff;--ink:#1f2328;--mut:#6b7280;--line:#e4e2db;--ac:#2f7d5b;--ac2:#cfe8dc;--warn:#e8b4a8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181a;--card:#202326;--ink:#ecebe6;--mut:#9aa0a6;--line:#33373b;--ac:#4cc38a;--ac2:#1f4535;--warn:#6b3a30}}
-:root[data-theme="dark"]{--bg:#16181a;--card:#202326;--ink:#ecebe6;--mut:#9aa0a6;--line:#33373b;--ac:#4cc38a;--ac2:#1f4535;--warn:#6b3a30}
+/* Round 6: colour tokens now come from site.css; old names (--card --mut --ac --ac2 --onac --h1 --h2 --sh) are mapped in app.css (body.app-et) */
+:root{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5}
 main{max-width:720px;margin:0 auto;padding:16px}
 h1{font-size:22px;margin:4px 0}h2{font-size:15px;margin:0 0 10px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
@@ -36,9 +56,6 @@ svg{width:100%;height:120px}
 
 /* ===== App shell: tabs, sub-tabs, modern look ===== */
 [hidden]{display:none!important}
-:root{--sh:0 1px 2px rgba(20,30,25,.05),0 6px 18px rgba(20,30,25,.05);--onac:#fff;--h1:#2f7d5b;--h2:#1d5a41}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sh:0 1px 2px rgba(0,0,0,.4);--onac:#0c2217;--h1:#1f4535;--h2:#153024}}
-:root[data-theme="dark"]{--sh:0 1px 2px rgba(0,0,0,.4);--onac:#0c2217;--h1:#1f4535;--h2:#153024}
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));-webkit-tap-highlight-color:transparent}
 main{max-width:760px;padding:14px 16px 24px}
 button{color:var(--onac);min-height:42px;border-radius:12px;transition:transform .08s,opacity .15s}
@@ -100,7 +117,7 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ac);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
-</style></head><body><div class="shell">
+</style></head><body class="v2 app app-et" data-nav-hide="off"><a class="skip" href="#main">Skip to content</a><div class="shell">
 <header class="top"><div class="in">
 <h1>English Fluency Tracker</h1>
 <span class="sdot" id="syncDot" title="Sync status"></span><span class="pill" title="Day streak">🔥 <b id="hStreak">0</b></span>
@@ -108,7 +125,7 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 <button type="button" class="ghost ib" id="th" title="Theme" aria-label="Theme">🌓</button>
 <button type="button" class="ghost ib gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </div></header>
-<main>
+<main id="main">
 <section class="pane" data-pane="home">
 <div class="card hero"><h2>Today's session</h2>
 <div class="hnote">30 min a day · Read → Summarize → Listen → Speak · 365 sessions</div>
@@ -744,4 +761,5 @@ applyLang();
  })();
 })();
 </script>
+<script src="nav.js"></script>
 </body></html>

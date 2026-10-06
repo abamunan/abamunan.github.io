@@ -3,18 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
     <title>PDF Toolkit | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/pdf-toolkit.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script>(function(){if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');document.addEventListener('DOMContentLoaded',function(){document.body.setAttribute('data-theme','dark');});}})()</script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/pdf-toolkit.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="PDF Toolkit | Munan.hub">
+    <meta property="og:description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PDF Toolkit | Munan.hub">
+    <meta name="twitter:description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="tool.css?v=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <style>
-        .page-hero{padding:100px 20px 28px;text-align:center;position:relative;z-index:1;}
-        .page-hero h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:800;letter-spacing:-.03em;margin-bottom:10px;}
-        .page-hero h1 span{color:var(--accent);}
-        .page-hero p{color:var(--text-muted);font-size:.95rem;}
         .pdftk-wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 5% 60px;}
 
         /* ---------- Tool tabs (site pill-button language) ---------- */
@@ -22,18 +36,18 @@
         .pdftk-rail-item{
             background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:20px;
             padding:8px 16px 8px 12px;font-size:.78rem;font-weight:700;color:var(--text-muted);
-            cursor:pointer;font-family:'Poppins',sans-serif;transition:all .2s;
-            display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);
+            cursor:pointer;font-family:var(--body);transition:all .2s;
+            display:flex;align-items:center;gap:8px;
         }
         .pdftk-rail-item:hover{border-color:var(--accent);color:var(--accent);}
-        .pdftk-rail-item.active{border-color:var(--accent);color:#fff;background:var(--accent);}
+        .pdftk-rail-item.active{border-color:var(--accent);color:var(--on-accent);background:var(--accent);}
         .pdftk-rail-num{
             font-size:.62rem;font-weight:800;opacity:.65;
-            background:rgba(255,255,255,.25);border-radius:50%;
+            background:color-mix(in srgb, var(--paper) 25%, transparent);border-radius:50%;
             width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
         }
-        .pdftk-rail-item:not(.active) .pdftk-rail-num{background:rgba(2,132,199,.12);color:var(--accent);opacity:1;}
-        [data-theme="dark"] .pdftk-rail-item:not(.active) .pdftk-rail-num{background:rgba(0,212,255,.12);}
+        .pdftk-rail-item:not(.active) .pdftk-rail-num{background:color-mix(in srgb, var(--lagoon) 12%, transparent);color:var(--accent);opacity:1;}
+        [data-theme="dark"] .pdftk-rail-item:not(.active) .pdftk-rail-num{background:color-mix(in srgb, var(--lagoon) 12%, transparent);}
         .pdftk-rail-desc{display:none;}
         @media (max-width:700px){
             .pdftk-tabs{gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
@@ -52,11 +66,11 @@
         /* ---------- Dropzone (photo-resizer language) ---------- */
         .pdftk-dropzone{
             border:2px dashed var(--card-border);border-radius:18px;padding:44px 24px;text-align:center;
-            cursor:pointer;transition:all .2s;background:var(--card-bg);backdrop-filter:blur(10px);
+            cursor:pointer;transition:all .2s;background:var(--card-bg);
             margin-bottom:20px;position:relative;
         }
-        .pdftk-dropzone:hover,.pdftk-dropzone.pdftk-drag{border-color:var(--accent);box-shadow:0 0 30px rgba(2,132,199,.15);}
-        [data-theme="dark"] .pdftk-dropzone:hover,[data-theme="dark"] .pdftk-dropzone.pdftk-drag{box-shadow:0 0 30px rgba(0,212,255,.15);}
+        .pdftk-dropzone:hover,.pdftk-dropzone.pdftk-drag{border-color:var(--accent);}
+        [data-theme="dark"] .pdftk-dropzone:hover,[data-theme="dark"] .pdftk-dropzone.pdftk-drag{}
         .pdftk-dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
         .pdftk-dz-icon{font-size:2.2rem;color:var(--accent);margin-bottom:12px;}
         .pdftk-dz-main{font-size:1rem;font-weight:700;margin-bottom:5px;color:var(--text-main);}
@@ -65,7 +79,7 @@
         /* ---------- Invert embedded frame ---------- */
         .pdftk-invert-frame-wrap{
             border:1px solid var(--card-border);border-radius:18px;overflow:hidden;
-            background:var(--card-bg);backdrop-filter:blur(10px);margin-bottom:20px;
+            background:var(--card-bg);margin-bottom:20px;
             height:min(78vh, 900px);
         }
         .pdftk-invert-frame{
@@ -78,7 +92,7 @@
         /* ---------- Colour Inverter disclosure dropdown ---------- */
         .pdftk-disclosure{
             border:1px solid var(--card-border);border-radius:14px;background:var(--card-bg);
-            backdrop-filter:blur(10px);overflow:hidden;margin-bottom:20px;
+            overflow:hidden;margin-bottom:20px;
         }
         .pdftk-disclosure-sum{
             list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -100,22 +114,22 @@
         .pdftk-file-bar{
             display:flex;align-items:center;gap:14px;background:var(--card-bg);
             border:1px solid var(--card-border);border-radius:14px;padding:12px 16px;
-            margin-bottom:20px;backdrop-filter:blur(10px);
+            margin-bottom:20px;
         }
         .pdftk-fb-icon{
-            font-size:.68rem;font-weight:800;color:var(--accent);background:rgba(2,132,199,.1);
-            border:1px solid rgba(2,132,199,.25);padding:5px 8px;border-radius:6px;flex-shrink:0;
+            font-size:.68rem;font-weight:800;color:var(--accent);background:color-mix(in srgb, var(--lagoon) 10%, transparent);
+            border:1px solid color-mix(in srgb, var(--lagoon) 25%, transparent);padding:5px 8px;border-radius:6px;flex-shrink:0;
         }
-        [data-theme="dark"] .pdftk-fb-icon{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.25);}
+        [data-theme="dark"] .pdftk-fb-icon{background:color-mix(in srgb, var(--lagoon) 10%, transparent);border-color:color-mix(in srgb, var(--lagoon) 25%, transparent);}
         .pdftk-fb-info{flex:1;min-width:0;}
         .pdftk-fb-name{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .pdftk-fb-meta{font-size:.72rem;color:var(--text-muted);margin-top:2px;}
         .pdftk-fb-clear{
             font-size:.72rem;font-weight:700;color:var(--text-muted);background:transparent;
             border:1.5px solid var(--card-border);padding:6px 12px;border-radius:20px;cursor:pointer;
-            flex-shrink:0;font-family:'Poppins',sans-serif;transition:all .2s;
+            flex-shrink:0;font-family:var(--body);transition:all .2s;
         }
-        .pdftk-fb-clear:hover{border-color:#dc2626;color:#dc2626;}
+        .pdftk-fb-clear:hover{border-color:var(--err);color:var(--err);}
 
         /* ---------- Page strip ---------- */
         .pdftk-strip-wrap{margin-top:18px;}
@@ -130,37 +144,37 @@
         .pdftk-pg{
             position:relative;border:1.5px solid var(--card-border);border-radius:12px;
             background:var(--card-bg);cursor:pointer;overflow:hidden;aspect-ratio:.72;
-            user-select:none;transition:all .2s;backdrop-filter:blur(6px);
+            user-select:none;transition:all .2s;
         }
-        .pdftk-pg:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(2,132,199,.15);}
-        .pdftk-pg canvas{width:100%;height:100%;display:block;object-fit:contain;background:#fff;}
+        .pdftk-pg:hover{transform:translateY(-2px);}
+        .pdftk-pg canvas{width:100%;height:100%;display:block;object-fit:contain;background:var(--on-accent);}
         .pdftk-pg-num{
             position:absolute;bottom:0;left:0;right:0;font-size:.66rem;text-align:center;
-            background:rgba(15,23,42,.78);color:#fff;padding:3px 0;
+            background:rgba(15,23,42,.78);color:var(--on-accent);padding:3px 0;
         }
         .pdftk-pg.pdftk-selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
         .pdftk-pg.pdftk-selected::before{
             content:'\2713';position:absolute;top:4px;right:4px;width:18px;height:18px;
-            background:var(--accent);color:#fff;font-size:.62rem;font-weight:800;
+            background:var(--accent);color:var(--on-accent);font-size:.62rem;font-weight:800;
             display:flex;align-items:center;justify-content:center;border-radius:50%;z-index:2;
         }
         .pdftk-pg.pdftk-removed{opacity:.3;}
         .pdftk-pg.pdftk-removed::after{
             content:'\2715';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-            color:#dc2626;font-size:1.3rem;font-weight:800;background:rgba(255,255,255,.5);
+            color:var(--err);font-size:1.3rem;font-weight:800;background:color-mix(in srgb, var(--paper) 50%, transparent);
         }
         [data-theme="dark"] .pdftk-pg.pdftk-removed::after{background:rgba(2,6,23,.5);}
         .pdftk-pg.pdftk-dragging{opacity:.4;}
         .pdftk-pg.pdftk-drag-over{border-color:var(--accent);border-style:dashed;}
         .pdftk-pg-remove{
             position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
-            border:none;background:rgba(15,23,42,.72);color:#fff;font-size:.7rem;font-weight:800;
+            border:none;background:rgba(15,23,42,.72);color:var(--on-accent);font-size:.7rem;font-weight:800;
             display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;
             padding:0;line-height:1;transition:background .2s;
         }
-        .pdftk-pg-remove:hover{background:#dc2626;}
+        .pdftk-pg-remove:hover{background:var(--err);}
         .pdftk-pg.pdftk-removed .pdftk-pg-remove{background:var(--accent);}
-        .pdftk-pg.pdftk-removed .pdftk-pg-remove:hover{background:#0284c7;}
+        .pdftk-pg.pdftk-removed .pdftk-pg-remove:hover{background:var(--lagoon);}
 
         /* ---------- Fields / inputs ---------- */
         .pdftk-field{margin-bottom:16px;}
@@ -169,7 +183,7 @@
         .pdftk-wrap input[type=text], .pdftk-wrap input[type=password], .pdftk-wrap input[type=number]{
             font-size:.82rem;padding:9px 12px;border:1.5px solid var(--card-border);border-radius:8px;
             background:var(--card-bg);color:var(--text-main);width:100%;max-width:340px;
-            font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;
+            font-family:var(--body);outline:none;transition:border-color .2s;
         }
         .pdftk-wrap input:focus{border-color:var(--accent);}
         .pdftk-wrap input[type=range]{width:100%;max-width:340px;accent-color:var(--accent);}
@@ -177,11 +191,11 @@
         /* ---------- Buttons ---------- */
         .pdftk-btn{
             font-size:.85rem;font-weight:700;padding:10px 20px;border-radius:10px;
-            border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;
-            display:inline-flex;align-items:center;gap:8px;font-family:'Poppins',sans-serif;transition:all .2s;
+            border:1.5px solid var(--accent);background:var(--accent);color:var(--on-accent);cursor:pointer;
+            display:inline-flex;align-items:center;gap:8px;font-family:var(--body);transition:all .2s;
         }
-        .pdftk-btn:hover{background:#0284c7;transform:translateY(-1px);}
-        [data-theme="dark"] .pdftk-btn:hover{background:var(--accent);box-shadow:0 4px 14px rgba(0,212,255,.3);}
+        .pdftk-btn:hover{background:var(--lagoon);transform:translateY(-1px);}
+        [data-theme="dark"] .pdftk-btn:hover{background:var(--accent);}
         .pdftk-btn:disabled{background:var(--card-border);border-color:var(--card-border);color:var(--text-muted);cursor:not-allowed;transform:none;}
         .pdftk-btn.pdftk-secondary{background:transparent;color:var(--text-muted);border-color:var(--card-border);}
         .pdftk-btn.pdftk-secondary:hover{border-color:var(--text-muted);color:var(--text-main);background:transparent;transform:none;}
@@ -190,10 +204,10 @@
         .pdftk-toggle-row{display:flex;gap:0;border:1.5px solid var(--card-border);border-radius:10px;width:max-content;margin-bottom:18px;overflow:hidden;}
         .pdftk-toggle-row button{
             font-size:.78rem;font-weight:700;padding:9px 18px;border:none;background:var(--card-bg);
-            color:var(--text-muted);cursor:pointer;font-family:'Poppins',sans-serif;transition:all .2s;
+            color:var(--text-muted);cursor:pointer;font-family:var(--body);transition:all .2s;
         }
         .pdftk-toggle-row button+button{border-left:1.5px solid var(--card-border);}
-        .pdftk-toggle-row button.on{background:var(--accent);color:#fff;}
+        .pdftk-toggle-row button.on{background:var(--accent);color:var(--on-accent);}
 
         /* ---------- Range chips (split) ---------- */
         .pdftk-range-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-width:420px;}
@@ -204,18 +218,18 @@
         .pdftk-range-row input{max-width:none;flex:1;border:none!important;padding:3px 4px;font-size:.8rem;background:transparent!important;}
         .pdftk-range-row span{font-size:.72rem;color:var(--text-muted);}
         .pdftk-rr-x{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:2px 4px;}
-        .pdftk-rr-x:hover{color:#dc2626;}
+        .pdftk-rr-x:hover{color:var(--err);}
         .pdftk-add-range{
             font-size:.76rem;color:var(--accent);background:none;border:1.5px dashed var(--card-border);
-            padding:8px 14px;border-radius:20px;cursor:pointer;width:max-content;font-family:'Poppins',sans-serif;transition:all .2s;
+            padding:8px 14px;border-radius:20px;cursor:pointer;width:max-content;font-family:var(--body);transition:all .2s;
         }
-        .pdftk-add-range:hover{border-color:var(--accent);background:rgba(2,132,199,.06);}
+        .pdftk-add-range:hover{border-color:var(--accent);background:color-mix(in srgb, var(--lagoon) 6%, transparent);}
 
         /* ---------- Compress readout ---------- */
         .pdftk-compress-readout{
             display:flex;align-items:baseline;gap:10px;margin:14px 0;padding:16px 18px;
             background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;
-            max-width:420px;backdrop-filter:blur(8px);
+            max-width:420px;
         }
         .pdftk-cr-num{font-size:1.7rem;font-weight:800;color:var(--accent);}
         .pdftk-cr-label{font-size:.7rem;color:var(--text-muted);}
@@ -224,8 +238,8 @@
 
         /* ---------- Status ---------- */
         .pdftk-status{margin-top:20px;font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:10px;}
-        .pdftk-status.err{color:#dc2626;}
-        .pdftk-status.ok{color:#16a34a;}
+        .pdftk-status.err{color:var(--err);}
+        .pdftk-status.ok{color:var(--ok);}
         .pdftk-spinner{
             width:13px;height:13px;border:2px solid var(--card-border);border-top-color:var(--accent);
             border-radius:50%;animation:pdftkSpin .7s linear infinite;flex-shrink:0;
@@ -239,22 +253,24 @@
         @media(max-width:600px){
             .pdftk-strip{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;}
         }
-    </style>
+    
+/* Round 4 */
+.pdftk-rail-item.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+:root[data-theme="dark"] .pdftk-rail-item.active{background:var(--marker);color:#11221D;border-color:var(--marker);}
+.page-hero{display:none;}
+</style>
 </head>
-<body>
-<div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
-<div class="particles" id="particles"></div>
-
-<nav class="navbar" id="navbar">
-    <div class="nav-logo"><a href="index.html" style="text-decoration:none;color:inherit;">Munan<span>.hub</span></a></div>
-    <div class="nav-right">
-        <a href="index.html" class="nav-login-btn"><i class="fas fa-arrow-left"></i> Back</a>
+<body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+<header class="page-head">
+    <div class="wrap">
+        <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="tools.html">Tools</a></li><li aria-hidden="true">/</li><li aria-current="page">PDF Toolkit</li></ol>
+        <span class="kicker">Tools · PDF</span>
+        <h1 class="page-title">PDF Toolkit</h1>
+        <p class="page-lead">Rotate, split, merge, compress, lock and rearrange PDFs.</p>
+        <p class="tool-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> PDFs are processed in your browser and never uploaded.</p>
     </div>
-</nav>
-
-<header class="page-hero">
-    <h1><i class="fas fa-file-pdf" style="color:var(--accent);margin-right:10px;"></i>PDF <span>Toolkit</span></h1>
-    <p>Rotate, split, merge, compress, lock &amp; rearrange — entirely in your browser</p>
 </header>
 
 <div class="pdftk-wrap">
@@ -262,15 +278,8 @@
     <div id="pdftkMain"></div>
 </div>
 
-<script>
-    /* Particles — same generator as photo-resizer.html */
-    const pc = document.getElementById('particles');
-    for (let i=0;i<16;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*9+3;p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*14+8)+'s;animation-delay:'+(Math.random()*12)+'s;';pc.appendChild(p);}
+</main>
 
-    /* Navbar hide-on-scroll — same behavior as photo-resizer.html */
-    let ls=window.scrollY;
-    window.addEventListener('scroll',()=>{const n=document.getElementById('navbar');if(window.scrollY>ls&&window.scrollY>70)n.classList.add('navbar-hidden');else n.classList.remove('navbar-hidden');ls=window.scrollY;});
-</script>
 
 <script type="module">
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
@@ -1667,6 +1676,7 @@ function renderInvert(main){
 renderRail();
 renderMain();
 </script>
+<script src="nav.js"></script>
 <script src="footer.js"></script>
 </body>
 </html>

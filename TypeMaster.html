@@ -3,25 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TypeMaster | Munan</title>
+    <meta name="description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>TypeMaster | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/TypeMaster.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Shared theme logic — blocking, must run before first paint -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/TypeMaster.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="TypeMaster | Munan.hub">
+    <meta property="og:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="TypeMaster | Munan.hub">
+    <meta name="twitter:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="theme.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="tool.css?v=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         /* ── PAGE-SPECIFIC VARIABLES ─────────────────── */
         :root {
-            --surface:    rgba(255,255,255,0.62);
-            --border:     rgba(14,165,233,0.22);
-            --border-acc: rgba(2,132,199,0.5);
-            --correct:    #16a34a;
-            --wrong:      #dc2626;
-            --wrong-bg:   rgba(220,38,38,0.1);
-            --key-bg:     rgba(255,255,255,0.75);
-            --key-shadow: rgba(2,132,199,0.18);
+            --surface:    color-mix(in srgb, var(--paper) 62%, transparent);
+            --border:     color-mix(in srgb, var(--lagoon) 22%, transparent);
+            --border-acc: color-mix(in srgb, var(--lagoon) 50%, transparent);
+            --correct:    var(--ok);
+            --wrong:      var(--err);
+            --wrong-bg:   color-mix(in srgb, var(--err) 10%, transparent);
+            --key-bg:     color-mix(in srgb, var(--paper) 75%, transparent);
+            --key-shadow: color-mix(in srgb, var(--lagoon) 18%, transparent);
             --radius:     16px;
         }
 
@@ -38,29 +55,11 @@
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
-            padding: 72px 20px 40px;
+            padding: calc(var(--nav-h) + 32px) 20px 40px;
             display: flex;
             flex-direction: column;
             gap: 20px;
             flex: 1;
-        }
-
-        /* ── NAVBAR OVERRIDE ─────────────────────────── */
-        /* ── NAVBAR OVERRIDE (page-specific nav buttons) ── */
-        .nav-links { display: flex; gap: 10px; }
-        .nav-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.6);
-            border-radius: 12px; padding: 6px 14px 6px 10px;
-            font-size: .78rem; font-weight: 600; color: var(--text-main);
-            backdrop-filter: blur(8px); transition: var(--trans);
-        }
-        .nav-btn:hover { background: rgba(255,255,255,.85); border-color: #7ec8e8; }
-        .nav-btn-icon {
-            width: 24px; height: 24px; border-radius: 6px;
-            background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: .7rem; flex-shrink: 0;
         }
 
         /* ── HEADER ──────────────────────────────────── */
@@ -83,13 +82,13 @@
         }
         .sound-btn {
             display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,.6); border: 1.5px solid var(--border);
+            background: color-mix(in srgb, var(--paper) 60%, transparent); border: 1.5px solid var(--border);
             border-radius: 20px; padding: 5px 16px;
             font-size: .75rem; font-weight: 600; color: var(--text-soft);
             cursor: pointer; transition: var(--trans); user-select: none;
-            backdrop-filter: blur(8px);
+            
         }
-        .sound-btn.on  { background: rgba(2,132,199,.1); border-color: var(--border-acc); color: var(--accent); }
+        .sound-btn.on  { background: color-mix(in srgb, var(--lagoon) 10%, transparent); border-color: var(--border-acc); color: var(--accent); }
         .sound-btn:hover { border-color: var(--border-acc); }
 
         /* ── CARD OVERRIDE (reset shared .card flex) ─── */
@@ -98,17 +97,17 @@
             background: var(--surface);
             border: 1.5px solid var(--border);
             border-radius: var(--radius);
-            backdrop-filter: blur(14px);
+            
             padding: 24px 28px;
             transition: border-color var(--trans), box-shadow var(--trans);
-            box-shadow: 0 2px 16px rgba(2,132,199,.06);
+            
             animation: none;
             overflow: visible;
         }
         .card::after { display: none; }  /* remove top accent line */
         .card:hover {
             border-color: var(--border-acc);
-            box-shadow: 0 8px 32px rgba(2,132,199,.12);
+            
             transform: none;
             background: var(--surface);
         }
@@ -125,36 +124,36 @@
             display: block; font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
         }
         textarea#custom-text-input {
-            width: 100%; height: 72px; background: rgba(255,255,255,.55);
+            width: 100%; height: 72px; background: color-mix(in srgb, var(--paper) 55%, transparent);
             border: 1.5px solid var(--border); color: var(--text-main);
             padding: 12px 14px; border-radius: 10px; resize: none;
-            font-family: 'DM Mono', monospace; font-size: .9rem; outline: none;
+            font-family:var(--mono); font-size: .9rem; outline: none;
             transition: border-color var(--trans), box-shadow var(--trans);
         }
         textarea#custom-text-input:focus {
-            border-color: var(--accent); box-shadow: 0 0 0 3px rgba(2,132,199,.1);
+            border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lagoon) 10%, transparent);
         }
         .btn-row { display: flex; justify-content: flex-end; margin-top: 12px; }
         button#set-text-btn {
-            background: linear-gradient(135deg,#0284c7,#0ea5e9); color: #fff; border: none;
+            background: var(--lagoon); color: var(--on-accent); border: none;
             padding: 10px 26px; border-radius: 9px; cursor: pointer;
-            font-weight: 700; font-family: 'Poppins', sans-serif; font-size: .85rem;
-            transition: var(--trans); box-shadow: 0 4px 14px rgba(2,132,199,.3);
+            font-weight: 700; font-family:var(--body); font-size: .85rem;
+            transition: var(--trans); 
             display: flex; align-items: center; gap: 7px;
         }
-        button#set-text-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(2,132,199,.4); }
+        button#set-text-btn:hover { transform: translateY(-2px);  }
 
         /* ── NEW TEXT BUTTON ─────────────────────────── */
         .new-text-wrap { display: none; justify-content: center; }
         .new-text-wrap.show { display: flex; }
         button#new-text-btn {
-            background: rgba(255,255,255,.7); color: var(--accent);
+            background: color-mix(in srgb, var(--paper) 70%, transparent); color: var(--accent);
             border: 1.5px solid var(--border-acc); padding: 9px 22px;
             border-radius: 9px; cursor: pointer; font-weight: 600;
-            font-family: 'Poppins', sans-serif; font-size: .82rem; transition: var(--trans);
+            font-family:var(--body); font-size: .82rem; transition: var(--trans);
             display: flex; align-items: center; gap: 7px;
         }
-        button#new-text-btn:hover { background: var(--accent); color: #fff; }
+        button#new-text-btn:hover { background: var(--accent); color: var(--on-accent); }
 
         /* ── STATS BAR ───────────────────────────────── */
         .stats-bar {
@@ -172,7 +171,7 @@
         }
         .stat-value {
             font-size: 2rem; font-weight: 800; color: var(--accent);
-            font-family: 'DM Mono', monospace; line-height: 1; transition: color .3s;
+            font-family:var(--mono); line-height: 1; transition: color .3s;
         }
         .stat-divider { width: 1px; background: var(--border); align-self: stretch; min-height: 40px; }
 
@@ -180,7 +179,7 @@
         #display-text {
             font-size: 1.35rem; line-height: 2; color: var(--text-soft);
             margin-bottom: 20px; white-space: pre-wrap;
-            font-family: 'DM Mono', monospace; min-height: 60px;
+            font-family:var(--mono); min-height: 60px;
             text-align: left;
         }
         .char-correct { color: var(--correct); }
@@ -190,14 +189,14 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         #typing-input {
-            width: 100%; background: rgba(255,255,255,.75);
+            width: 100%; background: color-mix(in srgb, var(--paper) 75%, transparent);
             border: 2px solid var(--border); color: var(--text-main);
             padding: 14px 18px; border-radius: 11px; outline: none;
-            font-size: 1.05rem; font-family: 'DM Mono', monospace;
+            font-size: 1.05rem; font-family:var(--mono);
             transition: border-color var(--trans), box-shadow var(--trans);
             display: block;
         }
-        #typing-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(2,132,199,.1); }
+        #typing-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--lagoon) 10%, transparent); }
         #typing-input:disabled { opacity: .55; cursor: not-allowed; }
 
         /* ── KEYBOARD ────────────────────────────────── */
@@ -223,14 +222,14 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: .76rem; color: var(--text-muted);
             transition: all .1s; user-select: none;
-            box-shadow: 0 1px 4px rgba(2,132,199,.06);
+            box-shadow: 0 1px 4px color-mix(in srgb, var(--lagoon) 6%, transparent);
             flex-shrink: 0;
         }
         .key.wide  { width: 80px; }
         .key.space { width: 320px; }
-        .key.active  { transform: translateY(3px); border-bottom: 0; background: var(--accent); color: #fff; box-shadow: none; }
-        .key.correct { background: #dcfce7; color: var(--correct); border-color: rgba(22,163,74,.35); }
-        .key.wrong   { background: #fee2e2; color: var(--wrong);   border-color: rgba(220,38,38,.35); }
+        .key.active  { transform: translateY(3px); border-bottom: 0; background: var(--accent); color: var(--on-accent); box-shadow: none; }
+        .key.correct { background: var(--ok-bg); color: var(--correct); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+        .key.wrong   { background: var(--err-bg); color: var(--wrong);   border-color: color-mix(in srgb, var(--err) 35%, transparent); }
 
         /* ── HISTORY ─────────────────────────────────── */
         .history-section { display: none; }
@@ -247,7 +246,7 @@
             white-space: nowrap; overflow: hidden;
         }
         .history-table td {
-            padding: 8px 8px; border-bottom: 1px solid rgba(14,165,233,.1);
+            padding: 8px 8px; border-bottom: 1px solid color-mix(in srgb, var(--lagoon) 10%, transparent);
             color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .history-table tr:first-child td { color: var(--accent); font-weight: 700; }
@@ -258,25 +257,25 @@
         .history-table col.col-date     { width: 20%; }
         .best-banner {
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(2,132,199,.07); border: 1px solid rgba(2,132,199,.2);
+            background: color-mix(in srgb, var(--lagoon) 7%, transparent); border: 1px solid color-mix(in srgb, var(--lagoon) 20%, transparent);
             border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; gap: 10px;
             flex-wrap: wrap;
         }
         .best-banner .bb-label { font-size: .68rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: .07em; }
-        .best-banner .bb-val   { font-size: 1.1rem; font-weight: 800; color: var(--accent); font-family: 'DM Mono', monospace; }
+        .best-banner .bb-val   { font-size: 1.1rem; font-weight: 800; color: var(--accent); font-family:var(--mono); }
         .see-more-btn {
             width: 100%; margin-top: 12px; padding: 9px;
             background: transparent; border: 1.5px solid var(--border);
-            border-radius: 9px; color: var(--accent); font-family: 'Poppins', sans-serif;
+            border-radius: 9px; color: var(--accent); font-family:var(--body);
             font-size: .78rem; font-weight: 700; cursor: pointer; transition: var(--trans);
         }
-        .see-more-btn:hover { background: rgba(2,132,199,.07); border-color: var(--accent); }
+        .see-more-btn:hover { background: color-mix(in srgb, var(--lagoon) 7%, transparent); border-color: var(--accent); }
         .history-loading { text-align: center; padding: 16px; color: var(--text-soft); font-size: .8rem; }
 
         /* ── FINISH BANNER ───────────────────────────── */
         .finish-banner {
             display: none; text-align: center; padding: 18px 24px;
-            background: rgba(22,163,74,.1); border: 1.5px solid rgba(22,163,74,.3);
+            background: color-mix(in srgb, var(--ok) 10%, transparent); border: 1.5px solid color-mix(in srgb, var(--ok) 30%, transparent);
             border-radius: var(--radius);
         }
         .finish-banner.show { display: block; }
@@ -289,30 +288,30 @@
             .key.wide { width: 48px; }
             .key.space { width: 150px; }
             .stat-value { font-size: 1.5rem; }
-            .page-content { padding: 66px 12px 32px; }
+            .page-content { padding: calc(var(--nav-h) + 20px) 12px 32px; }
             .stat-divider { display: none; }
             .card { padding: 16px 14px; }
         }
-    </style>
+    
+/* Round 4: workbench look */
+.logo-main{font-family:var(--display);margin:0;}
+.stats-bar,.stats-bar:hover{display:grid !important;grid-template-columns:repeat(3,1fr);gap:14px;padding:0;background:transparent;border:0;}
+.stats-bar .stat-item{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:16px 12px;}
+.stats-bar .stat-value{font-family:var(--display);}
+.text-display{font-family:var(--mono);}
+.stats-bar .stat-divider{display:none;}
+@media(max-width:600px){.stats-bar,.stats-bar:hover{gap:8px;}.stats-bar .stat-item{padding:12px 6px;}.stats-bar .stat-value{font-size:1.3rem;}}
+</style>
 </head>
-<body>
+<body class="v2 tool">
+    <a class="skip" href="#main">Skip to content</a>
 
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-logo">Munan<span>.hub</span></div>
-        <div class="nav-links">
-            <a href="index.html" class="nav-btn">
-                <span class="nav-btn-icon"><i class="fas fa-home"></i></span>
-                Home
-            </a>
-        </div>
-    </nav>
-
-    <div class="page-content">
+    <main id="main" class="page-content">
 
         <header>
-            <span class="logo-main">TypeMaster</span>
+            <h1 class="logo-main">TypeMaster</h1>
             <span class="logo-sub">Speed &nbsp;·&nbsp; Accuracy &nbsp;·&nbsp; Progress</span>
+            <p class="tool-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Sign-in required. Your scores are saved to your account.</p>
             <div class="sound-toggle">
                 <div class="sound-btn on" id="sound-btn">
                     <i class="fas fa-volume-high"></i> Sound On
@@ -418,9 +417,10 @@
             </button>
         </div>
 
-    </div><!-- /.page-content -->
+    </main><!-- /.page-content -->
 
-    <script src="footer.js"></script>
+    <script src="nav.js"></script>
+<script src="footer.js"></script>
     <script type="module">
     /* ── FIREBASE ─────────────────────────────────────── */
     import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -683,14 +683,6 @@
             showConfig(); customTextInput.focus();
         });
 
-        /* ── NAVBAR HIDE ON SCROLL ───────────────────── */
-        let lastScroll = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
-            else nav.classList.remove('navbar-hidden');
-            lastScroll = window.scrollY;
-        });
 
         /* ── ON LOAD ─────────────────────────────────── */
         window.onload = () => {

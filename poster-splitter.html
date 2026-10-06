@@ -1,424 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Image to Poster — A4 Splitter</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-  :root{
-    --ink:#1c1a17;
-    --paper:#f6f1e7;
-    --paper-2:#efe7d8;
-    --line:#d8cdb6;
-    --accent:#8a5a3b;
-    --accent-2:#c7743f;
-    --ok:#4d6b52;
-  }
-  :root:not([data-theme="light"]){
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#f1ece1;
-      --paper:#1b1815;
-      --paper-2:#241f1a;
-      --line:#3a332a;
-      --accent:#e0a97c;
-      --accent-2:#e08a52;
-      --ok:#8fb897;
-    }
-  }
-  :root[data-theme="dark"]{
-    --ink:#f1ece1;
-    --paper:#1b1815;
-    --paper-2:#241f1a;
-    --line:#3a332a;
-    --accent:#e0a97c;
-    --accent-2:#e08a52;
-    --ok:#8fb897;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Split any image into a grid of A4 pages and download a print-ready PDF. Tape the pages together to make a large poster. Nothing is uploaded.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Poster Splitter | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/poster-splitter.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/poster-splitter.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Poster Splitter | Munan.hub">
+    <meta property="og:description" content="Split any image into a grid of A4 pages and download a print-ready PDF. Tape the pages together to make a large poster. Nothing is uploaded.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Poster Splitter | Munan.hub">
+    <meta name="twitter:description" content="Split any image into a grid of A4 pages and download a print-ready PDF. Tape the pages together to make a large poster. Nothing is uploaded.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="tool.css?v=2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Page-only layout. Colours, fonts and buttons come from site.css / tool.css. */
+        input[type="file"] { display: none; }
 
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    min-height:100vh;
-    padding:32px 18px 80px;
-  }
+        .drop.drag { border-color: var(--lagoon); background: var(--lagoon-tint); }
+        .drop svg { color: var(--lagoon); }
+        .drop-title { margin: 0; font-weight: 700; font-size: 1.02rem; color: var(--ink); }
+        .drop-sub { margin: 0; font-size: .88rem; color: var(--soft); }
 
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap');
+        /* Script toggles .show */
+        .controls { display: none; margin-top: 24px; }
+        .controls.show { display: block; }
 
-  .wrap{max-width:760px;margin:0 auto;}
+        .pf-row { margin-bottom: 20px; }
+        .pf-row > .label, .pf-row > label { display: block; margin-bottom: 8px; font-weight: 600; font-size: .92rem; }
+        .overlap-val { font-weight: 700; color: var(--lagoon); margin-left: 6px; }
+        input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--lagoon); }
 
-  header{margin-bottom:28px;}
-  .kicker{
-    font-size:13px;
-    color:var(--accent-2);
-    letter-spacing:.02em;
-    margin:0 0 6px;
-  }
-  h1{
-    font-family:'Fraunces', Georgia, serif;
-    font-weight:600;
-    font-size:clamp(28px,6vw,40px);
-    line-height:1.12;
-    margin:0 0 10px;
-  }
-  .sub{
-    font-size:15.5px;
-    line-height:1.6;
-    color:var(--ink);
-    opacity:.78;
-    margin:0;
-    max-width:56ch;
-  }
+        .preview-stage { margin-top: 8px; display: flex; justify-content: center; }
+        .preview-wrap { position: relative; max-width: 100%; }
+        #srcCanvas { display: block; max-width: 100%; height: auto; }
+        .gridlines { position: absolute; inset: 0; pointer-events: none; }
+        .gridlines .h, .gridlines .v { position: absolute; background: var(--lagoon); box-shadow: 0 0 0 1px rgba(255,255,255,.75); }
+        .gridlines .h { height: 2px; left: 0; right: 0; }
+        .gridlines .v { width: 2px; top: 0; bottom: 0; }
+        .gridlines .label { position: absolute; background: var(--ink); color: var(--bg); font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; line-height: 1.5; }
+        .meta-line { text-align: center; font-size: .84rem; color: var(--soft); margin-top: 12px; }
 
-  .panel{
-    background:var(--paper-2);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:22px;
-    margin-top:22px;
-  }
+        .actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+        .actions .btn-solid { flex: 1; min-width: 220px; }
 
-  .drop{
-    border:1.5px dashed var(--line);
-    border-radius:12px;
-    padding:36px 20px;
-    text-align:center;
-    cursor:pointer;
-    transition:border-color .15s ease, background .15s ease;
-    background:transparent;
-  }
-  .drop:hover, .drop.drag{
-    border-color:var(--accent-2);
-    background:color-mix(in srgb, var(--accent-2) 6%, transparent);
-  }
-  .drop svg{opacity:.55;margin-bottom:10px;}
-  .drop-title{font-weight:600;font-size:15.5px;margin:0 0 4px;}
-  .drop-sub{font-size:13.5px;opacity:.65;margin:0;}
-  input[type=file]{display:none;}
+        /* Script toggles .show and sets the fill width */
+        .progress-wrap { display: none; margin-top: 18px; }
+        .progress-wrap.show { display: block; }
+        .progress-track { height: 10px; border-radius: 99px; background: var(--lagoon-tint); overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: var(--lagoon); border-radius: inherit; transition: width .2s ease; }
+        .progress-text { font-size: .86rem; color: var(--muted); margin-top: 8px; text-align: center; }
 
-  .controls{
-    display:none;
-    margin-top:20px;
-  }
-  .controls.show{display:block;}
-
-  .row{
-    display:flex;
-    gap:14px;
-    flex-wrap:wrap;
-    margin-bottom:16px;
-  }
-  .field{flex:1;min-width:150px;}
-  .field label{
-    display:block;
-    font-size:12.5px;
-    font-weight:600;
-    opacity:.7;
-    margin-bottom:7px;
-  }
-  select, .seg{
-    width:100%;
-  }
-  select{
-    appearance:none;
-    background:var(--paper);
-    border:1px solid var(--line);
-    color:var(--ink);
-    border-radius:8px;
-    padding:9px 12px;
-    font-size:14.5px;
-    font-family:inherit;
-  }
-  .seg{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:8px;
-  }
-  @media (max-width:480px){
-    .seg{grid-template-columns:repeat(2,1fr);}
-  }
-  .seg button{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:8px;
-    color:var(--ink);
-    padding:9px 6px;
-    font-size:13px;
-    line-height:1.3;
-    font-family:inherit;
-    cursor:pointer;
-    text-align:center;
-    opacity:.7;
-  }
-  .seg button.active{
-    background:var(--accent);
-    border-color:var(--accent);
-    color:var(--paper);
-    opacity:1;
-    font-weight:600;
-  }
-
-  .overlap-row{margin-bottom:4px;}
-  input[type=range]{
-    width:100%;
-    accent-color:var(--accent-2);
-  }
-  .overlap-val{font-size:13px;opacity:.65;}
-
-  .preview-stage{
-    margin-top:20px;
-    display:flex;
-    justify-content:center;
-  }
-  .preview-wrap{
-    position:relative;
-    max-width:100%;
-  }
-  #srcCanvas{
-    display:block;
-    max-width:100%;
-    height:auto;
-    border-radius:6px;
-    border:1px solid var(--line);
-  }
-  .gridlines{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-  }
-  .gridlines .h, .gridlines .v{
-    position:absolute;
-    background:var(--accent-2);
-    opacity:.85;
-  }
-  .gridlines .h{height:2px;left:0;right:0;}
-  .gridlines .v{width:2px;top:0;bottom:0;}
-  .gridlines .label{
-    position:absolute;
-    background:var(--accent);
-    color:var(--paper);
-    font-size:11px;
-    font-weight:600;
-    padding:2px 6px;
-    border-radius:4px;
-    line-height:1.4;
-  }
-
-  .meta-line{
-    text-align:center;
-    font-size:12.5px;
-    opacity:.6;
-    margin-top:10px;
-  }
-
-  .actions{
-    display:flex;
-    gap:12px;
-    margin-top:22px;
-    flex-wrap:wrap;
-  }
-  button.primary{
-    flex:1;
-    min-width:200px;
-    background:var(--accent);
-    color:var(--paper);
-    border:none;
-    border-radius:9px;
-    padding:14px 18px;
-    font-size:15.5px;
-    font-weight:600;
-    font-family:inherit;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    transition:opacity .15s ease;
-  }
-  button.primary:hover{opacity:.9;}
-  button.primary:disabled{opacity:.45;cursor:not-allowed;}
-  button.secondary{
-    background:transparent;
-    color:var(--ink);
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:14px 16px;
-    font-size:14.5px;
-    font-family:inherit;
-    cursor:pointer;
-  }
-  button.secondary:disabled{opacity:.45;cursor:not-allowed;}
-
-  .progress-wrap{
-    display:none;
-    margin-top:16px;
-  }
-  .progress-wrap.show{display:block;}
-  .progress-track{
-    height:8px;
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .progress-fill{
-    height:100%;
-    width:0%;
-    background:var(--ok);
-    transition:width .2s ease;
-  }
-  .progress-text{font-size:13px;opacity:.7;margin-top:8px;text-align:center;}
-
-  .steps{
-    margin-top:34px;
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-  }
-  @media (max-width:520px){
-    .steps{grid-template-columns:1fr;}
-  }
-  .step{
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:14px 16px;
-    background:var(--paper-2);
-  }
-  .step-num{
-    font-family:'Fraunces', serif;
-    font-size:20px;
-    color:var(--accent-2);
-    margin:0 0 4px;
-  }
-  .step p{
-    margin:0;
-    font-size:13.5px;
-    line-height:1.55;
-    opacity:.8;
-  }
-
-  footer{
-    text-align:center;
-    margin-top:36px;
-    font-size:12.5px;
-    opacity:.5;
-  }
-
-  .tool-download{
-    text-align:center;
-    margin-top:34px;
-  }
-  .tool-download button.secondary{
-    display:inline-flex;
-    align-items:center;
-    gap:7px;
-    padding:10px 16px;
-    font-size:13.5px;
-  }
-</style>
+        .tool-download { margin-top: 26px; }
+    </style>
 </head>
-<body>
-<div class="wrap">
-
-  <header>
-    <p class="kicker">Poster Print Tool</p>
-    <h1>Turn One Picture Into a Big Poster</h1>
-    <p class="sub">Upload any image — it'll be split into a grid (2×2, 3×3, and more) and turned into a print-ready A4 PDF. Print each page and tape them together to make one large poster. Your image stays in your browser and is never uploaded anywhere.</p>
-  </header>
-
-  <div class="panel">
-    <div class="drop" id="dropZone">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-      <p class="drop-title">Tap to upload an image</p>
-      <p class="drop-sub">JPG, PNG — higher resolution gives better results</p>
-      <input type="file" id="fileInput" accept="image/*">
-    </div>
-
-    <div class="controls" id="controls">
-      <div class="row">
-        <div class="field" style="flex-basis:100%;">
-          <label for="gridSel">Number of pieces</label>
-          <div class="seg" id="gridSeg">
-            <button data-cols="2" data-rows="2" class="active">2 × 2 (4 pages)</button>
-            <button data-cols="2" data-rows="3">2 × 3 (6 pages)</button>
-            <button data-cols="3" data-rows="2">3 × 2 (6 pages)</button>
-            <button data-cols="3" data-rows="3">3 × 3 (9 pages)</button>
-            <button data-cols="3" data-rows="4">3 × 4 (12 pages)</button>
-            <button data-cols="4" data-rows="3">4 × 3 (12 pages)</button>
-          </div>
+<body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+    <header class="page-head">
+        <div class="wrap">
+            <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="projects.html">Projects</a></li><li aria-hidden="true">/</li><li aria-current="page">Poster Splitter</li></ol>
+            <span class="kicker">Tools · Poster print</span>
+            <h1 class="page-title">Turn One Picture Into a Big Poster</h1>
+            <p class="page-lead">Upload any image — it'll be split into a grid (2×2, 3×3, and more) and turned into a print-ready A4 PDF. Print each page and tape them together to make one large poster.</p>
+            <p class="tool-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> Processed in your browser — nothing is sent to any server.</p>
         </div>
-        <div class="field">
-          <label for="orientSel">Page orientation</label>
-          <select id="orientSel">
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
-          </select>
+    </header>
+
+    <div class="tool-wrap">
+        <div class="tool-split">
+            <section class="panel" aria-label="Poster splitter">
+                <div class="dropzone drop" id="dropZone">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    <p class="drop-title">Tap to upload an image</p>
+                    <p class="drop-sub">JPG, PNG — higher resolution gives better results</p>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+
+                <div class="controls" id="controls">
+                    <div class="pf-row">
+                        <span class="label" id="gridLabel">Number of pieces</span>
+                        <div class="tool-seg" id="gridSeg" role="group" aria-labelledby="gridLabel">
+                            <button type="button" data-cols="2" data-rows="2" class="active">2 × 2 (4 pages)</button>
+                            <button type="button" data-cols="2" data-rows="3">2 × 3 (6 pages)</button>
+                            <button type="button" data-cols="3" data-rows="2">3 × 2 (6 pages)</button>
+                            <button type="button" data-cols="3" data-rows="3">3 × 3 (9 pages)</button>
+                            <button type="button" data-cols="3" data-rows="4">3 × 4 (12 pages)</button>
+                            <button type="button" data-cols="4" data-rows="3">4 × 3 (12 pages)</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="orientSel">Page orientation</label>
+                        <select id="orientSel" class="select">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+
+                    <div class="pf-row">
+                        <label for="overlapRange">White trim margin — cut as needed when joining <span class="overlap-val" id="overlapVal">8 mm</span></label>
+                        <input type="range" id="overlapRange" min="0" max="20" value="8">
+                    </div>
+
+                    <div class="preview-stage">
+                        <div class="preview-wrap" id="previewWrap">
+                            <canvas id="srcCanvas" class="tool-preview"></canvas>
+                            <div class="gridlines" id="gridlines"></div>
+                        </div>
+                    </div>
+                    <p class="meta-line" id="metaLine"></p>
+
+                    <div class="actions">
+                        <button class="btn-solid" id="downloadBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
+                            Download A4 Poster PDF
+                        </button>
+                        <button class="btn-line" id="changeBtn">Choose another image</button>
+                    </div>
+
+                    <div class="progress-wrap" id="progressWrap" role="status">
+                        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                        <p class="progress-text" id="progressText">Generating pages…</p>
+                    </div>
+                </div>
+            </section>
+
+            <aside aria-label="How it works">
+                <div class="tool-steps">
+                    <div class="tool-step">
+                        <p class="num">01</p>
+                        <p>Upload an image and choose how many pieces to split it into (4 to 12 pages)</p>
+                    </div>
+                    <div class="tool-step">
+                        <p class="num">02</p>
+                        <p>Download the PDF and print each page on A4 paper</p>
+                    </div>
+                    <div class="tool-step">
+                        <p class="num">03</p>
+                        <p>Trim the white margin around each page as needed — it doesn't have to be perfect</p>
+                    </div>
+                    <div class="tool-step">
+                        <p class="num">04</p>
+                        <p>Tape or glue the pages together side by side to make the poster</p>
+                    </div>
+                </div>
+                <div class="tool-download">
+                    <button class="btn-line btn-sm" id="downloadHtmlBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
+                        Download this tool (HTML)
+                    </button>
+                </div>
+            </aside>
         </div>
-      </div>
-
-      <div class="row overlap-row">
-        <div class="field" style="flex-basis:100%;">
-          <label for="overlapRange">White trim margin — cut as needed when joining <span class="overlap-val" id="overlapVal">8 mm</span></label>
-          <input type="range" id="overlapRange" min="0" max="20" value="8">
-        </div>
-      </div>
-
-      <div class="preview-stage">
-        <div class="preview-wrap" id="previewWrap">
-          <canvas id="srcCanvas"></canvas>
-          <div class="gridlines" id="gridlines"></div>
-        </div>
-      </div>
-      <p class="meta-line" id="metaLine"></p>
-
-      <div class="actions">
-        <button class="primary" id="downloadBtn">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
-          Download A4 Poster PDF
-        </button>
-        <button class="secondary" id="changeBtn">Choose another image</button>
-      </div>
-
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-        <p class="progress-text" id="progressText">Generating pages…</p>
-      </div>
     </div>
-  </div>
-
-  <div class="steps">
-    <div class="step">
-      <p class="step-num">01</p>
-      <p>Upload an image and choose how many pieces to split it into (4 to 12 pages)</p>
-    </div>
-    <div class="step">
-      <p class="step-num">02</p>
-      <p>Download the PDF and print each page on A4 paper</p>
-    </div>
-    <div class="step">
-      <p class="step-num">03</p>
-      <p>Trim the white margin around each page as needed — it doesn't have to be perfect</p>
-    </div>
-    <div class="step">
-      <p class="step-num">04</p>
-      <p>Tape or glue the pages together side by side to make the poster</p>
-    </div>
-  </div>
-
-  <div class="tool-download">
-    <button class="secondary" id="downloadHtmlBtn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>
-      Download this tool (HTML)
-    </button>
-  </div>
-
-  <footer>All image processing happens entirely in your browser — nothing is sent to any server.</footer>
-</div>
+</main>
 
 <script>
 (function(){
@@ -737,6 +488,31 @@
     const downloadBtnClone = clone.querySelector('#downloadBtn');
     if(downloadBtnClone) downloadBtnClone.removeAttribute('disabled');
 
+    // Round 5: the page now loads the shared site files and gets a navbar and
+    // footer injected at run time. A downloaded copy must work on its own, so
+    // drop the injected pieces and point the stylesheets at the live site.
+    ['#navbar', '#navSheet', 'footer.site-footer', '.skip', '.crumbs'].forEach(function(sel){
+      clone.querySelectorAll(sel).forEach(function(n){ n.remove(); });
+    });
+    clone.querySelectorAll('script[src]').forEach(function(s){
+      var src = s.getAttribute('src') || '';
+      if(/^(theme|owner|nav|footer)\.js/.test(src)) s.remove();
+    });
+    var siteBase = (location.protocol === 'http:' || location.protocol === 'https:')
+      ? location.origin + '/' : 'https://abamunan.github.io/';
+    clone.querySelectorAll('link[rel="stylesheet"]').forEach(function(l){
+      var href = l.getAttribute('href') || '';
+      if(href && !/^(https?:)?\/\//.test(href)) l.setAttribute('href', siteBase + href);
+    });
+    clone.removeAttribute('data-theme');
+    clone.classList.remove('is-owner');
+    var cb = clone.querySelector('body');
+    if(cb) cb.removeAttribute('data-theme');
+    var themeScript = clone.ownerDocument.createElement('script');
+    themeScript.textContent = "if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.setAttribute('data-theme','dark');";
+    var firstLink = clone.querySelector('link[rel="stylesheet"]');
+    if(firstLink && firstLink.parentNode) firstLink.parentNode.insertBefore(themeScript, firstLink);
+
     return '<!DOCTYPE html>\n' + clone.outerHTML;
   }
 
@@ -774,5 +550,7 @@
 
 })();
 </script>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
 </body>
 </html>

@@ -3,230 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Drive — Munan</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Private area.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Private Drive | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/part1.html">
     <link rel="icon" type="image/png" href="icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/part1.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Private Drive | Munan.hub">
+    <meta property="og:description" content="Private area.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Private Drive | Munan.hub">
+    <meta name="twitter:description" content="Private area.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            min-height: 100vh;
-            padding: 0;
-        }
-        .main-wrap {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 70px 20px 40px;
-        }
-        .drive-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            width: 100%;
-            max-width: 360px;
-            padding: 2.5rem 2rem;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(2,132,199,.12), inset 0 1px 0 rgba(255,255,255,.8);
-            border: 1.5px solid var(--card-border);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .drive-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 16px 48px rgba(2,132,199,.18);
-        }
-        .drive-card-icon {
-            width: 72px; height: 72px; border-radius: 18px;
-            background: linear-gradient(135deg, #1a73e8, #34a853);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; color: #fff;
-            margin: 0 auto 1.4rem;
-            box-shadow: 0 6px 20px rgba(26,115,232,.3);
-        }
-        .drive-card h3 {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.2rem; font-weight: 700;
-            color: var(--text-main); margin-bottom: 8px;
-        }
-        .drive-card p {
-            color: var(--text-muted); font-size: 0.88rem;
-            margin-bottom: 1.8rem; line-height: 1.6;
-        }
+        .pv-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 36px) 18px 20px; }
+        .drive-card { width:100%; max-width:480px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; text-align:center; }
+        .drive-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .drive-inner { padding:34px 30px 30px; }
+        .drive-inner .tile-lg { display:flex; margin:0 auto 14px; width:76px; height:76px; border-radius:22px; font-size:1.8rem; box-shadow:5px 5px 0 var(--marker); border:1.5px solid var(--ink); }
+        .drive-inner .badge { display:flex; width:fit-content; margin:0 auto; }
+        .drive-inner h1 { font-family:var(--display); font-weight:800; font-size:clamp(1.7rem,5vw,2.2rem); letter-spacing:-.03em; line-height:1.1; margin:8px 0 10px; }
+        .drive-inner p { color:var(--muted); margin-bottom:22px; }
+        .loading-state { display:flex; align-items:center; justify-content:center; gap:14px; padding:30px 0; color:var(--muted); font-weight:600; }
+        .spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--lagoon); animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spinner { animation-duration:2.4s; } }
 
-        /* Loading state */
-        .loading-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-muted);
-            font-size: 0.88rem;
-        }
-        .spinner {
-            width: 36px; height: 36px;
-            border: 3px solid rgba(2,132,199,.15);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .drive-btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:12px 26px; border-radius:999px; font-weight:700; font-size:.98rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
+        .drive-btn:hover { background:var(--lagoon); color:#fff; }
+        :root[data-theme="dark"] .drive-btn { background:var(--marker); color:#11221D; }
+        :root[data-theme="dark"] .drive-btn:hover { background:#fff; }
+        .drive-btn.cancel, :root[data-theme="dark"] .drive-btn.cancel { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+        .drive-btn.cancel:hover, :root[data-theme="dark"] .drive-btn.cancel:hover { background:var(--ink); color:var(--bg); }
+        .drive-btn.success, :root[data-theme="dark"] .drive-btn.success { background:var(--ok); color:#fff; }
+        .drive-btn.success:hover { background:var(--lagoon); }
 
-        .drive-btn {
-            width: 100%; padding: 12px;
-            border: none; border-radius: 12px;
-            background: var(--accent); color: white;
-            font-family: 'Sora', sans-serif;
-            font-size: .85rem; font-weight: 600;
-            cursor: pointer; transition: var(--trans);
-            display: flex; align-items: center;
-            justify-content: center; gap: 8px;
-            text-decoration: none;
-            box-shadow: 0 4px 14px rgba(2,132,199,.3);
-        }
-        .drive-btn:hover {
-            background: #0369a1;
-            box-shadow: 0 6px 20px rgba(2,132,199,.4);
-            transform: translateY(-1px);
-        }
-        .drive-btn.cancel {
-            background: rgba(255,255,255,.6);
-            color: var(--text-muted);
-            border: 1.5px solid var(--card-border);
-            box-shadow: none;
-        }
-        .drive-btn.cancel:hover { background: rgba(255,255,255,.9); transform: none; }
-        .drive-btn.success {
-            background: linear-gradient(135deg,#16a34a,#22c55e);
-            box-shadow: 0 4px 14px rgba(22,163,74,.3);
-        }
-
-        .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,20,50,0.35);
-            backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-        .modal {
-            background: rgba(255,255,255,.92);
-            backdrop-filter: blur(20px);
-            padding: 2rem;
-            border-radius: 22px;
-            width: 100%;
-            max-width: 340px;
-            text-align: center;
-            border: 1.5px solid var(--card-border);
-            box-shadow: 0 20px 60px rgba(2,132,199,.18);
-            animation: slideUp 0.3s cubic-bezier(.4,0,.2,1);
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(24px) scale(.97); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .modal-icon {
-            width: 54px; height: 54px; border-radius: 14px;
-            background: linear-gradient(135deg,#5bb8e8,#2e8fc7);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; color: #fff;
-            margin: 0 auto 1.2rem;
-            box-shadow: 0 4px 14px rgba(46,143,199,.35);
-        }
-        .modal h3 {
-            font-family: 'Sora', sans-serif;
-            font-size: 1.1rem; font-weight: 700;
-            color: var(--text-main); margin-bottom: 6px;
-        }
-        .modal p { color: var(--text-muted); font-size: .85rem; margin-bottom: 1rem; }
-
-        input[type="password"] {
-            width: 100%; padding: 12px 16px;
-            margin-bottom: 12px;
-            border: 1.5px solid var(--card-border);
-            border-radius: 12px; outline: none;
-            font-family: 'Poppins', sans-serif;
-            font-size: .9rem; color: var(--text-main);
-            background: rgba(255,255,255,.8);
-            transition: var(--trans);
-            box-sizing: border-box;
-        }
-        input[type="password"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(2,132,199,.12);
-        }
-        .error {
-            color: #dc2626; font-size: 0.78rem;
-            margin-bottom: 12px; display: none;
-            background: rgba(220,38,38,.08);
-            border: 1px solid rgba(220,38,38,.2);
-            border-radius: 8px; padding: 6px 12px;
-        }
-        .btn-row { display: flex; gap: 10px; }
-
-        .shake { animation: shake 0.4s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25%       { transform: translateX(-8px); }
-            75%       { transform: translateX(8px); }
-        }
+        #overlay { align-items:center; justify-content:center; }
+        #overlay .modal-card { text-align:center; max-width:400px; }
+        .modal-icon { width:60px; height:60px; margin:0 auto 12px; border-radius:18px; background:var(--lagoon-tint); color:var(--lagoon); display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+        #overlay h2 { font-size:1.45rem; margin-bottom:6px; }
+        #overlay p { color:var(--muted); margin-bottom:16px; }
+        #passIn { width:100%; min-height:48px; padding:11px 14px; background:var(--paper); color:var(--ink); border:1.5px solid var(--line); border-radius:var(--r-input); text-align:center; }
+        #passIn:focus { outline:none; border-color:var(--lagoon); box-shadow:0 0 0 4px var(--lagoon-tint); }
+        #passIn.shake { animation:shake .4s; border-color:var(--err); }
+        @keyframes shake { 20%,60% { transform:translateX(-7px); } 40%,80% { transform:translateX(7px); } }
+        @media (prefers-reduced-motion:reduce) { #passIn.shake { animation:none; } }
+        .error { display:none; color:var(--err); font-weight:700; font-size:.9rem; margin-top:10px; }
+        .btn-row { display:flex; gap:10px; justify-content:center; margin-top:18px; flex-wrap:wrap; }
+        .btn-row .drive-btn { flex:1 1 130px; }
+        @media (max-width:480px) { .drive-inner { padding:28px 20px 24px; } }
     </style>
 </head>
-<body>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
 
-    <nav class="navbar">
-        <div class="nav-logo">Munan<span>.hub</span></div>
-        <a href="index.html" class="back-btn">
-            <i class="fas fa-home"></i> Home
-        </a>
-    </nav>
-
-    <div class="main-wrap">
+    <main class="pv-wrap" id="main">
         <div class="drive-card" id="mainCard">
-            <!-- Auth checking state (default) -->
-            <div id="stateLoading" class="loading-state">
-                <div class="spinner"></div>
-                <span>Checking access…</span>
-            </div>
+            <div class="drive-strip"></div>
+            <div class="drive-inner">
+                <!-- Auth checking state (default) -->
+                <div id="stateLoading" class="loading-state" role="status">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <span id="loadingText">Checking access…</span>
+                </div>
 
-            <!-- Authenticated: show unlock button -->
-            <div id="stateReady" style="display:none;">
-                <div class="drive-card-icon"><i class="fab fa-google-drive"></i></div>
-                <h3>Private Drive</h3>
-                <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
-                <button class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
-                    <i class="fas fa-lock"></i> Unlock Access
-                </button>
+                <!-- Owner verified: show unlock button -->
+                <div id="stateReady" style="display:none;">
+                    <span class="tile-lg" aria-hidden="true"><i class="fab fa-google-drive"></i></span>
+                    <span class="badge badge-marker"><i class="fas fa-lock" aria-hidden="true"></i> Owner only</span>
+                    <h1>Private Drive</h1>
+                    <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
+                    <button type="button" class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
+                        <i class="fas fa-lock" aria-hidden="true"></i> Unlock Access
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Password Modal -->
-    <div class="modal-overlay" id="overlay" onclick="handleOverlayClick(event)">
-        <div class="modal">
-            <div class="modal-icon"><i class="fas fa-shield-halved"></i></div>
-            <h3>Security Check</h3>
+    <div class="modal" id="overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="pwTitle" onclick="handleOverlayClick(event)">
+        <div class="modal-card">
+            <div class="modal-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></div>
+            <h2 id="pwTitle">Security Check</h2>
             <p>Enter your password to continue</p>
-            <input type="password" id="passIn" placeholder="Enter password…"
+            <input type="password" id="passIn" placeholder="Enter password…" aria-label="Password" autocomplete="off"
                    onkeydown="if(event.key==='Enter') verify()">
-            <div class="error" id="err">
-                <i class="fas fa-times-circle" style="margin-right:5px;"></i>Incorrect password. Try again.
+            <div class="error" id="err" role="alert">
+                <i class="fas fa-circle-xmark" style="margin-right:5px;" aria-hidden="true"></i>Incorrect password. Try again.
             </div>
             <div class="btn-row">
-                <button class="drive-btn cancel" onclick="toggleModal(false)">Cancel</button>
-                <button class="drive-btn" onclick="verify()">
-                    <i class="fas fa-unlock"></i> Unlock
+                <button type="button" class="drive-btn cancel" onclick="toggleModal(false)">Cancel</button>
+                <button type="button" class="drive-btn" onclick="verify()">
+                    <i class="fas fa-unlock" aria-hidden="true"></i> Unlock
                 </button>
             </div>
         </div>
     </div>
-
-    <script src="footer.js"></script>
 
     <!-- Firebase -->
     <script type="module">
@@ -250,9 +135,11 @@
         const auth = getAuth(app);
         const db   = getFirestore(app);
 
-        // Theme sync
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
+        function showProblem(msg) {
+            const t = document.getElementById('loadingText');
+            if (t) t.textContent = msg;
+            const sp = document.querySelector('#stateLoading .spinner');
+            if (sp) sp.style.display = 'none';
         }
 
         // ── Auth Guard + Firestore fetch ────────────────────
@@ -263,11 +150,19 @@
                 return;
             }
 
+            // Convenience guard: only the verified owner continues.
+            // (Real protection is the Firestore rule on secrets/{doc}.)
+            if (!window.MunanOwner || !window.MunanOwner.isOwner(user)) {
+                window.location.replace("index.html");
+                return;
+            }
+
             try {
-                // Fetch secret from Firestore (only authed users can read)
+                // Fetch secret from Firestore (rules release it to the owner only)
                 const snap = await getDoc(doc(db, "secrets", "privateDrive"));
                 if (!snap.exists()) {
                     console.error("Secret doc not found in Firestore.");
+                    showProblem("The private drive is not set up yet.");
                     return;
                 }
                 const { url, pass } = snap.data();
@@ -282,6 +177,7 @@
 
             } catch (e) {
                 console.error("Failed to load drive config:", e);
+                showProblem("Could not load the private drive. Please try again later.");
             }
         });
     </script>
@@ -322,6 +218,10 @@
         function handleOverlayClick(e) {
             if (e.target === el.overlay) toggleModal(false);
         }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && el.overlay.style.display === 'flex') toggleModal(false); });
     </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
 </body>
 </html>

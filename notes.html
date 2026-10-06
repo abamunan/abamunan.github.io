@@ -1,20 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer." />
-  <meta name="theme-color" content="#4ade80" />
-  <title>Study Notes — Munan</title>
-  <link rel="icon" type="image/png" href="icon.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <!-- Shared theme logic — blocking, must run before first paint -->
-  <script src="theme.js"></script>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Study Notes | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/notes.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/notes.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Study Notes | Munan.hub">
+    <meta property="og:description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Study Notes | Munan.hub">
+    <meta name="twitter:description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <style>
+        .subject-head { display:flex; align-items:center; gap:12px; margin:36px 0 14px; }
+        .subject-head:first-child { margin-top:8px; }
+        .subject-head h2 { font-size:1.35rem; }
+        .subject-head .tile { width:40px; height:40px; border-radius:12px; font-size:.95rem; }
+        .subject-head .badge { margin-left:auto; }
+        .note-row .row-body { min-width:0; flex:1; }
+        .note-row .row-desc { display:block; margin-top:2px; }
+        .notes-wrap { margin-top:20px; }
+    </style>
 </head>
-<body>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Notes</li></ol>
+                <span class="kicker">Academic</span>
+                <h1 class="page-title">Study notes</h1>
+                <p class="page-lead">PDF notes by subject — read online with bookmarks and a focus timer.</p>
+            </div>
+        </header>
+
+        <section class="wrap listing" aria-label="Notes">
+            <div class="list-tools">
+                <div class="searchbar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="q" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+                    <span class="count" id="cnt" aria-live="polite"></span>
+                </div>
+            </div>
+            <div class="notes-wrap" id="subjects"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>Notes need JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
 <!-- ║  ✏️  YOUR NOTES LIST — ONLY EDIT THIS SECTION        ║ -->
@@ -58,290 +105,7 @@ const NOTE_SUBJECTS = [
 </script>
 <!-- ══════════════════════════════════════════════════════ -->
 
-
-<!-- Background blobs (using style.css blob classes) -->
-<div class="blobs" aria-hidden="true">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-</div>
-
-<!-- Navbar -->
-<nav class="navbar" id="navbar">
-  <div class="nav-logo">Munan<span>.hub</span></div>
-  <a href="index.html" class="back-btn">
-    <span class="back-icon"><i class="fa-solid fa-arrow-left"></i></span>
-    <span class="back-label">Home</span>
-  </a>
-</nav>
-
-<!-- Page -->
-<div class="page">
-
-  <header>
-    <div class="notes-badge"><i class="fa-solid fa-graduation-cap"></i> Academic</div>
-    <h1>Study <span>Notes</span></h1>
-    <p class="sub">PDF notes by subject — read online with bookmarks and a focus timer.</p>
-    <div class="search-wrap">
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="q" type="text" placeholder="Search notes…" autocomplete="off" />
-        <span id="cnt"></span>
-      </div>
-    </div>
-  </header>
-
-  <div id="subjects"></div>
-
-</div>
-
-
-<style>
-/* ================================================================
-   notes.html — Page-specific styles only
-   Shared styles (reset, body, blobs, navbar, animations, footer)
-   come from style.css
-   ================================================================ */
-
-/* ── PAGE-SPECIFIC TOKENS ────────────────────────────────────── */
-:root {
-  --notes-card-bg : rgba(255,255,255,.72);
-  --notes-card-bdr: rgba(190,242,210,.72);
-  --text          : #1a2535;
-  --text-mid      : #4a5a72;
-  --text-soft-t   : #7a8fa8;
-  --notes-accent  : #16a34a;
-  --radius        : 18px;
-}
-[data-theme="dark"] {
-  --notes-card-bg : rgba(255,255,255,.07);
-  --notes-card-bdr: rgba(74,222,128,.18);
-  --text          : #f1f5f9;
-  --text-mid      : #cbd5e1;
-  --text-soft-t   : #94a3b8;
-  --notes-accent  : #4ade80;
-}
-
-/* ── BODY OVERRIDES ──────────────────────────────────────────── */
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  min-height: 100vh;
-  font-family: 'DM Sans', sans-serif;
-}
-
-/* ── NAVBAR OVERRIDES (back-btn custom icon) ─────────────────── */
-.back-btn {
-  border-radius: 12px;
-  padding: 7px 16px 7px 10px;
-  gap: 10px;
-}
-.back-icon {
-  width: 28px; height: 28px; border-radius: 7px;
-  background: linear-gradient(135deg,#4ade80,#16a34a);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: .78rem;
-  box-shadow: 0 2px 6px rgba(22,163,74,.35);
-  flex-shrink: 0; transition: var(--trans);
-}
-.back-btn:hover .back-icon { transform: translateX(-2px); }
-.back-label {
-  font-family: 'Sora', sans-serif; font-size: .82rem;
-  font-weight: 700; color: var(--text);
-}
-[data-theme="dark"] .back-label { color: var(--text-main); }
-
-/* ── PAGE WRAPPER ────────────────────────────────────────────── */
-.page {
-  position: relative; z-index: 1;
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 80px 22px 80px;
-  flex: 1;
-}
-
-/* ── HEADER ──────────────────────────────────────────────────── */
-header {
-  text-align: center; margin-bottom: 40px;
-  animation: fadeDown .65s ease both;
-}
-
-.notes-badge {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,.65); border: 1px solid rgba(255,255,255,.8);
-  border-radius: 50px; padding: 5px 16px;
-  font-family: 'Sora', sans-serif; font-size: .72rem; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase; color: #158a3e;
-  backdrop-filter: blur(8px); margin-bottom: 16px;
-}
-[data-theme="dark"] .notes-badge {
-  background: rgba(74,222,128,.1);
-  border-color: rgba(74,222,128,.25);
-  color: var(--notes-accent);
-}
-
-h1 {
-  font-family: 'Sora', sans-serif;
-  font-size: clamp(1.9rem, 5vw, 3.1rem);
-  font-weight: 700; letter-spacing: -.03em; line-height: 1.1;
-  margin-bottom: 12px;
-  color: var(--text);
-}
-h1 span {
-  background: linear-gradient(120deg,#16a34a,#4ade80,#86efac);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-
-.sub {
-  color: var(--text-mid); font-size: 1rem; font-weight: 300;
-  max-width: 440px; margin: 0 auto 28px; line-height: 1.6;
-}
-
-/* ── SEARCH ──────────────────────────────────────────────────── */
-.search-wrap { display: flex; justify-content: center; }
-
-.search-box {
-  display: flex; align-items: center; gap: 11px;
-  background: rgba(255,255,255,.82); border: 1.5px solid rgba(180,235,200,.7);
-  border-radius: 50px; padding: 12px 20px;
-  width: 100%; max-width: 430px;
-  box-shadow: 0 4px 24px rgba(100,190,140,.14);
-  backdrop-filter: blur(12px); transition: var(--trans);
-}
-.search-box:focus-within {
-  border-color: #7ee8a8;
-  box-shadow: 0 4px 28px rgba(80,190,120,.2), 0 0 0 4px rgba(126,232,168,.14);
-}
-[data-theme="dark"] .search-box {
-  background: rgba(255,255,255,.06);
-  border-color: rgba(74,222,128,.2);
-}
-[data-theme="dark"] .search-box:focus-within {
-  border-color: var(--notes-accent);
-  box-shadow: 0 4px 28px rgba(74,222,128,.15), 0 0 0 4px rgba(74,222,128,.1);
-}
-.search-box i      { color: var(--text-soft-t); font-size: .9rem; }
-.search-box input  {
-  flex: 1; border: none; background: transparent; outline: none;
-  font-family: 'DM Sans', sans-serif; font-size: .96rem; color: var(--text);
-}
-.search-box input::placeholder { color: var(--text-soft-t); }
-#cnt {
-  font-family: 'Sora', sans-serif; font-size: .73rem; font-weight: 700;
-  background: rgba(180,235,200,.4); border-radius: 20px; padding: 2px 10px;
-  color: var(--text-mid); white-space: nowrap;
-}
-[data-theme="dark"] #cnt {
-  background: rgba(74,222,128,.12);
-  color: var(--notes-accent);
-}
-
-/* ── SUBJECT GROUPS ──────────────────────────────────────────── */
-.subject-group { margin-bottom: 40px; animation: fadeDown .6s ease both; }
-.subject-heading {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-}
-.subject-icon {
-  width: 38px; height: 38px; border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; color: #fff; flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(0,0,0,.12);
-}
-.subject-name { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
-.subject-level {
-  font-family: 'Sora', sans-serif; font-size: .68rem; font-weight: 700;
-  letter-spacing: .05em; text-transform: uppercase;
-  background: rgba(180,235,200,.4); color: var(--text-soft-t);
-  padding: 3px 10px; border-radius: 20px; margin-left: 2px;
-}
-[data-theme="dark"] .subject-level {
-  background: rgba(74,222,128,.1);
-  color: var(--notes-accent);
-}
-
-/* ── CARD GRID ───────────────────────────────────────────────── */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 20px; }
-
-/* ── NOTE CARD ────────────────────────────────────────────────── */
-.note-card {
-  position: relative; overflow: hidden;
-  background: var(--notes-card-bg); border: 1.5px solid var(--notes-card-bdr);
-  border-radius: var(--radius); padding: 24px 22px 20px;
-  display: flex; flex-direction: column; gap: 12px;
-  box-shadow: 0 2px 12px rgba(90,170,120,.10);
-  backdrop-filter: blur(14px);
-  transition: transform var(--trans), box-shadow var(--trans), border-color var(--trans);
-  animation: cardIn .5s ease both;
-}
-.note-card:hover {
-  transform: translateY(-7px) scale(1.016);
-  box-shadow: 0 20px 55px rgba(60,150,100,.2);
-  border-color: rgba(130,238,168,.75);
-}
-[data-theme="dark"] .note-card:hover {
-  box-shadow: 0 20px 55px rgba(74,222,128,.15);
-  border-color: rgba(74,222,128,.45);
-}
-.note-card::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: linear-gradient(90deg, transparent, #4ade80, transparent);
-  opacity: 0; transition: opacity var(--trans);
-}
-.note-card:hover::after { opacity: 1; }
-
-.note-card-top { display: flex; align-items: flex-start; gap: 12px; }
-.note-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: linear-gradient(135deg,#4ade80,#16a34a);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; color: #fff;
-  box-shadow: 0 4px 14px rgba(0,0,0,.1);
-  transition: transform var(--trans); flex-shrink: 0;
-}
-.note-card:hover .note-icon { transform: scale(1.12) rotate(-4deg); }
-
-.note-title { font-family: 'Sora', sans-serif; font-size: 1.02rem; font-weight: 700; letter-spacing: -.01em; color: var(--text); line-height: 1.3; }
-.note-desc { font-size: .84rem; color: var(--text-mid); line-height: 1.6; font-weight: 300; flex: 1; }
-
-/* ── READ BUTTON (renamed from .btn to avoid style.css conflict) ── */
-.note-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 18px; border-radius: 50px; align-self: flex-start;
-  font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 600;
-  text-decoration: none; color: #158a3e;
-  background: #fff; border: 1.5px solid rgba(130,238,168,.5);
-  box-shadow: 0 2px 10px rgba(90,170,120,.1); transition: var(--trans);
-}
-.note-btn:hover { background: linear-gradient(120deg,#daf9e4,#eafff2); border-color: #7ee8a8; transform: translateX(2px); }
-[data-theme="dark"] .note-btn {
-  background: rgba(74,222,128,.08);
-  color: var(--notes-accent);
-  border-color: rgba(74,222,128,.25);
-}
-[data-theme="dark"] .note-btn:hover {
-  background: var(--notes-accent);
-  color: #020617;
-  border-color: var(--notes-accent);
-}
-
-/* ── EMPTY STATE ─────────────────────────────────────────────── */
-.empty { text-align: center; padding: 60px 20px; display: none; }
-.empty.show { display: block; }
-.empty i { font-size: 2.4rem; color: var(--text-soft-t); margin-bottom: 12px; display: block; }
-.empty p { color: var(--text-mid); }
-
-/* ── RESPONSIVE ──────────────────────────────────────────────── */
-@media (max-width: 580px) {
-  .page { padding: 72px 14px 56px; }
-  .grid { grid-template-columns: 1fr; }
-}
-</style>
-
-
-<script>
+    <script>
 /* ── RENDER ENGINE — no need to edit ─────────────── */
 const subjectsEl = document.getElementById('subjects');
 const input      = document.getElementById('q');
@@ -362,7 +126,6 @@ function render(q) {
   subjectsEl.innerHTML = '';
 
   let shown = 0;
-  let groupIdx = 0;
 
   NOTE_SUBJECTS.forEach((group) => {
     const matches = group.notes.filter(n =>
@@ -375,36 +138,30 @@ function render(q) {
 
     shown += matches.length;
 
-    const section = document.createElement('div');
+    const section = document.createElement('section');
     section.className = 'subject-group';
-    section.style.animationDelay = (groupIdx * 0.08) + 's';
-    groupIdx++;
 
     section.innerHTML = `
-      <div class="subject-heading">
-        <div class="subject-icon" style="background:${group.color || '#16a34a'}"><i class="${group.icon || 'fa-solid fa-book'}"></i></div>
-        <span class="subject-name">${group.subject}</span>
-        ${group.level ? `<span class="subject-level">${group.level}</span>` : ''}
+      <div class="subject-head">
+        <span class="tile"><i class="${group.icon || 'fa-solid fa-book'}" aria-hidden="true"></i></span>
+        <h2>${group.subject}</h2>
+        ${group.level ? `<span class="badge">${group.level}</span>` : ''}
       </div>
-      <div class="grid"></div>
+      <div class="util-list"></div>
     `;
 
-    const grid = section.querySelector('.grid');
-    matches.forEach((n, i) => {
-      const card = document.createElement('div');
-      card.className = 'note-card';
-      card.style.animationDelay = (i * 0.055) + 's';
-      card.innerHTML = `
-        <div class="note-card-top">
-          <div class="note-icon"><i class="fa-solid fa-file-pdf"></i></div>
-        </div>
-        <div class="note-title">${n.title}</div>
-        <div class="note-desc">${n.desc || ''}</div>
-        <a class="note-btn" href="${buildReaderUrl(n)}" title="Read ${n.title}">
-          Read <i class="fa-solid fa-book-open" style="font-size:.7rem"></i>
-        </a>
+    const list = section.querySelector('.util-list');
+    matches.forEach((n) => {
+      const a = document.createElement('a');
+      a.className = 'util note-row';
+      a.href = buildReaderUrl(n);
+      a.title = 'Read ' + n.title;
+      a.innerHTML = `
+        <span class="tile"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></span>
+        <span class="row-body"><span class="row-title">${n.title}</span><span class="row-desc">${n.desc || ''}</span></span>
+        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
       `;
-      grid.appendChild(card);
+      list.appendChild(a);
     });
 
     subjectsEl.appendChild(section);
@@ -413,26 +170,17 @@ function render(q) {
   cnt.textContent = shown + ' note' + (shown !== 1 ? 's' : '');
 
   if (!shown) {
-    subjectsEl.innerHTML = `<div class="empty show">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <p>No notes found for "<b>${q}</b>" — try a different keyword.</p>
+    subjectsEl.innerHTML = `<div class="empty">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      No notes found for "<strong>${q}</strong>" — try a different keyword.
     </div>`;
   }
 }
 
 input.addEventListener('input', e => render(e.target.value));
 render();
-
-/* Hide navbar on scroll */
-let lastScroll = window.scrollY;
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  if (window.scrollY > lastScroll && window.scrollY > 70) nav.classList.add('navbar-hidden');
-  else nav.classList.remove('navbar-hidden');
-  lastScroll = window.scrollY;
-});
-</script>
-
-<script src="footer.js"></script>
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
 </body>
 </html>

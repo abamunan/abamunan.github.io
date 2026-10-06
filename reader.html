@@ -1,252 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title id="page-title">Reading — Document</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #201d1a;
-    --paper: #f6f1e7;
-    --paper-panel: #fbf8f2;
-    --accent: #8a3a3a;
-    --accent-soft: #c98f8f;
-    --muted: #7a7266;
-    --line: #e1d8c5;
-    --header-h: 88px;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: var(--paper);
-    font-family: 'Inter', sans-serif;
-    color: var(--ink);
-  }
-  header {
-    position: sticky; top: 0; z-index: 20;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px;
-    padding: 14px clamp(16px, 4vw, 40px);
-    min-height: var(--header-h);
-    background: var(--paper-panel);
-    border-bottom: 1px solid var(--line);
-    flex-wrap: wrap;
-  }
-  body.is-fullscreen header { display: none; }
-  .titleblock { min-width: 0; }
-  .eyebrow {
-    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--accent); font-weight: 600; margin-bottom: 2px;
-  }
-  h1 {
-    font-family: 'Lora', serif; font-weight: 600; font-style: normal;
-    font-size: clamp(18px, 2.4vw, 24px);
-    margin: 0; line-height: 1.25;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .caption {
-    font-size: 13px; color: var(--muted); margin-top: 3px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .mode-toggle {
-    display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
-  }
-  .mode-toggle button {
-    border: none; background: transparent; padding: 7px 12px;
-    font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--muted);
-    cursor: pointer; transition: background .15s, color .15s;
-  }
-  .mode-toggle button + button { border-left: 1px solid var(--line); }
-  .mode-toggle button.active { background: var(--ink); color: var(--paper-panel); }
-  .icon-btn {
-    border: 1px solid var(--line); background: var(--paper-panel);
-    border-radius: 8px; width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--ink); text-decoration: none; font-size: 15px;
-  }
-  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title id="page-title">Reader | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/reader.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/reader.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Reader | Munan.hub">
+    <meta property="og:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Reader | Munan.hub">
+    <meta name="twitter:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <style>
+        /* ============================================================
+           Reader shell (Field Notebook tokens).
+           Chrome follows the site light/dark theme. The Paper / Sepia / Dark
+           buttons are a reader feature: they only filter the document frame.
+           ============================================================ */
+        :root { --header-h: 76px; }  /* script keeps this in sync with the real bar height */
+        html, body { height: 100%; }
 
-  main {
-    position: relative;
-    height: calc(100vh - var(--header-h));
-    height: calc(100dvh - var(--header-h));
-  }
-  iframe {
-    width: 100%; height: 100%; border: none; display: block;
-    background: #fff;
-    transition: filter .2s ease;
-  }
-  iframe.mode-dark { filter: invert(0.92) hue-rotate(180deg) contrast(0.92); }
-  iframe.mode-sepia { filter: sepia(0.4) saturate(1.1) brightness(0.98) contrast(0.96); }
-  .loading {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px;
-    background: var(--paper); color: var(--muted); font-size: 13px;
-    transition: opacity .25s ease; z-index: 5;
-  }
-  .spinner {
-    width: 26px; height: 26px; border-radius: 50%;
-    border: 2.5px solid var(--line); border-top-color: var(--accent);
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading.hidden { opacity: 0; pointer-events: none; }
+        .rd-header {
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+            gap: 10px 16px; min-height: var(--header-h);
+            padding: 10px clamp(16px, 4vw, 40px);
+            background: var(--paper); border-bottom: 1.5px solid var(--line);
+        }
+        body.is-fullscreen .rd-header { display: none; }
+        .rd-logo { flex: none; }
+        .titleblock { min-width: 0; flex: 1 1 200px; }
+        .titleblock .kicker { margin-bottom: 2px; font-size: .7rem; }
+        .titleblock h1 {
+            font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin: 0;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .caption { font-size: .84rem; color: var(--soft); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-  /* ---- study dock (draggable speed-dial) ---- */
-  .dock {
-    position: fixed; right: 16px; bottom: 22px; z-index: 25;
-  }
-  .dock button {
-    width: 44px; height: 44px; border-radius: 12px;
-    border: 1px solid var(--line); background: var(--paper-panel);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--ink); font-size: 17px; gap: 1px;
-    box-shadow: 0 2px 6px rgba(32,29,26,0.08);
-  }
-  .dock button .tag {
-    font-size: 8.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em;
-  }
-  .dock button.active { border-color: var(--accent); color: var(--accent); }
-  .dock button.active .tag { color: var(--accent); }
-  .dock button.has-content::after {
-    content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent); margin: -34px 0 0 26px;
-  }
-  #dock-handle {
-    position: relative; font-size: 19px; cursor: grab; touch-action: none; z-index: 2;
-    box-shadow: 0 3px 10px rgba(32,29,26,0.16);
-  }
-  .dock-btn {
-    position: absolute; right: 0; bottom: 0;
-    transition: transform .22s cubic-bezier(.34,1.56,.64,1), opacity .18s ease, bottom .22s cubic-bezier(.34,1.56,.64,1);
-    transform: scale(0); opacity: 0; pointer-events: none;
-  }
-  .dock.expanded .dock-btn {
-    transform: scale(1); opacity: 1; pointer-events: auto;
-  }
-  .dock.expanded .dock-btn:nth-child(2) { bottom: 52px;  transition-delay: 0s;   }
-  .dock.expanded .dock-btn:nth-child(3) { bottom: 104px; transition-delay: .02s; }
-  .dock.expanded .dock-btn:nth-child(4) { bottom: 156px; transition-delay: .04s; }
-  .dock.expanded .dock-btn:nth-child(5) { bottom: 208px; transition-delay: .06s; }
-  .dock.expanded .dock-btn:nth-child(6) { bottom: 260px; transition-delay: .08s; }
-  .dock.expanded .dock-btn:nth-child(7) { bottom: 312px; transition-delay: .10s; }
+        .mode-toggle { display: flex; gap: 4px; padding: 3px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--bg); }
+        .mode-toggle button { padding: 6px 14px; min-height: 32px; border-radius: 999px; font-size: .82rem; font-weight: 700; color: var(--muted); transition: background var(--trans), color var(--trans); }
+        .mode-toggle button:hover { color: var(--ink); }
+        .mode-toggle button.active { background: var(--ink); color: var(--bg); }
+        :root[data-theme="dark"] .mode-toggle button.active { background: var(--marker); color: #11221D; }
 
-  .mini-timer {
-    position: fixed; top: calc(var(--header-h) + 10px); right: 14px; z-index: 24;
-    display: none; align-items: center; justify-content: center;
-    background: var(--ink); color: var(--paper-panel);
-    border-radius: 18px; padding: 9px 16px; font-size: 15px; font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    box-shadow: 0 3px 10px rgba(32,29,26,0.2); cursor: grab;
-    font-family: 'Inter', sans-serif; letter-spacing: .02em; border: none;
-    touch-action: none; user-select: none;
-  }
-  .mini-timer.show { display: flex; }
-  .mini-timer.paused { opacity: .5; }
-  .mini-timer.break-mode { background: var(--accent); }
-  #mini-timer-close {
-    position: absolute; top: -7px; right: -7px; width: 19px; height: 19px;
-    border-radius: 50%; border: 1px solid var(--line); background: var(--paper-panel);
-    color: var(--ink); font-size: 12px; line-height: 1; padding: 0;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-  }
+        .icon-btn {
+            width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
+            border: 1.5px solid var(--line); border-radius: 50%; background: var(--paper);
+            color: var(--ink); font-size: 1rem; text-decoration: none;
+            transition: background var(--trans), border-color var(--trans);
+        }
+        .icon-btn:hover { border-color: var(--ink); background: var(--lagoon-tint); }
 
-  .backdrop {
-    position: fixed; inset: 0; background: rgba(32,29,26,0.25);
-    opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 29;
-  }
-  .backdrop.show { opacity: 1; pointer-events: auto; }
+        main { position: relative; height: calc(100vh - var(--header-h)); height: calc(100dvh - var(--header-h)); }
+        iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; transition: filter .2s ease; }
+        iframe.mode-dark { filter: invert(0.92) hue-rotate(180deg) contrast(0.92); }
+        iframe.mode-sepia { filter: sepia(0.4) saturate(1.1) brightness(0.98) contrast(0.96); }
+        .loading {
+            position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; padding: 24px; text-align: center; background: var(--bg); color: var(--muted); font-size: .92rem;
+            transition: opacity .25s ease; z-index: 5;
+        }
+        .loading.hidden { opacity: 0; pointer-events: none; }
+        .loading .spinner { width: 28px; height: 28px; }
 
-  .panel {
-    position: fixed; top: var(--header-h); right: 0; bottom: 0; width: 320px;
-    background: var(--paper-panel); border-left: 1px solid var(--line);
-    box-shadow: -8px 0 24px rgba(32,29,26,0.1);
-    transform: translateX(100%); transition: transform .25s ease;
-    z-index: 30; padding: 20px; overflow-y: auto;
-  }
-  .panel.open { transform: translateX(0); }
-  .panel h2 {
-    font-family: 'Lora', serif; font-size: 16px; margin: 0 0 14px;
-  }
-  .panel .close-x {
-    position: absolute; top: 16px; right: 16px; border: none; background: none;
-    font-size: 16px; color: var(--muted); cursor: pointer;
-  }
-  .field-label {
-    font-size: 11.5px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px;
-  }
-  .field-label:first-of-type { margin-top: 0; }
-  .row { display: flex; gap: 8px; align-items: center; }
-  input[type="number"], input[type="text"] {
-    font-family: inherit; border: 1px solid var(--line); border-radius: 7px;
-    padding: 8px 10px; font-size: 13.5px; background: #fff; color: var(--ink); width: 100%;
-  }
-  .btn {
-    font-family: inherit; border: 1px solid var(--line); background: #fff;
-    border-radius: 7px; padding: 8px 12px; font-size: 13px; font-weight: 500;
-    cursor: pointer; color: var(--ink);
-  }
-  .btn.primary { background: var(--ink); color: var(--paper-panel); border-color: var(--ink); }
-  .btn.small { padding: 6px 9px; font-size: 12px; }
-  .progress-track {
-    height: 6px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 10px;
-  }
-  .progress-fill {
-    height: 100%; background: var(--accent); width: 1.6%; transition: width .2s ease;
-  }
-  .progress-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .hint { font-size: 11.5px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+        /* ---- study dock (draggable speed-dial) ---- */
+        .dock { position: fixed; right: 16px; bottom: 22px; z-index: 25; }
+        .dock button {
+            width: 44px; height: 44px; border-radius: 14px;
+            border: 1.5px solid var(--line); background: var(--paper);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--ink); font-size: 17px; gap: 1px;
+            box-shadow: 0 2px 8px rgba(17,34,29,.14);
+        }
+        .dock button .tag { font-size: 8.5px; font-weight: 700; color: var(--soft); letter-spacing: .02em; }
+        .dock button:hover { border-color: var(--ink); }
+        .dock button.active { border-color: var(--lagoon); background: var(--lagoon-tint); color: var(--lagoon); }
+        .dock button.active .tag { color: var(--lagoon); }
+        .dock button.has-content::after {
+            content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--marker); border: 1.5px solid var(--ink); margin: -34px 0 0 26px;
+        }
+        #dock-handle {
+            position: relative; font-size: 19px; cursor: grab; touch-action: none; z-index: 2;
+            background: var(--ink); color: var(--bg); border-color: var(--ink);
+        }
+        #dock-handle:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] #dock-handle { background: var(--marker); color: #11221D; border-color: var(--marker); }
+        :root[data-theme="dark"] #dock-handle:hover { background: #fff; border-color: #fff; }
+        .dock-btn {
+            position: absolute; right: 0; bottom: 0;
+            transition: transform .22s cubic-bezier(.34,1.56,.64,1), opacity .18s ease, bottom .22s cubic-bezier(.34,1.56,.64,1);
+            transform: scale(0); opacity: 0; pointer-events: none;
+        }
+        .dock.expanded .dock-btn { transform: scale(1); opacity: 1; pointer-events: auto; }
+        .dock.expanded .dock-btn:nth-child(2) { bottom: 52px;  transition-delay: 0s;   }
+        .dock.expanded .dock-btn:nth-child(3) { bottom: 104px; transition-delay: .02s; }
+        .dock.expanded .dock-btn:nth-child(4) { bottom: 156px; transition-delay: .04s; }
+        .dock.expanded .dock-btn:nth-child(5) { bottom: 208px; transition-delay: .06s; }
+        .dock.expanded .dock-btn:nth-child(6) { bottom: 260px; transition-delay: .08s; }
+        .dock.expanded .dock-btn:nth-child(7) { bottom: 312px; transition-delay: .10s; }
 
-  textarea {
-    width: 100%; min-height: 260px; font-family: inherit; font-size: 13.5px;
-    border: 1px solid var(--line); border-radius: 8px; padding: 10px; resize: vertical;
-    color: var(--ink); background: #fff;
-  }
+        .mini-timer {
+            position: fixed; top: calc(var(--header-h) + 10px); right: 14px; z-index: 24;
+            display: none; align-items: center; justify-content: center;
+            background: var(--ink); color: var(--bg); border-radius: 999px; padding: 9px 18px;
+            font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em;
+            box-shadow: 0 2px 8px rgba(17,34,29,.2); cursor: grab; border: none; touch-action: none; user-select: none;
+        }
+        .mini-timer.show { display: flex; }
+        .mini-timer.paused { opacity: .55; }
+        .mini-timer.break-mode { background: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] .mini-timer { background: var(--marker); color: #11221D; }
+        :root[data-theme="dark"] .mini-timer.break-mode { background: var(--lagoon); color: #11221D; }
+        #mini-timer-close {
+            position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; min-height: 0;
+            border-radius: 50%; border: 1.5px solid var(--ink); background: var(--paper);
+            color: var(--ink); font-size: 12px; line-height: 1; padding: 0;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
 
-  .timer-display {
-    font-family: 'Lora', serif; font-size: 42px; text-align: center;
-    margin: 6px 0 4px; letter-spacing: .02em;
-  }
-  .timer-mode-label {
-    text-align: center; font-size: 11.5px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--accent); margin-bottom: 14px;
-  }
-  .timer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
-  .timer-sessions { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; }
+        .backdrop { position: fixed; inset: 0; background: rgba(17,34,29,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 29; }
+        .backdrop.show { opacity: 1; pointer-events: auto; }
 
-  .shortcuts-list { font-size: 12.5px; color: var(--muted); line-height: 2; }
-  .shortcuts-list kbd {
-    background: #fff; border: 1px solid var(--line); border-radius: 4px;
-    padding: 1px 6px; font-family: inherit; font-size: 11.5px; color: var(--ink);
-  }
+        .rd-panel {
+            position: fixed; top: var(--header-h); right: 0; bottom: 0; width: 340px;
+            background: var(--paper); border-left: 1.5px solid var(--line);
+            transform: translateX(100%); transition: transform .25s ease;
+            z-index: 30; padding: 22px 20px; overflow-y: auto;
+        }
+        .rd-panel.open { transform: translateX(0); }
+        .rd-panel h2 { font-size: 1.15rem; margin: 0 0 14px; padding-right: 36px; }
+        .rd-panel .close-x {
+            position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; color: var(--muted);
+        }
+        .rd-panel .close-x:hover { background: var(--lagoon-tint); color: var(--ink); }
+        .field-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--soft); margin: 16px 0 6px; }
+        .field-label:first-of-type { margin-top: 0; }
+        .row { display: flex; gap: 8px; align-items: center; }
+        .rd-panel input[type="number"], .rd-panel input[type="text"], .rd-panel textarea {
+            width: 100%; min-height: 40px; padding: 8px 12px; background: var(--bg); color: var(--ink);
+            border: 1.5px solid var(--line); border-radius: var(--r-input); font-size: .92rem;
+        }
+        .rd-panel input:focus, .rd-panel textarea:focus { outline: none; border-color: var(--lagoon); box-shadow: 0 0 0 4px var(--lagoon-tint); }
+        .rd-panel textarea { min-height: 260px; resize: vertical; line-height: 1.55; }
+        .btn {
+            border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+            border-radius: 999px; padding: 8px 16px; min-height: 40px; font-size: .88rem; font-weight: 700; white-space: nowrap;
+            transition: background var(--trans), border-color var(--trans), color var(--trans);
+        }
+        .btn:hover { border-color: var(--ink); }
+        .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+        .btn.primary:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] .btn.primary { background: var(--marker); color: #11221D; border-color: var(--marker); }
+        :root[data-theme="dark"] .btn.primary:hover { background: #fff; border-color: #fff; }
+        .btn.small { padding: 5px 12px; min-height: 34px; font-size: .8rem; }
+        .progress-track { height: 10px; background: var(--lagoon-tint); border-radius: 99px; overflow: hidden; margin-top: 14px; }
+        .progress-fill { height: 100%; background: var(--lagoon); width: 1.6%; border-radius: inherit; transition: width .2s ease; }
+        .progress-label { font-size: .84rem; color: var(--muted); margin-top: 8px; }
+        .hint { font-size: .8rem; color: var(--soft); margin-top: 12px; line-height: 1.5; }
 
-  @media (max-width: 560px) {
-    header { padding: 12px 16px; }
-    .caption { display: none; }
-    .dock { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
-    .dock button { width: 42px; height: 42px; font-size: 16px; }
-    .dock button .tag { display: none; }
-    .panel {
-      top: auto; bottom: 0; width: 100%; height: 72vh;
-      border-left: none; border-top: 1px solid var(--line);
-      border-radius: 16px 16px 0 0;
-      transform: translateY(100%);
-    }
-    .panel.open { transform: translateY(0); }
-  }
-</style>
+        .timer-display { font-family: var(--display); font-weight: 800; font-size: 2.9rem; text-align: center; margin: 6px 0 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+        .timer-mode-label { text-align: center; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--lagoon); margin-bottom: 14px; }
+        .timer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+        .timer-sessions { text-align: center; font-size: .84rem; color: var(--soft); margin-top: 12px; }
+
+        .shortcuts-list { font-size: .9rem; color: var(--muted); line-height: 2.1; }
+        .shortcuts-list kbd {
+            background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px;
+            padding: 1px 8px; font-family: var(--mono); font-size: .78rem; color: var(--ink);
+        }
+
+        @media (max-width: 760px) { .rd-logo { display: none; } }
+        @media (max-width: 560px) {
+            .rd-header { padding: 8px 16px; gap: 6px 12px; }
+            .caption { display: none; }
+            .titleblock { flex-basis: 100%; }
+            .controls { flex-wrap: wrap; gap: 5px; flex-shrink: 1; }
+            .mode-toggle { gap: 2px; }
+            .mode-toggle button { padding: 6px 9px; }
+            .icon-btn { width: 36px; height: 36px; font-size: .95rem; }
+            .dock { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+            .dock button { width: 42px; height: 42px; font-size: 16px; }
+            .dock button .tag { display: none; }
+            .rd-panel {
+                top: auto; bottom: 0; width: 100%; height: 72vh;
+                border-left: none; border-top: 1.5px solid var(--line);
+                border-radius: 20px 20px 0 0;
+                transform: translateY(100%);
+            }
+            .rd-panel.open { transform: translateY(0); }
+        }
+    </style>
 </head>
-<body>
+<body class="v2 reader">
+<a class="skip" href="#main">Skip to content</a>
 
-<header>
+
+<header class="rd-header">
+  <a class="nav-logo rd-logo" href="index.html" aria-label="Munan.hub home">Munan<span>.hub</span></a>
   <div class="titleblock">
     <!-- Edit these two lines: headline and caption -->
-    <div class="eyebrow">Reading</div>
+    <span class="kicker">Reading</span>
     <h1 id="doc-title">Document Title Goes Here</h1>
     <div class="caption" id="doc-caption">Add a short source note or caption here</div>
   </div>
@@ -259,6 +231,7 @@
     <button class="icon-btn" id="fullscreen-btn" title="Fullscreen (F)" aria-label="Fullscreen">⤢</button>
     <a class="icon-btn" id="open-drive-btn" href="#" target="_blank" rel="noopener" title="Open in Drive" aria-label="Open in Drive">↗</a>
     <a class="icon-btn" href="notes.html" title="Back to Notes" aria-label="Back to Notes">←</a>
+    <button type="button" class="icon-btn" id="themeBtn" title="Switch light or dark theme" aria-label="Switch light or dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
   </div>
 </header>
 
@@ -267,7 +240,7 @@
   <button type="button" id="mini-timer-close" aria-label="Remove from screen">✕</button>
 </div>
 
-<main>
+<main id="main">
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <span>Loading pages…</span>
@@ -291,14 +264,14 @@
 <div class="backdrop" id="backdrop"></div>
 
 <!-- Go to page / progress -->
-<div class="panel" data-name="progress">
-  <button class="close-x" data-close>✕</button>
+<div class="rd-panel" data-name="progress">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
   <h2>Track your place</h2>
   <div class="field-label">Total pages</div>
-  <input type="number" id="total-pages" min="1" value="60">
+  <input type="number" id="total-pages" min="1" value="60" aria-label="Total pages">
   <div class="field-label">Jump to page</div>
   <div class="row">
-    <input type="number" id="goto-page" min="1" value="1">
+    <input type="number" id="goto-page" min="1" value="1" aria-label="Jump to page">
     <button class="btn" id="goto-prev">−</button>
     <button class="btn" id="goto-next">+</button>
     <button class="btn primary" id="goto-go">Go</button>
@@ -309,12 +282,12 @@
 </div>
 
 <!-- Bookmarks -->
-<div class="panel" data-name="bookmarks">
-  <button class="close-x" data-close>✕</button>
+<div class="rd-panel" data-name="bookmarks">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
   <h2>Bookmarks</h2>
   <div class="field-label">Save current page</div>
   <div class="row">
-    <input type="text" id="bookmark-label" placeholder="Label (optional)">
+    <input type="text" id="bookmark-label" placeholder="Label (optional)" aria-label="Bookmark label">
     <button class="btn primary" id="bookmark-add">Save</button>
   </div>
   <div id="bookmark-list" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;"></div>
@@ -322,10 +295,10 @@
 </div>
 
 <!-- Notes -->
-<div class="panel" data-name="notes">
-  <button class="close-x" data-close>✕</button>
+<div class="rd-panel" data-name="notes">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
   <h2>Quick notes</h2>
-  <textarea id="notes-area" placeholder="Jot down anything worth remembering while you read…"></textarea>
+  <textarea id="notes-area" aria-label="Quick notes" placeholder="Jot down anything worth remembering while you read…"></textarea>
   <div class="row" style="margin-top:10px;">
     <button class="btn primary" id="notes-download">Download as .txt</button>
     <button class="btn" id="notes-clear">Clear</button>
@@ -334,17 +307,17 @@
 </div>
 
 <!-- Timer -->
-<div class="panel" data-name="timer">
-  <button class="close-x" data-close>✕</button>
+<div class="rd-panel" data-name="timer">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
   <h2>Study timer</h2>
   <div class="row">
     <div style="flex:1;">
       <div class="field-label">Focus (min)</div>
-      <input type="number" id="focus-min" min="1" value="25">
+      <input type="number" id="focus-min" min="1" value="25" aria-label="Focus minutes">
     </div>
     <div style="flex:1;">
       <div class="field-label">Break (min)</div>
-      <input type="number" id="break-min" min="1" value="5">
+      <input type="number" id="break-min" min="1" value="5" aria-label="Break minutes">
     </div>
   </div>
   <div class="timer-mode-label" id="timer-mode">Focus</div>
@@ -359,8 +332,8 @@
 </div>
 
 <!-- Help -->
-<div class="panel" data-name="help">
-  <button class="close-x" data-close>✕</button>
+<div class="rd-panel" data-name="help">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
   <h2>Keyboard shortcuts</h2>
   <div class="shortcuts-list">
     <div><kbd>F</kbd> Fullscreen</div>
@@ -403,7 +376,7 @@
 
   const resolvedSrc = resolveDriveEmbedUrl(rawSrc);
 
-  document.getElementById('page-title').textContent = pageTitle + ' — Reading';
+  document.getElementById('page-title').textContent = pageTitle + ' — Reading | Munan.hub';
   document.getElementById('doc-title').textContent = pageTitle;
   const captionEl = document.getElementById('doc-caption');
   if (pageCaption) { captionEl.textContent = pageCaption; }
@@ -421,6 +394,9 @@
 
   frame.addEventListener('load', () => loading.classList.add('hidden'));
   setTimeout(() => loading.classList.add('hidden'), 4000);
+
+  // site theme toggle (the page chrome follows the site; the reading mode below is separate)
+  if (window.MunanTheme) MunanTheme.bindToggle(document.getElementById('themeBtn'));
 
   // reading mode
   document.querySelectorAll('.mode-toggle button').forEach((btn, i) => {
@@ -454,7 +430,7 @@
 
   // ---- dock / panel switching ----
   const dockButtons = document.querySelectorAll('.dock button[data-panel]');
-  const panels = document.querySelectorAll('.panel');
+  const panels = document.querySelectorAll('.rd-panel');
   const backdrop = document.getElementById('backdrop');
   const dockEl = document.getElementById('dock');
   const dockHandle = document.getElementById('dock-handle');

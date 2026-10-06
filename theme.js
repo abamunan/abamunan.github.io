@@ -60,6 +60,8 @@
     // skipped entirely under prefers-reduced-motion or on touch-only
     // devices (no meaningful hover position there anyway).
     function initMeshParallax() {
+        // Pages on the new design system (body.v2) have no mesh background.
+        if (document.body && document.body.classList.contains('v2')) return;
         const prefersReduced = window.matchMedia &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isTouchOnly = window.matchMedia &&
@@ -99,6 +101,20 @@
 
     document.addEventListener('DOMContentLoaded', initMeshParallax);
 
+    // ── KEEP TABS AND IFRAMES IN SYNC ───────────────────────────────
+    // The 'storage' event fires in every OTHER same-origin document
+    // (other tabs and iframes) when the theme key changes, so a toggle
+    // on one page updates the rest without a reload.
+    window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY) apply(isDark());
+    });
+    // Also accept an explicit message from a parent page (same origin only).
+    window.addEventListener('message', (e) => {
+        if (e.origin !== window.location.origin) return;
+        const d = e.data;
+        if (d && d.munanTheme) apply(d.munanTheme === 'dark');
+    });
+
     // ── PUBLIC API ───────────────────────────────────────────────
     window.MunanTheme = {
         /** Returns 'dark' or 'light'. */
@@ -117,6 +133,13 @@
             const dark = theme === 'dark';
             localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
             apply(dark);
+        },
+        /** Pushes the current theme into an iframe (same-origin) right now. */
+        sync(frameEl) {
+            try {
+                const w = frameEl && frameEl.contentWindow;
+                if (w) w.postMessage({ munanTheme: isDark() ? 'dark' : 'light' }, window.location.origin);
+            } catch (e) {}
         },
         /**
          * Wires a toggle button: click switches theme and updates the

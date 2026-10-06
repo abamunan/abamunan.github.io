@@ -1,0 +1,141 @@
+/* ============================================================
+   app.css v1 — "App" layer for personal app pages (Round 6)
+   Load AFTER site.css, on <body class="v2 app app-xx">.
+   Pages: diary (app-diary), english-tracker (app-et), garments-accounts (app-ga)
+
+   Same idea as tool.css: map each page's OLD variable names onto the
+   Field Notebook tokens, so the page keeps its own layout CSS but gets
+   the new palette, fonts and light/dark behaviour.
+   Restyle only: no ids, classes used by JS, storage keys or Firestore
+   paths are changed by this file.
+   ============================================================ */
+
+/* ---------- Shared: shell, navbar offset, no glass --------------------- */
+body.app {
+    font-family: var(--body);
+    --on-accent: #fff;
+    --tint-weak: color-mix(in srgb, var(--lagoon) 8%, transparent);
+    --tint: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    --trans: .2s ease;
+    padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-tap-highlight-color: transparent;
+}
+:root[data-theme="dark"] body.app { --on-accent: #11221D; }
+
+/* The apps have their own bars / sidebars, so the shared navbar stays put */
+body.app .navbar.navbar-hidden { transform: none; }
+
+body.app *, body.app *::before, body.app *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+/* ...except the shared navbar, which keeps its blur */
+body.app .navbar { -webkit-backdrop-filter: blur(14px) !important; backdrop-filter: blur(14px) !important; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Shared app building blocks (new pages can use these; the three Round 6
+   pages mostly keep their own class names) */
+.app-stat { background: var(--paper); border: 1.5px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.app-stat b { display: block; font-family: var(--display); font-size: 1.6rem; letter-spacing: -.02em; line-height: 1.15; }
+.app-stat span { color: var(--soft); font-size: .84rem; }
+.app-empty { text-align: center; padding: 44px 20px; color: var(--soft); border: 1.5px dashed var(--line); border-radius: 20px; }
+.app-empty i { display: block; font-size: 1.8rem; margin-bottom: 10px; color: var(--soft); }
+.app-table-wrap { overflow-x: auto; border: 1.5px solid var(--line); border-radius: 16px; background: var(--paper); }
+.app-formrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+
+@media (max-width: 700px) {
+    body.app button:not(.nav-burger):not(.theme-toggle) { min-height: 40px; }
+}
+
+/* ======================================================================
+   DIARY  (body.app-diary)
+   Old names used by diary.html: --card-bg --card-border --accent
+   --text-main --text-soft --ink --ink-soft --trans
+   ====================================================================== */
+body.app-diary {
+    --accent: var(--lagoon);
+    --card-bg: var(--paper);
+    --card-border: var(--line);
+    --text-main: var(--ink);
+    --text-soft: var(--soft);
+    --ink-soft: var(--soft);
+    --danger: var(--err);
+    --amber: var(--warn);
+}
+
+/* ======================================================================
+   ENGLISH TRACKER  (body.app-et)
+   Old names: --bg --card --ink --mut --line --ac --ac2 --warn --sh
+   --onac --h1 --h2.  --bg / --ink / --line come straight from site.css.
+   ====================================================================== */
+body.app-et {
+    --card: var(--paper);
+    --mut: var(--muted);
+    --ac: var(--lagoon);
+    --ac2: var(--lagoon-tint);
+    --warn: var(--err-bg);          /* page uses --warn as a *background* (missed days, owed box) */
+    --sh: none;
+    --onac: var(--on-accent);
+    --h1: #0A6F48;
+    --h2: #07563a;
+}
+:root[data-theme="dark"] body.app-et { --h1: #173126; --h2: #0F241B; }
+
+/* Collisions with site.css names (.stat .hero .toast): neutralise the leaks */
+body.app-et .stat { border: 0; }
+body.app-et .hero { padding: 18px; overflow: visible; }
+body.app-et .card { border-width: 1.5px; border-radius: 20px; }
+body.app-et h1 { font-family: var(--display); letter-spacing: -.01em; }
+/* page has its own theme button (#th) that also saves to the cloud state */
+body.app-et .theme-toggle { display: none; }
+/* shell sits under the shared navbar */
+body.app-et { padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px)); }
+body.app-et .top { top: var(--nav-h); }
+@media (min-width: 900px) {
+    body.app-et .nav { top: var(--nav-h); }
+}
+/* bottom nav on phones needs room; sidebar layout on desktop (page rules lose to body.app) */
+body.app-et { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 900px) { body.app-et { padding-bottom: 24px; } }
+body.app-et .toast { animation: none; box-shadow: none; }
+body.app-et .nav { z-index: 30; }
+body.app-et .cov { z-index: 2000; }
+
+/* ======================================================================
+   GARMENTS ACCOUNTS  (body.app-ga)
+   Old names: --accent (navy) --accent2 (green) --danger --warn --warn-bg
+   --surface --surface2 --card-bg --card-border --nav-bg --text-main
+   --text-soft --bg --radius-lg --radius-md --font
+   ====================================================================== */
+body.app-ga {
+    --accent: var(--lagoon);
+    --accent2: var(--ok);
+    --accent2-glow: color-mix(in srgb, var(--ok) 22%, transparent);
+    --danger: var(--err);
+    --danger-glow: color-mix(in srgb, var(--err) 22%, transparent);
+    --surface: color-mix(in srgb, var(--lagoon) 7%, transparent);
+    --surface2: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    --card-bg: var(--paper);
+    --card-border: var(--line);
+    --card-bg-solid: var(--paper);
+    --text-main: var(--ink);
+    --text-soft: var(--soft);
+    --radius-lg: var(--r-card);
+    --radius-md: var(--r-tile);
+    --font: var(--body);
+}
+/* site.css names the page also defines (.wrap .section .empty .field .hint .badge .toast):
+   the page's own rules win by order; these reset what they do not set */
+body.app-ga .empty { grid-column: auto; }
+body.app-ga .toast { animation: none; }
+body.app-ga .gate { z-index: 2000; }
+body.app-ga .top h1 { font-family: var(--display); letter-spacing: -.01em; }
+
+/* ---------- print: app chrome never prints ---------------------------- */
+@media print {
+    body.app { padding-top: 0 !important; }
+    body.app .navbar, body.app .nav-sheet, body.app .site-footer { display: none !important; }
+}

@@ -6,36 +6,33 @@
     <meta name="robots" content="index, follow">
     <meta name="description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects, from productivity utilities to browser-based apps.">
     <meta name="author" content="Abdullah All Munan">
-    <meta name="theme-color" content="#0ea5e9">
+    <meta name="theme-color" content="#0B7A50">
     <title>All Projects | Munan.hub</title>
     <link rel="canonical" href="https://abamunan.github.io/projects.html">
     <link rel="icon" type="image/png" href="icon.png">
-
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://abamunan.github.io/projects.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="All Projects | Munan.hub">
-    <meta property="og:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects.">
+    <meta property="og:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects, from productivity utilities to browser-based apps.">
     <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="All Projects | Munan.hub">
-    <meta name="twitter:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects.">
-    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
-
+    <meta name="twitter:description" content="Every tool, app and experiment built by Abdullah All Munan (Munan) — a full collection of HTML/JS projects, from productivity utilities to browser-based apps.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Shared theme logic — blocking, must run before first paint -->
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="theme.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=2">
+    <style>
+        .tracker.is-hidden { display:none; }
+        .tracker .post-read { margin-top:auto; }
+        .tracker .chips { margin-top:2px; }
+    </style>
 
-    <!-- Structured data: lists every project as an ItemList for search engines -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -51,246 +48,117 @@
                 { "@type": "ListItem", "position": 3, "name": "Booklet Maker", "url": "https://abamunan.github.io/booklet-maker.html" },
                 { "@type": "ListItem", "position": 4, "name": "Drive Folder Fetch", "url": "https://abamunan.github.io/drive-folder-fetch.html" },
                 { "@type": "ListItem", "position": 5, "name": "Poster Splitter", "url": "https://abamunan.github.io/poster-splitter.html" },
-                { "@type": "ListItem", "position": 6, "name": "Resolution Changer", "url": "https://abamunan.github.io/resolution-changer.html" }
+                { "@type": "ListItem", "position": 6, "name": "Resolution Changer", "url": "https://abamunan.github.io/resolution-changer.html" },
+                { "@type": "ListItem", "position": 7, "name": "English Fluency Tracker", "url": "https://abamunan.github.io/english-tracker.html" }
             ]
         }
     }
     </script>
-
-    <style>
-        /* ── PROJECTS PAGE STYLES (mirrors index.html's projects section) ─── */
-        .page-header { position:relative; z-index:1; padding:100px 5% 10px; max-width:1100px; margin:0 auto; }
-        .page-back { display:inline-flex; align-items:center; gap:7px; font-size:.8rem; font-weight:700; color:var(--text-muted); text-decoration:none; margin-bottom:18px; transition:var(--trans); }
-        .page-back:hover { color:var(--accent); }
-        .page-title { display:flex; align-items:center; gap:12px; font-size:clamp(1.5rem,4vw,2.1rem); font-weight:800; letter-spacing:-.03em; margin-bottom:10px; animation:fadeDown .7s ease both; }
-        .page-title i { color:var(--accent); }
-        .page-subtitle { font-size:.92rem; color:var(--text-muted); max-width:560px; line-height:1.6; animation:fadeDown .7s .1s ease both; }
-
-        .projects-section { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:20px 5% 60px; }
-        .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
-        .project-card { background:rgba(2,132,199,.04); border:1.5px solid rgba(2,132,199,.15); border-radius:16px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:10px; transition:all var(--trans); animation:cardIn .5s ease both; }
-        .project-card:hover { border-color:var(--accent); background:rgba(2,132,199,.08); transform:translateY(-3px); box-shadow:0 10px 28px rgba(2,132,199,.14); }
-        [data-theme="dark"] .project-card { background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.08); }
-        [data-theme="dark"] .project-card:hover { background:rgba(2,132,199,.1); border-color:var(--accent); }
-        .project-card-top { display:flex; align-items:flex-start; gap:12px; }
-        .project-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:#fff; flex-shrink:0; }
-        .project-info { flex:1; }
-        .project-name { font-size:.9rem; font-weight:700; color:var(--text-main); margin-bottom:3px; letter-spacing:-.01em; }
-        .project-desc { font-size:.75rem; color:var(--text-muted); line-height:1.5; }
-        .project-tags { display:flex; flex-wrap:wrap; gap:5px; }
-        .project-tag { font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; background:rgba(2,132,199,.1); border:1px solid rgba(2,132,199,.2); border-radius:20px; padding:2px 8px; color:var(--accent); }
-        .project-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border-radius:20px; padding:7px 16px; font-size:.72rem; font-weight:700; text-decoration:none; transition:var(--trans); align-self:flex-start; margin-top:2px; }
-        .project-btn:hover { background:#0284c7; transform:translateX(2px); }
-        .project-card { position:relative; }
-        .project-badge-upcoming {
-            position:absolute; top:14px; right:14px;
-            font-size:.58rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
-            color:#B45309; background:rgba(180,83,9,.1); border:1px solid rgba(180,83,9,.3);
-            border-radius:20px; padding:3px 9px;
-        }
-        [data-theme="dark"] .project-badge-upcoming { color:#fbbf24; background:rgba(251,191,36,.1); border-color:rgba(251,191,36,.3); }
-        .project-btn.project-btn-muted { background:var(--card-bg); color:var(--text-muted); border:1.5px solid var(--card-border); }
-        .project-btn.project-btn-muted:hover { background:var(--card-bg); color:var(--text-muted); transform:none; }
-
-        @media (max-width:768px) {
-            .projects-grid { grid-template-columns:1fr; }
-            .projects-section { padding:10px 4% 40px; }
-            .page-header { padding:90px 4% 10px; }
-        }
-    </style>
 </head>
-<body>
-
-    <div class="blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
-    <div class="particles" id="particles"></div>
-
-    <nav class="navbar" id="navbar">
-        <div class="nav-logo">Munan<span>.hub</span></div>
-        <div class="nav-right">
-            <a href="login.html" class="nav-login-btn" id="authBtn">
-                <i class="fas fa-user-circle"></i> Login
-            </a>
-        </div>
-    </nav>
-
-    <header class="page-header">
-        <a href="index.html" class="page-back"><i class="fas fa-arrow-left"></i> Back to Home</a>
-        <h1 class="page-title"><i class="fas fa-layer-group"></i> All Projects</h1>
-        <p class="page-subtitle">Every tool, app and experiment I've built — browser-based, no installs, no accounts (unless noted).</p>
-    </header>
-
-    <!-- ── FULL PROJECTS GRID ── -->
-    <section class="projects-section">
-        <div class="projects-grid">
-
-            <div class="project-card" style="animation-delay:.15s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#be185d,#f472b6)">
-                        <i class="fas fa-images"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Photo Resizer</div>
-                        <div class="project-desc">Batch resize &amp; compress photos to custom resolution — no upload needed.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Image</span>
-                    <span class="project-tag">Utility</span>
-                    <span class="project-tag">HTML/JS</span>
-                </div>
-                <a href="photo-resizer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Projects</li></ol>
+                <span class="kicker">Projects</span>
+                <h1 class="page-title">All projects</h1>
+                <p class="page-lead">Every tool, app and experiment I've built — browser-based, no installs, no accounts (unless noted).</p>
             </div>
+        </header>
 
-            <div class="project-card" style="animation-delay:.25s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#dc2626,#f97316)">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">PDF Toolkit</div>
-                        <div class="project-desc">Split, rotate, merge, or unlock your PDF files instantly — all in your browser, no upload needed.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Split</span>
-                    <span class="project-tag">Rotate</span>
-                    <span class="project-tag">Unlock</span>
-                </div>
-                <a href="pdf-toolkit.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+        <section class="wrap listing" aria-label="Projects">
+            <div class="list-tools">
+                <div class="fchips" id="filters" role="group" aria-label="Filter projects by category"></div>
             </div>
-
-            <div class="project-card" style="animation-delay:.30s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#b45309,#f59e0b)">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Booklet Maker</div>
-                        <div class="project-desc">Upload a PDF and get pages reordered into saddle-stitch booklet order — print double-sided, fold, and staple.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">PDF</span>
-                    <span class="project-tag">Print</span>
-                    <span class="project-tag">Booklet</span>
-                </div>
-                <a href="booklet-maker.html" class="project-btn">Launch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
+            <div class="tracker-grid" id="projectGrid">
+                <a href="photo-resizer.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-images" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">Photo Resizer</h2>
+                    <p>Batch resize &amp; compress photos to custom resolution — no upload needed.</p>
+                    <div class="chips"><span class="chip">Image</span><span class="chip">Utility</span><span class="chip">HTML/JS</span></div>
+                    <span class="post-read">Resize <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="pdf-toolkit.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-file-pdf" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">PDF Toolkit</h2>
+                    <p>Split, rotate, merge, or unlock your PDF files instantly — all in your browser, no upload needed.</p>
+                    <div class="chips"><span class="chip">Split</span><span class="chip">Rotate</span><span class="chip">Unlock</span></div>
+                    <span class="post-read">Launch <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="booklet-maker.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-book-open" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">Booklet Maker</h2>
+                    <p>Upload a PDF and get pages reordered into saddle-stitch booklet order — print double-sided, fold, and staple.</p>
+                    <div class="chips"><span class="chip">PDF</span><span class="chip">Print</span><span class="chip">Booklet</span></div>
+                    <span class="post-read">Launch <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="drive-folder-fetch.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fa-brands fa-google-drive" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">Drive Folder Fetch</h2>
+                    <p>Paste a public Google Drive folder link and save every file straight to your computer — no zip built in memory, so large folders don't crash the tab. Needs a free Google API key.</p>
+                    <div class="chips"><span class="chip">Drive</span><span class="chip">Batch</span><span class="chip">Utility</span></div>
+                    <span class="post-read">Fetch <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="poster-splitter.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-table-cells" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">Poster Splitter</h2>
+                    <p>Upload any image and split it into a grid — get a print-ready A4 PDF to tape together into one big poster.</p>
+                    <div class="chips"><span class="chip">Image</span><span class="chip">Print</span><span class="chip">PDF</span></div>
+                    <span class="post-read">Split <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="resolution-changer.html" class="tracker" data-cat="utilities">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-expand" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">Resolution Changer</h2>
+                    <p>Scale an image's pixel resolution up or down while keeping its aspect ratio intact — no stretching or distortion.</p>
+                    <div class="chips"><span class="chip">Image</span><span class="chip">Resize</span><span class="chip">Utility</span></div>
+                    <span class="post-read">Resize <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
+                <a href="english-tracker.html" class="tracker" data-cat="trackers learning">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-language" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                    <h2 class="row-title" style="font-size:1.35rem;">English Fluency Tracker</h2>
+                    <p>A 30-minute daily English practice plan — read, summarize, listen, speak — with streaks, a daily quiz and cloud sync across devices.</p>
+                    <div class="chips"><span class="chip">Learning</span><span class="chip">Tracker</span><span class="chip">Bangla + English</span><span class="chip">Login needed</span></div>
+                    <span class="post-read">Open <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                </a>
             </div>
-
-            <div class="project-card" style="animation-delay:.35s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#0369a1,#14b8a6)">
-                        <i class="fa-brands fa-google-drive"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Drive Folder Fetch</div>
-                        <div class="project-desc">Paste a public Google Drive folder link and save every file straight to your computer — no zip built in memory, so large folders don't crash the tab. Needs a free Google API key.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Drive</span>
-                    <span class="project-tag">Batch</span>
-                    <span class="project-tag">Utility</span>
-                </div>
-                <a href="drive-folder-fetch.html" class="project-btn">Fetch <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-            </div>
-
-            <div class="project-card" style="animation-delay:.40s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
-                        <i class="fas fa-table-cells"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Poster Splitter</div>
-                        <div class="project-desc">Upload any image and split it into a grid — get a print-ready A4 PDF to tape together into one big poster.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Image</span>
-                    <span class="project-tag">Print</span>
-                    <span class="project-tag">PDF</span>
-                </div>
-                <a href="poster-splitter.html" class="project-btn">Split <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-            </div>
-
-            <div class="project-card" style="animation-delay:.45s">
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#059669,#34d399)">
-                        <i class="fas fa-expand"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Resolution Changer</div>
-                        <div class="project-desc">Scale an image's pixel resolution up or down while keeping its aspect ratio intact — no stretching or distortion.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Image</span>
-                    <span class="project-tag">Resize</span>
-                    <span class="project-tag">Utility</span>
-                </div>
-                <a href="resolution-changer.html" class="project-btn">Resize <i class="fas fa-arrow-right" style="font-size:.6rem;"></i></a>
-            </div>
-
-            <div class="project-card" style="animation-delay:.50s">
-                <span class="project-badge-upcoming">Upcoming</span>
-                <div class="project-card-top">
-                    <div class="project-icon" style="background:linear-gradient(135deg,#64748b,#94a3b8)">
-                        <i class="fa-solid fa-right-left"></i>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-name" role="heading" aria-level="2">Chat Bridge</div>
-                        <div class="project-desc">A personal message-forwarding bridge between two chat platforms. Still in the workshop — details up once it's further along.</div>
-                    </div>
-                </div>
-                <div class="project-tags">
-                    <span class="project-tag">Automation</span>
-                    <span class="project-tag">In Progress</span>
-                </div>
-                <a href="bot1.html" class="project-btn project-btn-muted">Coming Soon <i class="fas fa-hourglass-half" style="font-size:.6rem;"></i></a>
-            </div>
-
-        </div>
-    </section>
-
+            <div class="empty" id="emptyMsg" hidden><i class="fas fa-folder-open" aria-hidden="true"></i>Nothing in this category yet.</div>
+        </section>
+    </main>
     <script>
-        /* ── PARTICLES ─── */
-        const pContainer = document.getElementById('particles');
-        for (let i = 0; i < 16; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            const s = Math.random() * 9 + 3;
-            p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*12}s;`;
-            pContainer.appendChild(p);
-        }
-
-        /* ── NAVBAR HIDE ON SCROLL ─── */
-        let lastScroll = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > lastScroll && window.scrollY > 70) {
-                nav.classList.add('navbar-hidden');
-            } else {
-                nav.classList.remove('navbar-hidden');
+        (function () {
+            var cards = Array.prototype.slice.call(document.querySelectorAll('#projectGrid .tracker'));
+            var filtersEl = document.getElementById('filters');
+            var empty = document.getElementById('emptyMsg');
+            var CATS = [['all','All'],['trackers','Trackers'],['utilities','Utilities'],['learning','Learning']];
+            function count(cat) {
+                return cat === 'all' ? cards.length : cards.filter(function (c) { return c.dataset.cat.split(' ').indexOf(cat) > -1; }).length;
             }
-            lastScroll = window.scrollY;
-        });
-
-        /* ── LOGIN / LOGOUT BUTTON ─── */
-        const authBtn = document.getElementById('authBtn');
-        function updateAuthBtn() {
-            const loggedIn = localStorage.getItem('munan_auth') === 'true';
-            if (loggedIn) {
-                authBtn.href = 'dashboard.html';
-                authBtn.className = 'nav-login-btn';
-                authBtn.innerHTML = '<i class="fas fa-gauge"></i> Dashboard';
-            } else {
-                authBtn.href = 'login.html';
-                authBtn.className = 'nav-login-btn';
-                authBtn.innerHTML = '<i class="fas fa-user-circle"></i> Login';
+            function apply(cat) {
+                var shown = 0;
+                cards.forEach(function (c) {
+                    var ok = cat === 'all' || c.dataset.cat.split(' ').indexOf(cat) > -1;
+                    c.classList.toggle('is-hidden', !ok);
+                    if (ok) shown++;
+                });
+                empty.hidden = shown > 0;
+                Array.prototype.forEach.call(filtersEl.children, function (b) {
+                    b.setAttribute('aria-pressed', b.dataset.cat === cat ? 'true' : 'false');
+                });
             }
-        }
-        updateAuthBtn();
+            CATS.forEach(function (c) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'fchip';
+                b.dataset.cat = c[0];
+                b.setAttribute('aria-pressed', c[0] === 'all' ? 'true' : 'false');
+                b.innerHTML = c[1] + ' <span class="n">' + count(c[0]) + '</span>';
+                b.addEventListener('click', function () { apply(c[0]); });
+                filtersEl.appendChild(b);
+            });
+        })();
     </script>
+    <script src="nav.js"></script>
     <script src="footer.js"></script>
 </body>
 </html>
