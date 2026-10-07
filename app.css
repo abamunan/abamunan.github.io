@@ -1,7 +1,8 @@
 /* ============================================================
-   app.css v1 — "App" layer for personal app pages (Round 6)
+   app.css v2 — "App" layer for personal app pages (Round 6, extended in Round 7)
    Load AFTER site.css, on <body class="v2 app app-xx">.
-   Pages: diary (app-diary), english-tracker (app-et), garments-accounts (app-ga)
+   Pages: diary (app-diary), english-tracker (app-et), garments-accounts (app-ga),
+          moneytracker + healthtracker (app-mt, Round 7)
 
    Same idea as tool.css: map each page's OLD variable names onto the
    Field Notebook tokens, so the page keeps its own layout CSS but gets
@@ -139,3 +140,69 @@ body.app-ga .top h1 { font-family: var(--display); letter-spacing: -.01em; }
     body.app { padding-top: 0 !important; }
     body.app .navbar, body.app .nav-sheet, body.app .site-footer { display: none !important; }
 }
+
+/* ======================================================================
+   MONEY TRACKER + HEALTH TRACKER  (body.app-mt, Round 7)
+   Both pages load mt.css; healthtracker adds ht.css (body.ht-app).
+   These are fullscreen PWAs with their own top bar, side drawer and
+   bottom nav, so they do NOT use the shared navbar or footer and do NOT
+   use the `app` class (no navbar offset).  Old names are mapped here;
+   mt.css keeps only the non-colour tokens (radius, shadow, transitions).
+   ====================================================================== */
+body.app-mt {
+    --surface: color-mix(in srgb, var(--lagoon) 7%, transparent);
+    --surface2: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    --accent: var(--lagoon);
+    --accent-2: var(--err);
+    --accent-glow: color-mix(in srgb, var(--lagoon) 20%, transparent);
+    --card-bg: var(--paper);
+    --card-bg-solid: var(--paper);
+    --card-border: var(--line);
+    --border: var(--card-border);
+    --nav-bg: var(--ink);
+    --accent2: var(--ok);
+    --accent2-glow: color-mix(in srgb, var(--ok) 22%, transparent);
+    --danger: var(--err);
+    --danger-glow: color-mix(in srgb, var(--err) 22%, transparent);
+    --income-border: color-mix(in srgb, var(--ok) 35%, transparent);
+    --expense-border: color-mix(in srgb, var(--err) 35%, transparent);
+    --text-main: var(--ink);
+    --text-muted: color-mix(in srgb, var(--ink) 72%, var(--bg));
+    --text-soft: var(--soft);
+    --muted: var(--text-soft);      /* mt.css aliases (defined here: --text-soft lives on body) */
+    --muted2: var(--text-muted);
+    --text: var(--text-main);
+    --font: var(--body);
+    --trans: .3s cubic-bezier(.4, 0, .2, 1);
+    --on-accent: #fff;
+    --on-bar: var(--on-ink);
+    font-family: var(--body);
+    font-size: 14px;            /* style.css used 14px; mt.css sizes are rem-based */
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+}
+:root[data-theme="dark"] body.app-mt { --on-accent: #11221D; }
+body.app-mt::before { content: none; }                     /* old flat-wash pseudo element */
+body.app-mt *, body.app-mt *::before, body.app-mt *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+/* Collisions with site.css (.section-head .section-title .empty .center .toast .ok):
+   mt.css rules come later and win; reset only what they leave unset */
+body.app-mt .section-head { margin-bottom: 0; justify-content: flex-start; flex-direction: row; }
+body.app-mt .section-title { font-family: inherit; letter-spacing: normal; line-height: inherit; }
+body.app-mt .toast { animation: none; }
+body.app-mt .empty { grid-column: auto; }
+
+/* Health Tracker: teal -> brand green; BMI bands use the status colours */
+body.ht-app {
+    --ht-accent: var(--lagoon);
+    --ht-accent-soft: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    --ht-under: var(--info);   --ht-under-soft: color-mix(in srgb, var(--info) 16%, transparent);
+    --ht-normal: var(--ok);    --ht-normal-soft: color-mix(in srgb, var(--ok) 16%, transparent);
+    --ht-over: var(--warn);    --ht-over-soft: color-mix(in srgb, var(--warn) 16%, transparent);
+    --ht-obese: var(--err);    --ht-obese-soft: color-mix(in srgb, var(--err) 16%, transparent);
+    --ht-danger: var(--err);
+}
+

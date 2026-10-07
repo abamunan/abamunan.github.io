@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Money Tracker</title>
+<title>Money Tracker | Munan.hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Private money tracker: daily income and expenses, budgets, goals, debts, insights and backups.">
+<link rel="canonical" href="https://abamunan.github.io/moneytracker.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abamunan.github.io/moneytracker.html">
+<meta property="og:site_name" content="Munan.hub">
+<meta property="og:title" content="Money Tracker | Munan.hub">
+<meta property="og:description" content="Private money tracker: daily income and expenses, budgets, goals, debts, insights and backups.">
+<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta name="twitter:card" content="summary">
 
 <!-- ── Fullscreen / "installed app" behavior ──────────────────────────
      Browsers block a normal tab from hiding its own address bar
@@ -11,7 +21,7 @@
      The only real way to get a no-address-bar, app-like window is via
      "Add to Home Screen": these tags + manifest tell the OS to launch
      it standalone/fullscreen when opened from that home-screen icon. ── -->
-<meta name="theme-color" content="#1B3A5C">
+<meta name="theme-color" content="#0A6F48">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,15 +30,21 @@
 <link rel="apple-touch-icon" href="moneytracker-192.png">
 <link rel="icon" type="image/png" href="icon.png">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="theme.js"></script>
+<script src="owner.js"></script>
+<link rel="stylesheet" href="site.css?v=2">
+<link rel="stylesheet" href="app.css?v=2">
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <link rel="stylesheet" href="mt.css">
 <link rel="stylesheet" href="mt-calc.css">
 <!-- [MTI EDIT 3] Insights upgrade styles -->
 <link rel="stylesheet" href="mt-insights.css">
 </head>
-<body class="mt-app">
+<body class="v2 app-mt mt-app">
 
 <!-- ── SPLASH SCREEN — shown while Firebase auth/data loads ──────────
      Progress bar is wired to the real load steps in initApp() below
@@ -47,7 +63,7 @@
 
 <div class="topbar">
   <button class="menu-toggle-btn" id="menuToggleBtn" onclick="toggleNavDrawer()" title="Menu"><i class="fas fa-bars"></i></button>
-  <div class="topbar-title"><i class="fas fa-wallet"></i> Money Tracker</div>
+  <h1 class="topbar-title"><i class="fas fa-wallet"></i> Money Tracker</h1>
   <div class="topbar-right">
     <button class="settings-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
     <button class="settings-btn" onclick="openSearch()" title="Search"><i class="fas fa-magnifying-glass"></i></button>

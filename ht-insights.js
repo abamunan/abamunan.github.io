@@ -308,8 +308,8 @@
     const rolling=rollingAvg(raw,7);
     _rollingChart=destroyChart(_rollingChart);
     _rollingChart=new Chart(canvas,{type:'line',data:{labels,datasets:[
-      {label:metric.label+' (raw)',data:raw,borderColor:'rgba(15,118,110,.3)',pointRadius:1,tension:.2},
-      {label:'7-day avg',data:rolling,borderColor:'#0f766e',borderWidth:2,pointRadius:0,tension:.3}
+      {label:metric.label+' (raw)',data:raw,borderColor:htLagoon()+'4D',pointRadius:1,tension:.2},
+      {label:'7-day avg',data:rolling,borderColor:htLagoon(),borderWidth:2,pointRadius:0,tension:.3}
     ]},options:{responsive:true,plugins:{legend:{display:true,labels:{boxWidth:10,font:{size:10}}}}}});
   }
   function renderBestWorstMonths(){

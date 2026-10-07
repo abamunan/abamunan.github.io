@@ -140,3 +140,9 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - App chrome sits below the navbar: use `var(--nav-h)` for sticky or fixed offsets.
 - Page classes that share a name with `site.css` (`.stat .hero .toast .wrap .section .empty .field .hint .badge`): the page rule must set every property it needs, and `app.css` resets leaks. Prefer a page prefix for new classes.
 
+## 11. Fullscreen PWA trackers (Round 7)
+- `moneytracker` and `healthtracker`: `<body class="v2 app-mt mt-app">` (+ `ht-app`). They keep their own top bar, drawer and bottom nav, so no shared navbar and no `app` class (it adds a navbar offset).
+- Old variable names are mapped under `body.app-mt` / `body.ht-app` in `app.css`. `mt.css` must not define colours; use `--accent`, `--danger`, `--accent2`, `--warn`, `--card-bg` and friends.
+- Charts read colours from CSS variables (`getComputedStyle`), never hex.
+- Amber uses `--warn`; text on brand colours uses `--on-accent`; text on the top bar uses `--on-bar`.
+

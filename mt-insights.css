@@ -21,7 +21,6 @@
   /* Dock directly BELOW the app's own sticky .topbar (z-index 100, ~51px). --mti-top is measured at
      runtime by mt-insights.js; 51px is only the fallback. Without this the bar slides under the topbar. */
   position: sticky; top: var(--mti-top, 51px); z-index: 20;
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .mti-tab {
   flex: 1 1 0; min-height: 44px; min-width: 0;
@@ -33,7 +32,7 @@
 }
 .mti-tab:hover { color: var(--text-main); }
 .mti-tab.active {
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--on-accent);
   box-shadow: 0 4px 14px var(--accent-glow);
 }
 .mti-tab:focus-visible, .mti-chip:focus-visible, .mti-card-head:focus-visible,
@@ -83,7 +82,7 @@
   border-radius: 999px; font-family: var(--font); font-size: 0.74rem; font-weight: 600; cursor: pointer;
   transition: var(--trans); -webkit-tap-highlight-color: transparent;
 }
-.mti-chip.active { background: var(--accent); border-color: transparent; color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+.mti-chip.active { background: var(--accent); border-color: transparent; color: var(--on-accent); box-shadow: 0 4px 14px var(--accent-glow); }
 .mti-period-note { font-size: 0.7rem; color: var(--text-soft); margin: 0 2px 8px; }
 .mti-custom { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 8px; }
 .mti-custom input[type="date"] {
@@ -93,15 +92,15 @@
 }
 .mti-custom button {
   min-height: 44px; padding: 0 16px; border: none; border-radius: var(--radius-md);
-  background: var(--accent); color: #fff; font-family: var(--font); font-weight: 600; font-size: 0.78rem; cursor: pointer;
+  background: var(--accent); color: var(--on-accent); font-family: var(--font); font-weight: 600; font-size: 0.78rem; cursor: pointer;
 }
 
 /* ── small utilities ──────────────────────────────────────────────────── */
 .mti-ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .mti-soft { color: var(--text-soft); }
 .mti-t-green { color: var(--accent2); }
-.mti-t-amber { color: #d97706; }
-[data-theme="dark"] .mti-t-amber { color: #fbbf24; }
+.mti-t-amber { color: var(--warn); }
+[data-theme="dark"] .mti-t-amber { color: var(--warn); }
 .mti-t-red { color: var(--danger); }
 .mti-link {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px;
@@ -119,8 +118,8 @@
 .mti-bar { height: 8px; border-radius: 999px; background: var(--surface2); overflow: hidden; margin: 6px 0 4px; }
 .mti-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
 .mti-bar-fill.mti-green { background: var(--accent2); }
-.mti-bar-fill.mti-amber { background: #d97706; }
-[data-theme="dark"] .mti-bar-fill.mti-amber { background: #fbbf24; }
+.mti-bar-fill.mti-amber { background: var(--warn); }
+[data-theme="dark"] .mti-bar-fill.mti-amber { background: var(--warn); }
 .mti-bar-fill.mti-red { background: var(--danger); }
 
 /* ── Budget vs Actual rows ────────────────────────────────────────────── */
@@ -145,8 +144,8 @@
 /* ── Smart tips ───────────────────────────────────────────────────────── */
 .mti-tips { margin: 0 0 12px; }
 .mti-tips-head { font-size: 0.72rem; font-weight: 700; color: var(--text-soft); margin: 0 2px 8px; }
-.mti-tips-head i { color: #d97706; margin-right: 5px; }
-[data-theme="dark"] .mti-tips-head i { color: #fbbf24; }
+.mti-tips-head i { color: var(--warn); margin-right: 5px; }
+[data-theme="dark"] .mti-tips-head i { color: var(--warn); }
 .mti-tip {
   display: flex; gap: 10px; align-items: flex-start;
   background: var(--card-bg); border: 1px solid var(--card-border);
@@ -156,8 +155,8 @@
 .mti-tip-text { font-size: 0.79rem; line-height: 1.45; color: var(--text-main); min-width: 0; overflow-wrap: anywhere; }
 .mti-tip-ico { margin-top: 3px; font-size: 0.85rem; flex-shrink: 0; }
 .mti-tip-bad { border-left-color: var(--danger); } .mti-tip-bad .mti-tip-ico { color: var(--danger); }
-.mti-tip-warn { border-left-color: #d97706; } .mti-tip-warn .mti-tip-ico { color: #d97706; }
-[data-theme="dark"] .mti-tip-warn { border-left-color: #fbbf24; } [data-theme="dark"] .mti-tip-warn .mti-tip-ico { color: #fbbf24; }
+.mti-tip-warn { border-left-color: var(--warn); } .mti-tip-warn .mti-tip-ico { color: var(--warn); }
+[data-theme="dark"] .mti-tip-warn { border-left-color: var(--warn); } [data-theme="dark"] .mti-tip-warn .mti-tip-ico { color: var(--warn); }
 .mti-tip-good { border-left-color: var(--accent2); } .mti-tip-good .mti-tip-ico { color: var(--accent2); }
 
 /* ── Calendar heatmap ─────────────────────────────────────────────────── */
@@ -182,13 +181,13 @@
 .mti-hm-l1 { background: color-mix(in srgb, var(--danger) 18%, var(--card-bg-solid)); }
 .mti-hm-l2 { background: color-mix(in srgb, var(--danger) 38%, var(--card-bg-solid)); }
 .mti-hm-l3 { background: color-mix(in srgb, var(--danger) 55%, var(--card-bg-solid)); }
-.mti-hm-l4 { background: var(--danger); color: #fff; border-color: transparent; }
+.mti-hm-l4 { background: var(--danger); color: var(--bg); border-color: transparent; }
 [data-theme="dark"] .mti-hm-l4 { color: #0b1220; }
 /* browsers without color-mix: solid rgba tints of the light-theme danger colour */
 @supports not (background: color-mix(in srgb, red 10%, white)) {
-  .mti-hm-l1 { background: rgba(178, 58, 58, 0.16); }
-  .mti-hm-l2 { background: rgba(178, 58, 58, 0.34); }
-  .mti-hm-l3 { background: rgba(178, 58, 58, 0.52); }
+  .mti-hm-l1 { background: color-mix(in srgb, var(--err) 16%, transparent); }
+  .mti-hm-l2 { background: color-mix(in srgb, var(--err) 34%, transparent); }
+  .mti-hm-l3 { background: color-mix(in srgb, var(--err) 52%, transparent); }
 }
 .mti-hm-we:not(.mti-hm-l1):not(.mti-hm-l2):not(.mti-hm-l3):not(.mti-hm-l4):not(.mti-hm-dow) { background: var(--surface2); }
 .mti-hm-inc:not(.mti-hm-l1) { box-shadow: inset 0 -3px 0 var(--accent2); }   /* income-only day marker */

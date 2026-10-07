@@ -5,19 +5,7 @@
    and layers on health-specific pieces only.
    ================================================================ */
 
-:root{
-  --ht-accent: #0f766e;
-  --ht-accent-soft: rgba(15,118,110,.12);
-  --ht-under:  #2563eb; --ht-under-soft:  rgba(37,99,235,.12);
-  --ht-normal: #059669; --ht-normal-soft: rgba(5,150,105,.12);
-  --ht-over:   #b45309; --ht-over-soft:   rgba(180,83,9,.12);
-  --ht-obese:  #dc2626; --ht-obese-soft:  rgba(220,38,38,.12);
-  --ht-danger: #dc2626;
-}
-[data-theme="dark"]{
-  --ht-accent: #2dd4bf;
-  --ht-accent-soft: rgba(45,212,191,.14);
-}
+/* Round 7: --ht-* colours now map to the site tokens in app.css (body.ht-app). */
 
 .ht-app .topbar-title i,
 .ht-app .mt-splash-title i { color: var(--ht-accent); }
@@ -30,7 +18,7 @@
 /* ── DAILY SCORE CARD ─────────────────────────────────────────── */
 .ht-score-card{
   background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
-  padding:18px; text-align:center; backdrop-filter:blur(10px); margin-bottom:14px;
+  padding:18px; text-align:center; margin-bottom:14px;
 }
 .ht-score-ring-wrap{ position:relative; width:110px; height:110px; margin:0 auto 8px; }
 .ht-score-ring{ width:100%; height:100%; transform:rotate(-90deg); }
@@ -49,7 +37,7 @@
 /* ── METRIC GROUPS (Day view) ─────────────────────────────────── */
 .ht-group{
   background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
-  padding:14px 14px 6px; backdrop-filter:blur(10px); margin-bottom:14px;
+  padding:14px 14px 6px; margin-bottom:14px;
 }
 .ht-group-head{
   display:flex; align-items:center; gap:8px; font-weight:700; font-size:.88rem;
@@ -65,7 +53,7 @@
 .ht-metric-label{ flex:1; font-size:.82rem; font-weight:600; color:var(--text-muted); }
 .ht-metric-input{
   width:78px; text-align:right; padding:7px 9px; border-radius:9px;
-  border:1px solid var(--card-border); background:rgba(255,255,255,.5); color:var(--text-main);
+  border:1px solid var(--card-border); background:var(--paper); color:var(--text-main);
   font-size:.85rem; font-weight:600;
 }
 [data-theme="dark"] .ht-metric-input{ background:rgba(255,255,255,.06); }
@@ -86,7 +74,7 @@
   width:26px; height:26px; border-radius:8px; border:1px solid var(--card-border);
   background:transparent; color:var(--text-soft); font-size:.72rem; font-weight:700; cursor:pointer;
 }
-.ht-scale-btn.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+.ht-scale-btn.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:var(--on-accent); }
 
 /* Mood picker */
 .ht-mood-row{ display:flex; justify-content:space-between; gap:4px; padding:8px 0; }
@@ -105,7 +93,7 @@
   display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:.7rem;
   color:transparent;
 }
-.ht-med-check.checked{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+.ht-med-check.checked{ background:var(--ht-accent); border-color:var(--ht-accent); color:var(--on-accent); }
 .ht-med-label{ flex:1; font-size:.82rem; font-weight:600; }
 .ht-med-del{ border:none; background:transparent; color:var(--text-soft); cursor:pointer; opacity:.6; }
 
@@ -115,7 +103,7 @@
 .ht-note-row.open{ max-height:60px; padding-bottom:6px; }
 .ht-note-row input{
   width:100%; padding:7px 10px; border-radius:9px; border:1px solid var(--card-border);
-  background:rgba(255,255,255,.4); color:var(--text-main); font-size:.78rem;
+  background:var(--paper); color:var(--text-main); font-size:.78rem;
 }
 [data-theme="dark"] .ht-note-row input{ background:rgba(255,255,255,.05); }
 
@@ -161,7 +149,7 @@
   border:1px solid var(--card-border); background:var(--card-bg); border-radius:999px;
   padding:5px 12px; font-size:.72rem; font-weight:700; color:var(--text-muted); cursor:pointer;
 }
-.mti-metric-chip.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:#fff; }
+.mti-metric-chip.active{ background:var(--ht-accent); border-color:var(--ht-accent); color:var(--on-accent); }
 
 /* Correlation card scatter-ish bars */
 .ht-corr-row{ display:flex; align-items:center; gap:8px; font-size:.78rem; padding:5px 0; }

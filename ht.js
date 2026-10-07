@@ -1,3 +1,4 @@
+function htLagoon(){return (getComputedStyle(document.documentElement).getPropertyValue('--lagoon')||'#0f766e').trim()||'#0f766e';} /* Round 7: chart colour follows the site brand token */
 /* ================================================================
    ht.js — Health Tracker core.
    Mirrors Money Tracker's architecture (mt.js): metrics-as-data
@@ -1514,7 +1515,7 @@ function renderSummary(){
   chartOrEmpty('weightTrendChart', weightData.length>0);
   if(weightData.length && chartLibReady()){
     _weightChart=destroyChart(_weightChart);
-    _weightChart=new Chart(document.getElementById('weightTrendChart'),{type:'line',data:{labels:weightData.map(p=>p.x),datasets:[{label:'Weight (kg)',data:weightData.map(p=>p.y),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.15)',tension:.3,fill:true,pointRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+    _weightChart=new Chart(document.getElementById('weightTrendChart'),{type:'line',data:{labels:weightData.map(p=>p.x),datasets:[{label:'Weight (kg)',data:weightData.map(p=>p.y),borderColor:htLagoon(),backgroundColor:htLagoon()+'26',tension:.3,fill:true,pointRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
   }
 
   const hasBpOrHr=m.sys.length>0||m.hrs.length>0;
@@ -1607,13 +1608,13 @@ function renderYearly(){
   chartOrEmpty('yearlyWeightChart', allWeights.length>0);
   if(allWeights.length && chartLibReady()){
     _yearlyWeightChart=destroyChart(_yearlyWeightChart);
-    _yearlyWeightChart=new Chart(document.getElementById('yearlyWeightChart'),{type:'line',data:{labels:allWeights.map(w=>w.label),datasets:[{label:'Weight (kg)',data:allWeights.map(w=>w.v),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.12)',tension:.3,fill:true,pointRadius:2}]},options:{responsive:true,plugins:{legend:{display:false}}}});
+    _yearlyWeightChart=new Chart(document.getElementById('yearlyWeightChart'),{type:'line',data:{labels:allWeights.map(w=>w.label),datasets:[{label:'Weight (kg)',data:allWeights.map(w=>w.v),borderColor:htLagoon(),backgroundColor:htLagoon()+'1F',tension:.3,fill:true,pointRadius:2}]},options:{responsive:true,plugins:{legend:{display:false}}}});
   }
 
   chartOrEmpty('yearlyConsistencyChart', totalLoggedDays>0);
   if(totalLoggedDays>0 && chartLibReady()){
     _yearlyConsistencyChart=destroyChart(_yearlyConsistencyChart);
-    _yearlyConsistencyChart=new Chart(document.getElementById('yearlyConsistencyChart'),{type:'bar',data:{labels:MONTHS.map(m=>m.slice(0,3)),datasets:[{label:'Days Logged',data:monthStats.map(s=>s.loggedDays),backgroundColor:'#0f766e'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:31}}}});
+    _yearlyConsistencyChart=new Chart(document.getElementById('yearlyConsistencyChart'),{type:'bar',data:{labels:MONTHS.map(m=>m.slice(0,3)),datasets:[{label:'Days Logged',data:monthStats.map(s=>s.loggedDays),backgroundColor:htLagoon()}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:31}}}});
   }
 
   const breakdownBox=document.getElementById('monthlyBreakdown');

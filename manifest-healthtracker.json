@@ -7,8 +7,8 @@
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#0f766e",
+  "background_color": "#EEF1EA",
+  "theme_color": "#0A6F48",
   "icons": [
     {
       "src": "healthtracker-192.png",

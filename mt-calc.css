@@ -31,7 +31,7 @@
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.92);
   background: var(--accent);
-  color: #fff; font-size: 1.3rem;
+  color: var(--on-accent); font-size: 1.3rem;
   box-shadow: 0 8px 22px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18);
   cursor: grab;
   /* Position comes from JS via the `translate` property; `scale` / opacity animate separately. */
@@ -85,7 +85,7 @@
   transition: scale 140ms ease, background 140ms ease, border-color 140ms ease, translate 180ms ease;
 }
 .mtc-drop.mtc-show .mtc-drop-x { translate: 0 0; }
-.mtc-drop.mtc-over .mtc-drop-x { scale: 1.28; background: var(--danger); border-color: #fff; }
+.mtc-drop.mtc-over .mtc-drop-x { scale: 1.28; background: var(--danger); border-color: var(--bg); }
 
 .mtc-drop-label {
   position: absolute; left: 50%; transform: translateX(-50%);
@@ -107,7 +107,7 @@
   border-radius: 18px;
   box-shadow: 0 18px 50px rgba(0,0,0,0.32), 0 2px 10px rgba(0,0,0,0.12);
   overflow: hidden;
-  font-family: var(--font, 'Poppins', sans-serif);
+  font-family: var(--font, 'Figtree', sans-serif);
   color: var(--text-main);
 }
 .mtc-win-in.mtc-pop { animation: mtcWinPop 190ms cubic-bezier(.2,.9,.3,1.1); }
@@ -121,7 +121,7 @@
 .mtc-head {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 6px 6px 6px 14px;
-  background: var(--nav-bg); color: #fff;
+  background: var(--nav-bg); color: var(--on-bar);
   cursor: grab; touch-action: none;
   user-select: none; -webkit-user-select: none;
 }
@@ -130,7 +130,7 @@
 .mtc-x {
   width: 36px; height: 36px; padding: 0; border: 0; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  background: transparent; color: #fff; font-size: 1.05rem; cursor: pointer;
+  background: transparent; color: var(--on-ink); font-size: 1.05rem; cursor: pointer;
   transition: background 120ms ease;
 }
 .mtc-x:hover { background: rgba(255,255,255,0.16); }
@@ -161,7 +161,7 @@
 .mtc-hbtn i { font-size: 0.72rem; }
 .mtc-badge {
   min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
-  background: var(--accent); color: #fff;
+  background: var(--accent); color: var(--on-accent);
   font-size: 0.6rem; line-height: 16px; text-align: center;
 }
 .mtc-badge[hidden] { display: none; }
@@ -198,8 +198,8 @@
 .mtc-k:hover { background: var(--surface); }
 .mtc-k.mtc-fn { background: var(--surface2); }
 .mtc-k.mtc-fn:hover { filter: brightness(0.96); }
-.mtc-k.mtc-op { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 1.25rem; }
-.mtc-k.mtc-eq { background: var(--accent2); border-color: var(--accent2); color: #fff; font-size: 1.3rem; }
+.mtc-k.mtc-op { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-size: 1.25rem; }
+.mtc-k.mtc-eq { background: var(--accent2); border-color: var(--accent2); color: var(--on-accent); font-size: 1.3rem; }
 .mtc-k.mtc-op:hover, .mtc-k.mtc-eq:hover { filter: brightness(1.1); }
 [data-theme="dark"] .mtc-k.mtc-eq { color: #04170f; }
 .mtc-k:active, .mtc-k.mtc-pressed { transform: scale(0.94); }
@@ -222,7 +222,7 @@
   font: 600 0.72rem/1 var(--font, sans-serif); cursor: pointer;
 }
 .mtc-h-clear[hidden] { display: none; }
-.mtc-h-clear.mtc-armed { background: var(--danger); color: #fff; }
+.mtc-h-clear.mtc-armed { background: var(--danger); color: var(--bg); }
 .mtc-h-close {
   width: 34px; height: 34px; padding: 0; border: 0; border-radius: 10px;
   background: var(--surface2); color: var(--text-main);

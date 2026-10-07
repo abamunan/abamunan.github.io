@@ -14,7 +14,7 @@
 }
 .ins-stat-card{
   background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px;
-  padding:12px; backdrop-filter:blur(10px);
+  padding:12px;
 }
 .ins-stat-label{ font-size:.68rem; color:var(--text-soft); font-weight:600; margin-bottom:4px; }
 .ins-stat-val{ font-size:1.3rem; font-weight:800; color:var(--ht-accent); }
@@ -30,6 +30,6 @@
    2) Active subtab gets a clear filled state, same on both bars. ── */
 .ht-app .mti-tabbar{ position:static; }
 .ht-app .mti-tab.active{
-  background:var(--ht-accent); border-color:var(--ht-accent); color:#fff;
+  background:var(--ht-accent); border-color:var(--ht-accent); color:var(--on-accent);
 }
-.ht-app .mti-tab.active i{ color:#fff; }
+.ht-app .mti-tab.active i{ color:var(--on-accent); }
