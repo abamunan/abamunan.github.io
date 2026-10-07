@@ -52,54 +52,7 @@
     apply(isDark());
     document.addEventListener('DOMContentLoaded', () => apply(isDark()));
 
-    // ── MOUSE-REACTIVE BACKGROUND MESH ──────────────────────────
-    // Nudges the --mx/--my CSS vars (consumed by --main-bg's radial
-    // gradient positions in style.css) toward the cursor, so the
-    // gradient mesh gently drifts with the mouse. rAF-throttled and
-    // eased so it never fights the pointermove event rate, and
-    // skipped entirely under prefers-reduced-motion or on touch-only
-    // devices (no meaningful hover position there anyway).
-    function initMeshParallax() {
-        // Pages on the new design system (body.v2) have no mesh background.
-        if (document.body && document.body.classList.contains('v2')) return;
-        const prefersReduced = window.matchMedia &&
-            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const isTouchOnly = window.matchMedia &&
-            window.matchMedia('(hover: none)').matches;
-        if (prefersReduced || isTouchOnly) return;
-
-        const MAX_OFFSET = 6; // vw-ish max drift in %, keep subtle
-        let targetX = 0, targetY = 0;   // -1..1, where cursor is
-        let currentX = 0, currentY = 0; // eased current value
-        let ticking = false;
-
-        function onPointerMove(e) {
-            targetX = (e.clientX / window.innerWidth) * 2 - 1;
-            targetY = (e.clientY / window.innerHeight) * 2 - 1;
-            if (!ticking) {
-                ticking = true;
-                requestAnimationFrame(tick);
-            }
-        }
-
-        function tick() {
-            // Ease toward target so movement feels fluid, not jumpy.
-            currentX += (targetX - currentX) * 0.06;
-            currentY += (targetY - currentY) * 0.06;
-            const root = document.documentElement.style;
-            root.setProperty('--mx', (currentX * MAX_OFFSET).toFixed(2) + '%');
-            root.setProperty('--my', (currentY * MAX_OFFSET).toFixed(2) + '%');
-            if (Math.abs(targetX - currentX) > 0.001 || Math.abs(targetY - currentY) > 0.001) {
-                requestAnimationFrame(tick);
-            } else {
-                ticking = false;
-            }
-        }
-
-        window.addEventListener('pointermove', onPointerMove, { passive: true });
-    }
-
-    document.addEventListener('DOMContentLoaded', initMeshParallax);
+    // (Round 8: the mouse-reactive background mesh was removed — no page uses it any more.)
 
     // ── KEEP TABS AND IFRAMES IN SYNC ───────────────────────────────
     // The 'storage' event fires in every OTHER same-origin document

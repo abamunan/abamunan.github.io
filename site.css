@@ -1,10 +1,10 @@
 /* ================================================================
    site.css — Munan.hub shared design system  ("Field Notebook")
-   Version 2 (Round 0 + Round 2 listing components)
+   Version 3 (Round 8: legacy style.css removed)
 
    Load on every migrated page:
      <body class="v2"> ... 
-   Pages that still load style.css are NOT affected by this file.
+   Every page now loads this file; the old style.css no longer exists.
 
    Order of sections
      1  Tokens (light / dark)          6  Section heads, lists, cards

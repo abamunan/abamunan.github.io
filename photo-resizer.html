@@ -25,8 +25,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="theme.js"></script>
     <script src="owner.js"></script>
-    <link rel="stylesheet" href="site.css?v=2">
-    <link rel="stylesheet" href="tool.css?v=1">
+    <link rel="stylesheet" href="site.css?v=3">
+    <link rel="stylesheet" href="tool.css?v=3">
     <style>
         .resizer-wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 5% 60px;}
 
@@ -148,12 +148,12 @@
         <div class="custom-row">
             <div class="inp-grp">
                 <label>Width (px)</label>
-                <input type="number" id="customW" value="300" min="10" max="8000">
+                <input type="number" id="customW" value="300" min="10" max="8000" aria-label="Width (px)">
             </div>
             <span class="cross">×</span>
             <div class="inp-grp">
                 <label>Height (px)</label>
-                <input type="number" id="customH" value="300" min="10" max="8000">
+                <input type="number" id="customH" value="300" min="10" max="8000" aria-label="Height (px)">
             </div>
             <button class="btn-apply" id="btnApply"><i class="fas fa-check"></i> Apply</button>
         </div>
@@ -162,7 +162,7 @@
 
     <!-- Drop zone -->
     <div class="drop-zone" id="dropZone">
-        <input type="file" accept="image/*" multiple id="fileInput">
+        <input type="file" accept="image/*" multiple id="fileInput" aria-label="Choose a file">
         <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
         <div class="drop-title">Drop photos here or tap to browse</div>
         <div class="drop-sub">JPG · PNG · WEBP · GIF &nbsp;|&nbsp; Multiple files OK</div>

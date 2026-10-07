@@ -21,8 +21,8 @@
 
 <script src="theme.js"></script>
 <script src="owner.js"></script>
-<link rel="stylesheet" href="site.css?v=2">
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="site.css?v=3">
+<link rel="stylesheet" href="app.css?v=3">
 <style>
 /* Round 6: colour tokens now come from site.css; old names (--card --mut --ac --ac2 --onac --h1 --h2 --sh) are mapped in app.css (body.app-et) */
 :root{box-sizing:border-box}
@@ -151,23 +151,23 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 <label class="step"><input type="checkbox" id="listen"> 3. Listen to AI read it back</label>
 <label class="step"><input type="checkbox" id="speak"> 4. Speak about the topic</label></div>
 <div class="row" style="margin-top:8px">
-<label class="note">Minutes<input type="number" id="mins" min="0" max="300" placeholder="30"></label>
-<label class="note">Topic<input type="text" id="topic" placeholder="e.g. Climate policy"></label></div>
-<label class="note" style="display:block;margin-top:8px">Article title / link<input type="text" id="title"></label>
-<label class="note" style="display:block;margin-top:8px">My written summary <span id="w1"></span><textarea id="text" rows="6" placeholder="Write your summary here..."></textarea><button type="button" class="ghost sm" data-sayid="text" style="margin-top:6px">🔊 Listen</button></label>
-<label class="note" style="display:block;margin-top:8px">What I said (speaking transcript / key points) <span id="w2"></span><textarea id="talk" rows="5" placeholder="Type or paste what you spoke..."></textarea><button type="button" class="ghost sm" data-sayid="talk" style="margin-top:6px">🔊 Listen</button></label></div>
+<label class="note">Minutes<input type="number" id="mins" min="0" max="300" placeholder="30" aria-label="Minutes studied"></label>
+<label class="note">Topic<input type="text" id="topic" placeholder="e.g. Climate policy" aria-label="e.g. Climate policy"></label></div>
+<label class="note" style="display:block;margin-top:8px">Article title / link<input type="text" id="title" aria-label="Title"></label>
+<label class="note" style="display:block;margin-top:8px">My written summary <span id="w1"></span><textarea id="text" rows="6" placeholder="Write your summary here..." aria-label="Write your summary here..."></textarea><button type="button" class="ghost sm" data-sayid="text" style="margin-top:6px">🔊 Listen</button></label>
+<label class="note" style="display:block;margin-top:8px">What I said (speaking transcript / key points) <span id="w2"></span><textarea id="talk" rows="5" placeholder="Type or paste what you spoke..." aria-label="Type or paste what you spoke..."></textarea><button type="button" class="ghost sm" data-sayid="talk" style="margin-top:6px">🔊 Listen</button></label></div>
 <div class="card"><h2>AI evaluation (1–100)</h2>
 <div id="scores"></div>
-<label class="note" style="display:block;margin-top:8px">Paste AI feedback (scores auto-fill)<textarea id="fb" rows="3" placeholder="Grammar: 72/100, Vocabulary: 65/100..."></textarea></label><button class="ghost" id="fill" style="margin-top:6px">Auto-fill scores</button>
+<label class="note" style="display:block;margin-top:8px">Paste AI feedback (scores auto-fill)<textarea id="fb" rows="3" placeholder="Grammar: 72/100, Vocabulary: 65/100..." aria-label="Grammar: 72/100, Vocabulary: 65/100..."></textarea></label><button class="ghost" id="fill" style="margin-top:6px">Auto-fill scores</button>
 <label class="note" style="display:block;margin-top:10px">Or upload the AI report file (.json)<input type="file" id="rf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label>
-<label class="note" style="display:block;margin-top:8px">Feedback / mistakes to remember<textarea id="notes" rows="3"></textarea></label>
+<label class="note" style="display:block;margin-top:8px">Feedback / mistakes to remember<textarea id="notes" rows="3" aria-label="Notes"></textarea></label>
 <div id="tgt" style="margin-top:10px"></div><div id="ws" style="margin-top:8px"></div></div>
 <div class="card"><div class="flex" style="margin-top:12px"><button id="save">Save</button><button class="ghost" id="copyP">Copy AI prompt (with this day's entry)</button></div>
 <div class="note" id="msg" style="margin-top:6px"></div></div>
 </div>
 <div class="sub" data-sub="timer">
 <div class="card"><h2>Study timer</h2><div class="tt" id="tt">30:00</div>
-<div class="row" style="margin-top:8px"><select id="tsel"><option value="30">Full session · 30 min</option><option value="10">Read · 10 min</option><option value="8">Write · 8 min</option><option value="4">Listen · 4 min</option><option value="8">Speak · 8 min</option><option value="5">Quick · 5 min</option></select><div class="flex"><button id="tgo">Start</button><button class="ghost" id="trs">Reset</button></div></div>
+<div class="row" style="margin-top:8px"><select id="tsel" aria-label="Timer duration"><option value="30">Full session · 30 min</option><option value="10">Read · 10 min</option><option value="8">Write · 8 min</option><option value="4">Listen · 4 min</option><option value="8">Speak · 8 min</option><option value="5">Quick · 5 min</option></select><div class="flex"><button id="tgo">Start</button><button class="ghost" id="trs">Reset</button></div></div>
 <div class="note" style="margin-top:6px">When time is up, minutes are added to today's session.</div><div class="note" id="tmMirror" style="margin-top:6px;font-weight:600"></div></div>
 </div>
 <div class="sub" data-sub="listen">
@@ -207,7 +207,7 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 <div class="card"><h2>Monthly review</h2>
 <button class="ghost" id="mrCopy">Copy monthly review prompt</button>
 <label class="note" style="display:block;margin-top:8px">Upload monthly_review.json<input type="file" id="mrFile" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label>
-<textarea id="mrTxt" rows="3" placeholder="...or paste the JSON here" style="margin-top:6px"></textarea><button id="mrGo" style="margin-top:6px">Save review</button>
+<textarea id="mrTxt" rows="3" placeholder="...or paste the JSON here" style="margin-top:6px" aria-label="...or paste the JSON here"></textarea><button id="mrGo" style="margin-top:6px">Save review</button>
 <div class="note" id="mrMsg"></div><div id="mrView" style="margin-top:8px"></div></div>
 <div class="card"><h2>Weekly progress card</h2><button id="wkb">Create card</button><div class="note" style="margin-top:6px">Long-press the image to save or share it.</div><img id="wki" alt="Weekly progress card" style="width:100%;margin-top:8px;border-radius:12px;display:none"></div>
 </div>
@@ -219,21 +219,21 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 </div>
 <div class="sub" data-sub="words">
 <div class="card"><h2>Vocabulary list</h2>
-<div class="row"><input type="text" id="vw" placeholder="Word"><input type="text" id="vm" placeholder="Meaning"></div>
-<input type="text" id="vx" placeholder="Example sentence" style="margin:8px 0"><input type="text" id="vb" placeholder="Bangla meaning (optional)" style="margin-bottom:8px"><button id="va">Add word</button>
+<div class="row"><input type="text" id="vw" placeholder="Word" aria-label="Word"><input type="text" id="vm" placeholder="Meaning" aria-label="Meaning"></div>
+<input type="text" id="vx" placeholder="Example sentence" style="margin:8px 0" aria-label="Example sentence"><input type="text" id="vb" placeholder="Bangla meaning (optional)" style="margin-bottom:8px" aria-label="Bangla meaning (optional)"><button id="va">Add word</button>
 <div class="flex" style="margin-top:10px"><button class="ghost" id="vp">Copy AI prompt</button><button class="ghost" id="vex">Copy my list (JSON)</button></div>
-<label class="note" style="display:block;margin-top:8px">Upload vocabulary file (.json)<input type="file" id="vf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="vmsg"></div><input type="text" id="vs" placeholder="Search words..." style="margin-top:6px"><div id="vl" style="margin-top:8px"></div></div>
+<label class="note" style="display:block;margin-top:8px">Upload vocabulary file (.json)<input type="file" id="vf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="vmsg"></div><input type="text" id="vs" placeholder="Search words..." style="margin-top:6px" aria-label="Search words..."><div id="vl" style="margin-top:8px"></div></div>
 </div>
 <div class="sub" data-sub="mistakes">
 <div class="card"><h2>Mistake notebook</h2>
-<div class="row"><input type="text" id="mw" placeholder="What I said (wrong)"><input type="text" id="mc" placeholder="Correct version"></div>
+<div class="row"><input type="text" id="mw" placeholder="What I said (wrong)" aria-label="What I said (wrong)"><input type="text" id="mc" placeholder="Correct version" aria-label="Correct version"></div>
 <button id="ma" style="margin-top:8px">Add mistake</button>
 <div class="flex" style="margin-top:10px"><button class="ghost" id="mp">Copy AI prompt</button><button class="ghost" id="mex">Copy my list (JSON)</button></div>
-<label class="note" style="display:block;margin-top:8px">Upload mistakes file (.json)<input type="file" id="mf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="mmsg"></div><input type="text" id="mqs" placeholder="Search mistakes..." style="margin-top:6px"><div id="ml" style="margin-top:8px"></div></div>
+<label class="note" style="display:block;margin-top:8px">Upload mistakes file (.json)<input type="file" id="mf" accept=".json,.txt,application/json,text/plain" style="margin-top:4px"></label><div class="note" id="mmsg"></div><input type="text" id="mqs" placeholder="Search mistakes..." style="margin-top:6px" aria-label="Search mistakes..."><div id="ml" style="margin-top:8px"></div></div>
 </div>
 <div class="sub" data-sub="compare">
 <div class="card"><h2>Compare my writing</h2>
-<div class="row"><select id="ca"></select><select id="cb"></select></div>
+<div class="row"><select id="ca" aria-label="First writing sample"></select><select id="cb" aria-label="Second writing sample"></select></div>
 <div class="cmp" id="cmp"></div><div class="note" id="cnone">Save a summary or transcript to compare days.</div></div>
 </div>
 </section>
@@ -247,11 +247,11 @@ input[type=text],input[type=number],input[type=date],input[type=time],textarea,s
 <div class="card"><h2>Settings &amp; backup</h2>
 <label class="note">Journey start date<input type="date" id="start"></label>
 <div class="flex" style="margin-top:10px"><button class="ghost" id="exp">Copy backup</button><button class="ghost" id="imp">Restore from backup</button></div>
-<textarea id="bk" rows="3" placeholder="Paste backup JSON here to restore" style="display:none"></textarea>
+<textarea id="bk" rows="3" placeholder="Paste backup JSON here to restore" style="display:none" aria-label="Paste backup JSON here to restore"></textarea>
 <div class="note" style="margin-top:6px">Your data is saved to your account and cached in this browser. A manual backup is still a good idea.</div></div>
 <div class="card"><h2>Reminder</h2><div class="note">A web page cannot ring in the background. Ask Claude to set a phone alarm with this sentence:</div><label class="note">Time<input type="time" id="rt" value="20:00"></label><div class="fc" id="rs"></div><button class="ghost" id="rcp" style="margin-top:8px">Copy sentence</button><div class="note" id="rm2"></div></div>
 <details class="adv"><summary>Manual sync code (advanced)</summary>
-<div class="card"><h2>Phone &amp; laptop sync</h2><div class="flex"><button class="ghost" id="syOut">Copy sync code</button><button class="ghost" id="syIn">Merge pasted code</button></div><textarea id="sy" rows="3" placeholder="Sync code appears here, or paste a code from your other device" style="margin-top:8px"></textarea><div class="note" id="syMsg"></div></div>
+<div class="card"><h2>Phone &amp; laptop sync</h2><div class="flex"><button class="ghost" id="syOut">Copy sync code</button><button class="ghost" id="syIn">Merge pasted code</button></div><textarea id="sy" rows="3" placeholder="Sync code appears here, or paste a code from your other device" style="margin-top:8px" aria-label="Sync code appears here, or paste a code from your other device"></textarea><div class="note" id="syMsg"></div></div>
 </details>
 </section>
 </main>

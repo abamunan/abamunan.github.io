@@ -36,8 +36,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="theme.js"></script>
 <script src="owner.js"></script>
-<link rel="stylesheet" href="site.css?v=2">
-<link rel="stylesheet" href="app.css?v=2">
+<link rel="stylesheet" href="site.css?v=3">
+<link rel="stylesheet" href="app.css?v=3">
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js" type="module"></script>
 <link rel="stylesheet" href="mt.css">
 <link rel="stylesheet" href="mt-calc.css">
@@ -77,8 +77,8 @@
 <div id="monthBarAnchor"></div>
 <div class="month-bar">
   <div class="month-selector">
-    <select id="yearSel" onchange="onMonthChange()"></select>
-    <select id="monthSel" onchange="onMonthChange()"></select>
+    <select id="yearSel" onchange="onMonthChange()" aria-label="Year"></select>
+    <select id="monthSel" onchange="onMonthChange()" aria-label="Month"></select>
   </div>
 </div>
 
@@ -303,7 +303,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="fas fa-gear"></i> Settings</h3>
-      <button class="modal-close" onclick="closeSettings()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeSettings()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="categories" onclick="showSettingsTab('categories')">Categories</button>
@@ -318,15 +318,15 @@
         <div class="settings-sub"><i class="fas fa-arrow-trend-down"></i> Expense Categories</div>
         <div id="catListExpense"></div>
         <div class="add-cat-row">
-          <input type="text" id="newExpIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
-          <input type="text" id="newExpLabel" class="cat-label-input" placeholder="New category name" maxlength="30">
+          <input type="text" id="newExpIcon" class="cat-icon-input" placeholder="🎯" maxlength="4" aria-label="Expense category icon">
+          <input type="text" id="newExpLabel" class="cat-label-input" placeholder="New category name" maxlength="30" aria-label="New category name">
           <button class="cat-add-btn" onclick="addCategory('expense')" title="Add"><i class="fas fa-plus"></i></button>
         </div>
         <div class="settings-sub" style="margin-top:18px"><i class="fas fa-arrow-trend-up"></i> Income Sources</div>
         <div id="catListIncome"></div>
         <div class="add-cat-row">
-          <input type="text" id="newIncIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
-          <input type="text" id="newIncLabel" class="cat-label-input" placeholder="New income source" maxlength="30">
+          <input type="text" id="newIncIcon" class="cat-icon-input" placeholder="🎯" maxlength="4" aria-label="Income source icon">
+          <input type="text" id="newIncLabel" class="cat-label-input" placeholder="New income source" maxlength="30" aria-label="New income source">
           <button class="cat-add-btn" onclick="addCategory('income')" title="Add"><i class="fas fa-plus"></i></button>
         </div>
       </div>
@@ -334,8 +334,8 @@
         <div class="settings-sub"><i class="fas fa-credit-card"></i> Balances are now automatic — set an Opening balance here once per account. From then on it updates itself from income and expenses (pick the account per entry — expenses default to Cash), plus Add/Transfer in Monthly Summary.</div>
         <div id="accountList"></div>
         <div class="add-cat-row">
-          <input type="text" id="newAcctIcon" class="cat-icon-input" placeholder="🎯" maxlength="4">
-          <input type="text" id="newAcctLabel" class="cat-label-input" placeholder="New account name" maxlength="30">
+          <input type="text" id="newAcctIcon" class="cat-icon-input" placeholder="🎯" maxlength="4" aria-label="Account icon">
+          <input type="text" id="newAcctLabel" class="cat-label-input" placeholder="New account name" maxlength="30" aria-label="New account name">
           <button class="cat-add-btn" onclick="addAccount()" title="Add"><i class="fas fa-plus"></i></button>
         </div>
       </div>
@@ -345,7 +345,7 @@
       </div>
       <div class="settings-pane" id="pane-goal">
         <div class="settings-sub">Set a savings target — progress tracks total budgeted (Budgets tab) minus what you've spent in those categories this month</div>
-        <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0"></div>
+        <div class="field-row"><span class="field-label">Target Amount</span><input class="field-input" type="number" id="goalInput" min="0" placeholder="0" aria-label="Goal amount"></div>
         <button class="btn-primary" style="margin-top:10px" onclick="saveGoal()"><i class="fas fa-floppy-disk"></i> Save Goal</button>
       </div>
       <div class="settings-pane" id="pane-backup">
@@ -373,7 +373,7 @@
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
       <h3><i class="fas fa-trash"></i> Remove All Data</h3>
-      <button class="modal-close" onclick="closeRemoveDataModal()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeRemoveDataModal()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="rd-stage" id="rdStage1">
@@ -405,10 +405,10 @@
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="fas fa-magnifying-glass"></i> Search</h3>
-      <button class="modal-close" onclick="closeSearch()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeSearch()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, categories…" oninput="performSearch()">
+      <input type="text" id="searchInput" class="search-input-box" placeholder="Search notes, categories…" oninput="performSearch()" aria-label="Search notes, categories…">
       <div id="searchResults"><div class="search-hint">Type to search your notes and transactions…</div></div>
     </div>
   </div>
@@ -418,7 +418,7 @@
   <div class="modal-box" style="max-width:420px">
     <div class="modal-header">
       <h3 id="addFieldModalTitle"><i class="fas fa-plus"></i> Add Category</h3>
-      <button class="modal-close" onclick="closeAddFieldModal()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeAddFieldModal()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="add-field-hint"><i class="fas fa-star"></i> pin to always show it, or use + / − to show it just for today</div>
@@ -432,7 +432,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="fas fa-handshake"></i> Debts &amp; Loans</h3>
-      <button class="modal-close" onclick="closeDebtsModal()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeDebtsModal()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="debt-summary-strip">
       <div class="debt-sum-box owe"><span class="debt-sum-label">You Owe</span><span class="debt-sum-val" id="debtSumOwe">৳ 0</span></div>
@@ -446,13 +446,13 @@
       <div class="debt-pane active" id="debtpane-borrowed">
         <div class="settings-sub">Money you took from someone — pulls into the account below now, and leaves it again once you tick "Repaid"</div>
         <div class="debt-add-form">
-          <input type="text" id="newDebtPersonB" class="cat-label-input" placeholder="Person's name" maxlength="40">
+          <input type="text" id="newDebtPersonB" class="cat-label-input" placeholder="Person's name" maxlength="40" aria-label="Person's name">
           <div class="debt-add-row">
-            <select id="newDebtAcctB" class="debt-input"></select>
-            <input type="number" id="newDebtAmountB" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+            <select id="newDebtAcctB" class="debt-input" aria-label="Account (borrowed)"></select>
+            <input type="number" id="newDebtAmountB" class="debt-input" placeholder="Amount" min="0" inputmode="decimal" aria-label="Amount">
           </div>
           <div class="debt-add-row">
-            <input type="date" id="newDebtDateB" class="debt-input">
+            <input type="date" id="newDebtDateB" class="debt-input" aria-label="Date borrowed">
             <button class="cat-add-btn" onclick="addDebt('borrowed')" title="Add"><i class="fas fa-plus"></i></button>
           </div>
         </div>
@@ -461,13 +461,13 @@
       <div class="debt-pane" id="debtpane-lent">
         <div class="settings-sub">Money you gave to someone — leaves the account below now, and returns once you tick "Received"</div>
         <div class="debt-add-form">
-          <input type="text" id="newDebtPersonL" class="cat-label-input" placeholder="Person's name" maxlength="40">
+          <input type="text" id="newDebtPersonL" class="cat-label-input" placeholder="Person's name" maxlength="40" aria-label="Person's name">
           <div class="debt-add-row">
-            <select id="newDebtAcctL" class="debt-input"></select>
-            <input type="number" id="newDebtAmountL" class="debt-input" placeholder="Amount" min="0" inputmode="decimal">
+            <select id="newDebtAcctL" class="debt-input" aria-label="Account (lent)"></select>
+            <input type="number" id="newDebtAmountL" class="debt-input" placeholder="Amount" min="0" inputmode="decimal" aria-label="Amount">
           </div>
           <div class="debt-add-row">
-            <input type="date" id="newDebtDateL" class="debt-input">
+            <input type="date" id="newDebtDateL" class="debt-input" aria-label="Date lent">
             <button class="cat-add-btn" onclick="addDebt('lent')" title="Add"><i class="fas fa-plus"></i></button>
           </div>
         </div>
@@ -484,7 +484,7 @@
         <h3 id="categoryDetailTitle" style="margin-bottom:2px">🍳 Category</h3>
         <div id="categoryDetailSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeCategoryDetail()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeCategoryDetail()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="categoryDetailBody"></div>
   </div>
@@ -497,7 +497,7 @@
         <h3 id="dayQuickViewTitle" style="margin-bottom:2px"><i class="fas fa-calendar-day"></i> Day</h3>
         <div id="dayQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeDayQuickView()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeDayQuickView()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="dayQuickViewBody"></div>
   </div>
@@ -510,7 +510,7 @@
         <h3 id="monthQuickViewTitle" style="margin-bottom:2px"><i class="fas fa-calendar"></i> Month</h3>
         <div id="monthQuickViewSub" style="font-size:0.68rem;color:var(--text-soft);font-weight:500"></div>
       </div>
-      <button class="modal-close" onclick="closeMonthQuickView()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeMonthQuickView()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="monthQuickViewBody"></div>
   </div>
@@ -524,7 +524,7 @@
         <h3 id="acctHistoryTitle" style="margin-bottom:2px">💵 Cash</h3>
         <div style="font-size:0.68rem;color:var(--text-soft);font-weight:500">All-time transaction history</div>
       </div>
-      <button class="modal-close" onclick="closeAcctHistory()"><i class="fas fa-xmark"></i></button>
+      <button class="modal-close" onclick="closeAcctHistory()" aria-label="Close"><i class="fas fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="ah-stat-hero">

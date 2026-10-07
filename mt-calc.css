@@ -1,8 +1,7 @@
 /* ==========================================================================
    mt-calc.css — Floating calculator for Money Tracker
 
-   Everything is prefixed .mtc- so nothing collides with mt.css / style.css
-   (style.css already has an unrelated .key class, for example).
+   Everything is prefixed .mtc- so nothing collides with mt.css
    Colours come from the page's own tokens (--accent, --accent2, --danger,
    --surface, --card-bg-solid ...), so light / dark follows
    [data-theme="dark"] with no extra work.

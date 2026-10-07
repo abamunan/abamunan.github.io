@@ -146,3 +146,10 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - Charts read colours from CSS variables (`getComputedStyle`), never hex.
 - Amber uses `--warn`; text on brand colours uses `--on-accent`; text on the top bar uses `--on-bar`.
 
+## 12. Accessibility and housekeeping (Round 8)
+- Every form control needs a name: a wrapping or `for=` `<label>`, or `aria-label`. Icon-only buttons need `aria-label` (or `title`).
+- Pages with a navbar get a skip link and `<main id="main">`; fixed-layout apps may use `role="main"` on their content container.
+- Token pairs `ink / muted / soft / lagoon / ok / warn / err / info` on `bg` and `paper` all pass WCAG AA (4.5:1) in light and dark. New colours must be checked the same way.
+- `style.css` no longer exists. New pages must not define their own `:root` colour blocks or load other font families.
+- When `site.css`, `app.css` or `tool.css` changes, bump `?v=` in every page (currently `?v=3`).
+
