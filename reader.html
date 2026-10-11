@@ -35,6 +35,7 @@
         :root { --header-h: 76px; }  /* script keeps this in sync with the real bar height */
         html, body { height: 100%; }
 
+        .rd-crumbs { margin-bottom: 4px; font-size: .78rem; padding: 0; }
         .rd-header {
             position: sticky; top: 0; z-index: 20;
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
@@ -218,7 +219,7 @@
   <a class="nav-logo rd-logo" href="index.html" aria-label="Munan.hub home">Munan<span>.hub</span></a>
   <div class="titleblock">
     <!-- Edit these two lines: headline and caption -->
-    <span class="kicker">Reading</span>
+    <ol class="crumbs rd-crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="notes.html">Notes</a></li><li aria-hidden="true">/</li><li aria-current="page">Reading</li></ol>
     <h1 id="doc-title">Document Title Goes Here</h1>
     <div class="caption" id="doc-caption">Add a short source note or caption here</div>
   </div>

@@ -62,42 +62,42 @@ const WEBCOMICS = [
             },
             {
                 episodeNum: 4,
-                title:      "Meeting Culture",
-                description: "Upcomming",
+                title:      "Coming soon",
+                description: "This episode is coming soon.",
                 imageUrl:   "10.png",
-                date:       "May , 2026",
+                date:       "",
                 content:    ""
             },
             {
                 episodeNum: 5,
-                title:      "Meeting Culture",
-                description: "Upcomming",
+                title:      "Coming soon",
+                description: "This episode is coming soon.",
                 imageUrl:   "10.png",
-                date:       "May , 2026",
+                date:       "",
                 content:    ""
             },
             {
                 episodeNum: 6,
-                title:      "Meeting Culture",
-                description: "Upcomming",
+                title:      "Coming soon",
+                description: "This episode is coming soon.",
                 imageUrl:   "10.png",
-                date:       "May , 2026",
+                date:       "",
                 content:    ""
             },
             {
                 episodeNum: 7,
-                title:      "Meeting Culture",
-                description: "Upcomming",
+                title:      "Coming soon",
+                description: "This episode is coming soon.",
                 imageUrl:   "10.png",
-                date:       "May , 2026",
+                date:       "",
                 content:    ""
             },
             {
                 episodeNum: 8,
-                title:      "Meeting Culture",
-                description: "Upcomming",
+                title:      "Coming soon",
+                description: "This episode is coming soon.",
                 imageUrl:   "10.png",
-                date:       "May , 2026",
+                date:       "",
                 content:    ""
             }
         ]

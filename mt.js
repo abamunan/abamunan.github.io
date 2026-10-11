@@ -3061,32 +3061,32 @@ async function exportYearExcel(){
 
 function pdfStyle(){
   return `<style>
-    body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a2e;padding:20px;}
-    h1{font-size:18px;color:#1E3A5F;margin-bottom:2px;}
-    .sub{color:#888;font-size:10px;margin-bottom:16px;}
+    body{font-family:Arial,sans-serif;font-size:12px;color:#11221D;padding:20px;}
+    h1{font-size:18px;color:#0A6F48;margin-bottom:2px;}
+    .sub{color:#5B6C64;font-size:10px;margin-bottom:16px;}
     .overview{display:flex;gap:10px;margin-bottom:16px;}
-    .ov{flex:1;border:1px solid #dde;border-radius:7px;padding:9px 12px;text-align:center;}
-    .ol{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+    .ov{flex:1;border:1px solid #D3DBD0;border-radius:7px;padding:9px 12px;text-align:center;}
+    .ol{font-size:9px;color:#5B6C64;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
     .ov-val{font-size:15px;font-weight:700;}
-    .exp{color:#c0392b;}.inc{color:#1a7a4a;}
+    .exp{color:#B3382C;}.inc{color:#17794A;}
     table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px;}
-    th{background:#1E3A5F;color:#fff;padding:6px 9px;text-align:left;}
-    td{padding:5px 9px;border-bottom:1px solid #eef;}
-    tr:nth-child(even) td{background:#f6f8fb;}
+    th{background:#0A6F48;color:#fff;padding:6px 9px;text-align:left;}
+    td{padding:5px 9px;border-bottom:1px solid #D3DBD0;}
+    tr:nth-child(even) td{background:#F3F6F0;}
     .num{text-align:right;}
-    .subtotal td{font-weight:700;background:#fff3cd;}
-    .grand td{font-weight:700;font-size:13px;background:#dbe9fb;}
-    .sh{background:#2E86AB;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;border-radius:4px;margin:12px 0 6px;}
-    .insight-box{border:1px solid #dde;border-left:4px solid #2E86AB;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11.5px;background:#f6f8fb;}
+    .subtotal td{font-weight:700;background:#FBEFD0;}
+    .grand td{font-weight:700;font-size:13px;background:#DDEBE1;}
+    .sh{background:#0A6F48;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;border-radius:4px;margin:12px 0 6px;}
+    .insight-box{border:1px solid #D3DBD0;border-left:4px solid #0A6F48;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:11.5px;background:#F3F6F0;}
     .insight-list{list-style:none;margin:0 0 8px;padding:0;}
-    .insight-list li{border:1px solid #dde;border-radius:6px;padding:7px 12px;margin-bottom:6px;font-size:11.5px;background:#fff;}
-    .chart-nodata{color:#999;font-size:11px;text-align:center;padding:10px;border:1px dashed #dde;border-radius:6px;margin-bottom:12px;}
-    .pdf-chart-wrap{border:1px solid #dde;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
+    .insight-list li{border:1px solid #D3DBD0;border-radius:6px;padding:7px 12px;margin-bottom:6px;font-size:11.5px;background:#fff;}
+    .chart-nodata{color:#5B6C64;font-size:11px;text-align:center;padding:10px;border:1px dashed #D3DBD0;border-radius:6px;margin-bottom:12px;}
+    .pdf-chart-wrap{border:1px solid #D3DBD0;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
     .pdf-chart-wrap img{width:100%;max-width:650px;}
 
     .day-block{margin-bottom:14px;}
-    .day-block-head{background:#eef4fb;color:#1E3A5F;font-weight:700;padding:6px 10px;font-size:11px;border:1px solid #dde;border-bottom:none;border-radius:4px 4px 0 0;}
-    .day-block table{margin-bottom:0;border:1px solid #dde;border-top:none;table-layout:fixed;}
+    .day-block-head{background:#DDEBE1;color:#0A6F48;font-weight:700;padding:6px 10px;font-size:11px;border:1px solid #D3DBD0;border-bottom:none;border-radius:4px 4px 0 0;}
+    .day-block table{margin-bottom:0;border:1px solid #D3DBD0;border-top:none;table-layout:fixed;}
     /* Fixed, identical column widths on every day's table so they all line up vertically, one under another */
     .day-block th:nth-child(1), .day-block td:nth-child(1){width:32%;}
     .day-block th:nth-child(2), .day-block td:nth-child(2){width:16%;}
@@ -3375,24 +3375,25 @@ async function initApp(){
   renderFieldRows();
 
   try {
-    const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const {initializeApp,getApps,getApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const {getAuth,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const {getFirestore}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
 
-    const app=initializeApp({
+    const _cfg={
       apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
       authDomain:"login-system-309fc.firebaseapp.com",
       projectId:"login-system-309fc",
       storageBucket:"login-system-309fc.firebasestorage.app",
       messagingSenderId:"509365590175",
       appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"
-    });
+    };
+    const app=getApps().length?getApp():initializeApp(_cfg);
     window._mtAuth=getAuth(app);
     window._mtDb=getFirestore(app);
 
     onAuthStateChanged(window._mtAuth, async (user)=>{
       if(!user){
-        window.location.href="login.html";
+        window.location.href="login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html"));
         return;
       }
       // Load current month + categories/budgets/goal from Firestore, then init UI

@@ -115,7 +115,7 @@
 
     <!-- Firebase -->
     <script type="module">
-        import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged }
             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, getDoc }
@@ -131,7 +131,7 @@
             appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
         };
 
-        const app  = initializeApp(firebaseConfig);
+        const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getFirestore(app);
 
@@ -146,7 +146,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user || !user.emailVerified) {
                 // Not logged in → redirect to login
-                window.location.href = "login.html";
+                window.location.href = "login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html"));
                 return;
             }
 

@@ -1,6 +1,6 @@
 # Munan.hub Style Guide ("Field Notebook")
 
-Short reference for building or migrating a page. Live demo of every component: open `styleguide.html`.
+Short reference for building or migrating a page. Component recipes below are the reference (the old live `styleguide.html` page was removed in round 13).
 
 ## 1. Page skeleton
 
@@ -112,7 +112,7 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 
 ## 7. Owner-only pieces
 - `owner.js` exposes `MunanOwner.isOwner(user)` (owner email **and** verified email).
-- This only shows or hides things. Real protection must be Firestore rules (see `STYLE-MIGRATION-PLAN.md`, Part I).
+- This only shows or hides things. Real protection must be Firestore rules (see `firestore.rules`).
 
 ## 8. Tool pages (Round 4)
 - Body: `<body class="v2 tool">`; load `site.css?v=2` then `tool.css?v=1`.

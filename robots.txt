@@ -1,6 +1,6 @@
+# Private/login pages carry <meta name="robots" content="noindex">. They are not
+# blocked here on purpose: a crawler must be able to fetch a page to see its noindex.
 User-agent: *
 Allow: /
-Disallow: /login.html
-Disallow: /dashboard.html
 
 Sitemap: https://abamunan.github.io/sitemap.xml

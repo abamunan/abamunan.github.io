@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>English Fluency Tracker | Munan.hub</title>
 <meta name="description" content="Track your daily English practice: reading, summarising, listening and speaking, with streaks, scores and cloud sync.">
@@ -350,7 +351,7 @@ $('tgo').onclick=()=>{if(tm){clearInterval(tm);tm=null;$('tgo').textContent='Sta
 endAt=Date.now()+left*1000;$('tgo').textContent='Pause';
 tm=setInterval(()=>{left=Math.max(0,Math.round((endAt-Date.now())/1000));tdraw();if(left<=0){clearInterval(tm);tm=null;$('tgo').textContent='Start';$('mins').value=(+$('mins').value||0)+tot0/60;left=tot0;tdraw();$('msg').textContent='Time is up! Minutes added. Tap Save.';try{navigator.vibrate&&navigator.vibrate(600)}catch(e){}}},500)};
 $('trs').onclick=()=>{clearInterval(tm);tm=null;$('tgo').textContent='Start';left=tot0;tdraw()};
-$('th').onclick=()=>{const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');S.theme=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;persist()};
+$('th').onclick=()=>{const cur=document.documentElement.dataset.theme==='dark'?'dark':'light'; /* site is light unless data-theme=dark; OS setting is not used */S.theme=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;persist()};
 if(S.theme)document.documentElement.dataset.theme=S.theme;
 function applyReport(r){const d=/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')?r.date:cur,e=S.days[d]=S.days[d]||{};e.sc=e.sc||{};
 e.ts=Date.now();const sc=r.scores||{};DIM.forEach(k=>{const key=Object.keys(sc).find(x=>x.toLowerCase()===k.toLowerCase());if(key&&+sc[key]>=0)e.sc[k]=Math.min(100,Math.round(+sc[key]))});
@@ -664,7 +665,7 @@ applyLang();
 (function(){
  const FB='https://www.gstatic.com/firebasejs/10.12.0/';
  const CFG={apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",authDomain:"login-system-309fc.firebaseapp.com",projectId:"login-system-309fc",storageBucket:"login-system-309fc.firebasestorage.app",messagingSenderId:"509365590175",appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"};
- const LOGIN='login.html';
+ const LOGIN='login.html?redirect=english-tracker.html';
  /* Firestore layout:  users/{uid}/english_days/{YYYY-MM-DD}   one doc per day
                        users/{uid}/english_meta/{meta|vocab|mist|cards|reviews} */
  const GROUPS=['meta','vocab','mist','cards','reviews'],OTHER=['days','vocab','mist','cards','reviews'];
@@ -733,7 +734,7 @@ applyLang();
   if(failed&&!confirm('Some changes are not synced yet. Sign out anyway?'))return;
   try{await am.signOut(auth)}catch(e){}
   ['munan_auth','isLoggedIn','loggedInUser',KEY].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
-  location.href=LOGIN};
+  location.href='login.html'};
  document.addEventListener('visibilitychange',async()=>{
   if(!ready)return;
   if(document.visibilityState==='hidden'){if(timer){clearTimeout(timer);push()}return}
@@ -747,7 +748,7 @@ applyLang();
  (async()=>{
   try{
    const [a,b,c]=await Promise.all([import(FB+'firebase-app.js'),import(FB+'firebase-auth.js'),import(FB+'firebase-firestore.js')]);
-   const app=a.initializeApp(CFG);auth=b.getAuth(app);db=c.getFirestore(app);fs=c;am=b;
+   const app=a.getApps().length?a.getApp():a.initializeApp(CFG);auth=b.getAuth(app);db=c.getFirestore(app);fs=c;am=b;
   }catch(e){console.error('Firebase could not load',e);status('off',T.off);hideOv();return}
   am.onAuthStateChanged(auth,async user=>{
    if(!user){location.href=LOGIN;return}

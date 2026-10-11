@@ -4,7 +4,7 @@
 //  CDN-based: works on GitHub Pages (no build step needed)
 // ============================================================
 
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -14,10 +14,9 @@ const firebaseConfig = {
     projectId:         "login-system-309fc",
     storageBucket:     "login-system-309fc.firebasestorage.app",
     messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa",
-    measurementId:     "G-M6V63MYZN6"
+    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
 };
 
-const app  = initializeApp(firebaseConfig);
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db   = getFirestore(app);

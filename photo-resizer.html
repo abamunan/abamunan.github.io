@@ -292,6 +292,8 @@
             const img = new Image(), url = URL.createObjectURL(file);
             img.onload = async () => {
                 canvas.width = w; canvas.height = h;
+                ctx.fillStyle = '#ffffff';   // JPEG has no alpha: transparent pixels would turn black
+                ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
                 URL.revokeObjectURL(url);
                 const TARGET = 153600; // 150 kB

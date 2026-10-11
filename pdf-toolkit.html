@@ -463,7 +463,7 @@ async function renderRotate(main){
       <div class="pdftk-strip" id="rotStrip"></div>
     </div>
     <div class="pdftk-btn-row">
-      <button class="pdftk-btn pdftk-amber" id="rotExport">Export rotated PDF</button>
+      <button class="pdftk-btn" id="rotExport">Export rotated PDF</button>
       <button class="pdftk-btn pdftk-secondary" id="rotClear2">start over</button>
     </div>
     <div id="rotStatus"></div>
@@ -579,7 +579,7 @@ async function renderSplit(main){
       <div class="pdftk-strip" id="splitStrip"></div>
     </div>
     <div class="pdftk-btn-row">
-      <button class="pdftk-btn pdftk-amber" id="splitExport">Export</button>
+      <button class="pdftk-btn" id="splitExport">Export</button>
       <button class="pdftk-btn pdftk-secondary" id="splitClear2">start over</button>
     </div>
     <div id="splitStatus"></div>
@@ -765,7 +765,7 @@ async function renderMerge(main){
     const btnRow = document.createElement('div');
     btnRow.className = 'pdftk-btn-row';
     btnRow.innerHTML = `
-      <button class="pdftk-btn pdftk-amber" id="mergeExport" ${s.files.length<2?'disabled':''}>Merge ${s.files.length} files</button>
+      <button class="pdftk-btn" id="mergeExport" ${s.files.length<2?'disabled':''}>Merge ${s.files.length} files</button>
       <button class="pdftk-btn pdftk-secondary" id="mergeClearAll">clear all</button>
     `;
     main.appendChild(btnRow);
@@ -850,7 +850,7 @@ async function renderCompress(main){
 
   body += `
     <div class="pdftk-btn-row">
-      <button class="pdftk-btn pdftk-amber" id="compExport">Compress &amp; download</button>
+      <button class="pdftk-btn" id="compExport">Compress &amp; download</button>
       <button class="pdftk-btn pdftk-secondary" id="compClear2">start over</button>
     </div>
     <div id="compStatus"></div>
@@ -1441,7 +1441,7 @@ async function renderProtect(main){
         <input type="password" id="ownerPw" placeholder="leave blank to reuse the password above">
       </div>
       <div class="pdftk-btn-row">
-        <button class="pdftk-btn pdftk-amber" id="protExport">Lock &amp; download</button>
+        <button class="pdftk-btn" id="protExport">Lock &amp; download</button>
         <button class="pdftk-btn pdftk-secondary" id="protClear2">start over</button>
       </div>
       <div id="protStatus"></div>
@@ -1454,7 +1454,7 @@ async function renderProtect(main){
         <div class="pdftk-field-hint">pages are re-rendered as images to produce a genuinely unprotected file — text will no longer be selectable afterward</div>
       </div>
       <div class="pdftk-btn-row">
-        <button class="pdftk-btn pdftk-amber" id="protExport">Unlock &amp; download</button>
+        <button class="pdftk-btn" id="protExport">Unlock &amp; download</button>
         <button class="pdftk-btn pdftk-secondary" id="protClear2">start over</button>
       </div>
       <div id="protStatus"></div>
@@ -1536,7 +1536,7 @@ async function renderRearrange(main){
       <div class="pdftk-strip" id="rearStrip"></div>
     </div>
     <div class="pdftk-btn-row">
-      <button class="pdftk-btn pdftk-amber" id="rearExport">Export reordered PDF</button>
+      <button class="pdftk-btn" id="rearExport">Export reordered PDF</button>
       <button class="pdftk-btn pdftk-secondary" id="rearClear2">start over</button>
     </div>
     <div id="rearStatus"></div>

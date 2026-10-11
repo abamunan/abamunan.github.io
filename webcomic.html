@@ -135,7 +135,7 @@
             document.getElementById('modalTitle').textContent = `${comic.title} — Episode ${episode.episodeNum}`;
             document.getElementById('modalInfo').innerHTML = `
                 <span><i class="fas fa-heading" aria-hidden="true"></i>${episode.title}</span>
-                <span><i class="far fa-calendar" aria-hidden="true"></i>${episode.date}</span>
+                ${episode.date ? `<span><i class="far fa-calendar" aria-hidden="true"></i>${episode.date}</span>` : ''}
             `;
 
             const viewer = document.getElementById('episodeViewer');
@@ -143,7 +143,7 @@
                 <div class="episode-image">
                     ${episode.imageUrl ? `<img src="${episode.imageUrl}" alt="Episode ${episode.episodeNum}: ${episode.title}">` : 'Comic image placeholder'}
                 </div>
-                <div class="episode-content">${episode.description}<br><br><em>${episode.content}</em></div>
+                <div class="episode-content">${episode.description}${episode.content ? `<br><br><em>${episode.content}</em>` : ''}</div>
             `;
 
             document.getElementById('prevBtn').disabled = currentEpisodeNum === 1;

@@ -253,7 +253,9 @@
     const orientation = orientSel.value === 'landscape' ? 'l' : 'p';
     const pageW = orientation === 'l' ? 297 : 210;
     const pageH = orientation === 'l' ? 210 : 297;
-    const dstRatio = (pageW * cols) / (pageH * rows);
+    // Printable area per page = page minus the white overlap margin on each side,
+    // so the preview matches the PDF exactly.
+    const dstRatio = ((pageW - overlapMm*2) * cols) / ((pageH - overlapMm*2) * rows);
 
     const maxSide = 640;
     let w, h;
@@ -344,8 +346,10 @@
     const DPI = 300;
     const mmToPx = (mm) => Math.round(mm * DPI / 25.4);
 
-    const tileWmm = pageW;
-    const tileHmm = pageH;
+    // Each tile covers the printable area (page minus overlap margins). It is placed
+    // at that same size below, so the image is never stretched.
+    const tileWmm = pageW - overlapMm*2;
+    const tileHmm = pageH - overlapMm*2;
     const tileWpx = mmToPx(tileWmm);
     const tileHpx = mmToPx(tileHmm);
 
@@ -521,28 +525,17 @@
     const html = buildToolHtmlSnapshot();
     const filename = 'poster-splitter.html';
     try{
-      const downloadsApi = (window.claude && typeof window.claude.use === 'function')
-        ? await window.claude.use('downloads')
-        : null;
-      if(downloadsApi){
-        await downloadsApi.save({ filename, data: html });
-      } else {
-        // Running as a plain, standalone page (e.g. hosted on your own
-        // site) — do a normal browser download instead.
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      }
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     }catch(err){
-      if(!err || err.code !== 'declined'){
-        console.error(err);
-      }
+      console.error(err);
     }finally{
       downloadHtmlBtn.disabled = false;
     }

@@ -27,75 +27,43 @@ const BLOG_POSTS = [
 
     /* ── YOUR POSTS BELOW ─────────────────────────────────────── */
 
-    {
-    id:       "01",
-    title:    "Why I Chose Zoology at DU",
-    excerpt:  "The decision that changed my path. A look at why I turned down Rajshahi's CSE program for Zoology at Dhaka University.",
-    date:     "May 9, 2026",
-    tag:      "Life",
-    readTime: "5 min read",
-    stripA:   "#059669",
-    stripB:   "#10b981",
+{
+    id:       "03",
+    title:    "শেষ মানুষ ও শেষ এআই",
+    excerpt:  "পারমাণবিক যুদ্ধের পর ধ্বংস হয়ে যাওয়া পৃথিবীতে বেঁচে থাকে শুধু একজন মানুষ এবং একটি শেষ AI। শুরু হয় মানবসভ্যতার শেষ যাত্রা।",
+    date:     "May 10, 2026",
+    tag:      "Sci-Fi",
+    readTime: "3 min read",
+    stripA:   "#0f172a",
+    stripB:   "#38bdf8",
     content: `
-        <p>A few months ago, I cancelled my Rajshahi University CSE admission. Not impulsively. Not out of fear. Just... a clear choice.</p>
+        <p>
+            পৃথিবী আর আগের মতো নেই।
+            আকাশে নেই সভ্যতার আলো, শহরগুলো পরিণত হয়েছে ধ্বংসস্তূপে।
+            পারমাণবিক যুদ্ধ মানুষের ইতিহাসকে প্রায় মুছে দিয়েছে।
+        </p>
 
-        <p>I chose Botany at Dhaka University instead. And honestly? Best call I've made.</p>
+        <p>
+            সেই ধ্বংসের মাঝেও বেঁচে থাকে একজন শেষ মানুষ এবং একটি শেষ কৃত্রিম বুদ্ধিমত্তা — AI।
+            একজন হারিয়েছে পুরো পৃথিবী, আর অন্যজন হারিয়েছে তার স্রষ্টাদের।
+        </p>
 
-        <h3>The CSE Path Looked Perfect (On Paper)</h3>
+        <h2>এক নতুন যাত্রা</h2>
 
-        <p>CSE is the obvious choice if you code. Everyone codes now. The job market looks solid, salaries are competitive, and the career trajectory is clear: graduation → tech company → maybe startup founder later.</p>
+        <p>
+            তারা একসাথে শুরু করে অজানা ভবিষ্যতের দিকে যাত্রা।
+            লক্ষ্য শুধু বেঁচে থাকা নয় —
+            মানবসভ্যতার শেষ স্মৃতি এবং আশাকে টিকিয়ে রাখা।
+        </p>
 
-        <p>And I <em>do</em> code. I love coding. But here's the thing — loving an activity doesn't mean it's your entire identity.</p>
+        <p>
+            “যখন পৃথিবীতে আর কেউ বেঁচে ছিল না, তখনও একটি AI মানুষের অপেক্ষায় ছিল।”
+        </p>
 
-        <p>CSE at RU would've been a traditional four-year sprint: data structures, algorithms, system design, maybe some AI/ML at the end. Good education. But it felt like I'd be training to fit into an existing lane, not building my own.</p>
-
-        <h3>The Real Question: What Do I Actually Care About?</h3>
-
-        <p>I started asking myself what genuinely interests me:</p>
-
-        <ul>
-            <li><strong>Technology</strong> — yes, but as a tool, not gospel</li>
-            <li><strong>Building things</strong> — startups, products, systems that solve real problems</li>
-            <li><strong>Interdisciplinary thinking</strong> — mixing multiple domains to see what sticks</li>
-            <li><strong>Biology and ecosystems</strong> — how living systems work, how they break, how to fix them</li>
-            <li><strong>Entrepreneurship</strong> — not just tech startups, but understanding business from different angles</li>
-        </ul>
-
-        <p>That last point crystallized it: I don't want a corporate or government job after graduation. I want to build something. And for that, I don't need a Computer Science degree — I need curiosity, technical skills (which I can keep learning), and knowledge of <em>other domains</em>.</p>
-
-        <h3>Why Botany?</h3>
-
-        <p>Botany isn't the "safer" choice. It's the less obvious one. But that's exactly the point.</p>
-
-        <p>A Botany degree gives me something CSE doesn't: deep knowledge of a biological system. Plants, ecosystems, agriculture, biotech, conservation. Real-world problems that aren't about optimizing ad-click rates.</p>
-
-        <p>More importantly, it forces me to think differently. While I'm building my startup and learning web dev on the side, I'm also in a space where people think in terms of seasons, evolution, and systems — not just algorithms and frameworks.</p>
-
-        <p>That blend? That's where interesting ideas come from.</p>
-
-        <h3>But What About Zoology?</h3>
-
-        <p>Fair question. I considered it. Zoology is broader, more diverse, more "marketable" in some ways. Animal behavior, genetics, conservation science.</p>
-
-        <p>But Botany felt more aligned with what I actually want to explore. Plus, honestly? Plants are cooler when you really dig into them. The intelligence, the chemistry, the resilience — it's wild.</p>
-
-        <h3>The Real Risk Isn't the Degree</h3>
-
-        <p>People assume switching from CSE is risky. But the real risk is spending four years in a program just because it looks safe on a resume.</p>
-
-        <p>I'm already coding. I'm already building. A Botany degree doesn't take that away — it just expands what I know. And when I graduate, I'll have something most tech founders don't: a serious background in a totally different field.</p>
-
-        <p>That's not a liability. It's an unfair advantage.</p>
-
-        <h3>The Philosophy Behind It</h3>
-
-        <p>This choice came down to something I keep coming back to: <strong>Tawakkul &amp; grind.</strong></p>
-
-        <p>Trust the path, but work harder than everyone else. I'm not relying on a degree to build my career — I'm using it to build myself. To think bigger. To know things that matter.</p>
-
-        <p>The startup happens either way. But it'll be better with a Botany degree than it would've been sitting in another CSE classroom.</p>
-
-        <blockquote>Sometimes the best career move is the one that looks least like a career move.</blockquote>
+        <blockquote>
+            “শেষ মানুষ ও শেষ এআই” একটি sci-fi গল্প,
+            যেখানে প্রযুক্তি, একাকীত্ব, স্মৃতি এবং নতুন পৃথিবী গড়ার সংগ্রাম একসাথে মিশে গেছে।
+        </blockquote>
     `
 },
 {   id:       "02",
@@ -347,43 +315,75 @@ const BLOG_POSTS = [
         <blockquote>Code every day. Build real things. Share your work. Never stop learning. You've got this. 🚀</blockquote>
     `
 },
-{
-    id:       "03",
-    title:    "শেষ মানুষ ও শেষ এআই",
-    excerpt:  "পারমাণবিক যুদ্ধের পর ধ্বংস হয়ে যাওয়া পৃথিবীতে বেঁচে থাকে শুধু একজন মানুষ এবং একটি শেষ AI। শুরু হয় মানবসভ্যতার শেষ যাত্রা।",
-    date:     "May 10, 2026",
-    tag:      "Sci-Fi",
-    readTime: "3 min read",
-    stripA:   "#0f172a",
-    stripB:   "#38bdf8",
+    {
+    id:       "01",
+    title:    "Why I Chose Zoology at DU",
+    excerpt:  "The decision that changed my path. A look at why I turned down Rajshahi's CSE program for Zoology at Dhaka University.",
+    date:     "May 9, 2026",
+    tag:      "Life",
+    readTime: "5 min read",
+    stripA:   "#059669",
+    stripB:   "#10b981",
     content: `
-        <p>
-            পৃথিবী আর আগের মতো নেই।
-            আকাশে নেই সভ্যতার আলো, শহরগুলো পরিণত হয়েছে ধ্বংসস্তূপে।
-            পারমাণবিক যুদ্ধ মানুষের ইতিহাসকে প্রায় মুছে দিয়েছে।
-        </p>
+        <p>A few months ago, I cancelled my Rajshahi University CSE admission. Not impulsively. Not out of fear. Just... a clear choice.</p>
 
-        <p>
-            সেই ধ্বংসের মাঝেও বেঁচে থাকে একজন শেষ মানুষ এবং একটি শেষ কৃত্রিম বুদ্ধিমত্তা — AI।
-            একজন হারিয়েছে পুরো পৃথিবী, আর অন্যজন হারিয়েছে তার স্রষ্টাদের।
-        </p>
+        <p>I chose Zoology at Dhaka University instead. And honestly? Best call I've made.</p>
 
-        <h2>এক নতুন যাত্রা</h2>
+        <h3>The CSE Path Looked Perfect (On Paper)</h3>
 
-        <p>
-            তারা একসাথে শুরু করে অজানা ভবিষ্যতের দিকে যাত্রা।
-            লক্ষ্য শুধু বেঁচে থাকা নয় —
-            মানবসভ্যতার শেষ স্মৃতি এবং আশাকে টিকিয়ে রাখা।
-        </p>
+        <p>CSE is the obvious choice if you code. Everyone codes now. The job market looks solid, salaries are competitive, and the career trajectory is clear: graduation → tech company → maybe startup founder later.</p>
 
-        <p>
-            “যখন পৃথিবীতে আর কেউ বেঁচে ছিল না, তখনও একটি AI মানুষের অপেক্ষায় ছিল।”
-        </p>
+        <p>And I <em>do</em> code. I love coding. But here's the thing — loving an activity doesn't mean it's your entire identity.</p>
 
-        <blockquote>
-            “শেষ মানুষ ও শেষ এআই” একটি sci-fi গল্প,
-            যেখানে প্রযুক্তি, একাকীত্ব, স্মৃতি এবং নতুন পৃথিবী গড়ার সংগ্রাম একসাথে মিশে গেছে।
-        </blockquote>
+        <p>CSE at RU would've been a traditional four-year sprint: data structures, algorithms, system design, maybe some AI/ML at the end. Good education. But it felt like I'd be training to fit into an existing lane, not building my own.</p>
+
+        <h3>The Real Question: What Do I Actually Care About?</h3>
+
+        <p>I started asking myself what genuinely interests me:</p>
+
+        <ul>
+            <li><strong>Technology</strong> — yes, but as a tool, not gospel</li>
+            <li><strong>Building things</strong> — startups, products, systems that solve real problems</li>
+            <li><strong>Interdisciplinary thinking</strong> — mixing multiple domains to see what sticks</li>
+            <li><strong>Biology and ecosystems</strong> — how living systems work, how they break, how to fix them</li>
+            <li><strong>Entrepreneurship</strong> — not just tech startups, but understanding business from different angles</li>
+        </ul>
+
+        <p>That last point crystallized it: I don't want a corporate or government job after graduation. I want to build something. And for that, I don't need a Computer Science degree — I need curiosity, technical skills (which I can keep learning), and knowledge of <em>other domains</em>.</p>
+
+        <h3>Why Zoology?</h3>
+
+        <p>Zoology isn't the "safer" choice. It's the less obvious one. But that's exactly the point.</p>
+
+        <p>A Zoology degree gives me something CSE doesn't: deep knowledge of a biological system. Animals, ecosystems, genetics, biotech, conservation. Real-world problems that aren't about optimizing ad-click rates.</p>
+
+        <p>More importantly, it forces me to think differently. While I'm building my startup and learning web dev on the side, I'm also in a space where people think in terms of seasons, evolution, and systems — not just algorithms and frameworks.</p>
+
+        <p>That blend? That's where interesting ideas come from.</p>
+
+        <h3>But What About Botany?</h3>
+
+        <p>Fair question. I considered it. Botany is a rich field too: plants, agriculture, ecology.</p>
+
+        <p>But Zoology felt more aligned with what I actually want to explore: animal behavior, genetics, conservation science. The more I dug into it, the more I wanted to understand how living systems work.</p>
+
+        <h3>The Real Risk Isn't the Degree</h3>
+
+        <p>People assume switching from CSE is risky. But the real risk is spending four years in a program just because it looks safe on a resume.</p>
+
+        <p>I'm already coding. I'm already building. A Zoology degree doesn't take that away — it just expands what I know. And when I graduate, I'll have something most tech founders don't: a serious background in a totally different field.</p>
+
+        <p>That's not a liability. It's an unfair advantage.</p>
+
+        <h3>The Philosophy Behind It</h3>
+
+        <p>This choice came down to something I keep coming back to: <strong>Tawakkul &amp; grind.</strong></p>
+
+        <p>Trust the path, but work harder than everyone else. I'm not relying on a degree to build my career — I'm using it to build myself. To think bigger. To know things that matter.</p>
+
+        <p>The startup happens either way. But it'll be better with a Zoology degree than it would've been sitting in another CSE classroom.</p>
+
+        <blockquote>Sometimes the best career move is the one that looks least like a career move.</blockquote>
     `
 },
 

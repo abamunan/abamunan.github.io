@@ -23,8 +23,7 @@ const firebaseConfig = {
     projectId:         "login-system-309fc",
     storageBucket:     "login-system-309fc.firebasestorage.app",
     messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa",
-    measurementId:     "G-M6V63MYZN6"
+    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
 };
 
 const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -34,7 +33,7 @@ const db   = getFirestore(app);
 // ── CONSTANTS ────────────────────────────────────────────────
 const MAX_SECTIONS = 10;
 const COLLECTION   = "diaryEntries";
-const ACCENT_HEX   = "#0284c7"; // fixed brand color for PDF (theme-independent)
+const ACCENT_HEX   = "#0A6F48"; // fixed brand color for PDF (theme-independent)
 
 // ── STATE ────────────────────────────────────────────────────
 let currentUser   = null;
@@ -1015,7 +1014,7 @@ function buildPrintableDocument(entries) {
     root.style.cssText = `
         width: 190mm;
         box-sizing: border-box;
-        background: #ffffff; color: #2c3e50;
+        background: #ffffff; color: #11221D;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                      'Hind Siliguri', Helvetica, Arial, sans-serif;
         padding: 4mm 0;
@@ -1038,13 +1037,13 @@ function buildPrintableDocument(entries) {
     const header = document.createElement("div");
     header.style.cssText = `
         text-align: center; padding-bottom: 16px; margin-bottom: 26px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid #D3DBD0;
     `;
     header.innerHTML = `
-        <div style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#1e293b;">
+        <div style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#11221D;">
             Munan's <span style="color:${ACCENT_HEX};font-weight:800;">Diary</span>
         </div>
-        <div style="font-size:12px;color:#94a3b8;margin-top:6px;font-weight:500;">
+        <div style="font-size:12px;color:#5B6C64;margin-top:6px;font-weight:500;">
             ${entries.length} ${entries.length === 1 ? "entry" : "entries"} · exported ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
         </div>
     `;
@@ -1056,7 +1055,7 @@ function buildPrintableDocument(entries) {
         entryCard.style.cssText = `
             box-sizing: border-box;
             background: #ffffff;
-            border: 1px solid #e2e8f0; border-radius: 10px;
+            border: 1px solid #D3DBD0; border-radius: 10px;
             padding: 18px 20px;
             margin-bottom: 16px;
             page-break-inside: avoid; break-inside: avoid;
@@ -1071,12 +1070,12 @@ function buildPrintableDocument(entries) {
         const dateHeading = document.createElement("div");
         dateHeading.style.cssText = `
             display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px;
-            padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px; border-bottom: 1px solid #EEF1EA;
         `;
         dateHeading.innerHTML = `
             <div style="width:4px;height:16px;background:${ACCENT_HEX};border-radius:2px;flex-shrink:0;"></div>
-            <div style="font-size:14px;font-weight:700;color:#1e293b;">${escapeHtml(formatDateLabel(entry.datetime))}</div>
-            <div style="font-size:12px;font-weight:500;color:#94a3b8;">${escapeHtml(formatTimeLabel(entry.datetime))}</div>
+            <div style="font-size:14px;font-weight:700;color:#11221D;">${escapeHtml(formatDateLabel(entry.datetime))}</div>
+            <div style="font-size:12px;font-weight:500;color:#5B6C64;">${escapeHtml(formatTimeLabel(entry.datetime))}</div>
         `;
         entryCard.appendChild(dateHeading);
 
@@ -1088,7 +1087,7 @@ function buildPrintableDocument(entries) {
                 <div style="font-size:11.5px;font-weight:700;color:${ACCENT_HEX};margin-bottom:5px;letter-spacing:0.03em;text-transform:uppercase;">
                     ${escapeHtml(sec.title || "Untitled")}
                 </div>
-                <div style="font-size:13.5px;line-height:1.6;color:#2c3e50;white-space:pre-wrap;">
+                <div style="font-size:13.5px;line-height:1.6;color:#11221D;white-space:pre-wrap;">
                     ${escapeHtml(sec.content || "")}
                 </div>
             `;

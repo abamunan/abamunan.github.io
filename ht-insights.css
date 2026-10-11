@@ -33,3 +33,10 @@
   background:var(--ht-accent); border-color:var(--ht-accent); color:var(--on-accent);
 }
 .ht-app .mti-tab.active i{ color:var(--on-accent); }
+
+/* ── LOGGING HEATMAP ──
+   mt-insights.css paints the heatmap red (var(--danger)) because in Money Tracker
+   it shows spending. Here a filled day means "you logged something" (good), so use
+   the health accent instead. Scoped to .ht-app so Money Tracker keeps its red. ── */
+.ht-app .mti-hm-l4{ background:var(--ht-accent); color:var(--on-accent); border-color:transparent; }
+.ht-app .mti-hm-dow.mti-hm-we{ color:var(--text-soft); }

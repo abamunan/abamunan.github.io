@@ -3,10 +3,10 @@
 //  Firebase 10.x CDN (ESM) — GitHub Pages compatible
 // ============================================================
 
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, sendEmailVerification, GoogleAuthProvider,
-         signInWithPopup, onAuthStateChanged, fetchSignInMethodsForEmail,
+         signInWithPopup, onAuthStateChanged,
          sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp, Timestamp }
@@ -19,13 +19,30 @@ const firebaseConfig = {
     projectId:         "login-system-309fc",
     storageBucket:     "login-system-309fc.firebasestorage.app",
     messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa",
-    measurementId:     "G-M6V63MYZN6"
+    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
 };
 
-const app  = initializeApp(firebaseConfig);
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+// ── WHERE TO GO AFTER LOGIN ──────────────────────────────────
+// Pages that bounce signed-out visitors send them to login.html?redirect=<page>.
+// Garments also leaves its page name in sessionStorage ("gat_return").
+// Only same-site relative .html paths are accepted (no http:, //, ..), so
+// the parameter can't be used as an open redirect. Anything else -> dashboard.
+function getRedirectTarget() {
+    var target = "dashboard.html";
+    try {
+        var want = new URLSearchParams(window.location.search).get("redirect")
+                || sessionStorage.getItem("gat_return") || "";
+        if (/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.html$/.test(want) && want !== "login.html") {
+            target = want;
+        }
+        sessionStorage.removeItem("gat_return");
+    } catch (e) {}
+    return target;
+}
 
 // ── SESSION STATE ────────────────────────────────────────────
 onAuthStateChanged(auth, (user) => {
@@ -33,7 +50,7 @@ onAuthStateChanged(auth, (user) => {
         localStorage.setItem('munan_auth', 'true');
         localStorage.setItem('isLoggedIn', 'true');
         if (window.location.pathname.includes("login.html")) {
-            window.location.href = "dashboard.html";
+            window.location.href = getRedirectTarget();
         }
     } else {
         localStorage.removeItem('munan_auth');
@@ -42,35 +59,20 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // ── LOGIN WITH EMAIL & PASSWORD ──────────────────────────────
+// Note: no "registered with Google?" lookup on failure. With email-enumeration
+// protection ON, fetchSignInMethodsForEmail always returns [] (dead code) and
+// would otherwise reveal whether an email exists. login.html shows a static hint.
 async function loginWithEmail(email, password) {
-    try {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        if (!cred.user.emailVerified) {
-            await signOut(auth);
-            const err = new Error("Please verify your email before logging in.");
-            err.code = "auth/email-not-verified";
-            throw err;
-        }
-        localStorage.setItem('munan_auth', 'true');
-        localStorage.setItem('isLoggedIn', 'true');
-        window.location.href = "dashboard.html";
-    } catch (error) {
-        if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
-            // Check if this email was registered via Google instead
-            try {
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-                if (methods.includes("google.com") && !methods.includes("password")) {
-                    const err = new Error("This email is registered with Google. Please use the 'Continue with Google' button to log in.");
-                    err.code = "auth/wrong-provider";
-                    throw err;
-                }
-            } catch (innerErr) {
-                if (innerErr.code === "auth/wrong-provider") throw innerErr;
-                // fetchSignInMethodsForEmail itself failed — fall through to original error
-            }
-        }
-        throw error;
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    if (!cred.user.emailVerified) {
+        await signOut(auth);
+        const err = new Error("Please verify your email before logging in.");
+        err.code = "auth/email-not-verified";
+        throw err;
     }
+    localStorage.setItem('munan_auth', 'true');
+    localStorage.setItem('isLoggedIn', 'true');
+    window.location.href = getRedirectTarget();
 }
 
 // ── SIGNUP WITH EMAIL & PASSWORD ─────────────────────────────
@@ -94,7 +96,7 @@ async function loginWithGoogle() {
     }, { merge: true });
     localStorage.setItem('munan_auth', 'true');
     localStorage.setItem('isLoggedIn', 'true');
-    window.location.href = "dashboard.html";
+    window.location.href = getRedirectTarget();
 }
 
 // ── LOGOUT ───────────────────────────────────────────────────

@@ -21,13 +21,15 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 ```
 ├── index.html, projects.html, about.html, tools.html, contact.html   # Public pages
 ├── blog.html, webcomic.html, notes.html, reader.html                  # Content + study viewer
-├── privacy.html, terms.html, styleguide.html                          # Legal + live style guide
+├── privacy.html, terms.html                                           # Legal
 ├── login.html, dashboard.html, part1.html, contactRep.html             # Auth / owner-only pages
 │
 ├── TypeMaster.html, photo-resizer.html, pdf-toolkit.html,              # Tools (use tool.css)
 │   booklet-maker.html, poster-splitter.html, resolution-changer.html,
-│   invert-colors.html, drive-folder-fetch.html, bot1.html
+│   invert-colors.html, drive-folder-fetch.html,
+│   bot1.html (Messenger to Telegram guide: public, in sitemap, linked from projects.html)
 ├── diary.html, english-tracker.html, garments-accounts.html            # Private apps (app.css)
+│   (+ garments-calc.js/.css: Garments' own floating calculator, own `gat_calc_*` storage keys)
 ├── moneytracker.html, healthtracker.html                                # Fullscreen PWA trackers
 │   (+ mt.css, mt-calc.css, mt-insights.css, ht.css, ht-insights.css, mt*.js, ht*.js)
 │
@@ -37,17 +39,20 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 ├── theme.js                  # Dark/light theme (blocking, runs before first paint)
 ├── nav.js, footer.js         # Shared navbar and footer, injected into every page
 ├── owner.js                  # Owner-only helper (convenience only; real protection is Firestore rules)
+├── auth.js, firebase-config.js  # Shared Firebase sign-in helper and project config
 ├── posts.js, webcomic.js     # Blog and webcomic data
 │
-├── manifest-*.json           # PWA manifests (Money Tracker, Health Tracker)
+├── apps/money/               # New Money Tracker (ES modules, own PWA: manifest.json, sw.js, tests/)
+├── apps/health/              # New Health Tracker (ES modules, own PWA: manifest.json, sw.js, icons, tests/): Today, History, Insights, Guide, More (settings, backup/restore, export). Open /apps/health/index.html (not linked anywhere yet). Old healthtracker.html stays live and reads/writes the same data
+├── apps/shared/              # Code shared by apps (store, firestore, sheet, toast, tabbar, xlsx, download, ui.css, ...)
+├── manifest-*.json           # PWA manifests (old Money Tracker, Health Tracker)
 ├── icon.png, Image.jpeg      # Favicon, profile photo
 ├── sitemap.xml, robots.txt   # Crawler files
-└── STYLE-GUIDE.md, CHANGELOG-ROUND*.md, STYLE-MIGRATION-PLAN.md
+├── firestore.rules           # Firestore security rules (publish from Firebase console)
+└── STYLE-GUIDE.md
 ```
 
-Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.md)** (also viewable as `styleguide.html`). The history of the restyle is in the `CHANGELOG-ROUND*.md` files.
-
-> Some file names above (e.g. `posts.js`, `webcomic.js`, individual project pages) are referenced by `index.html`/`projects.html` but maintained separately — make sure they're present in the repo root alongside these files.
+Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.md)**.
 
 ## 🚀 Deploying (GitHub Pages)
 
@@ -60,7 +65,7 @@ Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.
 ## ➕ Adding a new project
 
 1. Build the tool as a standalone `.html` file and add it to the repo root.
-2. Add a card to `projects.html`'s `.projects-grid` (copy an existing `.project-card` block) and, if it should also appear on the homepage, to `index.html` too.
+2. Add a card to `projects.html`'s `.tracker-grid` (copy an existing `.tracker` block) and, if it should also appear on the homepage, to `index.html` too.
 3. Copy the head of a similar page (title, description, canonical, Open Graph, `theme.js`, `site.css?v=3`, fonts) and use `<body class="v2">`.
 4. If the page should be indexed by search engines, add it to `sitemap.xml`; private pages get `noindex`.
 

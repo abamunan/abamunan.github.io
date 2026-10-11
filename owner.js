@@ -5,7 +5,7 @@
    IMPORTANT: this is for SHOWING / HIDING things (links, menu items,
    page redirects). It is NOT security. Anyone can edit JavaScript in
    their own browser. Real protection for private data must come from
-   Firestore security rules (see STYLE-MIGRATION-PLAN.md, Part I):
+   Firestore security rules (see firestore.rules):
 
      function isOwner() {
        return request.auth != null

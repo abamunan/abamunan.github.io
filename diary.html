@@ -107,15 +107,6 @@
 
     /* ── WRITE: DATE/TIME ROW ────────────────────────────────── */
     .diary-card { margin-bottom: 22px; }
-    /* Strip the shared glass-card look (.card, from style.css) for this
-       one instance — the write view now reads as an open page, not a
-       boxed panel. Scoped to `.diary-card.card` so nothing else on the
-       site is affected. */
-    .diary-card.card {
-        background: transparent !important; border: none !important;
-        backdrop-filter: none !important; box-shadow: none !important;
-        padding: 0 !important;
-    }
     .diary-datetime-row {
         display: flex; gap: 28px; flex-wrap: wrap; width: 100%;
     }
@@ -524,7 +515,7 @@
             <button id="cancel-edit-btn" type="button">Start new instead</button>
         </div>
 
-        <div class="card diary-card" style="align-items:stretch;">
+        <div class="diary-card" style="align-items:stretch;">
             <div class="diary-datetime-row">
                 <div class="diary-field">
                     <label for="entry-date">Date</label>

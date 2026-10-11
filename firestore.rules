@@ -1,0 +1,187 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Garments Accounts (shared partner ledger) ──────────────────────
+    // Only the 3 verified partner accounts can touch anything under
+    // /garments/... (see isGarmentsPartner below). On top of that:
+    //   • Sales / Expenses / Stock / Accounts entries: only the person who
+    //     entered an entry can edit or delete it. Exception: on a SALE, any
+    //     partner may change ONLY received / receivedDate (Money Received).
+    //     Keep that list in sync with SHARED_FIELDS in garments-accounts.html.
+    //   • History log: append-only — nobody can edit or delete it.
+    //   • Bin: deleted entries are kept forever; the only allowed change is
+    //     marking one as restored.
+    //
+    // NOTE: the old catch-all `match /garments/{rest=**}` was removed on
+    // purpose. Firestore ORs every matching rule, so leaving it in place
+    // would let any partner bypass the stricter rules below.
+
+    // settings doc (garments/settings) and any other document sitting
+    // directly under /garments — same access as before
+    match /garments/{docId} {
+      allow read, write: if isGarmentsPartner();
+    }
+
+    // Sales / Expenses / Stock / Accounts  (garments/{col}/items/{id})
+    match /garments/{col}/items/{id} {
+      allow read:   if isGarmentsPartner() && isLedger(col);
+      allow create: if isGarmentsPartner() && isLedger(col);
+      allow update: if isGarmentsPartner() && isLedger(col) && (
+        isOwnerOrLegacy()
+        || (col == 'sales'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['received', 'receivedDate', 'editedBy']))
+      );
+      allow delete: if isGarmentsPartner() && isLedger(col) && isOwnerOrLegacy();
+    }
+
+    // History log — append-only
+    match /garments/log/items/{id} {
+      allow read:   if isGarmentsPartner();
+      allow create: if isGarmentsPartner()
+                    && request.resource.data.email == request.auth.token.email.lower();
+      allow update, delete: if false;
+    }
+
+    // Bin — deleted entries, kept forever
+    match /garments/bin/items/{id} {
+      allow read:   if isGarmentsPartner();
+      allow create: if isGarmentsPartner()
+                    && request.resource.data.deletedEmail == request.auth.token.email.lower();
+      allow update: if isGarmentsPartner()
+                    && !('restoredAt' in resource.data)
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['restoredAt', 'restoredBy']);
+      allow delete: if false;
+    }
+
+    // secrets — only the verified site owner can read; nobody can write
+    // from the client (add/change secrets in the Firebase console).
+    // part1.html reads secrets/privateDrive, so the doc ID is NOT a uid.
+    match /secrets/{docId} {
+      allow read: if isSiteOwner();
+      allow write: if false;
+    }
+
+    // users — each user can only touch their own subtree
+    match /users/{uid}/{rest=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // passwordResetCooldowns — this flow runs BEFORE login, so request.auth
+    // is always null here and we can't tie access to a uid. These rules
+    // enforce the cooldown at the database level instead of trusting
+    // the client:
+    //   - anyone can read (needed to check "can I request a reset yet?")
+    //   - a doc can only be created/updated with ONE field, lastRequestedAt,
+    //     and its value must equal request.time (the server's clock) — so
+    //     nobody can forge a fake past/future timestamp
+    //   - an update is only allowed once real server time has moved past
+    //     the previous timestamp + COOLDOWN_SECONDS — so no one, including
+    //     an attacker, can write faster than the cooldown allows
+    //   - delete is blocked entirely, so a cooldown can't be erased early
+    //
+    // Set COOLDOWN_SECONDS (currently 60) to match whatever cooldown your
+    // app logic actually uses.
+    match /passwordResetCooldowns/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['lastRequestedAt'])
+                    && request.resource.data.lastRequestedAt == request.time;
+      allow update: if request.resource.data.keys().hasOnly(['lastRequestedAt'])
+                    && request.resource.data.lastRequestedAt == request.time
+                    && request.time > resource.data.lastRequestedAt + duration.value(60, 's');
+      allow delete: if false;
+    }
+
+    // ── diaryEntries ─────────────────────────────────────────────────
+    // REPLACES the previous version of this block. The old `update` rule
+    // only checked who owned the EXISTING document (resource.data.userId)
+    // and never checked the userId being WRITTEN (request.resource.data.
+    // userId) — so a signed-in owner could update their own entry and
+    // silently reassign it to another user's UID. This version checks
+    // ownership on both sides of the write, and validates the fields the
+    // app depends on so malformed documents can't get written either.
+    match /diaryEntries/{entryId} {
+      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      allow create: if isSignedIn()
+                    && isOwner(request.resource.data.userId)
+                    && hasValidDiaryShape(request.resource.data);
+      allow update: if isSignedIn()
+                    && isOwner(resource.data.userId)
+                    && isOwner(request.resource.data.userId)
+                    && hasValidDiaryShape(request.resource.data);
+      allow delete: if isSignedIn() && isOwner(resource.data.userId);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    // isSignedIn / isOwner / hasValidDiaryShape / isValidDiarySections are
+    // used by diaryEntries above. isGarmentsPartner, isLedger and
+    // isOwnerOrLegacy are used by /garments.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // The site owner (same email as owner.js). Must be verified.
+    function isSiteOwner() {
+      return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() == 'allmunanabdullah@gmail.com';
+    }
+
+    function isOwner(userId) {
+      return userId == request.auth.uid;
+    }
+
+    // ── the 3 partners ───────────────────────────────────────────────
+    // Emails must be lowercase here. email_verified blocks look-alike or
+    // unverified accounts.
+    function isGarmentsPartner() {
+      return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() in [
+               'allmunanabdullah@gmail.com',
+               'maitrariti@gmail.com',
+               'jeetm6863@gmail.com'
+             ];
+    }
+
+    // ── NEW helpers for the garments ledger ──────────────────────────
+    function isLedger(col) {
+      return col in ['sales', 'expenses', 'stock', 'capital'];
+    }
+
+    // An entry is editable/deletable by the partner who entered it.
+    // Entries saved before logins existed have no owner e-mail (missing or
+    // empty) and stay open to every partner.
+    function isOwnerOrLegacy() {
+      return resource.data.get('enteredEmail', '') == ''
+          || resource.data.get('enteredEmail', '').lower() == request.auth.token.email.lower();
+    }
+
+    function hasValidDiaryShape(data) {
+      return data.keys().hasAll(['userId', 'datetime', 'sections'])
+        && data.userId is string
+        && data.datetime is string
+        && data.datetime.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$')
+        && data.sections is list
+        && data.sections.size() >= 1
+        && data.sections.size() <= 10
+        && isValidDiarySections(data.sections);
+    }
+
+    function isValidDiarySections(sections) {
+      // Rules syntax can't cheaply validate every element of an
+      // arbitrary-length list, so this checks the first section's shape
+      // as a lightweight guard against obviously malformed payloads — not
+      // exhaustive per-element validation. The client already enforces
+      // per-section shape on every element.
+
+      return sections[0] is map
+        && sections[0].keys().hasAll(['title', 'content'])
+        && sections[0].title is string
+        && sections[0].content is string;
+    }
+
+  }
+}

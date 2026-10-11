@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
@@ -423,25 +424,26 @@
 <script src="footer.js"></script>
     <script type="module">
     /* ── FIREBASE ─────────────────────────────────────── */
-    import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp }
         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const _app  = initializeApp({
+    const _cfg = {
         apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
         authDomain:"login-system-309fc.firebaseapp.com",
         projectId:"login-system-309fc",
         storageBucket:"login-system-309fc.firebasestorage.app",
         messagingSenderId:"509365590175",
         appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"
-    });
+    };
+    const _app  = getApps().length ? getApp() : initializeApp(_cfg);
     const _auth = getAuth(_app);
     const _db   = getFirestore(_app);
     let   _uid  = null;
 
     onAuthStateChanged(_auth, async (user) => {
-        if (!user) { window.location.href = "login.html"; return; }
+        if (!user) { window.location.href = "login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html")); return; }
         _uid = user.uid;
         await loadBestStats();
         await loadRecentHistory(9);

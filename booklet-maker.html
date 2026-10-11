@@ -103,7 +103,7 @@
                         <div class="stat"><b id="statSheets">–</b><span>Sheets to print</span></div>
                     </div>
 
-                    <p class="sig-label">Sheet 1 of N — outer signature</p>
+                    <p class="sig-label">Sheet 1 of <span id="sigN">N</span> — outer signature</p>
                     <div class="sheet">
                         <div class="half"><div class="half-tag">Front · Left</div><div class="pg" id="fl">–</div></div>
                         <div class="half"><div class="half-tag">Front · Right</div><div class="pg" id="fr">–</div></div>
@@ -223,6 +223,7 @@ async function handleFile(file){
     document.getElementById('statN').textContent = n;
     document.getElementById('statPad').textContent = pad;
     document.getElementById('statSheets').textContent = N / 4;
+    document.getElementById('sigN').textContent = N / 4;
 
     const label = (p) => p <= n ? p : '';
     const labelBlank = (p) => p <= n ? null : 'blank';

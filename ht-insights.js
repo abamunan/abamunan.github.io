@@ -14,7 +14,7 @@
     {id:'overview', label:'Overview', icon:'fa-chart-simple'},
     {id:'streaks', label:'Streaks', icon:'fa-fire'},
     {id:'trends', label:'Trends', icon:'fa-arrow-trend-up'},
-    {id:'forecast', label:'Forecast', icon:'fa-crystal-ball'},
+    {id:'forecast', label:'Forecast', icon:'fa-wand-magic-sparkles'},
   ];
   let activeInsightsTab='overview';
   let activeTrendMetric='weight';
@@ -25,7 +25,7 @@
     const bar=$('mtiTabBar');
     if(!bar) return;
     bar.innerHTML=INSIGHT_TABS.map(t=>
-      `<button type="button" class="mti-tab${t.id===activeInsightsTab?' mti-active':''}" data-mti-tab="${t.id}" role="tab" aria-selected="${t.id===activeInsightsTab}"><i class="fas ${t.icon}"></i> ${t.label}</button>`
+      `<button type="button" class="mti-tab${t.id===activeInsightsTab?' active':''}" data-mti-tab="${t.id}" role="tab" aria-selected="${t.id===activeInsightsTab}"><i class="fas ${t.icon}"></i> ${t.label}</button>`
     ).join('');
     bar.querySelectorAll('[data-mti-tab]').forEach(btn=>{
       btn.onclick=()=>{ activeInsightsTab=btn.dataset.mtiTab; renderInsightsTab(); };

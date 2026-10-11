@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Log in or create your Munan.hub account.">
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
@@ -240,7 +240,7 @@
                             <label for="signupName">Full Name <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
                                 <i class="fas fa-user" aria-hidden="true"></i>
-                                <input type="text" id="signupName" placeholder="Abdullah Al Munan" autocomplete="name">
+                                <input type="text" id="signupName" placeholder="Your full name" autocomplete="name">
                             </div>
                         </div>
 
@@ -392,7 +392,6 @@
             'auth/invalid-credential':    'Incorrect email or password. Please try again.',
             'auth/user-not-found':        'No account found with this email.',
             'auth/email-not-verified':    'Please verify your email before logging in.',
-            'auth/wrong-provider':        err.message || 'This email is linked to a different sign-in method.',
             'auth/too-many-requests':     'Too many attempts. Please wait a moment and try again.',
             'auth/invalid-email':         'Enter a valid email address.',
             'auth/network-request-failed':'Network error. Check your connection and try again.',
@@ -510,7 +509,6 @@
         document.getElementById('loginBtn').disabled = true;
 
         try {
-            // TODO: Replace with MunanAuth.loginWithEmail(email, pass) once Firebase is ready
             await MunanAuth.loginWithEmail(email, pass);
             showMsg('loginMsg','success','fas fa-check-circle','Logged in successfully! Redirecting…');
         } catch(err) {
@@ -546,7 +544,6 @@
         document.getElementById('signupBtn').disabled = true;
 
         try {
-            // TODO: Replace with MunanAuth.signupWithEmail(name,email,phone,pass)
             await MunanAuth.signupWithEmail(name, email, phone, pass);
             // Show verification waiting state
             document.getElementById('verifyEmail').textContent = email;

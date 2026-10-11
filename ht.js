@@ -1,4 +1,4 @@
-function htLagoon(){return (getComputedStyle(document.documentElement).getPropertyValue('--lagoon')||'#0f766e').trim()||'#0f766e';} /* Round 7: chart colour follows the site brand token */
+function htLagoon(){return (getComputedStyle(document.documentElement).getPropertyValue('--lagoon')||'#0A6F48').trim()||'#0A6F48';} /* Round 7: chart colour follows the site brand token */
 /* ================================================================
    ht.js — Health Tracker core.
    Mirrors Money Tracker's architecture (mt.js): metrics-as-data
@@ -1184,24 +1184,25 @@ async function initApp(){
   layoutNavForWidth();
 
   try {
-    const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const {initializeApp,getApps,getApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const {getAuth,onAuthStateChanged}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const {getFirestore}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
 
-    const app=initializeApp({
+    const _cfg={
       apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
       authDomain:"login-system-309fc.firebaseapp.com",
       projectId:"login-system-309fc",
       storageBucket:"login-system-309fc.firebasestorage.app",
       messagingSenderId:"509365590175",
       appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"
-    });
+    };
+    const app=getApps().length?getApp():initializeApp(_cfg);
     window._mtAuth=getAuth(app);
     window._mtDb=getFirestore(app);
 
     onAuthStateChanged(window._mtAuth, async (user)=>{
       if(!user){
-        window.location.href="login.html";
+        window.location.href="login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html"));
         return;
       }
       showToast('Loading data…');
@@ -1357,17 +1358,17 @@ async function jumpToSearchResult(y,mo,d){
 // ─── PDF EXPORT (Day) ────────────────────────────────────────────
 function pdfStyle(){
   return `<style>
-    body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a2e;padding:20px;}
-    h1{font-size:18px;color:#0f766e;margin-bottom:2px;}
-    .sub{color:#888;font-size:10px;margin-bottom:16px;}
+    body{font-family:Arial,sans-serif;font-size:12px;color:#11221D;padding:20px;}
+    h1{font-size:18px;color:#0A6F48;margin-bottom:2px;}
+    .sub{color:#5B6C64;font-size:10px;margin-bottom:16px;}
     table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px;}
-    th{background:#0f766e;color:#fff;padding:6px 9px;text-align:left;}
-    td{padding:5px 9px;border-bottom:1px solid #eef;}
-    tr:nth-child(even) td{background:#f6f8fb;}
+    th{background:#0A6F48;color:#fff;padding:6px 9px;text-align:left;}
+    td{padding:5px 9px;border-bottom:1px solid #D3DBD0;}
+    tr:nth-child(even) td{background:#F3F6F0;}
     .num{text-align:right;}
-    .sh{background:#2E86AB;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;border-radius:4px;margin:12px 0 6px;}
-    .chart-nodata{color:#999;font-size:11px;text-align:center;padding:10px;border:1px dashed #dde;border-radius:6px;margin-bottom:12px;}
-    .pdf-chart-wrap{border:1px solid #dde;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
+    .sh{background:#0A6F48;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;border-radius:4px;margin:12px 0 6px;}
+    .chart-nodata{color:#5B6C64;font-size:11px;text-align:center;padding:10px;border:1px dashed #D3DBD0;border-radius:6px;margin-bottom:12px;}
+    .pdf-chart-wrap{border:1px solid #D3DBD0;border-radius:8px;padding:10px;margin-bottom:16px;text-align:center;background:#fff;}
     .pdf-chart-wrap img{width:100%;max-width:650px;}
     @media print{ table, tr, .pdf-chart-wrap{ page-break-inside: avoid; break-inside: avoid; } h1,.sub,.sh{ page-break-after: avoid; } }
   </style>`;
