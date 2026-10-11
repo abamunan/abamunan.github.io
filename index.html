@@ -1,42 +1,309 @@
 <!DOCTYPE html>
-<html lang="en" class="ui-splash-lock">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Money Tracker | Munan.hub</title>
-<meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0A6F48">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Money Tracker">
-<link rel="manifest" href="/apps/money/manifest.json">
-<link rel="apple-touch-icon" href="/apps/money/icon-touch.png">
-<link rel="icon" type="image/png" href="/apps/money/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="/theme.js"></script>
-<script src="/owner.js"></script>
-<link rel="stylesheet" href="/site.css?v=3">
-<link rel="stylesheet" href="/apps/shared/ui.css">
-<link rel="stylesheet" href="/apps/money/app.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics, all built with HTML, JS and curiosity.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Munan | Developer Portfolio, Projects, Blog &amp; WebComics</title>
+    <link rel="canonical" href="https://abamunan.github.io/">
+    <link rel="icon" type="image/png" href="icon.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta property="og:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta name="twitter:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Performance: warm up connections to third-party origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Shared theme logic — blocking, must run before first paint -->
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+
+    <!-- Structured data: helps Google understand who/what this site is -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abdullah All Munan",
+        "alternateName": "Munan",
+        "url": "https://abamunan.github.io/",
+        "image": "https://abamunan.github.io/Image.jpeg",
+        "jobTitle": "Developer",
+        "description": "Developer, student and builder from Bangladesh.",
+        "sameAs": [
+            "https://github.com/abamunan"
+        ]
+    }
+    </script>
+    
 </head>
 <body class="v2">
-<div id="splash" class="ui-splash" role="progressbar" aria-label="Loading Money Tracker" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
-  <div class="ui-splash__inner">
-    <div class="ui-splash__title"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h16a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 0V6a2 2 0 012-2h11"/><circle cx="17" cy="13.5" r="1.2"/></svg> Money Tracker</div>
-    <div class="ui-splash__track"><div class="ui-splash__bar"></div></div>
-    <div class="ui-splash__label" aria-live="polite">Opening…</div>
-  </div>
-</div>
-<noscript><p style="padding:24px">Money Tracker needs JavaScript.</p></noscript>
-<div id="app">
-  <header class="appbar"><h1>Money Tracker</h1><span id="syncState" class="sync" role="status">Starting…</span></header>
-  <main id="main" tabindex="-1" aria-label="Money Tracker"></main>
-  <button id="fab" class="fab" type="button" aria-label="Add entry"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-  <nav id="tabbar"></nav>
-</div>
-<script type="module" src="/apps/money/main.js"></script>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <noscript><p style="padding:20px 24px"><a href="index.html"><b>Munan.hub</b></a> &nbsp;·&nbsp; <a href="projects.html">Projects</a> &nbsp;·&nbsp; <a href="blog.html">Blog</a> &nbsp;·&nbsp; <a href="about.html">About</a> &nbsp;·&nbsp; <a href="contact.html">Contact</a></p></noscript>
+
+    <main id="main">
+    <header class="hero">
+        <div class="wrap hero-grid">
+            <div class="hero-copy">
+                <h1 class="hero-title">Knowledge &amp; Creation Zone</h1>
+                <p class="hero-lead">Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I solve problems with code and learn something new every day. This is where I keep what I build, write and study.</p>
+                <div class="hero-cta">
+                    <a href="#tools" class="btn-solid">See what I've built <i class="fas fa-arrow-down" style="font-size:.8rem;"></i></a>
+                    <a href="about.html" class="btn-line">About me</a>
+                </div>
+                <div class="hero-typed">I'm a <span class="typed-text" id="typed"></span><span class="cursor" aria-hidden="true"></span></div>
+            </div>
+
+            <div class="tag-wrap">
+                <div class="tag-card">
+                    <span class="tag-hole" aria-hidden="true"></span>
+                    <div class="tag-head">
+                        <img src="Image.jpeg" alt="Abdullah All Munan — developer and builder from Bangladesh" class="profile-photo" width="68" height="68" fetchpriority="high">
+                        <div>
+                            <div class="tag-name">Munan</div>
+                            <div class="tag-full">Abdullah All Munan</div>
+                        </div>
+                    </div>
+                    <dl>
+                        <div><dt>Based in</dt><dd>Dhaka, Bangladesh</dd></div>
+                        <div><dt>Studying</dt><dd>Zoology, University of Dhaka</dd></div>
+                        <div><dt>Building</dt><dd>Web apps in plain HTML &amp; JS</dd></div>
+                        <div><dt>Also</dt><dd>Blog posts and webcomics</dd></div>
+                    </dl>
+                    <div class="tag-foot">Tawakkul &amp; Grind</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tools -->
+    <section class="section" id="tools">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Things I've built</h2>
+                    <p class="section-sub">Small web apps I made for my own daily use. Open one and try it.</p>
+                </div>
+                <a href="projects.html" class="more-link">All projects <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+
+            <div class="tracker-grid">
+                <a href="moneytracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-wallet"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Money Tracker</h3>
+                    <p>Manage income and expenses with monthly summaries and PDF or CSV export.</p>
+                    <div class="chips"><span class="chip">Finance</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="healthtracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-heart-pulse"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Health Tracker</h3>
+                    <p>Log weight, vitals, sleep, activity and mood, with insights, streaks and forecasts.</p>
+                    <div class="chips"><span class="chip">Health</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="english-tracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-language"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>English Fluency Tracker</h3>
+                    <p>A 365-day habit tracker: read, summarize, listen and speak daily, with AI scores, vocabulary, mistakes and quizzes.</p>
+                    <div class="chips"><span class="chip">Learning</span><span class="chip">Tracker</span><span class="chip">Syncs to your account</span></div>
+                </a>
+                <a href="diary.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-book"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Diary</h3>
+                    <p>Write dated, sectioned entries privately, and export them as a PDF anytime.</p>
+                    <div class="chips"><span class="chip">Journal</span><span class="chip">Private</span></div>
+                </a>
+            </div>
+
+            <h3 class="sub-title">Quick utilities</h3>
+            <div class="util-list">
+                <a href="TypeMaster.html" class="util">
+                    <span class="tile"><i class="fas fa-keyboard"></i></span>
+                    <span class="row-body"><span class="row-title">TypeMaster</span><br><span class="row-desc">Track your typing speed and accuracy in real time.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="photo-resizer.html" class="util">
+                    <span class="tile"><i class="fas fa-images"></i></span>
+                    <span class="row-body"><span class="row-title">Photo Resizer</span><br><span class="row-desc">Batch resize and compress photos. Nothing is uploaded.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="pdf-toolkit.html" class="util">
+                    <span class="tile"><i class="fas fa-file-pdf"></i></span>
+                    <span class="row-body"><span class="row-title">PDF Toolkit</span><br><span class="row-desc">Split, rotate, merge or unlock PDFs in your browser.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="projects.html" class="util util-all">
+                    <span class="tile"><i class="fas fa-layer-group"></i></span>
+                    <span class="row-body"><span class="row-title">Browse all projects</span><br><span class="row-desc">Every tool, app and experiment in one place.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Writing -->
+    <section class="section" id="writing">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Writing and comics</h2>
+                    <p class="section-sub">Thoughts and lessons from code and life, plus stories I draw.</p>
+                </div>
+            </div>
+
+            <div class="section-head" style="margin-bottom:18px;">
+                <h3 class="sub-title" style="margin:0;">Latest from the blog</h3>
+                <a href="blog.html" class="more-link">All posts <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+            <div class="post-grid" id="blogPreviewGrid"></div>
+
+            <div class="section-head" style="margin:48px 0 18px;">
+                <h3 class="sub-title" style="margin:0;">Latest comics</h3>
+                <a href="webcomic.html" class="more-link">All comics <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+            <div class="comic-grid" id="webcomicPreviewGrid"></div>
+        </div>
+    </section>
+
+    <!-- Academic -->
+    <section class="section" id="notes">
+        <div class="wrap">
+            <div class="notes-band">
+                <span class="notes-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></span>
+                <div>
+                    <h2>Study notes</h2>
+                    <p>PDF notes by subject. Read them online with bookmarks, a focus timer, and dark or sepia reading modes.</p>
+                </div>
+                <a href="notes.html" class="btn-solid">Browse notes <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact + links -->
+    <section class="section" id="contact">
+        <div class="wrap connect">
+            <div>
+                <h2>Let's talk</h2>
+                <p>Have a question or want to connect? Send a message and I'll reply soon.</p>
+                <a href="contact.html" class="btn-solid"><i class="fas fa-envelope"></i> Get in touch</a>
+            </div>
+            <div class="util-list">
+                <a href="about.html" class="link-row">
+                    <span class="tile"><i class="fas fa-user"></i></span>
+                    <span class="row-body"><span class="row-title">About me</span><br><span class="row-desc">Who I am, what I build, and what drives me.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="tools.html" class="link-row">
+                    <span class="tile"><i class="fas fa-tools"></i></span>
+                    <span class="row-body"><span class="row-title">My toolbox</span><br><span class="row-desc">Software, extensions and AI tools I use every day.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="https://github.com/abamunan" class="link-row" target="_blank" rel="noopener noreferrer">
+                    <span class="tile"><i class="fab fa-github"></i></span>
+                    <span class="row-body"><span class="row-title">GitHub</span><br><span class="row-desc">Open-source work and active repositories.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="part1.html" class="link-row" data-owner-only>
+                    <span class="tile"><i class="fas fa-folder-open"></i></span>
+                    <span class="row-body"><span class="row-title">Files</span><br><span class="row-desc">My personal files and resources.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Load shared data files -->
+    <script src="posts.js"></script>
+    <script src="webcomic.js"></script>
+    <script>
+        /* ── RENDER BLOG PREVIEW ─── */
+        function renderBlogPreview() {
+            const grid = document.getElementById('blogPreviewGrid');
+            if (typeof BLOG_POSTS === 'undefined' || !Array.isArray(BLOG_POSTS)) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>Posts could not load.<br><strong>Check that posts.js is in the same folder.</strong></p></div>`;
+                return;
+            }
+            const count = window.innerWidth <= 768 ? 1 : 2;
+            const latest = BLOG_POSTS.slice(0, count);
+            if (!latest.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>No posts yet.<br><strong>The first one is on its way.</strong></p></div>`;
+                return;
+            }
+            grid.innerHTML = latest.map(p => `
+                <a href="blog.html#post-${p.id}" class="post" style="--a:${p.stripA};--b:${p.stripB}">
+                    <span class="post-bar"></span>
+                    <span class="post-body">
+                        <span class="post-meta"><span class="post-tag">${p.tag}</span><span><i class="far fa-calendar"></i> ${p.date}</span><span><i class="far fa-clock"></i> ${p.readTime}</span></span>
+                        <h3>${p.title}</h3>
+                        <p>${p.excerpt}</p>
+                        <span class="post-read">Read post <i class="fas fa-arrow-right" style="font-size:.75rem;"></i></span>
+                    </span>
+                </a>`).join('');
+        }
+        renderBlogPreview();
+
+        /* ── RENDER WEBCOMIC PREVIEW ─── */
+        function renderWebcomicPreview() {
+            const grid = document.getElementById('webcomicPreviewGrid');
+            if (typeof WEBCOMICS === 'undefined' || !Array.isArray(WEBCOMICS) || !WEBCOMICS.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-book-open"></i><p>No webcomics yet.<br><strong>The first series is coming soon.</strong></p></div>`;
+                return;
+            }
+            grid.innerHTML = WEBCOMICS.slice(0, 3).map(c => `
+                <a href="webcomic.html" class="comic" style="--a:${c.stripA};--b:${c.stripB}">
+                    <div class="comic-cover"><i class="fas fa-book-open" aria-hidden="true"></i><h3>${c.title}</h3></div>
+                    <div class="comic-body">
+                        <p>${c.description}</p>
+                        <div class="comic-foot">
+                            <span>${c.genre}</span>
+                            <span class="comic-status ${String(c.status).toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${c.status}</span>
+                            <span><i class="fas fa-images"></i> ${c.episodes.length} ep${c.episodes.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                </a>`).join('');
+        }
+        renderWebcomicPreview();
+
+        /* ── TYPING ANIMATION ─── */
+        const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
+        const typedEl = document.getElementById('typed');
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            typedEl.textContent = 'Developer, student and builder';
+        } else {
+            let wi = 0, ci = 0, deleting = false;
+            (function type() {
+                const word = words[wi];
+                if (!deleting) {
+                    typedEl.textContent = word.slice(0, ++ci);
+                    if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+                } else {
+                    typedEl.textContent = word.slice(0, --ci);
+                    if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+                }
+                setTimeout(type, deleting ? 60 : 100);
+            })();
+        }
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
 </body>
 </html>
