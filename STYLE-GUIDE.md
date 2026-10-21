@@ -21,7 +21,7 @@ Short reference for building or migrating a page. Component recipes below are th
 
     <script src="theme.js"></script>   <!-- blocking, first: sets dark/light before paint -->
     <script src="owner.js"></script>
-    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="site.css?v=3">
 </head>
 <body class="v2">
     <a class="skip" href="#main">Skip to content</a>
@@ -46,7 +46,7 @@ Rules
 - Exactly one `<h1>` per page.
 - Never write navbar or footer HTML by hand. `nav.js` and `footer.js` inject them.
 - Do not load `style.css` on a migrated page. Load `site.css` only.
-- When `site.css` changes, bump the number in `site.css?v=2`.
+- When `site.css` changes, bump the number in `site.css?v=3`.
 - Keep `theme.js` first. It must be a normal blocking script.
 
 ## 2. Colour
@@ -115,14 +115,14 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - This only shows or hides things. Real protection must be Firestore rules (see `firestore.rules`).
 
 ## 8. Tool pages (Round 4)
-- Body: `<body class="v2 tool">`; load `site.css?v=2` then `tool.css?v=1`.
+- Body: `<body class="v2 tool">`; load `site.css?v=3` then `tool.css?v=3`.
 - `tool.css` maps the old variable names (`--accent`, `--card-bg`, `--card-border`, `--text-main`, `--text-muted`, ...) to the new tokens, so tool-specific layout CSS can keep its names.
 - Header: `.page-head` with `.crumbs`, `.kicker`, `.page-title`, `.page-lead`, then `<p class="tool-note">` for the one-line privacy note.
 - Embedded pages (`invert-colors.html`) have no navbar and keep a small copy of the tokens in their own `:root`.
 - Do not name a page class `.skip`, `.panel`, `.empty`, `.stat`, `.tab` or `.table` without checking `site.css` first.
 
 ## 9. Standalone tools and the reader (Round 5)
-- Standalone tools (`booklet-maker`, `poster-splitter`, `resolution-changer`) use the same skeleton as section 8: `<body class="v2 tool">`, `site.css?v=2` then `tool.css?v=2`, `nav.js` then `footer.js`.
+- Standalone tools (`booklet-maker`, `poster-splitter`, `resolution-changer`) use the same skeleton as section 8: `<body class="v2 tool">`, `site.css?v=3` then `tool.css?v=3`, `nav.js` then `footer.js`.
 - Layout: `.tool-wrap` > `.tool-split` > a `.panel` (the tool) + a side column (`.tool-steps` of `.tool-step`, or a `.panel.tool-howto`). It stacks under 960px.
 - Option buttons the script toggles with `.active`: `.tool-seg` (grid of pills) or `.tool-chips` (row of pills). Preview image or canvas: `.tool-preview`.
 - Drop zone: `<div class="dropzone drop">`; if the script toggles a drag class, style it in the page (`.drop.drag`).
@@ -133,16 +133,16 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - Reader (`reader.html`) is a full-viewport app: `<body class="v2 reader">`, `site.css` only (no `tool.css`, no `nav.js`). Its own bar has the logo, title, reading-mode buttons, and a theme toggle. Paper / Sepia / Dark only filter the document frame; they are a reader feature, not a site palette.
 
 ## 10. Personal apps (Round 6)
-- Apps (`diary`, `english-tracker`, `garments-accounts`) use `<body class="v2 app app-xx" data-nav-hide="off">`, `theme.js` -> `owner.js` -> `site.css?v=2` -> `app.css?v=1`, then `nav.js` (and `footer.js` only on pages that scroll normally, not on fixed-sidebar apps).
+- Apps (`diary`, `english-tracker`, `garments-accounts`) use `<body class="v2 app app-xx" data-nav-hide="off">`, `theme.js` -> `owner.js` -> `site.css?v=3` -> `app.css?v=3`, then `nav.js` (and `footer.js` only on pages that scroll normally, not on fixed-sidebar apps).
 - `app.css` maps each page's old variable names to the site tokens under `body.app-diary`, `body.app-et`, `body.app-ga`. Add a new block there for a new app instead of defining colours in the page.
 - Text on a brand-coloured background: `color: var(--on-accent)` (white in light, dark ink in dark). Never plain `#fff`.
 - Danger / success / warning use `--err`, `--ok`, `--warn`. Page-level `:root` colour blocks are not allowed.
 - App chrome sits below the navbar: use `var(--nav-h)` for sticky or fixed offsets.
 - Page classes that share a name with `site.css` (`.stat .hero .toast .wrap .section .empty .field .hint .badge`): the page rule must set every property it needs, and `app.css` resets leaks. Prefer a page prefix for new classes.
 
-## 11. Fullscreen PWA trackers (Round 7)
-- `moneytracker` and `healthtracker`: `<body class="v2 app-mt mt-app">` (+ `ht-app`). They keep their own top bar, drawer and bottom nav, so no shared navbar and no `app` class (it adds a navbar offset).
-- Old variable names are mapped under `body.app-mt` / `body.ht-app` in `app.css`. `mt.css` must not define colours; use `--accent`, `--danger`, `--accent2`, `--warn`, `--card-bg` and friends.
+## 11. Fullscreen PWA trackers
+- Money Tracker and Health Tracker live in `apps/money/` and `apps/health/`. Each is a single-page app with its own `index.html`, `app.css`, `manifest.json` and `sw.js`, and uses `apps/shared/ui.css` for common components. They keep their own top bar and bottom tab bar, so no shared navbar and no `app` class (it adds a navbar offset).
+- The old `moneytracker.html`, `healthtracker.html`, `mt*.css/js`, `ht*.css/js` and `manifest-*.json` files were removed. The root `app.css` is only for `diary`, `english-tracker` and `garments-accounts`; do not put tracker CSS there.
 - Charts read colours from CSS variables (`getComputedStyle`), never hex.
 - Amber uses `--warn`; text on brand colours uses `--on-accent`; text on the top bar uses `--on-bar`.
 
@@ -152,4 +152,4 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - Token pairs `ink / muted / soft / lagoon / ok / warn / err / info` on `bg` and `paper` all pass WCAG AA (4.5:1) in light and dark. New colours must be checked the same way.
 - `style.css` no longer exists. New pages must not define their own `:root` colour blocks or load other font families.
 - When `site.css`, `app.css` or `tool.css` changes, bump `?v=` in every page (currently `?v=3`).
-
+- Firebase config lives only in `firebase-config.js` (exports `app`, `auth`, `db`). Never paste the config object into a page or script; `import { auth, db } from "./firebase-config.js"` (from `apps/*`: `../../firebase-config.js`).

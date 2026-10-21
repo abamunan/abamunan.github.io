@@ -1842,7 +1842,6 @@ document.addEventListener('change',e=>{
      sees every change instantly.
    ===================================================================== */
 const FB_VER='10.12.0', FB_BASE='https://www.gstatic.com/firebasejs/'+FB_VER+'/';
-const FB_CONFIG={apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",authDomain:"login-system-309fc.firebaseapp.com",projectId:"login-system-309fc",storageBucket:"login-system-309fc.firebasestorage.app",messagingSenderId:"509365590175",appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"};
 const LOGIN_PAGE='login.html', THIS_PAGE='garments-accounts.html';
 const ROOT='garments';   // Firestore: garments/{sales|expenses|stock|capital}/items/{id}  and  garments/settings
 // allowed e-mail  ->  name shown in "Entered by"
@@ -1927,14 +1926,13 @@ async function doLogout(){
 }
 
 async function startAuth(){
- let appMod,authMod,fsMod;
+ let cfgMod,authMod,fsMod;
  try{
-  [appMod,authMod,fsMod]=await Promise.all([import(FB_BASE+'firebase-app.js'),import(FB_BASE+'firebase-auth.js'),import(FB_BASE+'firebase-firestore.js')]);
+  [cfgMod,authMod,fsMod]=await Promise.all([import('./firebase-config.js'),import(FB_BASE+'firebase-auth.js'),import(FB_BASE+'firebase-firestore.js')]);
  }catch(e){showFatal('Could not load the login system. Check your internet connection and try again.');return;}
- // reuse the app if another script on this page already created it
- const app=appMod.getApps().length?appMod.getApp():appMod.initializeApp(FB_CONFIG);
- const auth=authMod.getAuth(app);fbAuth=auth;fbSignOut=authMod.signOut;
- const fstore=fsMod.getFirestore(app);
+ // app, auth and db come from the shared firebase-config.js
+ const auth=cfgMod.auth;fbAuth=auth;fbSignOut=authMod.signOut;
+ const fstore=cfgMod.db;
  let started=false, blocked=false;
  authMod.onAuthStateChanged(auth,async user=>{
   if(!user){                                   // not logged in -> login page

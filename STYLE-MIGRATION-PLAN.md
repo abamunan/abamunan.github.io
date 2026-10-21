@@ -15,7 +15,7 @@
 
 1. **One brand color for every page: green + lime.** No separate accent per tool (a tool may only keep its own small icon-tile color).
 2. **Navbar is injected by `nav.js`**, the same way `footer.js` injects the footer. One file to edit.
-3. **`part1.html` (Private Drive) and `bot1.html` are owner-only: only `allmunanabdullah@gmail.com`.** They are not public pages. See **Part I** for how this must be done (a login check in the page alone is not enough).
+3. **`part1.html` (Private Drive) is owner-only: only `allmunanabdullah@gmail.com`.** See **Part I** for how this must be done (a login check in the page alone is not enough). **`bot1.html` is a normal public page (changed in Round 13; see ROADMAP).** The bot1 owner-only steps below are superseded.
 
 ---
 
@@ -195,7 +195,7 @@ Size = approximate HTML size. "Own CSS" = styles beyond `style.css`.
 | 21 | `poster-splitter.html` | Tool (standalone) | 23 KB | Warm cream/orange, Fraunces | Yes (own) | No navbar/footer |
 | 22 | `resolution-changer.html` | Tool (standalone, Bangla) | 16 KB | Warm cream/orange | Yes (own) | Bangla UI |
 | 23 | `reader.html` | Document reader | 33 KB | Cream/red | **No** | Template with placeholder title |
-| 24 | `bot1.html` | Technical guide (**owner-only**) | 19 KB | Navy + sky + green | **No** | Fully public today (static text in the HTML, no login). Linked from a "Coming Soon" card in `projects.html` |
+| 24 | `bot1.html` | Technical guide (**public since Round 13**) | 19 KB | Navy + sky + green | **No** | Fully public today (static text in the HTML, no login). Linked from a "Coming Soon" card in `projects.html` |
 | 25 | `diary.html` | App | 33 KB + `diary.js` | Sky + red + Fraunces | Yes (`theme.js`) | Firebase, PDF export |
 | 26 | `english-tracker.html` | App | ~90 KB | Green (already close) | Yes (own) | Firebase, built this session |
 | 27 | `garments-accounts.html` | App | ~197 KB | Navy | Yes (own) | Firebase, shared by 3 partners, print report |
@@ -219,7 +219,7 @@ Size = approximate HTML size. "Own CSS" = styles beyond `style.css`.
 |---|---|
 | `site.css` | Tokens (light/dark), reset, typography, layout helpers, navbar, buttons, cards, list rows, chips, forms, tables, tabs, modals, toasts, alerts, progress, footer, utilities, print rules |
 | `nav.js` | **(decided)** Injects the same navbar on every page (same idea as `footer.js`), mobile menu, scroll-hide, login/dashboard button, theme toggle, and owner-only links (shown only when the owner is signed in) |
-| `owner.js` (tiny) | Holds `OWNER_EMAIL = 'allmunanabdullah@gmail.com'` and a `isOwner(user)` helper (email matches **and** `emailVerified`). Used by `nav.js`, `part1.html`, `bot1.html` |
+| `owner.js` (tiny) | Holds `OWNER_EMAIL = 'allmunanabdullah@gmail.com'` and a `isOwner(user)` helper (email matches **and** `emailVerified`). Used by `nav.js`, `part1.html` |
 | `theme.js` (updated) | Keep the API. Remove mouse-mesh effect. Add `MunanTheme.sync()` so iframes follow the parent |
 | `footer.js` (updated) | Same markup; styles move into `site.css` |
 | `STYLE-GUIDE.md` | Tokens, components, do and don't (short, for future pages) |
@@ -237,7 +237,7 @@ Size = approximate HTML size. "Own CSS" = styles beyond `style.css`.
 | **T3 Form/Auth** | contact, login | Navbar → centered paper card (max 480–560px) → footer |
 | **T4 Tool** | photo-resizer, pdf-toolkit, TypeMaster, drive-folder-fetch, booklet-maker, poster-splitter, resolution-changer, invert-colors | Navbar (compact) → tool header → workbench (input panel + preview/result) → footer |
 | **T5 App** | diary, english-tracker, garments-accounts, moneytracker, healthtracker, dashboard | Compact top bar + sidebar (desktop) / bottom tabs (mobile) → app content |
-| **T6 Document** | reader, bot1 (owner-only) | Minimal bar → readable column with typographic scale → footer |
+| **T6 Document** | reader, bot1 (public) | Minimal bar → readable column with typographic scale → footer |
 
 ### C4. Old → new mapping (used in every round)
 
@@ -308,7 +308,7 @@ Acceptance: contact form still sends and redirects to `contactRep.html`; legal p
 **Effort:** L · **Risk:** Low–Med · **Pages:** `projects`, `blog`, `webcomic`, `notes`, `tools`
 
 Changes
-- `projects.html`: reuse `.tracker` cards and `.util` rows; add **English Fluency Tracker**; **remove the public "Coming Soon" card that links to `bot1.html`** (the page becomes owner-only); add category filter chips (All, Trackers, Utilities, Learning) — filter in plain JS; keep the same project list.
+- `projects.html`: reuse `.tracker` cards and `.util` rows; add **English Fluency Tracker**; keep the `bot1.html` card (public since Round 13); add category filter chips (All, Trackers, Utilities, Learning) — filter in plain JS; keep the same project list.
 - `blog.html`: list view with `.post` cards; article view with 680px column; keep `posts.js` data shape and `#post-<id>` deep links; body font Figtree (Lora optional for long article text).
 - `webcomic.html`: series cards like homepage `.comic`; episode viewer with large images, previous/next buttons, keyboard arrows; keep `webcomic.js` shape.
 - `notes.html`: subject cards or list rows with search; keep every existing link and viewer behavior.
@@ -325,7 +325,7 @@ Changes
 - `login.html`: centered auth card; tabs (Login / Sign up / Reset) styled with the new tabs component; inputs and buttons restyled only. **Do not change** `auth.js`, form IDs, error message containers, or redirect logic.
 - `dashboard.html`: greeting header, grid of app cards (Money, Health, English, Diary, Garments, Drive Folder…), recent activity placeholder; remove its own particle layer.
 - `part1.html`: restyle as an owner-only page (lock icon, "Private Drive" header, unlock card). Add the owner check from Part I. Keep the existing password modal and Firestore fetch.
-- `bot1.html`: becomes an owner-only shell that loads its content from Firestore after the owner check (Part I, Step 3), then renders it with the document layout (sticky table of contents, code blocks, callouts). The long guide text is removed from the public repo.
+- ~~`bot1.html`: becomes an owner-only shell~~ SUPERSEDED, bot1 stays a public page. (old text: becomes an owner-only shell that loads its content from Firestore after the owner check (Part I, Step 3), then renders it with the document layout (sticky table of contents, code blocks, callouts). The long guide text is removed from the public repo.)
 - `index.html`: the **Files** row (links to `part1.html`) is shown only when the owner is signed in, via `nav.js`/`owner.js`. Other visitors do not see it.
 
 Acceptance: sign up, login, logout, password reset, "email not verified" flow, and redirect to dashboard all work; gated pages still redirect when signed out. **Owner-only checks (Part I, Step 5) all pass.**
@@ -398,7 +398,7 @@ Acceptance: add/edit/delete transactions and vitals, monthly summary, PDF/CSV ex
 
 | Risk | Where | Mitigation |
 |---|---|---|
-| Owner-only pages readable by others | part1, bot1 | Server-side Firestore rules (Part I). A JavaScript check in the page is only a convenience, never the protection |
+| Owner-only pages readable by others | part1 | Server-side Firestore rules (Part I). A JavaScript check in the page is only a convenience, never the protection |
 | Breaking login or saved data | login, dashboard, diary, trackers, garments, english-tracker | Restyle only; never rename IDs, classes used by JS, form names, or Firestore paths. Test sign-in and a save after every round |
 | Theme flash (white flash in dark mode) | all pages | `theme.js` stays a blocking script in `<head>` |
 | Two themes fighting during migration | mixed pages | Opt-in `body.v2`; old pages keep `style.css` until their round |
@@ -444,7 +444,7 @@ Acceptance: add/edit/delete transactions and vitals, monthly summary, PDF/CSV ex
 |---|---|---|
 | 1 | Brand color | One brand: green + lime on every page |
 | 2 | Navbar | `nav.js` injects it on every page |
-| 8 | `part1.html` and `bot1.html` | Owner-only (`allmunanabdullah@gmail.com`) |
+| 8 | `part1.html` (bot1 is public since Round 13) | Owner-only (`allmunanabdullah@gmail.com`) |
 
 **Still open (my recommendation in the last column; I will use it unless you say otherwise)**
 
@@ -481,7 +481,9 @@ Rules:
 
 ---
 
-## Part I — Owner-only pages (`part1.html`, `bot1.html`)
+## Part I — Owner-only pages (`part1.html`; `bot1.html` removed from scope in Round 13)
+
+> **Note:** `bot1.html` is now a public page (noindex removed, in `sitemap.xml`, card in `projects.html`). Everything below about `bot1` / `private_docs/bot1` / Step 3 is superseded and must not be implemented.
 
 ### I1. The important fact
 This site is static files on GitHub Pages. **Anything inside an HTML file is downloadable by anyone** who types the URL, and if the repo is public the file is also visible on GitHub. A check like "if the user is not the owner, redirect" runs in the visitor's browser, so it only hides the page. It does **not** protect the content.
@@ -565,7 +567,7 @@ Keep your existing per-user rule for the apps: `match /users/{uid}/{document=**}
 | 0 | Foundation (+ `index.html` refactor) | 1 | Low |
 | 1 | about, contact, contactRep, privacy, terms | 5 | Low–Med |
 | 2 | projects, blog, webcomic, notes, tools | 5 | Low–Med |
-| 3 | login, dashboard, part1, bot1 (owner-only, see Part I) | 4 | High |
+| 3 | login, dashboard, part1 (owner-only, see Part I), bot1 (public) | 4 | High |
 | 4 | photo-resizer, pdf-toolkit, invert-colors, TypeMaster, drive-folder-fetch | 5 | Med |
 | 5 | booklet-maker, poster-splitter, resolution-changer, reader | 4 | Med |
 | 6 | diary, english-tracker, garments-accounts | 3 | High |

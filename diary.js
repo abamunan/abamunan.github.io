@@ -5,30 +5,16 @@
 
 import { initializeApp, getApps, getApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged }
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-    getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc,
+    collection, doc, setDoc, updateDoc, deleteDoc, getDoc,
     query, where, orderBy, limit, startAfter, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── FIREBASE INIT ────────────────────────────────────────────
-// Same config as auth.js. Re-initializing with an identical config
-// against the same default app name is safe in the Firebase SDK —
-// getApps()/getApp() guards against the "already exists" error in
-// case auth.js (or another module) initialized it first on this page.
-const firebaseConfig = {
-    apiKey:            "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
-    authDomain:        "login-system-309fc.firebaseapp.com",
-    projectId:         "login-system-309fc",
-    storageBucket:     "login-system-309fc.firebasestorage.app",
-    messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
-};
-
-const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+// ── FIREBASE ─────────────────────────────────────────────────
+// App, auth and db come from the shared firebase-config.js.
 
 // ── CONSTANTS ────────────────────────────────────────────────
 const MAX_SECTIONS = 10;

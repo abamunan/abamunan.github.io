@@ -424,22 +424,11 @@
 <script src="footer.js"></script>
     <script type="module">
     /* ── FIREBASE ─────────────────────────────────────── */
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp }
+    import { auth as _auth, db as _db } from "./firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp }
         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const _cfg = {
-        apiKey:"AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
-        authDomain:"login-system-309fc.firebaseapp.com",
-        projectId:"login-system-309fc",
-        storageBucket:"login-system-309fc.firebasestorage.app",
-        messagingSenderId:"509365590175",
-        appId:"1:509365590175:web:2a1de8ab7688a96853aaaa"
-    };
-    const _app  = getApps().length ? getApp() : initializeApp(_cfg);
-    const _auth = getAuth(_app);
-    const _db   = getFirestore(_app);
     let   _uid  = null;
 
     onAuthStateChanged(_auth, async (user) => {

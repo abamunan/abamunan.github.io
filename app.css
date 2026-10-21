@@ -1,93 +1,82 @@
-/* Money Tracker screens. Tokens come from /site.css; components from /apps/shared/ui.css. */
-#app{max-width:720px;margin:0 auto;padding:calc(var(--sat) + 8px) 14px calc(var(--tabbar-h) + var(--sab) + 96px)}
-#main{outline:none;display:grid;gap:14px;align-content:start}
-.appbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px 12px}
-.appbar h1{font:800 1.5rem var(--display);letter-spacing:-.02em}
-.sync{font-size:.8rem;font-weight:600;color:var(--soft);border:var(--bw) solid var(--line);border-radius:99px;padding:3px 10px}
-.sync--wait{color:var(--warn);border-color:var(--warn)}
-.card{background:var(--paper);border:var(--bw) solid var(--line);border-radius:var(--r-card);padding:16px 18px;display:grid;gap:8px}
-.card--hero{background:var(--lagoon-tint)}
-.card--row{grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
-.card__h{font:700 1rem var(--display);color:var(--muted)}.card__sub{font-size:.82rem;color:var(--muted)}.card__p{color:var(--ink)}
-.big{font:800 2.4rem var(--display);letter-spacing:-.03em;line-height:1.1}
-.num{font-variant-numeric:tabular-nums}
-.accts{list-style:none;display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.9rem}
-.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
-.bar__fill{display:block;height:100%;border-radius:99px;background:var(--ok)}.bar__fill--warn{background:var(--warn)}.bar__fill--over{background:var(--err)}
-.sechead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px}
-.sechead h2,.sechead h3{font:700 1.05rem var(--display);display:flex;align-items:center;gap:8px}.sechead__t{font-weight:700}
-.lockico{display:inline-flex;color:var(--muted)}
-.elist{display:grid;gap:8px}
-.erow,.mrow,.mrow2{width:100%;min-height:56px;display:flex;align-items:center;gap:12px;text-align:left;background:var(--paper);color:var(--ink);border:var(--bw) solid var(--line);border-radius:var(--r-tile);padding:8px 14px;font:inherit;cursor:pointer;touch-action:pan-y;transition:transform .12s}
-.erow__icon{font-size:1.5rem;width:34px;text-align:center}.erow__main{flex:1;min-width:0;display:grid}.erow__label{font-weight:600}
-.erow__sub{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.erow__amt{font-weight:700;white-space:nowrap}
-.mrow{justify-content:space-between}.mrow__m{display:grid;font-weight:600}
-.mrow2{text-decoration:none}
-.empty{text-align:center;color:var(--muted);padding:26px 10px;border:var(--bw) dashed var(--line);border-radius:var(--r-card)}
-.hhead{display:grid;gap:10px}.hnav{display:flex;align-items:center;justify-content:space-between}.hnav__t{font:800 1.3rem var(--display)}
-.filters{display:grid;gap:8px}.dgroup{display:grid;gap:4px}
-.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:var(--bw) solid var(--line);border-radius:var(--r-input);padding:3px;background:var(--paper);gap:3px}
-.seg__btn{min-height:var(--tap);border:0;border-radius:9px;background:transparent;color:var(--ink);font:600 .95rem var(--body);cursor:pointer}
-.seg__btn[aria-pressed="true"]{background:var(--lagoon);color:var(--on-ink)}
-.fab{position:fixed;right:max(18px,calc(50% - 342px));bottom:calc(var(--tabbar-h) + var(--sab) + 16px);z-index:var(--z-fab);width:60px;height:60px;border-radius:50%;border:var(--bw) solid var(--lagoon);background:var(--lagoon);color:var(--on-ink);display:grid;place-items:center;cursor:pointer}
-/* Add sheet */
-.add{display:grid;gap:12px}.add-amtwrap{display:grid;gap:2px}
-.add-amount{font:800 2rem var(--display);text-align:right;min-height:60px}.add-preview{text-align:right;color:var(--muted);min-height:1.3em}
-.add-label{font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:4px}.add-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{min-height:var(--tap);padding:0 14px;border-radius:99px;border:var(--bw) solid var(--line);background:var(--paper);color:var(--ink);font:600 .92rem var(--body);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
-.chip[aria-pressed="true"]{border-color:var(--lagoon);background:var(--lagoon-tint);box-shadow:inset 0 0 0 1px var(--lagoon)}
-.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.key{min-height:48px;border-radius:var(--r-input);border:var(--bw) solid var(--line);background:var(--paper);color:var(--ink);font:700 1.2rem var(--body);cursor:pointer}
-.key--op{background:var(--lagoon-tint)}.key--eq{grid-column:span 3;background:var(--lagoon);color:var(--on-ink);border-color:var(--lagoon)}
-.add-actions{display:flex;gap:10px}.add-save{flex:1;min-height:52px;font-size:1.05rem}.add-del{color:var(--err);border-color:var(--err)}
-.add-lock{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--bw) solid var(--warn);border-radius:var(--r-input);padding:8px 12px}
-.add-lock[hidden]{display:none}
-@media (min-width:700px){#app{padding-inline:0}}
+/* ============================================================
+   app.css v3 — "Private apps" layer (Round 6)
+   Load AFTER site.css, on <body class="v2 app app-xx">.
+   Maps each page's old variable names onto the Field Notebook
+   tokens, so the pages keep their own layout CSS but get the
+   site palette and light/dark behaviour automatically.
 
-.chips--scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}.chips--scroll .chip{flex:none;scroll-snap-align:start}
-.add-top{position:sticky;top:-4px;z-index:2;background:var(--paper);display:grid;gap:8px;padding:4px 0 6px}
-.add-actions{position:sticky;bottom:calc(-20px - var(--sab));z-index:2;background:var(--paper);padding:8px 0 calc(8px + var(--sab));margin-bottom:calc(-20px - var(--sab))}
-.sync{white-space:nowrap}.appbar h1{white-space:nowrap}
+   Pages:  diary.html            -> body.app-diary
+           english-tracker.html  -> body.app-et
+           garments-accounts.html-> body.app-ga
 
-.add{grid-template-columns:minmax(0,1fr)}.add>*{min-width:0}.add-two>*{min-width:0}
+   Rules (see STYLE-GUIDE.md section 10):
+   - No colours are defined in the page. Add a new block here
+     for a new app instead.
+   - Text on a brand-coloured background uses var(--on-accent)
+     (white in light, dark ink in dark). Never plain #fff.
+   - Danger / success / warning use --err, --ok, --warn.
+   - App chrome sits below the navbar: use var(--nav-h).
+   NOTE: Money Tracker and Health Tracker have their own
+   /apps/money/app.css and /apps/health/app.css. Do not put
+   their CSS here.
+   ============================================================ */
 
-.key{min-height:44px}.keypad{gap:6px}.add{gap:8px}.add-label{margin-bottom:2px}
-.add-more{border:var(--bw) solid var(--line);border-radius:var(--r-input);padding:0 12px}.add-more[open]{padding-bottom:12px}
-.add-sum{min-height:var(--tap);display:flex;align-items:center;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--muted)}
+/* ---------- Shared by every private app ---------- */
+body.app {
+    --on-accent: #fff;
+    --tint-weak: color-mix(in srgb, var(--lagoon) 8%, transparent);
+    --tint: color-mix(in srgb, var(--lagoon) 14%, transparent);
+    font-family: var(--body);
+}
+:root[data-theme="dark"] body.app { --on-accent: #11221D; }
 
-.add-amtwrap{position:relative}.add-preview{position:absolute;left:14px;top:50%;transform:translateY(-50%);min-height:0;pointer-events:none;font-weight:600}
-.add-amount{min-height:54px}.add-top{padding:2px 0 4px}.add-label{font-size:.74rem}
+/* No glass, no glow on app pages */
+body.app *, body.app *::before, body.app *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
 
-/* Plan tab */
-.form{display:grid;gap:12px}.form>*{min-width:0}.form__actions{position:static;margin:0;padding:4px 0 0}
-.row-actions{display:flex;flex-wrap:wrap;gap:8px}
-.brow{display:grid;gap:4px;padding:6px 0}.brow__top{display:flex;justify-content:space-between;gap:10px;font-weight:600}
-.mrow--total{cursor:default;background:var(--lagoon-tint);font-weight:700}
-.card__sums{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px;font-weight:700;font-size:1.1rem}
-.drow{display:grid;gap:6px;padding:10px 12px;border:var(--bw) solid var(--line);border-radius:var(--r-tile);background:var(--paper)}
-.drow--done{opacity:.6}.drow__top{display:flex;justify-content:space-between;gap:10px;font-weight:700}.drow__who{overflow-wrap:anywhere}
+/* ---------- Diary (diary.html) ---------- */
+body.app-diary {
+    --ink-soft: var(--soft);
+    --main-bg: var(--bg);
+}
 
-/* Insights tab */
-.card__plain{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
-.chart{width:100%}.crow{width:100%;display:grid;gap:6px;text-align:left;background:var(--paper);color:var(--ink);border:var(--bw) solid var(--line);border-radius:var(--r-tile);padding:10px 14px;font:inherit;cursor:pointer;min-height:56px}
-.crow__sub{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.erow--static{cursor:default}
-.legend{display:flex;align-items:center;gap:4px}.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-left:6px}.sw--in{background:var(--ok)}.sw--out{background:var(--err)}
+/* ---------- English Fluency Tracker (english-tracker.html) ---------- */
+body.app-et {
+    --card: var(--paper);
+    --mut: var(--muted);
+    --ac: var(--lagoon);
+    --ac2: var(--lagoon-tint);
+    --onac: var(--on-accent);
+    --h1: #0A6F48;            /* hero gradient start (text on it is white) */
+    --h2: #084F34;            /* hero gradient end */
+    --sh: none;               /* style guide: almost no shadows */
+}
+:root[data-theme="dark"] body.app-et {
+    --h1: #0F5A3E;            /* keep white hero text readable on dark */
+    --h2: #0A3E2B;
+}
 
-.crow{display:grid;gap:8px;padding:8px 0;border-bottom:var(--bw) solid var(--line)}.crow:last-of-type{border-bottom:0}.crow .mrow{flex-wrap:wrap}
+/* ---------- Garments Accounts (garments-accounts.html) ---------- */
+body.app-ga {
+    --font: var(--body);
+    --surface: var(--bg);
+    --surface2: var(--line);
+    --accent2: var(--lagoon);
+    --accent2-glow: color-mix(in srgb, var(--lagoon) 25%, transparent);
+    --danger: var(--err);
+    --danger-glow: var(--err-bg);
+    --radius-md: var(--r-tile);
+    --radius-lg: var(--r-card);
+}
 
-/* floating calculator (components/calculator.js) */
-.calc-root{position:fixed;inset:0;z-index:var(--z-calc);pointer-events:none}.calc-root>*{pointer-events:auto}
-.calc-fab{position:fixed;width:54px;height:54px;border-radius:50%;border:var(--bw) solid var(--lagoon);background:var(--lagoon);color:#fff;display:grid;place-items:center;cursor:grab;box-shadow:0 6px 18px rgba(0,0,0,.28);user-select:none;-webkit-user-select:none}.calc-fab[hidden]{display:none}
-.calc-drop{position:fixed;left:0;right:0;bottom:calc(var(--sab) + 28px);display:none;justify-items:center;gap:8px;pointer-events:none!important}.calc-drop--on{display:grid}
-.calc-drop__l{font:600 .85rem var(--body);color:var(--ink);background:var(--paper);padding:4px 10px;border-radius:99px;border:var(--bw) solid var(--line)}
-.calc-drop__x{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--paper);color:var(--err);border:var(--bw) solid var(--err);transition:transform .12s}.calc-drop--hot .calc-drop__x{transform:scale(1.25);background:var(--err);color:#fff}
-.calc{position:fixed;width:min(320px,calc(100vw - 12px));background:var(--paper);color:var(--ink);border:var(--bw) solid var(--ink);border-radius:var(--r-tile,16px);box-shadow:0 14px 40px rgba(0,0,0,.35);padding:8px 10px 10px;display:grid;gap:6px}.calc[hidden]{display:none}
-.calc__head{display:flex;align-items:center;gap:6px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}.calc__title{flex:1;font:700 .95rem var(--display)}.calc__x{width:36px;height:36px}
-.calc__expr{min-height:34px;overflow-x:auto;white-space:nowrap;text-align:right;font:600 1.25rem var(--body);scrollbar-width:none}.calc__expr::-webkit-scrollbar{display:none}
-.calc__res{min-height:30px;text-align:right;font:800 1.6rem var(--display);color:var(--lagoon)}.calc__res--err{color:var(--err);font:600 1rem var(--body)}
-.calc__keys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.calc__keys[hidden],.calc__hist[hidden]{display:none}
-.calc__key{min-height:var(--tap);border-radius:12px;border:var(--bw) solid var(--line);background:var(--paper);color:var(--ink);font:600 1.15rem var(--body);cursor:pointer;touch-action:manipulation}
-.calc__key--op{background:var(--lagoon-tint)}.calc__key--eq{background:var(--lagoon);border-color:var(--lagoon);color:#fff}.calc__key:active{transform:scale(.96)}
-.calc__hist{display:grid;gap:4px;max-height:260px;overflow-y:auto}.calc__h{display:flex;justify-content:space-between;gap:10px;min-height:var(--tap);align-items:center;border:var(--bw) solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);padding:4px 10px;font:inherit;cursor:pointer;text-align:left}
+/* Keyboard focus, same as site */
+body.app button:focus-visible, body.app input:focus-visible,
+body.app textarea:focus-visible, body.app select:focus-visible,
+body.app a:focus-visible { outline: 3px solid var(--lagoon); outline-offset: 2px; }
+:root[data-theme="dark"] body.app button:focus-visible,
+:root[data-theme="dark"] body.app input:focus-visible,
+:root[data-theme="dark"] body.app textarea:focus-visible,
+:root[data-theme="dark"] body.app select:focus-visible,
+:root[data-theme="dark"] body.app a:focus-visible { outline-color: var(--marker); }

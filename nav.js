@@ -6,7 +6,7 @@
      <head>
        <script src="theme.js"></script>        <!-- blocking, first -->
        <script src="owner.js"></script>
-       <link rel="stylesheet" href="site.css?v=1">
+       <link rel="stylesheet" href="site.css?v=3">
      </head>
      <body class="v2">
        ...page content...

@@ -221,20 +221,10 @@
 </main>
 
 <script type="module">
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut }
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const _cfg = {
-    apiKey:            "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
-    authDomain:        "login-system-309fc.firebaseapp.com",
-    projectId:         "login-system-309fc",
-    storageBucket:     "login-system-309fc.firebasestorage.app",
-    messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
-};
-const app  = getApps().length ? getApp() : initializeApp(_cfg);
-const auth = getAuth(app);
 
 // ── AUTH STATE ───────────────────────────────────────────────
 onAuthStateChanged(auth, (user) => {

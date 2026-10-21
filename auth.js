@@ -3,28 +3,16 @@
 //  Firebase 10.x CDN (ESM) — GitHub Pages compatible
 // ============================================================
 
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+import { auth, db } from "./firebase-config.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, sendEmailVerification, GoogleAuthProvider,
          signInWithPopup, onAuthStateChanged,
          sendPasswordResetEmail }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp, Timestamp }
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── FIREBASE INIT ────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey:            "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0",
-    authDomain:        "login-system-309fc.firebaseapp.com",
-    projectId:         "login-system-309fc",
-    storageBucket:     "login-system-309fc.firebasestorage.app",
-    messagingSenderId: "509365590175",
-    appId:             "1:509365590175:web:2a1de8ab7688a96853aaaa"
-};
 
-const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
 
 // ── WHERE TO GO AFTER LOGIN ──────────────────────────────────
 // Pages that bounce signed-out visitors send them to login.html?redirect=<page>.

@@ -28,28 +28,27 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 │   booklet-maker.html, poster-splitter.html, resolution-changer.html,
 │   invert-colors.html, drive-folder-fetch.html,
 │   bot1.html (Messenger to Telegram guide: public, in sitemap, linked from projects.html)
+│   (TypeMaster.html is private: noindex, and redirects to login.html when signed out. It is still linked from the homepage and projects page.)
 ├── diary.html, english-tracker.html, garments-accounts.html            # Private apps (app.css)
 │   (+ garments-calc.js/.css: Garments' own floating calculator, own `gat_calc_*` storage keys)
-├── moneytracker.html, healthtracker.html                                # Fullscreen PWA trackers
-│   (+ mt.css, mt-calc.css, mt-insights.css, ht.css, ht-insights.css, mt*.js, ht*.js)
 │
 ├── site.css                  # Shared design system "Field Notebook" (tokens, navbar, components)
 ├── tool.css                  # Layer for tool pages
-├── app.css                   # Layer for private apps and trackers (old variable names -> tokens)
+├── app.css                   # Layer for private apps: diary, english-tracker, garments-accounts (old variable names -> tokens)
 ├── theme.js                  # Dark/light theme (blocking, runs before first paint)
 ├── nav.js, footer.js         # Shared navbar and footer, injected into every page
 ├── owner.js                  # Owner-only helper (convenience only; real protection is Firestore rules)
-├── auth.js, firebase-config.js  # Shared Firebase sign-in helper and project config
+├── auth.js                   # Sign-in logic (login page)
+├── firebase-config.js        # The ONLY place with the Firebase config; exports app, auth, db. Every page/script imports it
 ├── posts.js, webcomic.js     # Blog and webcomic data
 │
-├── apps/money/               # New Money Tracker (ES modules, own PWA: manifest.json, sw.js, tests/)
-├── apps/health/              # New Health Tracker (ES modules, own PWA: manifest.json, sw.js, icons, tests/): Today, History, Insights, Guide, More (settings, backup/restore, export). Open /apps/health/index.html (not linked anywhere yet). Old healthtracker.html stays live and reads/writes the same data
+├── apps/money/               # Money Tracker (ES modules, own PWA: manifest.json, sw.js, tests/)
+├── apps/health/              # Health Tracker (ES modules, own PWA: manifest.json, sw.js, icons, tests/): Today, History, Insights, Guide, More (settings, backup/restore, export). Open /apps/health/index.html (linked from index.html and projects.html)
 ├── apps/shared/              # Code shared by apps (store, firestore, sheet, toast, tabbar, xlsx, download, ui.css, ...)
-├── manifest-*.json           # PWA manifests (old Money Tracker, Health Tracker)
 ├── icon.png, Image.jpeg      # Favicon, profile photo
 ├── sitemap.xml, robots.txt   # Crawler files
 ├── firestore.rules           # Firestore security rules (publish from Firebase console)
-└── STYLE-GUIDE.md
+└── STYLE-GUIDE.md, STYLE-MIGRATION-PLAN.md, ROADMAP.md   # Docs (the migration plan is history; ROADMAP has current decisions)
 ```
 
 Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.md)**.
