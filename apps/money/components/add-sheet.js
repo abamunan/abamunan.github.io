@@ -10,7 +10,7 @@ import { searchTagsModel } from '../domain/viewmodels.js';
 
 const pad = n => String(n).padStart(2, '0');
 const toInput = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const KEYS = [['7', '8', '9', '\u232B'], ['4', '5', '6', '\u00F7'], ['1', '2', '3', '\u00D7'], ['0', '.', '+', '\u2212']];
+const KEYS = [['C', '7', '8', '\u232B'], ['4', '5', '6', '\u00F7'], ['1', '2', '3', '\u00D7'], ['0', '.', '+', '\u2212']];
 const KEY_LABEL = { '\u232B': 'Backspace', '\u00F7': 'Divide', '\u00D7': 'Multiply', '\u2212': 'Minus', '+': 'Plus', '=': 'Calculate' };
 
 // openAddSheet(repo, {date, kind, entry, onDone}). entry (edit mode) = {id,cat,amt,acct,note,adj,y,m0,d,locked}
@@ -41,7 +41,7 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   }
   amount.addEventListener('input', paintAmount);
   amount.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); save(); } });   // save() evaluates the expression
-  const press = k => { if (k === '\u232B') amount.value = amount.value.slice(0, -1); else amount.value += k; paintAmount(); };
+  const press = k => { if (k === 'C') amount.value = ''; else if (k === '\u232B') amount.value = amount.value.slice(0, -1); else amount.value += k; paintAmount(); };
   const pad_ = h('div', { class: 'keypad' }, KEYS.flat().map(k => h('button', { type: 'button', class: 'key' + ('+\u2212\u00D7\u00F7='.includes(k) || k === '\u232B' ? ' key--op' : ''), 'aria-label': KEY_LABEL[k] || k, onclick: () => press(k) }, k)));
   const dateIn = h('input', { class: 'ui-input', type: 'date', 'aria-label': 'Date', value: toInput(S.date), onchange: ev => { const [y, m, d] = ev.target.value.split('-').map(Number); if (y) S.date = new Date(y, m - 1, d); } });
   const noteIn = h('input', { class: 'ui-input', type: 'text', maxlength: '200', 'aria-label': 'Note (optional)', placeholder: 'e.g. Biryani #lunch', value: S.note, oninput: ev => { S.note = ev.target.value; } });
@@ -121,7 +121,8 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   saveBtn.addEventListener('click', save);
   const saveTmplBtn = !entry ? h('button', { type: 'button', class: 'ui-btn ui-btn--ghost', title: 'Save current entry as a template shortcut', onclick: saveAsTemplate }, '⭐ Template') : null;
   const actions = h('div', { class: 'add-actions' }, entry && h('button', { type: 'button', class: 'ui-btn ui-btn--ghost add-del', onclick: async () => { if (await deleteWithUndo(repo, entry, onDone)) sheet.close(false); } }, 'Delete'), saveTmplBtn, saveBtn);
-  const body = h('div', { class: 'add' }, banner, h('div', { class: 'add-top' }, seg, tmplChips, h('div', { class: 'add-amtwrap' }, amount, preview)), label('Category', chips), label('Account', accts), more, pad_, actions);
+  const amountBlock = h('div', { class: 'add-amount-block' }, h('div', { class: 'add-amount-head' }, h('div', { class: 'add-label' }, 'Amount'), h('span', { class: 'add-amount-hint' }, 'Use the keypad or type a calculation')), h('div', { class: 'add-amtwrap' }, amount, preview));
+  const body = h('div', { class: 'add' }, banner, h('div', { class: 'add-top' }, seg, tmplChips, amountBlock), label('Category', chips), label('Account', accts), more, pad_, actions);
   sheet = openSheet({ title: entry ? 'Edit entry' : 'Add entry', content: body });
   paint(); return sheet;
 }
