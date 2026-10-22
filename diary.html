@@ -134,6 +134,12 @@
        by a hairline rule, so writing feels continuous rather than
        "filling in a form". */
     .diary-sections { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 34px; }
+    .diary-writing-stats {
+        display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px;
+        color: var(--text-soft); font-size: .72rem; letter-spacing: .02em;
+    }
+    .diary-writing-stats span { display: inline-flex; align-items: center; gap: 5px; }
+    .diary-writing-stats strong { color: var(--ink); font-weight: 700; }
     .diary-section {
         background: none; border: none; border-top: 1.5px solid var(--card-border);
         border-radius: 0; padding: 22px 0 6px; position: relative;
@@ -232,6 +238,25 @@
         flex-wrap: wrap; gap: 14px; margin-bottom: 22px;
         padding-bottom: 16px; border-bottom: 1.5px solid var(--card-border);
     }
+    .diary-history-search {
+        display: flex; align-items: center; gap: 9px; min-width: min(100%, 260px);
+        flex: 1; max-width: 320px; color: var(--text-soft);
+    }
+    .diary-history-search input {
+        width: 100%; padding: 8px 2px; border: none;
+        border-bottom: 1.5px solid var(--card-border); border-radius: 0;
+        background: transparent; color: var(--text-main); font: inherit; font-size: .82rem;
+    }
+    .diary-history-search input:focus { outline: none; border-bottom-color: var(--accent); }
+    .diary-history-search button {
+        display: none; padding: 2px; border: none; background: none;
+        color: var(--text-soft); cursor: pointer;
+    }
+    .diary-history-search.has-value button { display: inline-flex; }
+    .diary-history-search button:hover { color: var(--ink); }
+    .diary-history-summary {
+        width: 100%; margin-top: -8px; color: var(--text-soft); font-size: .74rem;
+    }
     .diary-filter-group {
         display: inline-flex; gap: 20px; background: none; border: none; padding: 0;
     }
@@ -283,6 +308,7 @@
         transition: var(--trans);
         animation: cardIn .4s ease both;
     }
+    .diary-entry:focus-visible { transform: translateX(5px); }
     .diary-entry:last-child { border-bottom: none; }
     .diary-entry:hover { border-left-color: var(--accent); transform: translateX(5px); }
     .diary-entry-date {
@@ -454,6 +480,7 @@
         .diary-view { padding: 26px 20px 30px; }
         .diary-datetime-row { flex-direction: column; }
         .diary-history-toolbar { flex-direction: column; align-items: stretch; }
+        .diary-history-search { max-width: none; }
         .diary-filter-group { justify-content: center; }
         .diary-pdf-btn { justify-content: center; }
         .diary-pdf-btn-group { flex-direction: column; width: 100%; }
@@ -530,6 +557,11 @@
             <div class="diary-sections" id="sections-container">
                 <!-- sections injected by JS -->
             </div>
+            <div class="diary-writing-stats" id="writing-stats" aria-live="polite">
+                <span><i class="fas fa-font"></i> <strong id="word-count">0</strong> words</span>
+                <span><i class="fas fa-text-height"></i> <strong id="character-count">0</strong> characters</span>
+                <span><i class="fas fa-layer-group"></i> <strong id="section-count">0</strong> sections</span>
+            </div>
 
             <button class="diary-add-section" id="add-section-btn" type="button">
                 <i class="fas fa-plus"></i> Add Section
@@ -552,6 +584,13 @@
     <section class="diary-view" id="view-history">
 
         <div class="diary-history-toolbar">
+            <label class="diary-history-search" id="history-search-wrap">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" id="history-search" placeholder="Search loaded entries…" aria-label="Search loaded diary entries">
+                <button type="button" id="clear-history-search" aria-label="Clear search" title="Clear search">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </label>
             <div class="diary-filter-group" role="group" aria-label="Entries per page">
                 <button class="diary-filter-btn active" data-limit="10">10 / page</button>
                 <button class="diary-filter-btn" data-limit="50">50 / page</button>
@@ -564,6 +603,7 @@
                     <i class="fas fa-cloud-arrow-down"></i> Export All
                 </button>
             </div>
+            <div class="diary-history-summary" id="history-summary" role="status"></div>
         </div>
 
         <div class="diary-entry-list" id="entry-list">

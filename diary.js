@@ -32,6 +32,7 @@ let cachedEntries = [];        // entries currently rendered in History, reused 
 let lastVisibleDoc = null;     // Firestore query cursor (doc snapshot) for "Load more"
 let hasMoreHistory = true;     // whether another page might exist
 let historyLoading = false;    // guards overlapping loadHistory()/loadMoreHistory() calls
+let historySearchTerm = "";    // client-side search across entries currently loaded
 let readingEntry  = null;      // entry currently open in the read overlay (null = overlay closed)
 let deleteInFlight = false;    // guards double-click / repeated delete submissions
 let lastFocusedBeforeOverlay = null; // element to restore focus to when the read overlay closes
@@ -48,6 +49,9 @@ const entryTimeInput  = $("#entry-time");
 const sectionsContainer = $("#sections-container");
 const addSectionBtn   = $("#add-section-btn");
 const sectionCapMsg   = $("#section-cap-msg");
+const wordCountEl     = $("#word-count");
+const characterCountEl = $("#character-count");
+const sectionCountEl  = $("#section-count");
 const saveEntryBtn    = $("#save-entry-btn");
 const saveBtnLabel    = $("#save-btn-label");
 const clearFormBtn    = $("#clear-form-btn");
@@ -60,6 +64,10 @@ const loadMoreBtn     = $("#history-load-more-btn");
 const downloadPdfBtn  = $("#download-pdf-btn");
 const exportAllBtn    = $("#export-all-pdf-btn");
 const filterBtns      = document.querySelectorAll(".diary-filter-btn");
+const historySearch   = $("#history-search");
+const historySearchWrap = $("#history-search-wrap");
+const clearHistorySearch = $("#clear-history-search");
+const historySummary  = $("#history-summary");
 const toastEl         = $("#diary-toast");
 
 const readOverlay      = $("#diary-read-overlay");
@@ -232,16 +240,30 @@ function addSectionRow(title = "", content = "") {
         row.remove();
         updateAddSectionVisibility();
         updateRemoveButtonsVisibility();
+        updateWritingStats();
     });
 
     updateAddSectionVisibility();
     updateRemoveButtonsVisibility();
+    updateWritingStats();
 }
 
 addSectionBtn.addEventListener("click", () => addSectionRow());
 
 function clearSections() {
     sectionsContainer.innerHTML = "";
+    updateWritingStats();
+}
+
+function updateWritingStats() {
+    const text = [...sectionsContainer.querySelectorAll(".section-content-input")]
+        .map((input) => input.value.trim())
+        .filter(Boolean)
+        .join(" ");
+    const words = text ? text.split(/\s+/).length : 0;
+    wordCountEl.textContent = words.toLocaleString();
+    characterCountEl.textContent = text.length.toLocaleString();
+    sectionCountEl.textContent = sectionCount().toLocaleString();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -379,6 +401,7 @@ draftDiscardBtn.addEventListener("click", () => {
 entryDateInput.addEventListener("input", scheduleDraftSave);
 entryTimeInput.addEventListener("input", scheduleDraftSave);
 sectionsContainer.addEventListener("input", scheduleDraftSave);
+sectionsContainer.addEventListener("input", updateWritingStats);
 
 // Structural changes (add/remove a section) also count as meaningful edits,
 // even though they don't fire an 'input' event themselves.
@@ -765,18 +788,33 @@ function updateLoadMoreVisibility() {
 loadMoreBtn.addEventListener("click", loadMoreHistory);
 
 function renderEntryList(entries) {
-    if (!entries.length) {
+    const normalizedSearch = historySearchTerm.trim().toLocaleLowerCase();
+    const visibleEntries = normalizedSearch
+        ? entries.filter((entry) => {
+            const searchable = [
+                entry.datetime,
+                ...(entry.sections || []).flatMap((section) => [section.title, section.content]),
+            ].join(" ").toLocaleLowerCase();
+            return searchable.includes(normalizedSearch);
+        })
+        : entries;
+
+    historySummary.textContent = normalizedSearch
+        ? `${visibleEntries.length} of ${entries.length} loaded ${entries.length === 1 ? "entry" : "entries"} match “${historySearchTerm.trim()}”. Load more to search older entries.`
+        : `${entries.length} ${entries.length === 1 ? "entry" : "entries"} loaded`;
+
+    if (!visibleEntries.length) {
         entryListEl.innerHTML = `
             <div class="diary-empty">
-                <i class="fas fa-feather"></i>
-                <p>No entries yet — your first one is one tab away.</p>
+                <i class="fas ${normalizedSearch ? "fa-magnifying-glass" : "fa-feather"}"></i>
+                <p>${normalizedSearch ? "No loaded entries match your search." : "No entries yet — your first one is one tab away."}</p>
             </div>`;
-        downloadPdfBtn.disabled = true;
+        downloadPdfBtn.disabled = !entries.length;
         return;
     }
     downloadPdfBtn.disabled = false;
 
-    entryListEl.innerHTML = entries.map((entry) => {
+    entryListEl.innerHTML = visibleEntries.map((entry) => {
         const first = entry.sections && entry.sections[0] ? entry.sections[0] : { title: "Untitled", content: "" };
         const sectionsArr = entry.sections || [];
         const snippet = (first.content || "").trim().slice(0, 90).replace(/\n+/g, " ");
@@ -808,6 +846,20 @@ function renderEntryList(entries) {
         });
     });
 }
+
+historySearch.addEventListener("input", () => {
+    historySearchTerm = historySearch.value;
+    historySearchWrap.classList.toggle("has-value", !!historySearch.value);
+    renderEntryList(cachedEntries);
+});
+
+clearHistorySearch.addEventListener("click", () => {
+    historySearch.value = "";
+    historySearchTerm = "";
+    historySearchWrap.classList.remove("has-value");
+    renderEntryList(cachedEntries);
+    historySearch.focus();
+});
 
 // ════════════════════════════════════════════════════════════
 //  DATE / TIME FORMATTING HELPERS
