@@ -1355,7 +1355,7 @@ body.money-app-body {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .ui-toast-host {
     bottom: 24px;
     left: 310px;
@@ -1447,7 +1447,7 @@ body.money-app-body {
    ================================================================ */
 
 /* ── PHONE / MOBILE (Below 900px) ──────────────────────────── */
-@media (max-width: 899px) {
+@media (max-width: 1099px) {
   #app {
     max-width: 760px;
     margin: 0 auto;
@@ -1557,7 +1557,7 @@ body.money-app-body {
 }
 
 /* ── PC / DESKTOP (900px and up) ───────────────────────────── */
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   #app.money-app-shell {
     display: flex;
     max-width: 1260px;
@@ -1756,7 +1756,7 @@ body.money-app-body {
 /* ── FINAL LAYOUT POLISH ─────────────────────────────────────
    The overview gets a dashboard rhythm on wide screens while all
    secondary views keep their comfortable single-column reading width. */
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   #app.money-app-shell {
     max-width: 1440px;
   }
@@ -1847,7 +1847,7 @@ body.money-app-body {
   }
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1099px) {
   body.money-app-body {
     background-attachment: scroll;
   }
