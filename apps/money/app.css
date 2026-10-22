@@ -520,6 +520,122 @@ body.money-app-body {
   color: var(--soft);
 }
 
+.view-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 4px 6px 0;
+}
+
+.view-heading h2 {
+  margin-top: 4px;
+  font: 800 clamp(1.45rem, 3vw, 2rem) var(--display);
+}
+
+.view-heading__sub {
+  margin-top: 4px;
+  color: var(--soft);
+}
+
+.account-heading-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--glass-border);
+  border-radius: 17px;
+  background: var(--lagoon-tint);
+  color: var(--lagoon);
+  font-size: 1.5rem;
+}
+
+.account-summary {
+  gap: 20px;
+}
+
+.account-summary__head,
+.account-history__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.account-name {
+  color: var(--muted);
+  font: 800 1.2rem var(--display);
+}
+
+.account-balance {
+  color: var(--ink);
+  font: 800 clamp(1.5rem, 4vw, 2.2rem) var(--display);
+}
+
+.account-summary__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.account-summary__stats > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  background: var(--glass-surface);
+}
+
+.account-summary__stats strong {
+  font-size: 1.05rem;
+}
+
+.account-history {
+  gap: 18px;
+}
+
+.account-history__top {
+  align-items: center;
+}
+
+.account-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
+.account-picker {
+  max-width: 280px;
+}
+
+.account-sort {
+  width: min(210px, 45%);
+}
+
+.account-history-list {
+  display: grid;
+  gap: 16px;
+}
+
+.account-history-item {
+  display: grid;
+  gap: 6px;
+}
+
+.account-history-date {
+  padding: 0 4px;
+  color: var(--soft);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.account-history-item .erow {
+  min-height: 62px;
+}
+
 .card__p {
   color: var(--ink);
   font-size: 0.95rem;
@@ -2053,6 +2169,25 @@ body.money-app-body {
 
   .card--hero {
     padding: 24px 20px 20px;
+  }
+
+  .account-summary__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .account-history__top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-sort {
+    width: 100%;
+  }
+
+  .account-toolbar,
+  .account-picker {
+    width: 100%;
+    max-width: none;
   }
 
   .big {

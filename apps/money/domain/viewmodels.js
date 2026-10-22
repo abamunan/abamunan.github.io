@@ -85,3 +85,35 @@ export function searchTagsModel(repo) {
   const cats = catMap(repo), accts = acctMap(repo);
   return collectTags(repo.listDays(), doc => entryRows(repo, doc, cats, accts));
 }
+
+export function accountModel(repo, accountId, sort = 'newest') {
+  const { exp, inc } = ids(repo), cats = catMap(repo), accts = acctMap(repo);
+  const account = repo.settings.accounts.find(a => a.id === accountId) || repo.settings.accounts[0];
+  if (!account) return { account: null, accounts: [], entries: [], income: 0, expense: 0, balance: 0 };
+  const days = repo.listDays(), balances = accountBalances({
+    accounts: repo.settings.accounts, days: days.map(x => x.doc), ledger: repo.settings.ledger, debts: repo.settings.debts,
+    expIds: exp, incIds: inc, defaultAcct: repo.defaultAcct()
+  });
+  const entries = [];
+  for (const day of days) {
+    for (const entry of entryRows(repo, day.doc, cats, accts)) {
+      if (entry.acct !== account.id) continue;
+      entries.push({ ...entry, y: day.y, m0: day.m, d: day.d, locked: isDayLocked(day.y, day.m, day.d, day.doc) });
+    }
+  }
+  entries.sort((a, b) => sort === 'oldest'
+    ? a.y - b.y || a.m0 - b.m0 || a.d - b.d || a.ts - b.ts
+    : sort === 'amount-high'
+      ? Math.abs(b.signed) - Math.abs(a.signed) || b.ts - a.ts
+      : sort === 'amount-low'
+        ? Math.abs(a.signed) - Math.abs(b.signed) || b.ts - a.ts
+        : b.y - a.y || b.m0 - a.m0 || b.d - a.d || b.ts - a.ts);
+  return {
+    account,
+    accounts: repo.settings.accounts,
+    entries,
+    income: round2(entries.filter(e => e.kind === 'in').reduce((sum, e) => sum + e.amt, 0)),
+    expense: round2(entries.filter(e => e.kind === 'out').reduce((sum, e) => sum + e.amt, 0)),
+    balance: balances[account.id] || 0
+  };
+}
