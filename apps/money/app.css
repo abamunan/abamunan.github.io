@@ -1573,6 +1573,12 @@ body.money-app-body {
   transition: transform 0.2s ease;
 }
 
+@media (min-width: 1100px) {
+  .calc-fab {
+    display: none !important;
+  }
+}
+
 .calc-fab:hover {
   transform: scale(1.08);
 }
@@ -1607,6 +1613,16 @@ body.money-app-body {
 }
 
 .calc__hide {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font: 700 0.72rem var(--body);
+  cursor: pointer;
   color: var(--warn);
 }
 
@@ -1958,6 +1974,34 @@ body.money-app-body {
   }
 
   .sidebar-add-btn:active {
+    transform: scale(0.98);
+  }
+
+  .sidebar-calc-btn {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--glass-surface);
+    color: var(--ink);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .sidebar-calc-btn:hover {
+    transform: translateY(-2px);
+    background: var(--lagoon-tint);
+    border-color: var(--lagoon);
+    color: var(--lagoon);
+  }
+
+  .sidebar-calc-btn:active {
     transform: scale(0.98);
   }
 

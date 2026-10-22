@@ -55,6 +55,7 @@ const go = () => { const id = location.hash.slice(1); current = views[id] ? id :
 window.addEventListener('hashchange', go);
 document.getElementById('fab').addEventListener('click', () => openAddSheet(repo, { date: new Date(), onDone: render }));
 document.getElementById('sidebarAddBtn')?.addEventListener('click', () => document.getElementById('fab')?.click());
+document.getElementById('sidebarCalcBtn')?.addEventListener('click', () => app.calc?.open());
 
 const bindTheme = () => {
   const syncIcons = () => {

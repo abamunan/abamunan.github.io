@@ -22,7 +22,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   const exprEl = h('div', { class: 'calc__expr num', 'aria-label': 'Expression' }), resEl = h('div', { class: 'calc__res num', 'aria-live': 'polite' });
   const histEl = h('div', { class: 'calc__hist', hidden: true });
   const closeBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__x', 'aria-label': 'Close calculator' }, '\u2715');
-  const hideBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__hide', 'aria-label': 'Hide calculator for 10 minutes', title: 'Hide for 10 minutes', html: icon('close', 18) });
+  const hideBtn = h('button', { type: 'button', class: 'calc__hide', 'aria-label': 'Remove calculator for 10 minutes', title: 'Remove calculator for 10 minutes', html: `${icon('close', 17)}<span>Remove calculator</span>` });
   const histBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__x', 'aria-label': 'History', 'aria-pressed': 'false' }, '\u29D6');
   const head = h('div', { class: 'calc__head' }, h('span', { class: 'calc__title' }, 'Calculator'), hideBtn, histBtn, closeBtn);
   const keys = h('div', { class: 'calc__keys' }, KEYS.map(([k, label]) => h('button', { type: 'button', class: 'calc__key' + (k === '=' ? ' calc__key--eq' : /[C()\u232B\u00F7\u00D7\u2212+]/.test(k) ? ' calc__key--op' : ''), 'data-key': k, 'aria-label': label || k }, k)));
