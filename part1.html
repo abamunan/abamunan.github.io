@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Private area.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Private Drive | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/part1.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/part1.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Private Drive | Munan.hub">
+    <meta property="og:description" content="Private area.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Private Drive | Munan.hub">
+    <meta name="twitter:description" content="Private area.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .pv-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 36px) 18px 20px; }
+        .drive-card { width:100%; max-width:480px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; text-align:center; }
+        .drive-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .drive-inner { padding:34px 30px 30px; }
+        .drive-inner .tile-lg { display:flex; margin:0 auto 14px; width:76px; height:76px; border-radius:22px; font-size:1.8rem; box-shadow:5px 5px 0 var(--marker); border:1.5px solid var(--ink); }
+        .drive-inner .badge { display:flex; width:fit-content; margin:0 auto; }
+        .drive-inner h1 { font-family:var(--display); font-weight:800; font-size:clamp(1.7rem,5vw,2.2rem); letter-spacing:-.03em; line-height:1.1; margin:8px 0 10px; }
+        .drive-inner p { color:var(--muted); margin-bottom:22px; }
+        .loading-state { display:flex; align-items:center; justify-content:center; gap:14px; padding:30px 0; color:var(--muted); font-weight:600; }
+        .spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--lagoon); animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spinner { animation-duration:2.4s; } }
+
+        .drive-btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:12px 26px; border-radius:999px; font-weight:700; font-size:.98rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
+        .drive-btn:hover { background:var(--lagoon); color:#fff; }
+        :root[data-theme="dark"] .drive-btn { background:var(--marker); color:#11221D; }
+        :root[data-theme="dark"] .drive-btn:hover { background:#fff; }
+        .drive-btn.cancel, :root[data-theme="dark"] .drive-btn.cancel { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+        .drive-btn.cancel:hover, :root[data-theme="dark"] .drive-btn.cancel:hover { background:var(--ink); color:var(--bg); }
+        .drive-btn.success, :root[data-theme="dark"] .drive-btn.success { background:var(--ok); color:#fff; }
+        .drive-btn.success:hover { background:var(--lagoon); }
+
+        #overlay { align-items:center; justify-content:center; }
+        #overlay .modal-card { text-align:center; max-width:400px; }
+        .modal-icon { width:60px; height:60px; margin:0 auto 12px; border-radius:18px; background:var(--lagoon-tint); color:var(--lagoon); display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+        #overlay h2 { font-size:1.45rem; margin-bottom:6px; }
+        #overlay p { color:var(--muted); margin-bottom:16px; }
+        #passIn { width:100%; min-height:48px; padding:11px 14px; background:var(--paper); color:var(--ink); border:1.5px solid var(--line); border-radius:var(--r-input); text-align:center; }
+        #passIn:focus { outline:none; border-color:var(--lagoon); box-shadow:0 0 0 4px var(--lagoon-tint); }
+        #passIn.shake { animation:shake .4s; border-color:var(--err); }
+        @keyframes shake { 20%,60% { transform:translateX(-7px); } 40%,80% { transform:translateX(7px); } }
+        @media (prefers-reduced-motion:reduce) { #passIn.shake { animation:none; } }
+        .error { display:none; color:var(--err); font-weight:700; font-size:.9rem; margin-top:10px; }
+        .btn-row { display:flex; gap:10px; justify-content:center; margin-top:18px; flex-wrap:wrap; }
+        .btn-row .drive-btn { flex:1 1 130px; }
+        @media (max-width:480px) { .drive-inner { padding:28px 20px 24px; } }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <main class="pv-wrap" id="main">
+        <div class="drive-card" id="mainCard">
+            <div class="drive-strip"></div>
+            <div class="drive-inner">
+                <!-- Auth checking state (default) -->
+                <div id="stateLoading" class="loading-state" role="status">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <span id="loadingText">Checking access…</span>
+                </div>
+
+                <!-- Owner verified: show unlock button -->
+                <div id="stateReady" style="display:none;">
+                    <span class="tile-lg" aria-hidden="true"><i class="fab fa-google-drive"></i></span>
+                    <span class="badge badge-marker"><i class="fas fa-lock" aria-hidden="true"></i> Owner only</span>
+                    <h1>Private Drive</h1>
+                    <p>This folder is password protected. Enter the correct password to unlock and access the documents.</p>
+                    <button type="button" class="drive-btn" id="unlockBtn" onclick="toggleModal(true)">
+                        <i class="fas fa-lock" aria-hidden="true"></i> Unlock Access
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Password Modal -->
+    <div class="modal" id="overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="pwTitle" onclick="handleOverlayClick(event)">
+        <div class="modal-card">
+            <div class="modal-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></div>
+            <h2 id="pwTitle">Security Check</h2>
+            <p>Enter your password to continue</p>
+            <input type="password" id="passIn" placeholder="Enter password…" aria-label="Password" autocomplete="off"
+                   onkeydown="if(event.key==='Enter') verify()">
+            <div class="error" id="err" role="alert">
+                <i class="fas fa-circle-xmark" style="margin-right:5px;" aria-hidden="true"></i>Incorrect password. Try again.
+            </div>
+            <div class="btn-row">
+                <button type="button" class="drive-btn cancel" onclick="toggleModal(false)">Cancel</button>
+                <button type="button" class="drive-btn" onclick="verify()">
+                    <i class="fas fa-unlock" aria-hidden="true"></i> Unlock
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { auth, db } from "./firebase-config.js";
+        import { onAuthStateChanged }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { doc, getDoc }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
+        function showProblem(msg) {
+            const t = document.getElementById('loadingText');
+            if (t) t.textContent = msg;
+            const sp = document.querySelector('#stateLoading .spinner');
+            if (sp) sp.style.display = 'none';
+        }
+
+        // ── Auth Guard + Firestore fetch ────────────────────
+        onAuthStateChanged(auth, async (user) => {
+            if (!user || !user.emailVerified) {
+                // Not logged in → redirect to login
+                window.location.href = "login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html"));
+                return;
+            }
+
+            // Convenience guard: only the verified owner continues.
+            // (Real protection is the Firestore rule on secrets/{doc}.)
+            if (!window.MunanOwner || !window.MunanOwner.isOwner(user)) {
+                window.location.replace("index.html");
+                return;
+            }
+
+            try {
+                // Fetch secret from Firestore (rules release it to the owner only)
+                const snap = await getDoc(doc(db, "secrets", "privateDrive"));
+                if (!snap.exists()) {
+                    console.error("Secret doc not found in Firestore.");
+                    showProblem("The private drive is not set up yet.");
+                    return;
+                }
+                const { url, pass } = snap.data();
+
+                // Store in memory only — never in DOM or global JS
+                window.__driveURL  = url;
+                window.__drivePass = pass;
+
+                // Show the unlock UI
+                document.getElementById('stateLoading').style.display = 'none';
+                document.getElementById('stateReady').style.display   = 'block';
+
+            } catch (e) {
+                console.error("Failed to load drive config:", e);
+                showProblem("Could not load the private drive. Please try again later.");
+            }
+        });
+    </script>
+
+    <script>
+        const el = {
+            overlay: document.getElementById('overlay'),
+            input:   document.getElementById('passIn'),
+            err:     document.getElementById('err'),
+            btn:     document.getElementById('unlockBtn')
+        };
+
+        function toggleModal(show) {
+            el.overlay.style.display = show ? 'flex' : 'none';
+            if (show) {
+                el.input.value = '';
+                el.err.style.display = 'none';
+                setTimeout(() => el.input.focus(), 100);
+            }
+        }
+
+        function verify() {
+            if (el.input.value === window.__drivePass) {
+                toggleModal(false);
+                window.open(window.__driveURL, '_blank');
+                el.btn.className = 'drive-btn success';
+                el.btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Open Drive';
+                el.btn.onclick = () => window.open(window.__driveURL, '_blank');
+            } else {
+                el.err.style.display = 'block';
+                el.input.classList.add('shake');
+                setTimeout(() => el.input.classList.remove('shake'), 400);
+                el.input.value = '';
+                setTimeout(() => el.input.focus(), 100);
+            }
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === el.overlay) toggleModal(false);
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && el.overlay.style.display === 'flex') toggleModal(false); });
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

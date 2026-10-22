@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Paste a public Google Drive folder link and save every file straight to your computer, without building a zip in memory.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Drive Folder Fetch | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/drive-folder-fetch.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/drive-folder-fetch.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Drive Folder Fetch | Munan.hub">
+    <meta property="og:description" content="Paste a public Google Drive folder link and save every file straight to your computer, without building a zip in memory.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Drive Folder Fetch | Munan.hub">
+    <meta name="twitter:description" content="Paste a public Google Drive folder link and save every file straight to your computer, without building a zip in memory.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <link rel="stylesheet" href="tool.css?v=3">
+
+
+<!-- Shared theme logic — blocking, must run before first paint -->
+
+<style>
+  /* Everything below is specific to this tool — colors, fonts, layout
+     primitives (navbar, footer, dark mode) all
+     come from site.css and tool.css linked above. */
+
+
+
+  .dff-wrap{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:0 5% 60px;}
+
+  .panel{
+    background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px;
+    padding:18px; margin-bottom:16px; transition:background var(--trans), border-color var(--trans);
+     -webkit-
+    
+  }
+  label{
+    display:block; font-family:var(--body); font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--text-muted); margin-bottom:6px;
+  }
+  input[type=text]{
+    width:100%; background:var(--card-bg); border:1.5px solid var(--card-border); color:var(--text-main);
+    font-family:var(--mono); font-size:13px; padding:10px 12px; border-radius:9px;
+    outline:none; margin-bottom:12px; transition:border-color var(--trans), background var(--trans);
+  }
+  input[type=text]::placeholder{color:var(--text-soft); opacity:.9;}
+  input[type=text]:focus{border-color:var(--accent);}
+  input[type=text]:last-child{margin-bottom:0;}
+
+  .row-inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+
+  button{
+    font-family:var(--body); font-weight:600; font-size:13.5px; cursor:pointer;
+    border-radius:20px; padding:10px 18px; border:1.5px solid var(--card-border);
+    background:var(--card-bg); color:var(--text-main); transition:var(--trans);
+  }
+  button:hover:not(:disabled){border-color:var(--accent); transform:translateY(-1px);}
+  button:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+  button.primary{background:var(--accent); color:var(--on-accent); border-color:var(--accent);}
+  button.primary:hover:not(:disabled){filter:brightness(1.1); }
+  button.ghost{background:color-mix(in srgb, var(--paper) 40%, transparent);}
+  [data-theme="dark"] button.ghost{background:color-mix(in srgb, var(--paper) 5%, transparent);}
+
+  .help-toggle{
+    font-family:var(--body); font-size:12px; font-weight:600; color:var(--text-muted); background:none; border:none;
+    padding:0; text-decoration:underline; text-underline-offset:3px; cursor:pointer;
+  }
+  .help-body{
+    font-size:13px; color:var(--text-muted); line-height:1.7; margin-top:12px;
+    border-top:1px solid var(--card-border); padding-top:12px; display:none;
+  }
+  .help-body.open{display:block;}
+  .help-body ol{margin:0; padding-left:20px;}
+  .help-body a{color:var(--accent);}
+  .help-contact{font-size:12px; color:var(--text-muted); margin:10px 0 0; padding-top:10px; border-top:1px dashed var(--card-border);}
+  .help-contact a{color:var(--accent); font-weight:600;}
+
+  .status{font-family:var(--mono); font-size:12.5px; min-height:18px; margin-top:2px;}
+  .status.ok{color:var(--ok);}
+  .status.err{color:var(--err);}
+  .status.warn{color:var(--warn);}
+  .status.muted{color:var(--text-soft);}
+
+  #actions{display:none;}
+  .dest-toggle{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .dest-btn{flex:1; min-width:150px;}
+  .dest-btn.active{background:var(--accent); color:var(--on-accent); border-color:var(--accent);}
+  #localBox{margin-bottom:10px;}
+  #actions .row-inline{margin-bottom:10px;}
+  .meta{font-family:var(--mono); font-size:12px; color:var(--text-muted);}
+
+  .tree{
+    font-family:var(--mono); font-size:12.5px; line-height:1.9;
+    max-height:420px; overflow-y:auto; background:color-mix(in srgb, var(--paper) 35%, transparent);
+    border:1px solid var(--card-border); border-radius:12px; padding:10px 4px;
+     -webkit-
+  }
+  [data-theme="dark"] .tree{background:rgba(0,0,0,.2);}
+  .row{display:flex; align-items:center; white-space:pre; padding:0 10px;}
+  .row.folder{color:var(--text-main); font-weight:600;}
+  .row.file{color:var(--text-muted);}
+  .row.file.is-skip{opacity:.45;}
+  .branch{color:#94a3b8; white-space:pre;}
+  .name{flex:1; overflow:hidden; text-overflow:ellipsis; margin-right:8px;}
+  .size{width:64px; text-align:right; color:#94a3b8; margin-right:8px;}
+  .dl-one{
+    font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:8px;
+    background:color-mix(in srgb, var(--paper) 50%, transparent); border:1px solid var(--card-border); color:var(--text-muted);
+  }
+  [data-theme="dark"] .dl-one{background:color-mix(in srgb, var(--paper) 6%, transparent);}
+  .empty{padding:14px; color:var(--text-muted);}
+
+  .note{font-size:12.5px; color:var(--text-muted); line-height:1.6; margin-top:10px;}
+  .note b{color:var(--text-main);}
+
+  /* --- operation overlay (scan + download progress) --- */
+  .op-overlay{
+    position:fixed; inset:0; background:rgba(15,23,42,.55);
+    display:flex; align-items:center; justify-content:center; z-index:1000;
+    opacity:0; pointer-events:none; transition:opacity .18s;
+    padding:20px; 
+  }
+  .op-overlay.show{opacity:1; pointer-events:auto;}
+  .op-card{
+    width:min(420px, 100%); max-height:85vh; overflow-y:auto;
+    background:color-mix(in srgb, var(--paper) 92%, transparent); border:1px solid var(--card-border);
+    border-radius:20px; padding:30px 26px; text-align:center;
+     -webkit-
+    
+  }
+  [data-theme="dark"] .op-card{background:rgba(15,23,42,.88);}
+  .op-title{font-family:var(--body); font-weight:700; font-size:15px; margin-bottom:16px; color:var(--text-main);}
+  .op-percent{
+    font-family:var(--mono); font-size:36px; font-weight:700; color:var(--accent);
+    margin-bottom:16px; min-height:42px; letter-spacing:-.02em;
+  }
+  .op-percent.dim{color:var(--text-muted); font-size:15px; font-weight:500;}
+  .op-bar-track{height:8px; background:color-mix(in srgb, var(--lagoon) 12%, transparent); border-radius:4px; overflow:hidden; border:1px solid var(--card-border); margin-bottom:16px;}
+  .op-bar-fill{height:100%; width:0%; background:var(--accent); transition:width .25s; border-radius:4px;}
+  .op-bar-fill.indeterminate{width:32% !important; animation: op-slide 1.1s ease-in-out infinite;}
+  @keyframes op-slide{0%{margin-left:-35%;} 100%{margin-left:103%;}}
+  @media (prefers-reduced-motion: reduce){
+    .op-bar-fill.indeterminate{animation:none; width:100% !important; opacity:.35;}
+  }
+  .op-stats{font-family:var(--mono); font-size:13px; color:var(--text-main); margin-bottom:5px;}
+  .op-sub{font-family:var(--mono); font-size:11.5px; color:var(--text-muted); min-height:15px; word-break:break-word; overflow-wrap:anywhere;}
+  .op-hide-btn{
+    margin-top:18px; font-family:var(--body); font-size:11.5px; font-weight:600; color:var(--text-muted);
+    background:none; border:none; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:0;
+  }
+
+  /* --- floating badge to bring the hidden overlay back --- */
+  .op-restore{
+    position:fixed; right:16px; bottom:16px; z-index:1001;
+    display:none; align-items:center; gap:9px;
+    background:color-mix(in srgb, var(--paper) 92%, transparent); border:1px solid var(--card-border); border-radius:999px;
+    padding:10px 16px 10px 12px; font-family:var(--mono); font-size:12px; color:var(--text-main);
+    cursor:pointer; 
+     -webkit-
+  }
+  [data-theme="dark"] .op-restore{background:rgba(15,23,42,.88);}
+  .op-restore.show{display:flex;}
+  .op-restore:hover{border-color:var(--accent);}
+  .op-restore-dot{
+    width:8px; height:8px; border-radius:50%; background:var(--accent); flex:none;
+    animation:op-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes op-pulse{0%,100%{opacity:1;} 50%{opacity:.25;}}
+  @media (prefers-reduced-motion: reduce){
+    .op-restore-dot{animation:none;}
+  }
+
+.page-hero{display:none;}
+.dff-wrap .tree .empty{border:0;border-radius:0;grid-column:auto;}
+</style>
+</head>
+<body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+<header class="page-head">
+    <div class="wrap">
+        <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="tools.html">Tools</a></li><li aria-hidden="true">/</li><li aria-current="page">Drive Folder Fetch</li></ol>
+        <span class="kicker">Tools · Google Drive</span>
+        <h1 class="page-title">Drive Folder Fetch</h1>
+        <p class="page-lead">Paste a public Google Drive folder link, load its contents, then save everything straight to a folder on your computer. No zip is built in memory, so large folders do not crash the tab.</p>
+        <p class="tool-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> Runs in your browser. Files go between you and Google Drive, never through this site.</p>
+    </div>
+</header>
+
+<div class="dff-wrap">
+  <div class="panel">
+    <label for="apiKey">Google API key</label>
+    <input type="text" id="apiKey" placeholder="AIza…" autocomplete="off">
+    <label for="link">Folder link</label>
+    <input type="text" id="link" placeholder="https://drive.google.com/drive/folders/…">
+    <div class="row-inline" style="margin-top:4px;">
+      <button class="primary" id="loadBtn">Load folder</button>
+      <button class="help-toggle" id="helpToggle">how do I get an API key?</button>
+    </div>
+    <div class="help-body" id="helpBody">
+      <ol>
+        <li>Go to <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">console.cloud.google.com</a> and create (or pick) a project.</li>
+        <li>Enable the <b>Google Drive API</b> for that project.</li>
+        <li>Under <b>APIs &amp; Services → Credentials</b>, create an <b>API key</b>.</li>
+        <li>Optional but recommended: restrict the key to the Drive API.</li>
+        <li>Make sure the Drive folder is shared as <b>"Anyone with the link"</b> — an API key can only read public files, not private ones.</li>
+      </ol>
+      <p class="help-contact">Don't want to set this up? <a href="contact.html">Ask Munan</a> for a one-time API key instead.</p>
+    </div>
+    <div class="status muted" id="status"></div>
+  </div>
+
+  <div class="panel" id="treePanel" style="display:none;">
+    <div class="tree" id="tree"></div>
+    <div id="actions">
+      <div class="meta" id="meta" style="margin-bottom:12px;"></div>
+      <label>Export file list</label>
+      <div class="row-inline" style="margin-bottom:14px;">
+        <button class="ghost" id="listTxtBtn"><i class="fa-solid fa-file-lines"></i> Save list as .txt</button>
+        <button class="ghost" id="listPdfBtn"><i class="fa-solid fa-file-pdf"></i> Save list as PDF</button>
+      </div>
+      <label>Save to</label>
+      <div class="dest-toggle" id="destToggle">
+        <button type="button" class="dest-btn active" data-dest="local"><i class="fa-solid fa-laptop"></i> This computer</button>
+        <button type="button" class="dest-btn" data-dest="drive"><i class="fa-brands fa-google-drive"></i> My Google Drive</button>
+      </div>
+      <div id="localBox" class="row-inline">
+        <button class="primary" id="dlFolderBtn">Download all → choose folder</button>
+        <button class="ghost" id="dlIndivBtn">Download individually</button>
+      </div>
+      <div id="driveBox" style="display:none;">
+        <label for="clientId">Google OAuth Client ID</label>
+        <input type="text" id="clientId" placeholder="123456-abc.apps.googleusercontent.com" autocomplete="off" style="margin-bottom:6px;">
+        <button type="button" class="help-toggle" id="clientHelpToggle" style="margin-bottom:12px;">how do I get a Client ID?</button>
+        <div class="help-body" id="clientHelpBody" style="margin-bottom:14px;">
+          <ol>
+            <li>Open <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> and select the same project you used for the API key (or create a new one).</li>
+            <li>Make sure the <b>Google Drive API</b> is enabled: <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">open the Drive API page</a> and click <b>Enable</b> if you see that button (if it says <b>Manage</b>, it's already on).</li>
+            <li>Go to <b>Google Auth Platform</b> (search for it in the top bar), or <b>APIs &amp; Services → OAuth consent screen</b>. If you see a <b>Get started</b> button, click it, enter any app name and your email, choose <b>External</b> as the audience, and finish the wizard.</li>
+            <li>Open <b>Audience → Test users → Add users</b>, enter <b>your own Gmail address</b> (the Drive you want to save into), and click <b>Save</b>. While the app is in "Testing", only listed test users can sign in.</li>
+            <li>Open <b>Clients → Create client</b>. Choose <b>Application type: Web application</b> and give it any name.</li>
+            <li>Under <b>Authorized JavaScript origins</b>, click <b>Add URI</b> and enter the address this page is opened from. For this page that is:<br>
+              <code id="currentOrigin" style="font-family:var(--mono);"></code><br>
+              Use only the site address — no page name and no trailing <code>/</code>. Examples: <code>https://yoursite.com</code> or <code>http://localhost:8000</code>. Leave <b>Authorized redirect URIs</b> empty.</li>
+            <li>Click <b>Create</b>, copy the <b>Client ID</b> (it ends with <code>.apps.googleusercontent.com</code>) and paste it above. You don't need the Client secret.</li>
+          </ol>
+          <p class="help-contact" style="margin-top:12px;">
+            <b>Good to know:</b> the page must be opened from <code>http(s)://</code> (a hosted site or <code>localhost</code>), not as a <code>file://</code> file. Origin changes can take a few minutes to apply. If Google shows "This app isn't verified", click <b>Advanced → Go to (app name)</b> — that's normal for apps in Testing. The sign-in token lasts about an hour and is never stored. You can revoke access anytime at <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.
+          </p>
+        </div>
+        <label>Method</label>
+        <div style="font-size:13px; line-height:1.7; margin-bottom:12px; color:var(--text-main);">
+          <label style="text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; display:flex; gap:8px; align-items:flex-start; cursor:pointer; margin-bottom:4px;">
+            <input type="radio" name="driveMode" value="copy" checked style="margin-top:5px;">
+            <span>Fast copy <span style="font-weight:400;color:var(--text-muted);">— copied on Google's servers, no download/upload. Needs full Drive access.</span></span>
+          </label>
+          <label style="text-transform:none; letter-spacing:0; font-size:13px; font-weight:600; display:flex; gap:8px; align-items:flex-start; cursor:pointer; margin:0;">
+            <input type="radio" name="driveMode" value="upload" style="margin-top:5px;">
+            <span>Download &amp; upload <span style="font-weight:400;color:var(--text-muted);">— goes through your browser (slower). Limited access: only files this app creates.</span></span>
+          </label>
+        </div>
+        <div class="row-inline">
+          <button class="primary" id="dlDriveBtn"><i class="fa-brands fa-google-drive"></i> Save to my Google Drive</button>
+        </div>
+        <div class="note">Creates a <b>Drive Folder Fetch &lt;date&gt;</b> folder in My Drive with the same subfolders. Fast copy falls back to download &amp; upload automatically if a file can't be copied (e.g. the owner disabled copying). Google may show an "unverified app" warning — add your account as a Test user and continue.</div>
+      </div>
+      <div class="note" id="fsaNote"></div>
+    </div>
+  </div>
+</div>
+
+<div class="op-overlay" id="opOverlay">
+  <div class="op-card">
+    <div class="op-title" id="opTitle">Working…</div>
+    <div class="op-percent" id="opPercent">—</div>
+    <div class="op-bar-track"><div class="op-bar-fill indeterminate" id="opBarFill"></div></div>
+    <div class="op-stats" id="opStats"></div>
+    <div class="op-sub" id="opSub"></div>
+    <button class="op-hide-btn" id="opHideBtn">hide (keeps running in background)</button>
+  </div>
+</div>
+
+<div class="op-restore" id="opRestore">
+  <span class="op-restore-dot"></span>
+  <span id="opRestoreText">Working…</span>
+</div>
+
+</main>
+
+
+<script>
+(function(){
+  "use strict";
+
+  const EXPORT_MAP = {
+    'application/vnd.google-apps.document':      {mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext:'.docx'},
+    'application/vnd.google-apps.spreadsheet':    {mime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ext:'.xlsx'},
+    'application/vnd.google-apps.presentation':   {mime:'application/vnd.openxmlformats-officedocument.presentationml.presentation', ext:'.pptx'},
+    'application/vnd.google-apps.drawing':        {mime:'image/png', ext:'.png'},
+  };
+
+  let apiKey = '';
+  let currentTree = [];
+  const fileById = new Map();
+
+  const $ = id => document.getElementById(id);
+  const apiKeyInput = $('apiKey'), linkInput = $('link'), loadBtn = $('loadBtn');
+  const statusEl = $('status'), treePanel = $('treePanel'), treeEl = $('tree');
+  const actionsEl = $('actions'), metaEl = $('meta');
+  const dlFolderBtn = $('dlFolderBtn'), dlIndivBtn = $('dlIndivBtn'), dlDriveBtn = $('dlDriveBtn'), clientIdInput = $('clientId');
+  const helpToggle = $('helpToggle'), helpBody = $('helpBody'), fsaNote = $('fsaNote');
+
+  const opOverlay = $('opOverlay'), opTitle = $('opTitle'), opPercent = $('opPercent'),
+        opBarFill = $('opBarFill'), opStats = $('opStats'), opSub = $('opSub'), opHideBtn = $('opHideBtn');
+  const opRestore = $('opRestore'), opRestoreText = $('opRestoreText');
+
+  helpToggle.addEventListener('click', () => helpBody.classList.toggle('open'));
+  opHideBtn.addEventListener('click', () => {
+    opOverlay.classList.remove('show');
+    if (opActive) opRestore.classList.add('show'); // operation still running — offer a way back in
+  });
+  opRestore.addEventListener('click', () => {
+    opRestore.classList.remove('show');
+    opOverlay.classList.add('show');
+  });
+
+  function setStatus(msg, kind){
+    statusEl.textContent = msg;
+    statusEl.className = 'status ' + (kind || 'muted');
+  }
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function sanitize(name){
+    return name.replace(/[\\/:*?"<>|]/g, '_').trim() || 'file';
+  }
+  function formatSize(bytes){
+    if (bytes == null) return '—';
+    const units = ['B','KB','MB','GB','TB'];
+    let i = 0, n = bytes;
+    while (n >= 1024 && i < units.length - 1){ n /= 1024; i++; }
+    return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+  }
+  function formatElapsed(ms){
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(totalSec / 60), s = totalSec % 60;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function truncatePath(p, max){
+    max = max || 70;
+    if (p.length <= max) return p;
+    return '…' + p.slice(p.length - max);
+  }
+  function isDownloadable(mimeType){
+    if (mimeType === 'application/vnd.google-apps.folder') return false;
+    if (mimeType.startsWith('application/vnd.google-apps.')) return !!EXPORT_MAP[mimeType];
+    return true;
+  }
+  function getDownloadUrl(file){
+    const exp = EXPORT_MAP[file.mimeType];
+    if (exp) return `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=${encodeURIComponent(exp.mime)}&key=${apiKey}`;
+    return `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${apiKey}`;
+  }
+  function outputName(file){
+    const exp = EXPORT_MAP[file.mimeType];
+    if (exp && !file.name.toLowerCase().endsWith(exp.ext)) return file.name + exp.ext;
+    return file.name;
+  }
+  function extractFolderId(raw){
+    raw = raw.trim();
+    let m = raw.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+    if (m) return m[1];
+    m = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m) return m[1];
+    if (/^[a-zA-Z0-9_-]{10,}$/.test(raw)) return raw;
+    return null;
+  }
+
+  // ---------- operation overlay controller ----------
+  let opStartTime = 0;
+  let opActive = false; // true while a scan/download is genuinely in progress (even if overlay is hidden)
+
+  function opSetTitle(title){
+    opTitle.textContent = title;
+    opRestoreText.textContent = title;
+  }
+  function opShow(title){
+    opSetTitle(title);
+    opPercent.textContent = '';
+    opPercent.classList.remove('dim');
+    opBarFill.style.width = '0%';
+    opBarFill.classList.add('indeterminate');
+    opStats.textContent = '';
+    opSub.textContent = '';
+    opStartTime = Date.now();
+    opActive = true;
+    opRestore.classList.remove('show');
+    opOverlay.classList.add('show');
+  }
+  function opHide(delay){
+    setTimeout(() => {
+      opOverlay.classList.remove('show');
+      opRestore.classList.remove('show');
+      opActive = false;
+    }, delay || 0);
+  }
+  // unknown-total phase (folder scanning): live counts only, no fake percentage
+  function opUpdateScan(foldersCount, filesCount, currentPath){
+    opPercent.textContent = 'scanning…';
+    opPercent.classList.add('dim');
+    opStats.textContent = `${filesCount} file(s) · ${foldersCount} folder(s) found`;
+    const elapsed = Date.now() - opStartTime;
+    opSub.textContent = `${currentPath ? 'in ' + truncatePath(currentPath) : ''}  ·  elapsed ${formatElapsed(elapsed)}`;
+    opRestoreText.textContent = `Scanning… ${filesCount + foldersCount} found`;
+  }
+  // known-total phase (downloading): real percentage + ETA
+  function opUpdateProgress(done, total){
+    opBarFill.classList.remove('indeterminate');
+    opPercent.classList.remove('dim');
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    opBarFill.style.width = pct + '%';
+    opPercent.textContent = pct + '%';
+    const elapsedMs = Date.now() - opStartTime;
+    const rate = done / (elapsedMs / 1000); // files per second
+    const remaining = total - done;
+    const etaMs = rate > 0 ? (remaining / rate) * 1000 : null;
+    opStats.textContent = `${done} / ${total} files`;
+    opSub.textContent = `elapsed ${formatElapsed(elapsedMs)}` + (etaMs != null && remaining > 0 ? `  ·  about ${formatElapsed(etaMs)} left` : '');
+    opRestoreText.textContent = `${pct}% · ${done}/${total} files`;
+  }
+
+  async function fetchWithRetry(url, tries){
+    tries = tries || 4;
+    for (let i = 0; i < tries; i++){
+      const res = await fetch(url);
+      if (res.ok) return res;
+      if ([403,429,500,502,503].includes(res.status) && i < tries - 1){
+        await sleep(600 * Math.pow(2, i));
+        continue;
+      }
+      const body = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} ${body.slice(0,150)}`);
+    }
+  }
+
+  async function fetchFileMeta(fileId){
+    const params = new URLSearchParams({ fields: 'size', supportsAllDrives: 'true', key: apiKey });
+    const res = await fetchWithRetry(`https://www.googleapis.com/drive/v3/files/${fileId}?${params.toString()}`);
+    return res.json();
+  }
+
+  async function fetchPage(folderId, pageToken){
+    const params = new URLSearchParams({
+      q: `'${folderId}' in parents and trashed = false`,
+      fields: 'nextPageToken, files(id,name,mimeType,size,shortcutDetails)',
+      pageSize: '1000',
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true',
+      key: apiKey
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+    const res = await fetchWithRetry(`https://www.googleapis.com/drive/v3/files?${params.toString()}`);
+    return res.json();
+  }
+
+  let scanFoldersCount = 0, scanFilesCount = 0, scanSkippedCycles = 0, scanAborted = false, noticeCounter = 0;
+  const MAX_SCAN_ITEMS = 20000;
+
+  async function listFolder(folderId, pathLabel, ancestors){
+    pathLabel = pathLabel || '';
+    ancestors = ancestors || new Set();
+
+    // a shortcut pointing back at one of its own parent folders would recurse forever —
+    // if this folder id is already an ancestor of itself in the current branch, stop here.
+    if (ancestors.has(folderId)){
+      scanSkippedCycles++;
+      return [{type:'file', name:'⚠ skipped — links back to a parent folder (circular link)', id:'__notice_'+(noticeCounter++), mimeType:'application/vnd.google-apps.scan-notice', size:null}];
+    }
+    if (scanAborted) return [];
+    const nextAncestors = new Set(ancestors);
+    nextAncestors.add(folderId);
+
+    let items = [];
+    let pageToken;
+    do {
+      const data = await fetchPage(folderId, pageToken);
+      items = items.concat(data.files || []);
+      pageToken = data.nextPageToken;
+    } while (pageToken);
+
+    const node = [];
+    for (const raw of items){
+      if (scanAborted) break;
+      if (scanFoldersCount + scanFilesCount > MAX_SCAN_ITEMS){
+        scanAborted = true;
+        node.push({type:'file', name:'⚠ stopped early — over 20,000 items found, likely a circular link', id:'__notice_'+(noticeCounter++), mimeType:'application/vnd.google-apps.scan-notice', size:null});
+        break;
+      }
+      let f = raw;
+      if (f.mimeType === 'application/vnd.google-apps.shortcut' && f.shortcutDetails){
+        const targetId = f.shortcutDetails.targetId;
+        const targetMimeType = f.shortcutDetails.targetMimeType;
+        let targetSize = null;
+        if (targetMimeType !== 'application/vnd.google-apps.folder'){
+          try {
+            const meta = await fetchFileMeta(targetId);
+            targetSize = meta.size ? parseInt(meta.size, 10) : null;
+          } catch (e) { /* size lookup failed — leave unknown, don't break the scan */ }
+        }
+        f = Object.assign({}, f, { id: targetId, mimeType: targetMimeType, size: targetSize });
+      }
+      if (f.mimeType === 'application/vnd.google-apps.folder'){
+        scanFoldersCount++;
+        opUpdateScan(scanFoldersCount, scanFilesCount, pathLabel + raw.name + '/');
+        const children = await listFolder(f.id, pathLabel + raw.name + '/', nextAncestors);
+        node.push({type:'folder', name: raw.name, children});
+      } else {
+        scanFilesCount++;
+        opUpdateScan(scanFoldersCount, scanFilesCount, pathLabel);
+        node.push({type:'file', name: raw.name, id: f.id, mimeType: f.mimeType, size: f.size ? parseInt(f.size,10) : null});
+      }
+    }
+    return node;
+  }
+
+  function flatten(tree, prefix){
+    prefix = prefix || '';
+    let out = [];
+    for (const node of tree){
+      if (node.type === 'folder'){
+        out = out.concat(flatten(node.children, prefix + node.name + '/'));
+      } else {
+        out.push(Object.assign({}, node, {path: prefix}));
+      }
+    }
+    return out;
+  }
+
+  function renderTree(tree, prefix){
+    prefix = prefix || '';
+    let html = '';
+    tree.forEach((node, i) => {
+      const isLast = i === tree.length - 1;
+      const connector = isLast ? '└─ ' : '├─ ';
+      if (node.type === 'folder'){
+        html += `<div class="row folder"><span class="branch">${prefix}${connector}</span><span class="name">${escapeHtml(node.name)}/</span></div>`;
+        html += renderTree(node.children, prefix + (isLast ? '   ' : '│  '));
+      } else {
+        const exp = EXPORT_MAP[node.mimeType];
+        const skip = !isDownloadable(node.mimeType);
+        const sizeLabel = node.size != null ? formatSize(node.size) : (exp ? 'export' : '—');
+        fileById.set(node.id, node);
+        html += `<div class="row file${skip ? ' is-skip' : ''}">` +
+          `<span class="branch">${prefix}${connector}</span>` +
+          `<span class="name">${escapeHtml(node.name)}</span>` +
+          `<span class="size">${sizeLabel}</span>` +
+          `<button class="dl-one" data-id="${node.id}" ${skip ? 'disabled' : ''} title="${skip ? 'Not downloadable via API' : 'Download this file'}">${skip ? 'skip' : '↓'}</button>` +
+          `</div>`;
+      }
+    });
+    return html;
+  }
+
+  async function downloadSingle(file){
+    const res = await fetchWithRetry(getDownloadUrl(file));
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = sanitize(outputName(file));
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  treeEl.addEventListener('click', e => {
+    const btn = e.target.closest('.dl-one');
+    if (!btn || btn.disabled) return;
+    const file = fileById.get(btn.dataset.id);
+    if (!file) return;
+    const original = btn.textContent;
+    btn.textContent = '…';
+    btn.disabled = true;
+    downloadSingle(file)
+      .then(() => { btn.textContent = '✓'; })
+      .catch(err => { btn.textContent = '✗'; console.error(err); })
+      .finally(() => { setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1500); });
+  });
+
+  async function ensureDir(rootHandle, path){
+    let handle = rootHandle;
+    const parts = path.split('/').filter(Boolean);
+    for (const part of parts){
+      handle = await handle.getDirectoryHandle(sanitize(part), {create:true});
+    }
+    return handle;
+  }
+
+  async function downloadAllToFolder(){
+    if (!('showDirectoryPicker' in window)){
+      alert('This browser doesn\'t support saving directly to a folder (that\'s a Chrome/Edge feature). Use "Download individually" instead, or switch browsers.');
+      return;
+    }
+    let rootHandle;
+    try {
+      rootHandle = await window.showDirectoryPicker();
+    } catch (e) {
+      return; // user cancelled
+    }
+    const files = flatten(currentTree).filter(f => isDownloadable(f.mimeType));
+    let done = 0;
+    const failed = [];
+    dlFolderBtn.disabled = true; dlIndivBtn.disabled = true;
+    opShow('Downloading to folder…');
+    opUpdateProgress(0, files.length);
+
+    let idx = 0;
+    const CONCURRENCY = 3;
+    async function worker(){
+      while (idx < files.length){
+        const file = files[idx++];
+        try {
+          const dirHandle = await ensureDir(rootHandle, file.path);
+          const fileHandle = await dirHandle.getFileHandle(sanitize(outputName(file)), {create:true});
+          const writable = await fileHandle.createWritable();
+          const res = await fetchWithRetry(getDownloadUrl(file));
+          if (res.body && typeof res.body.pipeTo === 'function'){
+            await res.body.pipeTo(writable);
+          } else {
+            const blob = await res.blob();
+            await writable.write(blob);
+            await writable.close();
+          }
+        } catch (e){
+          failed.push({name: file.path + file.name, error: e.message});
+        }
+        done++;
+        opUpdateProgress(done, files.length);
+      }
+    }
+    await Promise.all(Array.from({length: Math.min(CONCURRENCY, files.length)}, worker));
+
+    dlFolderBtn.disabled = false; dlIndivBtn.disabled = false;
+    if (failed.length){
+      opSetTitle(`Done with ${failed.length} error(s)`);
+      opSub.textContent = 'See browser console for details';
+      console.warn('Failed files:', failed);
+      opHide(3000);
+    } else {
+      opSetTitle('Download complete');
+      opHide(1300);
+    }
+  }
+
+  async function downloadAllIndividually(){
+    const files = flatten(currentTree).filter(f => isDownloadable(f.mimeType));
+    const ok = confirm(`This triggers ${files.length} separate downloads into your regular Downloads folder (folder structure gets flattened into filenames). Your browser may ask permission for multiple downloads. Continue?`);
+    if (!ok) return;
+    dlFolderBtn.disabled = true; dlIndivBtn.disabled = true;
+    let done = 0;
+    opShow('Downloading files…');
+    opUpdateProgress(0, files.length);
+    for (const file of files){
+      try {
+        const res = await fetchWithRetry(getDownloadUrl(file));
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = sanitize((file.path ? file.path.replace(/\//g,'__') : '') + outputName(file));
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      } catch (e){
+        console.error(file.name, e);
+      }
+      done++;
+      opUpdateProgress(done, files.length);
+      await sleep(400);
+    }
+    dlFolderBtn.disabled = false; dlIndivBtn.disabled = false;
+    opSetTitle('All downloads triggered');
+    opSub.textContent = 'Check your Downloads folder';
+    opHide(1500);
+  }
+
+  // ---------- save straight into the user's own Google Drive ----------
+  const SCOPE_UPLOAD = 'https://www.googleapis.com/auth/drive.file';
+  const SCOPE_FULL = 'https://www.googleapis.com/auth/drive';
+  let oauthToken = '', oauthExpiry = 0, oauthScope = '';
+
+  function getAccessToken(clientId, scope){
+    return new Promise((resolve, reject) => {
+      const scopeOk = oauthScope === scope || oauthScope === SCOPE_FULL;
+      if (oauthToken && scopeOk && Date.now() < oauthExpiry - 60000) return resolve(oauthToken);
+      if (!(window.google && google.accounts && google.accounts.oauth2)){
+        return reject(new Error('Google sign-in script not loaded yet — check your connection and retry.'));
+      }
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: scope,
+        callback: resp => {
+          if (resp.error) return reject(new Error(resp.error_description || resp.error));
+          oauthToken = resp.access_token;
+          oauthScope = scope;
+          oauthExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000;
+          resolve(oauthToken);
+        },
+        error_callback: err => reject(new Error(err.message || err.type || 'Sign-in cancelled'))
+      });
+      client.requestAccessToken();
+    });
+  }
+
+  async function authFetch(url, opts, tries){
+    tries = tries || 4;
+    for (let i = 0; i < tries; i++){
+      const o = Object.assign({}, opts);
+      o.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + oauthToken });
+      const res = await fetch(url, o);
+      if (res.ok) return res;
+      if ([403,429,500,502,503].includes(res.status) && i < tries - 1){ await sleep(600 * Math.pow(2, i)); continue; }
+      const body = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} ${body.slice(0,150)}`);
+    }
+  }
+
+  async function createDriveFolder(name, parentId){
+    const meta = { name: sanitize(name), mimeType: 'application/vnd.google-apps.folder' };
+    if (parentId) meta.parents = [parentId];
+    const res = await authFetch('https://www.googleapis.com/drive/v3/files?fields=id', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta)
+    });
+    return (await res.json()).id;
+  }
+
+  async function uploadToDrive(blob, name, parentId){
+    const init = await authFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': blob.type || 'application/octet-stream' },
+      body: JSON.stringify({ name: sanitize(name), parents: [parentId] })
+    });
+    const loc = init.headers.get('Location');
+    if (!loc) throw new Error('No upload session URL returned');
+    const up = await fetch(loc, { method: 'PUT', headers: { 'Content-Type': blob.type || 'application/octet-stream' }, body: blob });
+    if (!up.ok) throw new Error(`Upload failed: HTTP ${up.status}`);
+  }
+
+  async function copyInDrive(file, parentId){
+    const res = await authFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(file.id)}/copy?supportsAllDrives=true&fields=id`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: sanitize(file.name), parents: [parentId] })
+    }, 2);
+    return res.json();
+  }
+
+  async function saveToMyDrive(){
+    const clientId = clientIdInput.value.trim();
+    if (!clientId){ setStatus('Enter your Google OAuth Client ID first (see "how do I get an API key?").', 'err'); return; }
+    if (!currentTree.length) return;
+    const mode = (document.querySelector('input[name="driveMode"]:checked') || {}).value || 'copy';
+    const scope = mode === 'copy' ? SCOPE_FULL : SCOPE_UPLOAD;
+    setStatus('Opening Google sign-in popup… (allow popups for this site if nothing appears)', 'muted');
+    try { await getAccessToken(clientId, scope); }
+    catch (e){ setStatus('Sign-in failed: ' + e.message + ' — check the Client ID and Authorized JavaScript origin.', 'err'); return; }
+    setStatus('Signed in. Starting…', 'ok');
+
+    const files = flatten(currentTree).filter(f => isDownloadable(f.mimeType));
+    const stamp = new Date().toISOString().slice(0,10);
+    dlFolderBtn.disabled = dlIndivBtn.disabled = dlDriveBtn.disabled = true;
+    opShow('Saving to your Google Drive…');
+    opUpdateProgress(0, files.length);
+
+    const failed = [];
+    let done = 0, fallbacks = 0;
+    try {
+      const rootId = await createDriveFolder('Drive Folder Fetch ' + stamp, null);
+      // create folder structure first (sequential), cache path -> Drive folder id
+      const dirIds = new Map([['', rootId]]);
+      async function ensureDriveDir(path){
+        if (dirIds.has(path)) return dirIds.get(path);
+        const parts = path.split('/').filter(Boolean);
+        const parentPath = parts.slice(0, -1).join('/') + (parts.length > 1 ? '/' : '');
+        const parentId = await ensureDriveDir(parentPath);
+        const id = await createDriveFolder(parts[parts.length - 1], parentId);
+        dirIds.set(path, id);
+        return id;
+      }
+      for (const f of files) await ensureDriveDir(f.path);
+
+      let idx = 0;
+      async function worker(){
+        while (idx < files.length){
+          const file = files[idx++];
+          try {
+            if (Date.now() > oauthExpiry - 60000) await getAccessToken(clientId, scope);
+            let copied = false;
+            if (mode === 'copy'){
+              try { await copyInDrive(file, dirIds.get(file.path)); copied = true; }
+              catch (e){ fallbacks++; console.warn('Copy failed, falling back to download & upload:', file.name, e.message); }
+            }
+            if (!copied){
+              const res = await fetchWithRetry(getDownloadUrl(file));
+              const blob = await res.blob();
+              await uploadToDrive(blob, outputName(file), dirIds.get(file.path));
+            }
+          } catch (e){
+            failed.push({name: file.path + file.name, error: e.message});
+          }
+          done++;
+          opUpdateProgress(done, files.length);
+        }
+      }
+      await Promise.all(Array.from({length: Math.min(3, files.length)}, worker));
+    } catch (e){
+      failed.push({name: '(setup)', error: e.message});
+    }
+
+    dlFolderBtn.disabled = dlIndivBtn.disabled = dlDriveBtn.disabled = false;
+    if (failed.length){
+      console.warn('Failed files:', failed);
+      opSetTitle(`Done with ${failed.length} error(s)`);
+      opSub.textContent = failed[0].error.slice(0, 120);
+      setStatus(`Saved ${done - failed.length} of ${files.length} file(s) to Drive; ${failed.length} failed (see console).`, 'warn');
+      opHide(3500);
+    } else {
+      opSetTitle('Saved to your Google Drive');
+      opSub.textContent = 'Look for the "Drive Folder Fetch ' + stamp + '" folder in My Drive';
+      setStatus(`Saved ${files.length} file(s) to My Drive → "Drive Folder Fetch ${stamp}".` + (fallbacks ? ` (${fallbacks} used download & upload fallback.)` : ''), 'ok');
+      opHide(1800);
+    }
+  }
+
+  // ---------- export the folder tree as a .txt / PDF ----------
+  function treeToLines(tree, prefix){
+    prefix = prefix || '';
+    let lines = [];
+    tree.forEach((node, i) => {
+      const last = i === tree.length - 1;
+      const connector = last ? '└─ ' : '├─ ';
+      if (node.type === 'folder'){
+        lines.push(prefix + connector + node.name + '/');
+        lines = lines.concat(treeToLines(node.children, prefix + (last ? '   ' : '│  ')));
+      } else {
+        lines.push(prefix + connector + node.name + (node.size != null ? '  [' + formatSize(node.size) + ']' : ''));
+      }
+    });
+    return lines;
+  }
+  function buildListText(){
+    const flat = flatten(currentTree);
+    const total = flat.reduce((n, f) => n + (f.size || 0), 0);
+    const head = [
+      'Drive folder listing',
+      'Date: ' + new Date().toLocaleString(),
+      flat.length + ' file(s) · ' + formatSize(total),
+      '',
+      '/'
+    ];
+    return head.concat(treeToLines(currentTree)).join('\n');
+  }
+  $('listTxtBtn').addEventListener('click', () => {
+    if (!currentTree.length) return;
+    const blob = new Blob(['\ufeff' + buildListText()], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'drive-folder-list.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+  $('listPdfBtn').addEventListener('click', () => {
+    if (!currentTree.length) return;
+    const w = window.open('', '_blank');
+    if (!w){ alert('Popup blocked — allow popups for this site and try again.'); return; }
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>drive-folder-list</title>' +
+      '<style>body{margin:24px;font-family:Consolas,"Courier New",monospace;font-size:11px;line-height:1.55;color:#000;}' +
+      'pre{white-space:pre-wrap;word-break:break-word;margin:0;}@page{margin:14mm;}</style></head><body><pre>' +
+      escapeHtml(buildListText()) + '</pre></body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400); // choose "Save as PDF" as the destination in the print dialog
+  });
+
+  dlDriveBtn.addEventListener('click', saveToMyDrive);
+
+  const clientHelpBody = $('clientHelpBody'), currentOriginEl = $('currentOrigin');
+  $('clientHelpToggle').addEventListener('click', () => clientHelpBody.classList.toggle('open'));
+  currentOriginEl.textContent = location.protocol.startsWith('http')
+    ? location.origin
+    : '(this page is opened as a local file — serve it from http://localhost:8000 or a hosted site first)';
+  clientIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveToMyDrive(); });
+
+  const localBox = $('localBox'), driveBox = $('driveBox');
+  $('destToggle').addEventListener('click', e => {
+    const btn = e.target.closest('.dest-btn');
+    if (!btn) return;
+    const toDrive = btn.dataset.dest === 'drive';
+    document.querySelectorAll('.dest-btn').forEach(b => b.classList.toggle('active', b === btn));
+    localBox.style.display = toDrive ? 'none' : 'flex';
+    driveBox.style.display = toDrive ? 'block' : 'none';
+    fsaNote.style.display = toDrive ? 'none' : 'block';
+  });
+  dlFolderBtn.addEventListener('click', downloadAllToFolder);
+  dlIndivBtn.addEventListener('click', downloadAllIndividually);
+
+  async function loadFolder(){
+    apiKey = apiKeyInput.value.trim();
+    const link = linkInput.value.trim();
+    const folderId = extractFolderId(link);
+    if (!apiKey){ setStatus('Enter your Google API key first.', 'err'); return; }
+    if (!folderId){ setStatus('Could not find a folder ID in that link.', 'err'); return; }
+
+    loadBtn.disabled = true;
+    treePanel.style.display = 'none';
+    actionsEl.style.display = 'none';
+    fileById.clear();
+    scanFoldersCount = 0; scanFilesCount = 0;
+    scanSkippedCycles = 0; scanAborted = false; noticeCounter = 0;
+    setStatus('', 'muted');
+    opShow('Scanning folder…');
+    opUpdateScan(0, 0, '');
+
+    try {
+      currentTree = await listFolder(folderId, '');
+      const flat = flatten(currentTree);
+      const totalSize = flat.reduce((s,f) => s + (f.size || 0), 0);
+      treeEl.innerHTML = renderTree(currentTree) || '<div class="empty">This folder is empty.</div>';
+      treePanel.style.display = 'block';
+      actionsEl.style.display = 'block';
+      metaEl.textContent = `${flat.length} file(s) · ${formatSize(totalSize)}`;
+      fsaNote.innerHTML = ('showDirectoryPicker' in window)
+        ? 'Recommended: <b>Download all → choose folder</b> writes each file to disk as it downloads, so it works for very large folders too.'
+        : 'Your browser doesn\'t support direct-to-folder saving — use <b>Download individually</b>, or open this page in Chrome/Edge for the folder option.';
+      let statusMsg = `Found ${flat.length} file(s), ${formatSize(totalSize)} total.`;
+      let statusKind = 'ok';
+      if (scanSkippedCycles > 0 || scanAborted){
+        statusMsg += ` (${scanSkippedCycles} circular link(s) skipped${scanAborted ? ' — stopped early, too many items' : ''}.)`;
+        statusKind = 'warn';
+      }
+      setStatus(statusMsg, statusKind);
+
+      opSetTitle('Scan complete');
+      opPercent.classList.remove('dim');
+      opPercent.textContent = '100%';
+      opBarFill.classList.remove('indeterminate');
+      opBarFill.style.width = '100%';
+      opStats.textContent = `${flat.length} file(s) · ${formatSize(totalSize)}`;
+      opSub.textContent = `took ${formatElapsed(Date.now() - opStartTime)}`;
+      opHide(700);
+    } catch (e){
+      setStatus('Error: ' + e.message, 'err');
+      opSetTitle('Scan failed');
+      opStats.textContent = e.message;
+      opSub.textContent = '';
+      opHide(2600);
+    } finally {
+      loadBtn.disabled = false;
+    }
+  }
+
+  loadBtn.addEventListener('click', loadFolder);
+  linkInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFolder(); });
+})();
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
+</body>
+</html>

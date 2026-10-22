@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0A6F48">
+    <title id="page-title">Reader | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/reader.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/reader.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Reader | Munan.hub">
+    <meta property="og:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Reader | Munan.hub">
+    <meta name="twitter:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        /* ============================================================
+           Reader shell (Field Notebook tokens).
+           Chrome follows the site light/dark theme. The Paper / Sepia / Dark
+           buttons are a reader feature: they only filter the document frame.
+           ============================================================ */
+        :root { --header-h: 76px; }  /* script keeps this in sync with the real bar height */
+        html, body { height: 100%; }
+
+        .rd-crumbs { margin-bottom: 4px; font-size: .78rem; padding: 0; }
+        .rd-header {
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+            gap: 10px 16px; min-height: var(--header-h);
+            padding: 10px clamp(16px, 4vw, 40px);
+            background: var(--paper); border-bottom: 1.5px solid var(--line);
+        }
+        body.is-fullscreen .rd-header { display: none; }
+        .rd-logo { flex: none; }
+        .titleblock { min-width: 0; flex: 1 1 200px; }
+        .titleblock .kicker { margin-bottom: 2px; font-size: .7rem; }
+        .titleblock h1 {
+            font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin: 0;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .caption { font-size: .84rem; color: var(--soft); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+        .mode-toggle { display: flex; gap: 4px; padding: 3px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--bg); }
+        .mode-toggle button { padding: 6px 14px; min-height: 32px; border-radius: 999px; font-size: .82rem; font-weight: 700; color: var(--muted); transition: background var(--trans), color var(--trans); }
+        .mode-toggle button:hover { color: var(--ink); }
+        .mode-toggle button.active { background: var(--ink); color: var(--bg); }
+        :root[data-theme="dark"] .mode-toggle button.active { background: var(--marker); color: #11221D; }
+
+        .icon-btn {
+            width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
+            border: 1.5px solid var(--line); border-radius: 50%; background: var(--paper);
+            color: var(--ink); font-size: 1rem; text-decoration: none;
+            transition: background var(--trans), border-color var(--trans);
+        }
+        .icon-btn:hover { border-color: var(--ink); background: var(--lagoon-tint); }
+
+        main { position: relative; height: calc(100vh - var(--header-h)); height: calc(100dvh - var(--header-h)); }
+        iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; transition: filter .2s ease; }
+        iframe.mode-dark { filter: invert(0.92) hue-rotate(180deg) contrast(0.92); }
+        iframe.mode-sepia { filter: sepia(0.4) saturate(1.1) brightness(0.98) contrast(0.96); }
+        .loading {
+            position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; padding: 24px; text-align: center; background: var(--bg); color: var(--muted); font-size: .92rem;
+            transition: opacity .25s ease; z-index: 5;
+        }
+        .loading.hidden { opacity: 0; pointer-events: none; }
+        .loading .spinner { width: 28px; height: 28px; }
+
+        /* ---- study dock (draggable speed-dial) ---- */
+        .dock { position: fixed; right: 16px; bottom: 22px; z-index: 25; }
+        .dock button {
+            width: 44px; height: 44px; border-radius: 14px;
+            border: 1.5px solid var(--line); background: var(--paper);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--ink); font-size: 17px; gap: 1px;
+            box-shadow: 0 2px 8px rgba(17,34,29,.14);
+        }
+        .dock button .tag { font-size: 8.5px; font-weight: 700; color: var(--soft); letter-spacing: .02em; }
+        .dock button:hover { border-color: var(--ink); }
+        .dock button.active { border-color: var(--lagoon); background: var(--lagoon-tint); color: var(--lagoon); }
+        .dock button.active .tag { color: var(--lagoon); }
+        .dock button.has-content::after {
+            content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--marker); border: 1.5px solid var(--ink); margin: -34px 0 0 26px;
+        }
+        #dock-handle {
+            position: relative; font-size: 19px; cursor: grab; touch-action: none; z-index: 2;
+            background: var(--ink); color: var(--bg); border-color: var(--ink);
+        }
+        #dock-handle:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] #dock-handle { background: var(--marker); color: #11221D; border-color: var(--marker); }
+        :root[data-theme="dark"] #dock-handle:hover { background: #fff; border-color: #fff; }
+        .dock-btn {
+            position: absolute; right: 0; bottom: 0;
+            transition: transform .22s cubic-bezier(.34,1.56,.64,1), opacity .18s ease, bottom .22s cubic-bezier(.34,1.56,.64,1);
+            transform: scale(0); opacity: 0; pointer-events: none;
+        }
+        .dock.expanded .dock-btn { transform: scale(1); opacity: 1; pointer-events: auto; }
+        .dock.expanded .dock-btn:nth-child(2) { bottom: 52px;  transition-delay: 0s;   }
+        .dock.expanded .dock-btn:nth-child(3) { bottom: 104px; transition-delay: .02s; }
+        .dock.expanded .dock-btn:nth-child(4) { bottom: 156px; transition-delay: .04s; }
+        .dock.expanded .dock-btn:nth-child(5) { bottom: 208px; transition-delay: .06s; }
+        .dock.expanded .dock-btn:nth-child(6) { bottom: 260px; transition-delay: .08s; }
+        .dock.expanded .dock-btn:nth-child(7) { bottom: 312px; transition-delay: .10s; }
+
+        .mini-timer {
+            position: fixed; top: calc(var(--header-h) + 10px); right: 14px; z-index: 24;
+            display: none; align-items: center; justify-content: center;
+            background: var(--ink); color: var(--bg); border-radius: 999px; padding: 9px 18px;
+            font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em;
+            box-shadow: 0 2px 8px rgba(17,34,29,.2); cursor: grab; border: none; touch-action: none; user-select: none;
+        }
+        .mini-timer.show { display: flex; }
+        .mini-timer.paused { opacity: .55; }
+        .mini-timer.break-mode { background: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] .mini-timer { background: var(--marker); color: #11221D; }
+        :root[data-theme="dark"] .mini-timer.break-mode { background: var(--lagoon); color: #11221D; }
+        #mini-timer-close {
+            position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; min-height: 0;
+            border-radius: 50%; border: 1.5px solid var(--ink); background: var(--paper);
+            color: var(--ink); font-size: 12px; line-height: 1; padding: 0;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .backdrop { position: fixed; inset: 0; background: rgba(17,34,29,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 29; }
+        .backdrop.show { opacity: 1; pointer-events: auto; }
+
+        .rd-panel {
+            position: fixed; top: var(--header-h); right: 0; bottom: 0; width: 340px;
+            background: var(--paper); border-left: 1.5px solid var(--line);
+            transform: translateX(100%); transition: transform .25s ease;
+            z-index: 30; padding: 22px 20px; overflow-y: auto;
+        }
+        .rd-panel.open { transform: translateX(0); }
+        .rd-panel h2 { font-size: 1.15rem; margin: 0 0 14px; padding-right: 36px; }
+        .rd-panel .close-x {
+            position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; color: var(--muted);
+        }
+        .rd-panel .close-x:hover { background: var(--lagoon-tint); color: var(--ink); }
+        .field-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--soft); margin: 16px 0 6px; }
+        .field-label:first-of-type { margin-top: 0; }
+        .row { display: flex; gap: 8px; align-items: center; }
+        .rd-panel input[type="number"], .rd-panel input[type="text"], .rd-panel textarea {
+            width: 100%; min-height: 40px; padding: 8px 12px; background: var(--bg); color: var(--ink);
+            border: 1.5px solid var(--line); border-radius: var(--r-input); font-size: .92rem;
+        }
+        .rd-panel input:focus, .rd-panel textarea:focus { outline: none; border-color: var(--lagoon); box-shadow: 0 0 0 4px var(--lagoon-tint); }
+        .rd-panel textarea { min-height: 260px; resize: vertical; line-height: 1.55; }
+        .btn {
+            border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+            border-radius: 999px; padding: 8px 16px; min-height: 40px; font-size: .88rem; font-weight: 700; white-space: nowrap;
+            transition: background var(--trans), border-color var(--trans), color var(--trans);
+        }
+        .btn:hover { border-color: var(--ink); }
+        .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+        .btn.primary:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+        :root[data-theme="dark"] .btn.primary { background: var(--marker); color: #11221D; border-color: var(--marker); }
+        :root[data-theme="dark"] .btn.primary:hover { background: #fff; border-color: #fff; }
+        .btn.small { padding: 5px 12px; min-height: 34px; font-size: .8rem; }
+        .progress-track { height: 10px; background: var(--lagoon-tint); border-radius: 99px; overflow: hidden; margin-top: 14px; }
+        .progress-fill { height: 100%; background: var(--lagoon); width: 1.6%; border-radius: inherit; transition: width .2s ease; }
+        .progress-label { font-size: .84rem; color: var(--muted); margin-top: 8px; }
+        .hint { font-size: .8rem; color: var(--soft); margin-top: 12px; line-height: 1.5; }
+
+        .timer-display { font-family: var(--display); font-weight: 800; font-size: 2.9rem; text-align: center; margin: 6px 0 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+        .timer-mode-label { text-align: center; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--lagoon); margin-bottom: 14px; }
+        .timer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+        .timer-sessions { text-align: center; font-size: .84rem; color: var(--soft); margin-top: 12px; }
+
+        .shortcuts-list { font-size: .9rem; color: var(--muted); line-height: 2.1; }
+        .shortcuts-list kbd {
+            background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px;
+            padding: 1px 8px; font-family: var(--mono); font-size: .78rem; color: var(--ink);
+        }
+
+        @media (max-width: 760px) { .rd-logo { display: none; } }
+        @media (max-width: 560px) {
+            .rd-header { padding: 8px 16px; gap: 6px 12px; }
+            .caption { display: none; }
+            .titleblock { flex-basis: 100%; }
+            .controls { flex-wrap: wrap; gap: 5px; flex-shrink: 1; }
+            .mode-toggle { gap: 2px; }
+            .mode-toggle button { padding: 6px 9px; }
+            .icon-btn { width: 36px; height: 36px; font-size: .95rem; }
+            .dock { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+            .dock button { width: 42px; height: 42px; font-size: 16px; }
+            .dock button .tag { display: none; }
+            .rd-panel {
+                top: auto; bottom: 0; width: 100%; height: 72vh;
+                border-left: none; border-top: 1.5px solid var(--line);
+                border-radius: 20px 20px 0 0;
+                transform: translateY(100%);
+            }
+            .rd-panel.open { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="v2 reader">
+<a class="skip" href="#main">Skip to content</a>
+
+
+<header class="rd-header">
+  <a class="nav-logo rd-logo" href="index.html" aria-label="Munan.hub home">Munan<span>.hub</span></a>
+  <div class="titleblock">
+    <!-- Edit these two lines: headline and caption -->
+    <ol class="crumbs rd-crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="notes.html">Notes</a></li><li aria-hidden="true">/</li><li aria-current="page">Reading</li></ol>
+    <h1 id="doc-title">Document Title Goes Here</h1>
+    <div class="caption" id="doc-caption">Add a short source note or caption here</div>
+  </div>
+  <div class="controls">
+    <div class="mode-toggle" role="group" aria-label="Reading mode">
+      <button type="button" data-mode="light" class="active">Paper</button>
+      <button type="button" data-mode="sepia">Sepia</button>
+      <button type="button" data-mode="dark">Dark</button>
+    </div>
+    <button class="icon-btn" id="fullscreen-btn" title="Fullscreen (F)" aria-label="Fullscreen">⤢</button>
+    <a class="icon-btn" id="open-drive-btn" href="#" target="_blank" rel="noopener" title="Open in Drive" aria-label="Open in Drive">↗</a>
+    <a class="icon-btn" href="notes.html" title="Back to Notes" aria-label="Back to Notes">←</a>
+    <button type="button" class="icon-btn" id="themeBtn" title="Switch light or dark theme" aria-label="Switch light or dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+  </div>
+</header>
+
+<div class="mini-timer" id="mini-timer" role="button" tabindex="0" aria-label="Floating study timer">
+  <span id="mini-timer-time">25:00</span>
+  <button type="button" id="mini-timer-close" aria-label="Remove from screen">✕</button>
+</div>
+
+<main id="main">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Loading pages…</span>
+  </div>
+  <iframe id="pdf-frame"
+    src=""
+    allow="autoplay"
+    title="PDF document"></iframe>
+</main>
+
+<div class="dock" id="dock">
+  <button type="button" id="dock-handle" title="Toolbar" aria-label="Toggle toolbar">⋯</button>
+  <button type="button" class="dock-btn" data-panel="progress" title="Go to page (G)">📖<span class="tag">Page</span></button>
+  <button type="button" class="dock-btn" data-panel="bookmarks" title="Bookmarks (B)">🔖<span class="tag">Marks</span></button>
+  <button type="button" class="dock-btn" data-panel="notes" title="Notes (N)">📝<span class="tag">Notes</span></button>
+  <button type="button" class="dock-btn" data-panel="timer" title="Study timer (T)">⏱<span class="tag">Timer</span></button>
+  <button type="button" class="dock-btn" id="share-btn" title="Copy link to this page">🔗<span class="tag">Share</span></button>
+  <button type="button" class="dock-btn" data-panel="help" title="Keyboard shortcuts">⌨<span class="tag">Keys</span></button>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<!-- Go to page / progress -->
+<div class="rd-panel" data-name="progress">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
+  <h2>Track your place</h2>
+  <div class="field-label">Total pages</div>
+  <input type="number" id="total-pages" min="1" value="60" aria-label="Total pages">
+  <div class="field-label">Jump to page</div>
+  <div class="row">
+    <input type="number" id="goto-page" min="1" value="1" aria-label="Jump to page">
+    <button class="btn" id="goto-prev">−</button>
+    <button class="btn" id="goto-next">+</button>
+    <button class="btn primary" id="goto-go">Go</button>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">Page 1 of 60</div>
+  <div class="hint">Jumping reloads the viewer, since Drive controls the page position — best for big skips rather than every page. Use the reader's own scroll for page-to-page reading.</div>
+</div>
+
+<!-- Bookmarks -->
+<div class="rd-panel" data-name="bookmarks">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
+  <h2>Bookmarks</h2>
+  <div class="field-label">Save current page</div>
+  <div class="row">
+    <input type="text" id="bookmark-label" placeholder="Label (optional)" aria-label="Bookmark label">
+    <button class="btn primary" id="bookmark-add">Save</button>
+  </div>
+  <div id="bookmark-list" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;"></div>
+  <div class="hint">Bookmarks live only in this tab — they reset when you reload.</div>
+</div>
+
+<!-- Notes -->
+<div class="rd-panel" data-name="notes">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
+  <h2>Quick notes</h2>
+  <textarea id="notes-area" aria-label="Quick notes" placeholder="Jot down anything worth remembering while you read…"></textarea>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn primary" id="notes-download">Download as .txt</button>
+    <button class="btn" id="notes-clear">Clear</button>
+  </div>
+  <div class="hint">Notes live only in this tab — download before you close it.</div>
+</div>
+
+<!-- Timer -->
+<div class="rd-panel" data-name="timer">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
+  <h2>Study timer</h2>
+  <div class="row">
+    <div style="flex:1;">
+      <div class="field-label">Focus (min)</div>
+      <input type="number" id="focus-min" min="1" value="25" aria-label="Focus minutes">
+    </div>
+    <div style="flex:1;">
+      <div class="field-label">Break (min)</div>
+      <input type="number" id="break-min" min="1" value="5" aria-label="Break minutes">
+    </div>
+  </div>
+  <div class="timer-mode-label" id="timer-mode">Focus</div>
+  <div class="timer-display" id="timer-display">25:00</div>
+  <div class="timer-actions">
+    <button class="btn primary" id="timer-start">Start</button>
+    <button class="btn" id="timer-pause">Pause</button>
+    <button class="btn" id="timer-reset">Reset</button>
+  </div>
+  <div class="timer-sessions" id="timer-sessions">0 focus sessions completed</div>
+  <button class="btn" id="show-floating-btn" style="display:none; width:100%; margin-top:12px;">Add timer back to screen</button>
+</div>
+
+<!-- Help -->
+<div class="rd-panel" data-name="help">
+  <button class="close-x" data-close aria-label="Close panel">✕</button>
+  <h2>Keyboard shortcuts</h2>
+  <div class="shortcuts-list">
+    <div><kbd>F</kbd> Fullscreen</div>
+    <div><kbd>G</kbd> Go to page panel</div>
+    <div><kbd>B</kbd> Bookmarks panel</div>
+    <div><kbd>N</kbd> Notes panel</div>
+    <div><kbd>T</kbd> Timer panel</div>
+    <div><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> Paper / Sepia / Dark</div>
+    <div><kbd>Esc</kbd> Close panel</div>
+  </div>
+</div>
+
+<script>
+  // ── RESOLVE NOTE FROM URL PARAMS ─────────────────────────────
+  // reader.html?src=<drive-file-id-or-full-drive-link>&title=...&caption=...
+  // This lets one reader page serve every note on the Academic page,
+  // instead of the PDF being hardcoded into this file.
+  const params = new URLSearchParams(window.location.search);
+  const rawSrc   = params.get('src') || '';
+  const pageTitle = params.get('title')   || 'Document';
+  const pageCaption = params.get('caption') || '';
+
+  // Accept either a bare Google Drive file ID, or a full Drive URL
+  // (/file/d/ID/view, /open?id=ID, etc.) and normalize to the
+  // embeddable /preview form.
+  function resolveDriveEmbedUrl(input) {
+    if (!input) return '';
+    let id = input;
+    const fileMatch = input.match(/\/file\/d\/([^/]+)/);
+    const openMatch = input.match(/[?&]id=([^&]+)/);
+    if (fileMatch) id = fileMatch[1];
+    else if (openMatch) id = openMatch[1];
+    if (/^https?:\/\//.test(id)) return id; // already a full non-Drive embeddable URL
+    return `https://drive.google.com/file/d/${id}/preview`;
+  }
+  function resolveDriveViewUrl(input) {
+    const embed = resolveDriveEmbedUrl(input);
+    return embed.replace('/preview', '/view');
+  }
+
+  const resolvedSrc = resolveDriveEmbedUrl(rawSrc);
+
+  document.getElementById('page-title').textContent = pageTitle + ' — Reading | Munan.hub';
+  document.getElementById('doc-title').textContent = pageTitle;
+  const captionEl = document.getElementById('doc-caption');
+  if (pageCaption) { captionEl.textContent = pageCaption; }
+  else { captionEl.style.display = 'none'; }
+  document.getElementById('open-drive-btn').href = rawSrc ? resolveDriveViewUrl(rawSrc) : '#';
+
+  const frame = document.getElementById('pdf-frame');
+  const loading = document.getElementById('loading');
+  if (resolvedSrc) {
+    frame.src = resolvedSrc;
+  } else {
+    loading.innerHTML = '<span>No document specified. Open this page via a note link from the Academic section.</span>';
+  }
+  const baseSrc = frame.src;
+
+  frame.addEventListener('load', () => loading.classList.add('hidden'));
+  setTimeout(() => loading.classList.add('hidden'), 4000);
+
+  // site theme toggle (the page chrome follows the site; the reading mode below is separate)
+  if (window.MunanTheme) MunanTheme.bindToggle(document.getElementById('themeBtn'));
+
+  // reading mode
+  document.querySelectorAll('.mode-toggle button').forEach((btn, i) => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+  function setMode(mode) {
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    frame.classList.remove('mode-dark', 'mode-sepia');
+    if (mode === 'dark') frame.classList.add('mode-dark');
+    if (mode === 'sepia') frame.classList.add('mode-sepia');
+  }
+
+  // fullscreen — hide the header so only the timer and dock float over the reading area
+  document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) { document.documentElement.requestFullscreen?.(); }
+    else { document.exitFullscreen?.(); }
+  }
+  document.addEventListener('fullscreenchange', () => {
+    document.body.classList.toggle('is-fullscreen', !!document.fullscreenElement);
+    syncHeaderHeight();
+  });
+
+  // header height sync
+  function syncHeaderHeight() {
+    const h = document.querySelector('header').offsetHeight;
+    document.documentElement.style.setProperty('--header-h', h + 'px');
+  }
+  window.addEventListener('resize', syncHeaderHeight);
+  syncHeaderHeight();
+
+  // ---- dock / panel switching ----
+  const dockButtons = document.querySelectorAll('.dock button[data-panel]');
+  const panels = document.querySelectorAll('.rd-panel');
+  const backdrop = document.getElementById('backdrop');
+  const dockEl = document.getElementById('dock');
+  const dockHandle = document.getElementById('dock-handle');
+  let openPanelName = null;
+
+  function openPanel(name) {
+    panels.forEach(p => p.classList.toggle('open', p.dataset.name === name));
+    dockButtons.forEach(b => b.classList.toggle('active', b.dataset.panel === name));
+    backdrop.classList.add('show');
+    openPanelName = name;
+    dockEl.classList.remove('expanded');
+  }
+  function closePanel() {
+    panels.forEach(p => p.classList.remove('open'));
+    dockButtons.forEach(b => b.classList.remove('active'));
+    backdrop.classList.remove('show');
+    openPanelName = null;
+  }
+  dockButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.panel;
+      openPanelName === name ? closePanel() : openPanel(name);
+    });
+  });
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closePanel));
+  backdrop.addEventListener('click', closePanel);
+
+  // ---- dock handle: tap to expand/collapse the 6 tools, drag to move it anywhere ----
+  let dkDragging = false, dkMoved = false, dkStartX = 0, dkStartY = 0, dkElX = 0, dkElY = 0;
+  dockHandle.addEventListener('pointerdown', (e) => {
+    dkDragging = true; dkMoved = false;
+    const rect = dockEl.getBoundingClientRect();
+    dkStartX = e.clientX; dkStartY = e.clientY;
+    dkElX = rect.left; dkElY = rect.top;
+    dockHandle.setPointerCapture(e.pointerId);
+  });
+  dockHandle.addEventListener('pointermove', (e) => {
+    if (!dkDragging) return;
+    const dx = e.clientX - dkStartX, dy = e.clientY - dkStartY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) dkMoved = true;
+    if (dkMoved) {
+      const maxLeft = window.innerWidth - dockEl.offsetWidth - 4;
+      const maxTop = window.innerHeight - dockEl.offsetHeight - 4;
+      dockEl.style.left = Math.min(Math.max(4, dkElX + dx), maxLeft) + 'px';
+      dockEl.style.top = Math.min(Math.max(4, dkElY + dy), maxTop) + 'px';
+      dockEl.style.right = 'auto';
+      dockEl.style.bottom = 'auto';
+    }
+  });
+  dockHandle.addEventListener('pointerup', () => {
+    if (dkDragging && !dkMoved) dockEl.classList.toggle('expanded');
+    dkDragging = false;
+  });
+  dockHandle.addEventListener('pointercancel', () => { dkDragging = false; });
+  // tapping outside the dock while expanded collapses it back to the dot
+  document.addEventListener('click', (e) => {
+    if (dockEl.classList.contains('expanded') && !dockEl.contains(e.target)) {
+      dockEl.classList.remove('expanded');
+    }
+  });
+
+  // ---- progress / go to page ----
+  const totalPagesInput = document.getElementById('total-pages');
+  const gotoInput = document.getElementById('goto-page');
+  const progressFill = document.getElementById('progress-fill');
+  const progressLabel = document.getElementById('progress-label');
+
+  function updateProgress() {
+    const total = Math.max(1, parseInt(totalPagesInput.value) || 60);
+    const page = Math.min(Math.max(1, parseInt(gotoInput.value) || 1), total);
+    gotoInput.value = page;
+    progressFill.style.width = ((page / total) * 100).toFixed(1) + '%';
+    progressLabel.textContent = `Page ${page} of ${total}`;
+  }
+  function jumpToPage() {
+    updateProgress();
+    const page = parseInt(gotoInput.value) || 1;
+    loading.classList.remove('hidden');
+    frame.src = baseSrc + '#page=' + page;
+  }
+  document.getElementById('goto-go').addEventListener('click', jumpToPage);
+  document.getElementById('goto-prev').addEventListener('click', () => { gotoInput.value = (parseInt(gotoInput.value)||1) - 1; jumpToPage(); });
+  document.getElementById('goto-next').addEventListener('click', () => { gotoInput.value = (parseInt(gotoInput.value)||1) + 1; jumpToPage(); });
+  totalPagesInput.addEventListener('input', updateProgress);
+  gotoInput.addEventListener('input', updateProgress);
+  updateProgress();
+
+  // ---- bookmarks ----
+  let bookmarks = [];
+  function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function refreshBookmarksDot() {
+    document.querySelector('[data-panel="bookmarks"]').classList.toggle('has-content', bookmarks.length > 0);
+  }
+  function renderBookmarks() {
+    const list = document.getElementById('bookmark-list');
+    list.innerHTML = '';
+    if (bookmarks.length === 0) {
+      list.innerHTML = '<div class="hint" style="margin-top:0;">No bookmarks yet — save a page above.</div>';
+      return;
+    }
+    bookmarks.forEach((b, i) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.justifyContent = 'space-between';
+      row.innerHTML = `<span style="font-size:13px;">Page ${b.page}${b.label ? ' — ' + escapeHtml(b.label) : ''}</span>`;
+      const group = document.createElement('div');
+      group.className = 'row';
+      const goBtn = document.createElement('button');
+      goBtn.className = 'btn small'; goBtn.textContent = 'Go';
+      goBtn.addEventListener('click', () => { gotoInput.value = b.page; jumpToPage(); openPanel('progress'); });
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn small'; delBtn.textContent = '✕';
+      delBtn.addEventListener('click', () => { bookmarks.splice(i, 1); renderBookmarks(); refreshBookmarksDot(); });
+      group.appendChild(goBtn); group.appendChild(delBtn);
+      row.appendChild(group);
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('bookmark-add').addEventListener('click', () => {
+    const page = parseInt(gotoInput.value) || 1;
+    const label = document.getElementById('bookmark-label').value.trim();
+    bookmarks.push({ page, label });
+    document.getElementById('bookmark-label').value = '';
+    renderBookmarks();
+    refreshBookmarksDot();
+  });
+  renderBookmarks();
+
+  // ---- share / copy link to current page ----
+  document.getElementById('share-btn').addEventListener('click', async () => {
+    const page = parseInt(gotoInput.value) || 1;
+    const link = baseSrc.replace('/preview', '/view') + '#page=' + page;
+    const tag = document.querySelector('#share-btn .tag');
+    const original = tag.textContent;
+    try {
+      await navigator.clipboard.writeText(link);
+      tag.textContent = 'Copied!';
+    } catch (e) {
+      tag.textContent = 'Copy failed';
+    }
+    setTimeout(() => { tag.textContent = original; }, 1500);
+  });
+
+  // ---- notes ----
+  const notesArea = document.getElementById('notes-area');
+  document.getElementById('notes-download').addEventListener('click', () => {
+    const blob = new Blob([notesArea.value], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'reading-notes.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('notes-clear').addEventListener('click', () => { notesArea.value = ''; refreshNotesDot(); });
+  notesArea.addEventListener('input', refreshNotesDot);
+  function refreshNotesDot() {
+    document.querySelector('[data-panel="notes"]').classList.toggle('has-content', notesArea.value.trim().length > 0);
+  }
+
+  // ---- timer ----
+  const focusMinInput = document.getElementById('focus-min');
+  const breakMinInput = document.getElementById('break-min');
+  const timerDisplay = document.getElementById('timer-display');
+  const timerModeLabel = document.getElementById('timer-mode');
+  const timerSessionsLabel = document.getElementById('timer-sessions');
+  let timerMode = 'focus';
+  let remaining = (parseInt(focusMinInput.value) || 25) * 60;
+  let timerHandle = null;
+  let sessions = 0;
+  let audioCtx = null;
+  let floatingRemoved = false;
+  const miniTimer = document.getElementById('mini-timer');
+  const miniTimerTime = document.getElementById('mini-timer-time');
+  const showFloatingBtn = document.getElementById('show-floating-btn');
+
+  function renderTimer() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const s = (remaining % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${m}:${s}`;
+    timerModeLabel.textContent = timerMode === 'focus' ? 'Focus' : 'Break';
+    miniTimerTime.textContent = `${m}:${s}`;
+    miniTimer.classList.toggle('break-mode', timerMode === 'break');
+  }
+  function beep() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.frequency.value = timerMode === 'focus' ? 660 : 880;
+      g.gain.value = 0.05;
+      o.start(); o.stop(audioCtx.currentTime + 0.18);
+    } catch (e) {}
+  }
+  function switchTimerMode() {
+    if (timerMode === 'focus') { sessions++; timerSessionsLabel.textContent = `${sessions} focus session${sessions === 1 ? '' : 's'} completed`; }
+    timerMode = timerMode === 'focus' ? 'break' : 'focus';
+    remaining = (timerMode === 'focus' ? (parseInt(focusMinInput.value)||25) : (parseInt(breakMinInput.value)||5)) * 60;
+    beep();
+    document.title = (timerMode === 'focus' ? 'Focus time — ' : 'Break time — ') + 'Reading';
+    renderTimer();
+  }
+  document.getElementById('timer-start').addEventListener('click', () => {
+    if (timerHandle) return;
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (!floatingRemoved) miniTimer.classList.add('show');
+    miniTimer.classList.remove('paused');
+    timerHandle = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) switchTimerMode(); else renderTimer();
+    }, 1000);
+  });
+  document.getElementById('timer-pause').addEventListener('click', () => {
+    clearInterval(timerHandle); timerHandle = null;
+    miniTimer.classList.add('paused');
+  });
+  document.getElementById('timer-reset').addEventListener('click', () => {
+    clearInterval(timerHandle); timerHandle = null;
+    timerMode = 'focus';
+    remaining = (parseInt(focusMinInput.value) || 25) * 60;
+    document.title = 'Reading — Document';
+    miniTimer.classList.remove('show', 'paused', 'break-mode');
+    floatingRemoved = false;
+    showFloatingBtn.style.display = 'none';
+    renderTimer();
+  });
+
+  // remove floating timer from screen — keeps running, just hides the widget
+  document.getElementById('mini-timer-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    miniTimer.classList.remove('show');
+    floatingRemoved = true;
+    showFloatingBtn.style.display = 'block';
+  });
+  // bring it back from the timer panel
+  showFloatingBtn.addEventListener('click', () => {
+    miniTimer.classList.add('show');
+    floatingRemoved = false;
+    showFloatingBtn.style.display = 'none';
+  });
+
+  // drag the floating timer anywhere on screen; a plain tap (no drag) opens the timer panel
+  let dtDragging = false, dtMoved = false, dtStartX = 0, dtStartY = 0, dtElX = 0, dtElY = 0;
+  miniTimer.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#mini-timer-close')) return;
+    dtDragging = true; dtMoved = false;
+    const rect = miniTimer.getBoundingClientRect();
+    dtStartX = e.clientX; dtStartY = e.clientY;
+    dtElX = rect.left; dtElY = rect.top;
+    miniTimer.setPointerCapture(e.pointerId);
+  });
+  miniTimer.addEventListener('pointermove', (e) => {
+    if (!dtDragging) return;
+    const dx = e.clientX - dtStartX, dy = e.clientY - dtStartY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) dtMoved = true;
+    if (dtMoved) {
+      const maxLeft = window.innerWidth - miniTimer.offsetWidth - 4;
+      const maxTop = window.innerHeight - miniTimer.offsetHeight - 4;
+      miniTimer.style.left = Math.min(Math.max(4, dtElX + dx), maxLeft) + 'px';
+      miniTimer.style.top = Math.min(Math.max(4, dtElY + dy), maxTop) + 'px';
+      miniTimer.style.right = 'auto';
+    }
+  });
+  miniTimer.addEventListener('pointerup', () => {
+    if (dtDragging && !dtMoved) openPanel('timer');
+    dtDragging = false;
+  });
+  miniTimer.addEventListener('pointercancel', () => { dtDragging = false; });
+
+  [focusMinInput, breakMinInput].forEach(inp => inp.addEventListener('change', () => {
+    if (!timerHandle) { remaining = (timerMode === 'focus' ? (parseInt(focusMinInput.value)||25) : (parseInt(breakMinInput.value)||5)) * 60; renderTimer(); }
+  }));
+  renderTimer();
+
+  // ---- keyboard shortcuts ----
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    switch (e.key.toLowerCase()) {
+      case 'f': toggleFullscreen(); break;
+      case 'g': openPanelName === 'progress' ? closePanel() : openPanel('progress'); break;
+      case 'b': openPanelName === 'bookmarks' ? closePanel() : openPanel('bookmarks'); break;
+      case 'n': openPanelName === 'notes' ? closePanel() : openPanel('notes'); break;
+      case 't': openPanelName === 'timer' ? closePanel() : openPanel('timer'); break;
+      case '1': setMode('light'); break;
+      case '2': setMode('sepia'); break;
+      case '3': setMode('dark'); break;
+      case 'escape': closePanel(); break;
+    }
+  });
+</script>
+
+</body>
+</html>

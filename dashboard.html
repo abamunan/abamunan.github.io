@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Your Munan.hub dashboard.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Dashboard | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/dashboard.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/dashboard.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Dashboard | Munan.hub">
+    <meta property="og:description" content="Your Munan.hub dashboard.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Dashboard | Munan.hub">
+    <meta name="twitter:description" content="Your Munan.hub dashboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .loading-overlay { position:fixed; inset:0; z-index:1500; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:var(--muted); font-weight:600; }
+        .spin-icon { font-size:1.8rem; color:var(--lagoon); animation:spin .9s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spin-icon { animation-duration:2.6s; } }
+
+        .dash { flex-direction:column; padding-bottom:8px; }
+        .dash-head { padding:calc(var(--nav-h) + 40px) 0 26px; }
+        .greeting { font-family:var(--display); font-weight:800; font-size:clamp(1.9rem,5vw,3rem); letter-spacing:-.03em; line-height:1.08; }
+        .dash-lead { color:var(--muted); margin-top:8px; }
+        .dash-grid { display:grid; grid-template-columns:320px minmax(0,1fr); gap:24px; align-items:start; }
+
+        .profile-card { position:sticky; top:calc(var(--nav-h) + 20px); background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; }
+        .profile-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .profile-inner { padding:26px 24px 24px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; }
+        .avatar-wrap { position:relative; }
+        .avatar { width:96px; height:96px; border-radius:24px; overflow:hidden; border:1.5px solid var(--ink); box-shadow:5px 5px 0 var(--marker); background:var(--lagoon-tint); color:var(--lagoon); display:flex; align-items:center; justify-content:center; }
+        .avatar img { display:none; width:100%; height:100%; object-fit:cover; }
+        .avatar img.loaded { display:block; }
+        .avatar-letter { font-family:var(--display); font-weight:800; font-size:2.4rem; }
+        .user-name { font-family:var(--display); font-weight:800; font-size:1.35rem; letter-spacing:-.02em; margin-top:10px; overflow-wrap:anywhere; }
+        .user-email { color:var(--muted); font-size:.92rem; overflow-wrap:anywhere; }
+        .user-provider { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:700; padding:3px 12px; border-radius:999px; background:var(--lagoon-tint); color:var(--lagoon); }
+        .card-divider { width:100%; height:1px; background:var(--line); margin:8px 0 4px; }
+        .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+        .stat-box { border:1.5px solid var(--line); border-radius:14px; padding:10px 8px; background:var(--bg); }
+        .sb-label { font-size:.74rem; color:var(--soft); font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+        .sb-val { font-weight:700; font-size:.92rem; margin-top:2px; }
+        .logout-btn { width:100%; margin-top:8px; }
+
+        .dash-section + .dash-section { margin-top:36px; }
+        .dash-section h2 { font-size:1.35rem; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+        .dash-section h2 .badge { font-size:.74rem; }
+        .app-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .app-grid .tracker { padding:22px 22px 18px; }
+        .app-grid .tracker h3 { font-size:1.2rem; }
+        .app-grid .tracker p { font-size:.94rem; }
+        .app-grid .tile { width:46px; height:46px; }
+        .private-group { border:1.5px dashed var(--ink); border-radius:var(--r-card); padding:18px; background:var(--lagoon-tint); }
+        .private-group h2 { margin-bottom:12px; }
+
+        @media (max-width:960px) { .dash-grid { grid-template-columns:1fr; } .profile-card { position:static; } }
+        @media (max-width:560px) { .app-grid { grid-template-columns:1fr; } .dash-head { padding-top:calc(var(--nav-h) + 28px); } }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay" role="status">
+    <i class="fas fa-circle-notch spin-icon" aria-hidden="true"></i>
+    <p>Loading your dashboard…</p>
+</div>
+
+<main id="main">
+<div class="wrap dash" id="pageWrap" style="display:none;">
+
+    <header class="dash-head">
+        <h1 class="greeting" id="greetMsg">Good morning, <span id="greetName">—</span> 👋</h1>
+        <p class="dash-lead">Your apps and tools in one place.</p>
+    </header>
+
+    <div class="dash-grid">
+
+        <!-- Profile Card -->
+        <aside class="profile-card" aria-label="Your account">
+            <div class="profile-strip"></div>
+            <div class="profile-inner">
+
+                <div class="avatar-wrap">
+                    <div class="avatar" id="avatarEl">
+                        <img id="avatarImg" alt="Profile photo">
+                        <span class="avatar-letter" id="avatarLetter">?</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="user-name" id="displayName">—</div>
+                    <div class="user-email" id="displayEmail">—</div>
+                </div>
+
+                <div class="user-provider" id="providerBadge">
+                    <i class="fas fa-envelope"></i> Email
+                </div>
+
+                <div class="card-divider"></div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="sb-label">Member since</div>
+                        <div class="sb-val" id="memberSince">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="sb-label">Last sign-in</div>
+                        <div class="sb-val" id="lastSignIn">—</div>
+                    </div>
+                </div>
+
+                <button class="btn-line logout-btn" onclick="handleLogout()">
+                    <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sign Out
+                </button>
+
+            </div>
+        </aside>
+
+        <div>
+            <!-- Apps -->
+            <section class="dash-section" aria-labelledby="h-apps">
+                <h2 id="h-apps">Your apps</h2>
+                <div class="app-grid">
+                    <a href="/apps/money/index.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-wallet" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Money Tracker</h3>
+                        <p>Track daily income &amp; expenses.</p>
+                    </a>
+                    <a href="/apps/health/index.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-heart-pulse" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Health Tracker</h3>
+                        <p>Log health numbers and see the trends.</p>
+                    </a>
+                    <a href="english-tracker.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-language" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>English Fluency Tracker</h3>
+                        <p>30 minutes a day: read, summarize, listen, speak.</p>
+                    </a>
+                    <a href="diary.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-book" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Diary</h3>
+                        <p>Write daily entries and export them as PDF.</p>
+                    </a>
+                    <a href="garments-accounts.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-shirt" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Garments Accounts</h3>
+                        <p>Shared accounts book for the garments business.</p>
+                    </a>
+                    <a href="TypeMaster.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fas fa-keyboard" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>TypeMaster</h3>
+                        <p>Practice your typing speed.</p>
+                    </a>
+                    <a href="drive-folder-fetch.html" class="tracker">
+                        <div class="tracker-top"><span class="tile"><i class="fa-brands fa-google-drive" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
+                        <h3>Drive Folder Fetch</h3>
+                        <p>Save every file of a public Drive folder.</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Owner-only (hidden unless the verified owner is signed in; real protection is Firestore rules) -->
+            <section class="dash-section" data-owner-only aria-labelledby="h-private">
+                <div class="private-group">
+                    <h2 id="h-private"><i class="fas fa-lock" aria-hidden="true"></i> Private <span class="badge badge-marker">Owner only</span></h2>
+                    <div class="util-list">
+                        <a href="part1.html" class="link-row">
+                            <span class="tile"><i class="fab fa-google-drive" aria-hidden="true"></i></span>
+                            <span class="row-body"><span class="row-title">Private Drive</span><br><span class="row-desc">Password-protected folder.</span></span>
+                            <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent activity (placeholder) -->
+            <section class="dash-section" aria-labelledby="h-activity">
+                <h2 id="h-activity">Recent activity</h2>
+                <div class="empty" style="grid-column:auto;">
+                    <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                    Nothing to show yet. Your latest entries from the apps will appear here soon.
+                </div>
+            </section>
+
+            <!-- More -->
+            <section class="dash-section" aria-labelledby="h-more">
+                <h2 id="h-more">More</h2>
+                <div class="util-list">
+                    <a href="index.html" class="link-row">
+                        <span class="tile"><i class="fas fa-house" aria-hidden="true"></i></span>
+                        <span class="row-body"><span class="row-title">Home</span><br><span class="row-desc">Back to the main page.</span></span>
+                        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="contact.html" class="link-row">
+                        <span class="tile"><i class="fas fa-envelope" aria-hidden="true"></i></span>
+                        <span class="row-body"><span class="row-title">Contact</span><br><span class="row-desc">Get in touch with Munan.</span></span>
+                        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                </div>
+            </section>
+        </div>
+
+    </div>
+</div>
+</main>
+
+<script type="module">
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+
+// ── AUTH STATE ───────────────────────────────────────────────
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    populateDashboard(user);
+    if (window.MunanOwner) window.MunanOwner.remember(window.MunanOwner.isOwner(user));
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('pageWrap').style.display       = 'flex';
+});
+
+// ── POPULATE ─────────────────────────────────────────────────
+function populateDashboard(user) {
+    const name     = user.displayName || user.email.split('@')[0];
+    const email    = user.email;
+    const photoURL = user.photoURL;
+    const provider = user.providerData[0]?.providerId || 'password';
+
+    // Greeting
+    const hr = new Date().getHours();
+    const gt = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greetMsg').innerHTML  = `${gt}, <span style="color:var(--accent)">${name.split(' ')[0]}</span> 👋`;
+
+    // Name & email
+    document.getElementById('displayName').textContent  = user.displayName || name;
+    document.getElementById('displayEmail').textContent = email;
+
+    // Avatar
+    const letter = (user.displayName || name).charAt(0).toUpperCase();
+    document.getElementById('avatarLetter').textContent = letter;
+    if (photoURL) {
+        // Append size param for Google photos to get higher res
+        const src = photoURL.includes('googleusercontent.com')
+            ? photoURL.replace(/=s\d+/, '') + '=s200'
+            : photoURL;
+        const img = document.getElementById('avatarImg');
+        img.crossOrigin = 'anonymous';
+        img.src = src;
+        img.onload = () => {
+            img.classList.add('loaded');
+            document.getElementById('avatarLetter').style.display = 'none';
+        };
+        img.onerror = () => {
+            // silently fall back to letter avatar
+            img.style.display = 'none';
+        };
+    }
+
+    // Provider badge
+    const badge = document.getElementById('providerBadge');
+    if (provider === 'google.com') {
+        badge.innerHTML = '<i class="fab fa-google"></i> Google';
+    } else {
+        badge.innerHTML = '<i class="fas fa-envelope"></i> Email';
+    }
+
+    // Stats
+    const fmt = (ms) => {
+        if (!ms) return '—';
+        return new Date(ms).toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' });
+    };
+    document.getElementById('memberSince').textContent = fmt(user.metadata?.creationTime ? new Date(user.metadata.creationTime).getTime() : null);
+    document.getElementById('lastSignIn').textContent  = fmt(user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : null);
+}
+
+// ── LOGOUT ───────────────────────────────────────────────────
+window.handleLogout = async () => {
+    await signOut(auth);
+    localStorage.removeItem('munan_auth');
+    localStorage.removeItem('isLoggedIn');
+    window.location.href = "login.html";
+};
+</script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

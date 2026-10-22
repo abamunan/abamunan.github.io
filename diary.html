@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diary | Munan.hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="A private, dated diary with sections — write, revisit, and export your entries.">
+<meta name="theme-color" content="#0A6F48">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="canonical" href="https://abamunan.github.io/diary.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abamunan.github.io/diary.html">
+<meta property="og:site_name" content="Munan.hub">
+<meta property="og:title" content="Diary | Munan.hub">
+<meta property="og:description" content="A private, dated diary with sections — write, revisit, and export your entries.">
+<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta name="twitter:card" content="summary">
+
+<!-- Fonts: Bricolage Grotesque (headings) / Figtree (body) / Hind Siliguri (Bangla) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Figtree:wght@400;500;600;700&amp;family=Hind+Siliguri:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+
+<!-- Font Awesome (footer.js renders fa-* icons; navbar/diary UI also use it) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Shared theme logic — blocking, must run before first paint -->
+<script src="theme.js"></script>
+
+<script src="owner.js"></script>
+
+<!-- Shared site + app stylesheets (Round 6) -->
+<link rel="stylesheet" href="site.css?v=3">
+<link rel="stylesheet" href="app.css?v=3">
+
+<style>
+    /* ============================================================
+       Page-specific styles — Diary (Round 6: Field Notebook)
+       Old token names (--card-bg, --card-border, --accent, --text-*)
+       are mapped to the site tokens by app.css (body.app-diary).
+       This page no longer defines its own --ink / --ink-soft.
+       ============================================================ */
+
+    /* ── PAGE SHELL ──────────────────────────────────────────── */
+    /* Narrower than before (760 vs 880) — a diary reads better as an
+       intimate column than a wide dashboard. */
+    .page-content {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 28px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+    }
+
+    /* ── HEADER ───────────────────────────────────────────────── */
+    header { text-align: center; padding: 14px 0 6px; }
+    .logo-main {
+        font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+        color: var(--text-main); display: block; line-height: 1.15;
+    }
+    .logo-main span {
+        font-family: var(--display); font-style: normal; font-weight: 600;
+        letter-spacing: -1px; color: var(--accent);
+    }
+    .logo-sub {
+        font-size: .72rem; font-weight: 400; letter-spacing: 3px;
+        color: var(--text-soft); text-transform: uppercase;
+        margin-top: 9px; display: block;
+    }
+
+    /* ── TABS ─────────────────────────────────────────────────── */
+    /* An index-tab / chapter-divider treatment instead of pill
+       buttons — a moving underline rather than a filled background. */
+    .diary-tabs {
+        display: flex; gap: 28px;
+        width: max-content; margin: 0 auto 32px;
+        border-bottom: 1.5px solid var(--card-border);
+        animation: fadeUp .6s ease .05s both;
+    }
+    .diary-tab {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 10px 2px 16px; border-radius: 0;
+        background: none; border: none;
+        color: var(--text-soft); font-size: .78rem; font-weight: 700;
+        letter-spacing: .09em; text-transform: uppercase;
+        cursor: pointer; position: relative; transition: color .25s ease;
+    }
+    .diary-tab::after {
+        content: ""; position: absolute; left: 0; right: 100%; bottom: -1px;
+        height: 2px; background: var(--accent);
+        transition: right .3s cubic-bezier(.4,0,.2,1);
+    }
+    .diary-tab:hover { color: var(--text-main); }
+    .diary-tab.active { color: var(--ink); }
+    .diary-tab.active::after { right: 0; }
+
+    .diary-view {
+        display: none; animation: fadeUp .45s ease both;
+        background: var(--card-bg); border: 1.5px solid var(--card-border);
+        border-radius: var(--r-panel); padding: 34px 34px 38px;
+    }
+    .diary-view.active { display: block; }
+
+    /* ── WRITE: DATE/TIME ROW ────────────────────────────────── */
+    .diary-card { margin-bottom: 22px; }
+    .diary-datetime-row {
+        display: flex; gap: 28px; flex-wrap: wrap; width: 100%;
+    }
+    .diary-field { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 150px; }
+    .diary-field label {
+        font-family: var(--display); font-style: normal; font-weight: 600;
+        font-size: .82rem; letter-spacing: .01em; color: var(--ink-soft);
+    }
+    .diary-field input[type="date"],
+    .diary-field input[type="time"],
+    .diary-field input[type="text"],
+    .diary-field textarea {
+        font-family: inherit; font-size: .92rem; color: var(--text-main);
+        background: transparent; border: none; border-bottom: 1.5px solid var(--card-border);
+        border-radius: 0; padding: 8px 2px; transition: var(--trans);
+        width: 100%;
+    }
+    .diary-field input:focus, .diary-field textarea:focus {
+        outline: none; border-bottom-color: var(--accent);
+        background: transparent; box-shadow: none;
+    }
+
+    /* ── SECTIONS ─────────────────────────────────────────────── */
+    /* No more boxed cards — each section is a page turn, separated
+       by a hairline rule, so writing feels continuous rather than
+       "filling in a form". */
+    .diary-sections { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 34px; }
+    .diary-section {
+        background: none; border: none; border-top: 1.5px solid var(--card-border);
+        border-radius: 0; padding: 22px 0 6px; position: relative;
+        animation: cardIn .35s ease both;
+    }
+    .diary-section:first-child { border-top: none; padding-top: 0; }
+    .diary-section:hover { background: var(--tint-weak); }
+    .diary-section-head {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .diary-section-head input[type="text"] {
+        flex: 1; font-family: var(--display); font-style: normal; font-weight: 600;
+        font-size: .98rem; background: transparent; border: none;
+        border-bottom: 1.5px solid transparent; border-radius: 0;
+        padding: 4px 2px; color: var(--ink); transition: var(--trans);
+    }
+    .diary-section-head input[type="text"]:focus {
+        outline: none; border-bottom-color: var(--accent); box-shadow: none; background: transparent;
+    }
+    .diary-section-remove {
+        width: 24px; height: 24px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: none; border: none;
+        border-radius: 50%; color: var(--text-soft); font-size: .7rem; cursor: pointer;
+        transition: var(--trans);
+    }
+    .diary-section-remove:hover { background: color-mix(in srgb, var(--err) 14%, transparent); color: var(--err); }
+    .diary-section textarea {
+        width: 100%; box-sizing: border-box;
+        min-height: 120px; resize: vertical; line-height: 1.85;
+        background: transparent; border: none; border-radius: 0;
+        padding: 6px 2px 0; font-size: .92rem; color: var(--text-main);
+    }
+    .diary-section textarea:focus { outline: none; box-shadow: none; background: transparent; }
+
+    .diary-add-section {
+        display: inline-flex; align-items: center; gap: 8px;
+        margin-top: 20px; padding: 12px 0;
+        background: none; border: none; border-top: 1px dashed var(--card-border);
+        border-radius: 0; color: var(--accent); font-size: .78rem; font-weight: 700;
+        letter-spacing: .05em; text-transform: uppercase;
+        cursor: pointer; transition: var(--trans); width: 100%; justify-content: center;
+    }
+    .diary-add-section:hover { color: var(--ink); }
+    .diary-add-section:disabled,
+    .diary-add-section[hidden] { display: none; }
+    .diary-section-cap { text-align: center; font-size: .72rem; color: var(--text-soft); margin-top: 10px; }
+
+    /* ── WRITE ACTIONS ────────────────────────────────────────── */
+    .diary-actions {
+        display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px;
+    }
+    .diary-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 26px; border-radius: 8px; border: 1.5px solid transparent;
+        font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+        cursor: pointer; transition: var(--trans);
+        font-family: inherit;
+    }
+    .diary-btn-primary { background: var(--accent); color: var(--on-accent); }
+    .diary-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .diary-btn-ghost {
+        background: none; border-color: transparent; color: var(--text-soft);
+    }
+    .diary-btn-ghost:hover { color: var(--ink); }
+    .diary-btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    .diary-editing-banner {
+        display: none; align-items: center; gap: 10px;
+        background: color-mix(in srgb, var(--accent) 8%, transparent); border: none; border-left: 3px solid var(--accent);
+        border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 18px;
+        font-size: .78rem; color: var(--ink); font-weight: 600;
+    }
+    .diary-editing-banner.active { display: flex; }
+    .diary-editing-banner button {
+        margin-left: auto; background: none; border: none; color: var(--accent);
+        font-size: .75rem; font-weight: 700; cursor: pointer; text-decoration: underline;
+        font-family: inherit; flex-shrink: 0;
+    }
+    /* Phase 3 — draft-restore notice: same shape as the editing banner,
+       amber accent so it reads as "heads up" rather than "in progress". */
+    .diary-draft-banner {
+        background: color-mix(in srgb, var(--warn) 12%, transparent); border-left-color: var(--warn);
+    }
+    .diary-draft-banner button { color: var(--warn); }
+    /* Phase 4 — stale-edit conflict: warmer/red accent, deliberately more
+       insistent since ignoring it risks a silent overwrite. */
+    .diary-stale-banner {
+        background: color-mix(in srgb, var(--err) 10%, transparent); border-left-color: var(--err);
+    }
+    .diary-stale-banner button { color: var(--err); }
+
+    /* ── HISTORY ──────────────────────────────────────────────── */
+    .diary-history-toolbar {
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 14px; margin-bottom: 22px;
+        padding-bottom: 16px; border-bottom: 1.5px solid var(--card-border);
+    }
+    .diary-filter-group {
+        display: inline-flex; gap: 20px; background: none; border: none; padding: 0;
+    }
+    .diary-filter-btn {
+        padding: 4px 0; border-radius: 0; border: none; border-bottom: 2px solid transparent;
+        background: none;
+        color: var(--text-soft); font-size: .74rem; font-weight: 700; letter-spacing: .05em;
+        text-transform: uppercase; cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-filter-btn.active { border-bottom-color: var(--accent); color: var(--ink); }
+
+    .diary-pdf-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 9px 18px; border-radius: 8px;
+        background: none; border: 1.5px solid var(--card-border);
+        color: var(--ink); font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+        text-transform: uppercase;
+        transition: var(--trans); font-family: inherit; cursor: pointer;
+    }
+    .diary-pdf-btn:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .diary-pdf-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .diary-pdf-btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    /* Phase 6 — "Export All" is visually secondary to "Download PDF (loaded)"
+       so the default, cheap action stays the obvious one; the expensive
+       full-diary fetch is opt-in and clearly labeled as a separate action. */
+    .diary-pdf-btn-ghost { opacity: .78; border-style: dashed; }
+    .diary-pdf-btn-ghost:hover { opacity: 1; }
+
+    /* ── LOAD MORE (Phase 5 — pagination) ────────────────────── */
+    .diary-load-more-btn {
+        display: flex; align-items: center; gap: 8px; justify-content: center;
+        width: fit-content; margin: 18px auto 0; padding: 10px 22px; border-radius: 8px;
+        background: none; border: 1.5px dashed var(--card-border);
+        color: var(--text-soft); font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+        text-transform: uppercase; cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-load-more-btn:hover { color: var(--ink); border-color: var(--accent); }
+    .diary-load-more-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Each row's left border, run edge-to-edge with no gap between
+       rows, reads as a continuous spine — a ledger of moments rather
+       than a stack of separate cards. */
+    .diary-entry-list { display: flex; flex-direction: column; }
+    .diary-entry {
+        display: flex; align-items: center; gap: 16px;
+        background: none; border: none;
+        border-left: 2px solid var(--card-border); border-bottom: 1.5px solid var(--card-border);
+        border-radius: 0; padding: 17px 8px 17px 20px; cursor: pointer;
+        transition: var(--trans);
+        animation: cardIn .4s ease both;
+    }
+    .diary-entry:last-child { border-bottom: none; }
+    .diary-entry:hover { border-left-color: var(--accent); transform: translateX(5px); }
+    .diary-entry-date {
+        flex-shrink: 0; width: 52px; text-align: left;
+        display: flex; flex-direction: column;
+        padding: 0; border-radius: 0; background: none; color: var(--ink);
+    }
+    .diary-entry-date .d { font-family: var(--display); font-size: 1.55rem; font-weight: 600; line-height: 1; color: var(--ink); }
+    .diary-entry-date .m { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); margin-top: 3px; }
+    .diary-entry-body { flex: 1; min-width: 0; }
+    .diary-entry-title { font-size: .88rem; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .diary-entry-snippet { font-size: .78rem; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .diary-entry-time { flex-shrink: 0; font-size: .72rem; color: var(--text-soft); font-weight: 600; }
+    .diary-entry-arrow { flex-shrink: 0; color: var(--text-soft); font-size: .72rem; transition: var(--trans); }
+    .diary-entry:hover .diary-entry-arrow { color: var(--accent); transform: translateX(3px); }
+
+    .diary-empty {
+        text-align: center; padding: 60px 20px; color: var(--text-soft);
+    }
+    .diary-empty i { font-size: 2rem; margin-bottom: 14px; opacity: .4; display: block; color: var(--ink-soft); }
+    .diary-empty p { font-size: .85rem; }
+
+    /* ── READ OVERLAY (view-only entry detail, opened from History) ── */
+    .diary-read-overlay {
+        position: fixed; inset: 0; z-index: 1500;
+        display: none; align-items: flex-start; justify-content: center;
+        background: rgba(13,21,18,.55);
+        padding: 60px 20px; overflow-y: auto;
+    }
+    .diary-read-overlay.show { display: flex; }
+    .diary-read-card {
+        width: 100%; max-width: 600px; position: relative;
+        background: var(--card-bg); border: 1.5px solid var(--card-border);
+        border-radius: 4px 4px 16px 16px; padding: 38px 36px 40px;
+        animation: cardIn .35s ease both;
+    }
+    /* The signature touch: a small bookmark ribbon, like the one
+       stitched into a bound journal, marking the page you're on. */
+    .diary-read-card::before {
+        content: ""; position: absolute; top: -2px; left: 40px; width: 26px; height: 42px;
+        background: var(--ink);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+    }
+    .diary-read-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 26px; gap: 12px; flex-wrap: wrap;
+    }
+    .diary-read-toolbar-actions { display: flex; align-items: center; gap: 10px; }
+    .diary-read-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: none; border: none; color: var(--text-soft);
+        font-size: .76rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        cursor: pointer; font-family: inherit;
+        padding: 6px 4px;
+    }
+    .diary-read-back:hover { color: var(--ink); }
+    .diary-read-edit-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 18px; border-radius: 8px;
+        background: var(--accent); border: 1.5px solid var(--accent);
+        color: var(--on-accent); font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-read-edit-btn:hover { filter: brightness(1.08); }
+
+    /* Phase 2 — delete: intentionally a lower-emphasis outline (not filled
+       red) so it doesn't visually compete with Edit as the "default"
+       action, while still being clearly reachable and legible. */
+    .diary-read-delete-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 16px; border-radius: 8px;
+        background: none; border: 1.5px solid color-mix(in srgb, var(--err) 45%, transparent);
+        color: var(--err); font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        cursor: pointer; transition: var(--trans); font-family: inherit;
+    }
+    .diary-read-delete-btn:hover { background: var(--err); border-color: var(--err); color: var(--bg); }
+    .diary-read-delete-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .diary-read-header {
+        margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1.5px solid var(--card-border);
+    }
+    .diary-read-date { font-family: var(--display); font-size: 1.7rem; font-weight: 600; color: var(--ink); letter-spacing: -.3px; }
+    .diary-read-time { font-size: .76rem; font-weight: 600; color: var(--text-soft); margin-top: 5px; letter-spacing: .03em; text-transform: uppercase; }
+
+    .diary-read-sections { display: flex; flex-direction: column; gap: 28px; }
+    .diary-read-section-title {
+        font-size: .7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .1em; color: var(--accent); margin-bottom: 9px;
+    }
+    .diary-read-section-body {
+        font-size: .95rem; line-height: 1.9; color: var(--text-main);
+        white-space: pre-wrap;
+    }
+
+    .diary-loading {
+        text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: .85rem;
+    }
+    .diary-loading i { margin-right: 8px; }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
+    /* Uses fixed, explicit colors rather than var(--text-main)/var(--main-bg).
+       Those theme variables were resolving to the same value (or to nothing)
+       at the moment the toast fired, producing invisible black-on-black
+       text. Hardcoding the palette here makes the toast legible regardless
+       of theme state, load order, or which page injected diary.js. */
+    .diary-toast {
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--on-ink);
+        padding: 12px 22px; border-radius: 10px; font-size: .82rem; font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,.35); z-index: 3000;
+        opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s ease;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .diary-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .diary-toast.error { background: var(--err); color: var(--bg); }
+
+    /* ── AUTH GATE OVERLAY ────────────────────────────────────── */
+    .diary-gate {
+        position: fixed; inset: 0; z-index: 2000;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(13,21,18,.55);
+        padding: 20px;
+    }
+    .diary-gate-card {
+        max-width: 380px; width: 100%; text-align: center;
+        background: var(--card-bg); border: 1.5px solid var(--card-border);
+        border-radius: 14px; padding: 38px 30px;
+        animation: cardIn .4s ease both;
+    }
+    .diary-gate-card i.lock-icon {
+        width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 18px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--lagoon-tint); color: var(--accent); font-size: 1.35rem;
+    }
+    .diary-gate-card h2 { font-family: var(--display); font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+    .diary-gate-card p { font-size: .82rem; color: var(--text-soft); margin-bottom: 24px; line-height: 1.6; }
+    .diary-gate-card a.diary-btn { text-decoration: none; }
+
+    /* Checking-session state (before we know auth status) */
+    .diary-checking { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--soft); }
+    .diary-checking i { font-size: 1.6rem; }
+
+    /* ── FOCUS VISIBILITY (Phase 8 — accessibility) ─────────────
+       Only shows the ring for keyboard focus (:focus-visible), not for
+       mouse clicks, so the visual design isn't affected for mouse/touch
+       users — but keyboard users always get a clear, high-contrast cue. */
+    .diary-tab:focus-visible,
+    .diary-btn:focus-visible,
+    .diary-filter-btn:focus-visible,
+    .diary-pdf-btn:focus-visible,
+    .diary-load-more-btn:focus-visible,
+    .diary-add-section:focus-visible,
+    .diary-section-remove:focus-visible,
+    .diary-read-back:focus-visible,
+    .diary-read-edit-btn:focus-visible,
+    .diary-read-delete-btn:focus-visible,
+    .diary-entry:focus-visible,
+    .diary-field input:focus-visible,
+    .diary-field textarea:focus-visible,
+    .diary-editing-banner button:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+        .page-content { padding: 66px 12px 32px; }
+        .logo-main { font-size: 2.1rem; }
+        .diary-tabs { gap: 22px; }
+        .diary-view { padding: 26px 20px 30px; }
+        .diary-datetime-row { flex-direction: column; }
+        .diary-history-toolbar { flex-direction: column; align-items: stretch; }
+        .diary-filter-group { justify-content: center; }
+        .diary-pdf-btn { justify-content: center; }
+        .diary-pdf-btn-group { flex-direction: column; width: 100%; }
+        .diary-entry-time { display: none; }
+        .diary-read-overlay { padding: 36px 14px; align-items: center; }
+        .diary-read-card { padding: 28px 22px 32px; }
+        .diary-read-card::before { left: 20px; }
+    }
+</style>
+</head>
+<body class="v2 app app-diary" data-nav-hide="off">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="page-content" id="main" role="main">
+
+<!-- ── AUTH GATE (shown while checking session, or when logged out) ── -->
+<div class="diary-gate" id="diary-gate">
+    <div id="diary-gate-content">
+        <div class="diary-checking">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>Checking your session…</span>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MAIN APP (hidden until auth confirms) ════════════════ -->
+<div id="diary-app" style="display:none;">
+
+    <header>
+        <h1 class="logo-main">Munan's <span>Diary</span></h1>
+        <span class="logo-sub">Write &nbsp;·&nbsp; Organize &nbsp;·&nbsp; Revisit</span>
+    </header>
+
+    <div class="diary-tabs">
+        <button class="diary-tab active" data-tab="write">Write</button>
+        <button class="diary-tab" data-tab="history">History</button>
+    </div>
+
+    <!-- ════════════════ WRITE VIEW ════════════════ -->
+    <section class="diary-view active" id="view-write">
+
+        <!-- Phase 3: local draft restore notice (never touches Firestore) -->
+        <div class="diary-editing-banner diary-draft-banner" id="draft-banner" role="status">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span id="draft-banner-text">Draft restored — not saved yet.</span>
+            <button id="draft-discard-btn" type="button">Discard draft</button>
+        </div>
+
+        <!-- Phase 4: shown only if the doc being edited changed elsewhere since load -->
+        <div class="diary-editing-banner diary-stale-banner" id="stale-conflict-banner" role="alert">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span id="stale-conflict-text">This entry changed elsewhere since you started editing.</span>
+            <button id="stale-conflict-reload-btn" type="button">Reload latest version</button>
+        </div>
+
+        <div class="diary-editing-banner" id="editing-banner">
+            <i class="fas fa-pen-to-square"></i>
+            <span id="editing-banner-text">Editing an existing entry</span>
+            <button id="cancel-edit-btn" type="button">Start new instead</button>
+        </div>
+
+        <div class="diary-card" style="align-items:stretch;">
+            <div class="diary-datetime-row">
+                <div class="diary-field">
+                    <label for="entry-date">Date</label>
+                    <input type="date" id="entry-date">
+                </div>
+                <div class="diary-field">
+                    <label for="entry-time">Time</label>
+                    <input type="time" id="entry-time">
+                </div>
+            </div>
+
+            <div class="diary-sections" id="sections-container">
+                <!-- sections injected by JS -->
+            </div>
+
+            <button class="diary-add-section" id="add-section-btn" type="button">
+                <i class="fas fa-plus"></i> Add Section
+            </button>
+            <div class="diary-section-cap" id="section-cap-msg" style="display:none;">Maximum of 10 sections reached</div>
+        </div>
+
+        <div class="diary-actions">
+            <button class="diary-btn diary-btn-primary" id="save-entry-btn" type="button">
+                <i class="fas fa-floppy-disk"></i> <span id="save-btn-label">Save Entry</span>
+            </button>
+            <button class="diary-btn diary-btn-ghost" id="clear-form-btn" type="button">
+                <i class="fas fa-rotate-left"></i> Clear
+            </button>
+        </div>
+
+    </section>
+
+    <!-- ════════════════ HISTORY VIEW ════════════════ -->
+    <section class="diary-view" id="view-history">
+
+        <div class="diary-history-toolbar">
+            <div class="diary-filter-group" role="group" aria-label="Entries per page">
+                <button class="diary-filter-btn active" data-limit="10">10 / page</button>
+                <button class="diary-filter-btn" data-limit="50">50 / page</button>
+            </div>
+            <div class="diary-pdf-btn-group">
+                <button class="diary-pdf-btn" id="download-pdf-btn" title="Exports only the entries currently loaded below">
+                    <i class="fas fa-file-pdf"></i> Download PDF (loaded)
+                </button>
+                <button class="diary-pdf-btn diary-pdf-btn-ghost" id="export-all-pdf-btn" title="Fetches your entire diary first, then builds one PDF">
+                    <i class="fas fa-cloud-arrow-down"></i> Export All
+                </button>
+            </div>
+        </div>
+
+        <div class="diary-entry-list" id="entry-list">
+            <div class="diary-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading entries…</div>
+        </div>
+
+        <button class="diary-load-more-btn" id="history-load-more-btn" type="button" style="display:none;">
+            <i class="fas fa-chevron-down"></i> Load more
+        </button>
+
+    </section>
+
+</div><!-- /#diary-app -->
+
+</div><!-- /.page-content -->
+
+<!-- ── READ OVERLAY (view-only entry detail — opened by clicking a History row) ── -->
+<div class="diary-read-overlay" id="diary-read-overlay">
+    <div class="diary-read-card" role="dialog" aria-modal="true" aria-labelledby="diary-read-date">
+        <div class="diary-read-toolbar">
+            <button class="diary-read-back" id="diary-read-back-btn" type="button" aria-label="Back to History">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="diary-read-toolbar-actions">
+                <button class="diary-read-delete-btn" id="diary-read-delete-btn" type="button" aria-label="Delete this entry">
+                    <i class="fas fa-trash-can"></i> Delete
+                </button>
+                <button class="diary-read-edit-btn" id="diary-read-edit-btn" type="button" aria-label="Edit this entry">
+                    <i class="fas fa-pen"></i> Edit
+                </button>
+            </div>
+        </div>
+        <div class="diary-read-header">
+            <div class="diary-read-date" id="diary-read-date"></div>
+            <div class="diary-read-time" id="diary-read-time"></div>
+        </div>
+        <div class="diary-read-sections" id="diary-read-sections"></div>
+    </div>
+</div>
+
+<!-- Toast — aria-live so screen readers announce save/delete/error status without focus ever moving -->
+<div class="diary-toast" id="diary-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ── html2pdf.js (client-side PDF export, per Munan's choice) ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<!-- ── Firebase (same project as login.html / moneytracker.html / auth.js) ── -->
+<script type="module" src="diary.js"></script>
+
+<!-- ── Shared navbar + footer injectors ── -->
+<script src="nav.js"></script>
+<script src="footer.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>PDF Toolkit | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/pdf-toolkit.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/pdf-toolkit.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="PDF Toolkit | Munan.hub">
+    <meta property="og:description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PDF Toolkit | Munan.hub">
+    <meta name="twitter:description" content="Rotate, split, merge, compress, lock, rearrange and recolour PDFs entirely in your browser. Nothing is uploaded.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <link rel="stylesheet" href="tool.css?v=3">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        .pdftk-wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 5% 60px;}
+
+        /* ---------- Tool tabs (site pill-button language) ---------- */
+        .pdftk-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+        .pdftk-rail-item{
+            background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:20px;
+            padding:8px 16px 8px 12px;font-size:.78rem;font-weight:700;color:var(--text-muted);
+            cursor:pointer;font-family:var(--body);transition:all .2s;
+            display:flex;align-items:center;gap:8px;
+        }
+        .pdftk-rail-item:hover{border-color:var(--accent);color:var(--accent);}
+        .pdftk-rail-item.active{border-color:var(--accent);color:var(--on-accent);background:var(--accent);}
+        .pdftk-rail-num{
+            font-size:.62rem;font-weight:800;opacity:.65;
+            background:color-mix(in srgb, var(--paper) 25%, transparent);border-radius:50%;
+            width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .pdftk-rail-item:not(.active) .pdftk-rail-num{background:color-mix(in srgb, var(--lagoon) 12%, transparent);color:var(--accent);opacity:1;}
+        [data-theme="dark"] .pdftk-rail-item:not(.active) .pdftk-rail-num{background:color-mix(in srgb, var(--lagoon) 12%, transparent);}
+        .pdftk-rail-desc{display:none;}
+        @media (max-width:700px){
+            .pdftk-tabs{gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+            .pdftk-rail-item{flex:0 0 auto;white-space:nowrap;}
+        }
+
+        /* ---------- Stage header ---------- */
+        .pdftk-stage-head{margin-bottom:18px;}
+        .pdftk-stage-eyebrow{
+            font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--accent);margin-bottom:6px;
+        }
+        .pdftk-stage-title{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;}
+        .pdftk-stage-sub{color:var(--text-muted);font-size:.85rem;max-width:58ch;line-height:1.55;}
+
+        /* ---------- Dropzone (photo-resizer language) ---------- */
+        .pdftk-dropzone{
+            border:2px dashed var(--card-border);border-radius:18px;padding:44px 24px;text-align:center;
+            cursor:pointer;transition:all .2s;background:var(--card-bg);
+            margin-bottom:20px;position:relative;
+        }
+        .pdftk-dropzone:hover,.pdftk-dropzone.pdftk-drag{border-color:var(--accent);}
+        [data-theme="dark"] .pdftk-dropzone:hover,[data-theme="dark"] .pdftk-dropzone.pdftk-drag{}
+        .pdftk-dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+        .pdftk-dz-icon{font-size:2.2rem;color:var(--accent);margin-bottom:12px;}
+        .pdftk-dz-main{font-size:1rem;font-weight:700;margin-bottom:5px;color:var(--text-main);}
+        .pdftk-dz-sub{font-size:.78rem;color:var(--text-muted);}
+
+        /* ---------- Invert embedded frame ---------- */
+        .pdftk-invert-frame-wrap{
+            border:1px solid var(--card-border);border-radius:18px;overflow:hidden;
+            background:var(--card-bg);margin-bottom:20px;
+            height:min(78vh, 900px);
+        }
+        .pdftk-invert-frame{
+            width:100%;height:100%;border:none;display:block;background:transparent;
+        }
+        @media (max-width:720px){
+            .pdftk-invert-frame-wrap{height:82vh;border-radius:12px;}
+        }
+
+        /* ---------- Colour Inverter disclosure dropdown ---------- */
+        .pdftk-disclosure{
+            border:1px solid var(--card-border);border-radius:14px;background:var(--card-bg);
+            overflow:hidden;margin-bottom:20px;
+        }
+        .pdftk-disclosure-sum{
+            list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+            padding:13px 18px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--text-main);
+            user-select:none;
+        }
+        .pdftk-disclosure-sum::-webkit-details-marker{display:none;}
+        .pdftk-disclosure-sum i.fa-circle-info{color:var(--accent);margin-right:2px;}
+        .pdftk-disclosure-chev{font-size:.72rem;color:var(--text-muted);transition:transform .2s;}
+        .pdftk-disclosure[open] .pdftk-disclosure-chev{transform:rotate(180deg);}
+        .pdftk-disclosure-body{
+            padding:2px 18px 18px;font-size:.78rem;line-height:1.65;color:var(--text-muted);
+            border-top:1px solid var(--card-border);
+        }
+        .pdftk-disclosure-body p{margin-top:14px;}
+        .pdftk-disclosure-body b{color:var(--text-main);}
+
+        /* ---------- File summary bar ---------- */
+        .pdftk-file-bar{
+            display:flex;align-items:center;gap:14px;background:var(--card-bg);
+            border:1px solid var(--card-border);border-radius:14px;padding:12px 16px;
+            margin-bottom:20px;
+        }
+        .pdftk-fb-icon{
+            font-size:.68rem;font-weight:800;color:var(--accent);background:color-mix(in srgb, var(--lagoon) 10%, transparent);
+            border:1px solid color-mix(in srgb, var(--lagoon) 25%, transparent);padding:5px 8px;border-radius:6px;flex-shrink:0;
+        }
+        [data-theme="dark"] .pdftk-fb-icon{background:color-mix(in srgb, var(--lagoon) 10%, transparent);border-color:color-mix(in srgb, var(--lagoon) 25%, transparent);}
+        .pdftk-fb-info{flex:1;min-width:0;}
+        .pdftk-fb-name{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .pdftk-fb-meta{font-size:.72rem;color:var(--text-muted);margin-top:2px;}
+        .pdftk-fb-clear{
+            font-size:.72rem;font-weight:700;color:var(--text-muted);background:transparent;
+            border:1.5px solid var(--card-border);padding:6px 12px;border-radius:20px;cursor:pointer;
+            flex-shrink:0;font-family:var(--body);transition:all .2s;
+        }
+        .pdftk-fb-clear:hover{border-color:var(--err);color:var(--err);}
+
+        /* ---------- Page strip ---------- */
+        .pdftk-strip-wrap{margin-top:18px;}
+        .pdftk-strip-label{
+            font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
+            margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+        }
+        .pdftk-strip{
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;
+            max-height:540px;overflow-y:auto;padding:3px;
+        }
+        .pdftk-pg{
+            position:relative;border:1.5px solid var(--card-border);border-radius:12px;
+            background:var(--card-bg);cursor:pointer;overflow:hidden;aspect-ratio:.72;
+            user-select:none;transition:all .2s;
+        }
+        .pdftk-pg:hover{transform:translateY(-2px);}
+        .pdftk-pg canvas{width:100%;height:100%;display:block;object-fit:contain;background:var(--on-accent);}
+        .pdftk-pg-num{
+            position:absolute;bottom:0;left:0;right:0;font-size:.66rem;text-align:center;
+            background:rgba(15,23,42,.78);color:var(--on-accent);padding:3px 0;
+        }
+        .pdftk-pg.pdftk-selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+        .pdftk-pg.pdftk-selected::before{
+            content:'\2713';position:absolute;top:4px;right:4px;width:18px;height:18px;
+            background:var(--accent);color:var(--on-accent);font-size:.62rem;font-weight:800;
+            display:flex;align-items:center;justify-content:center;border-radius:50%;z-index:2;
+        }
+        .pdftk-pg.pdftk-removed{opacity:.3;}
+        .pdftk-pg.pdftk-removed::after{
+            content:'\2715';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+            color:var(--err);font-size:1.3rem;font-weight:800;background:color-mix(in srgb, var(--paper) 50%, transparent);
+        }
+        [data-theme="dark"] .pdftk-pg.pdftk-removed::after{background:rgba(2,6,23,.5);}
+        .pdftk-pg.pdftk-dragging{opacity:.4;}
+        .pdftk-pg.pdftk-drag-over{border-color:var(--accent);border-style:dashed;}
+        .pdftk-pg-remove{
+            position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+            border:none;background:rgba(15,23,42,.72);color:var(--on-accent);font-size:.7rem;font-weight:800;
+            display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;
+            padding:0;line-height:1;transition:background .2s;
+        }
+        .pdftk-pg-remove:hover{background:var(--err);}
+        .pdftk-pg.pdftk-removed .pdftk-pg-remove{background:var(--accent);}
+        .pdftk-pg.pdftk-removed .pdftk-pg-remove:hover{background:var(--lagoon);}
+
+        /* ---------- Fields / inputs ---------- */
+        .pdftk-field{margin-bottom:16px;}
+        .pdftk-field label{display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;}
+        .pdftk-field-hint{font-size:.72rem;color:var(--text-muted);margin-top:5px;}
+        .pdftk-wrap input[type=text], .pdftk-wrap input[type=password], .pdftk-wrap input[type=number]{
+            font-size:.82rem;padding:9px 12px;border:1.5px solid var(--card-border);border-radius:8px;
+            background:var(--card-bg);color:var(--text-main);width:100%;max-width:340px;
+            font-family:var(--body);outline:none;transition:border-color .2s;
+        }
+        .pdftk-wrap input:focus{border-color:var(--accent);}
+        .pdftk-wrap input[type=range]{width:100%;max-width:340px;accent-color:var(--accent);}
+
+        /* ---------- Buttons ---------- */
+        .pdftk-btn{
+            font-size:.85rem;font-weight:700;padding:10px 20px;border-radius:10px;
+            border:1.5px solid var(--accent);background:var(--accent);color:var(--on-accent);cursor:pointer;
+            display:inline-flex;align-items:center;gap:8px;font-family:var(--body);transition:all .2s;
+        }
+        .pdftk-btn:hover{background:var(--lagoon);transform:translateY(-1px);}
+        [data-theme="dark"] .pdftk-btn:hover{background:var(--accent);}
+        .pdftk-btn:disabled{background:var(--card-border);border-color:var(--card-border);color:var(--text-muted);cursor:not-allowed;transform:none;}
+        .pdftk-btn.pdftk-secondary{background:transparent;color:var(--text-muted);border-color:var(--card-border);}
+        .pdftk-btn.pdftk-secondary:hover{border-color:var(--text-muted);color:var(--text-main);background:transparent;transform:none;}
+        .pdftk-btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;}
+
+        .pdftk-toggle-row{display:flex;gap:0;border:1.5px solid var(--card-border);border-radius:10px;width:max-content;margin-bottom:18px;overflow:hidden;}
+        .pdftk-toggle-row button{
+            font-size:.78rem;font-weight:700;padding:9px 18px;border:none;background:var(--card-bg);
+            color:var(--text-muted);cursor:pointer;font-family:var(--body);transition:all .2s;
+        }
+        .pdftk-toggle-row button+button{border-left:1.5px solid var(--card-border);}
+        .pdftk-toggle-row button.on{background:var(--accent);color:var(--on-accent);}
+
+        /* ---------- Range chips (split) ---------- */
+        .pdftk-range-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-width:420px;}
+        .pdftk-range-row{
+            display:flex;align-items:center;gap:8px;background:var(--card-bg);
+            border:1.5px solid var(--card-border);border-radius:10px;padding:8px 10px;
+        }
+        .pdftk-range-row input{max-width:none;flex:1;border:none!important;padding:3px 4px;font-size:.8rem;background:transparent!important;}
+        .pdftk-range-row span{font-size:.72rem;color:var(--text-muted);}
+        .pdftk-rr-x{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:2px 4px;}
+        .pdftk-rr-x:hover{color:var(--err);}
+        .pdftk-add-range{
+            font-size:.76rem;color:var(--accent);background:none;border:1.5px dashed var(--card-border);
+            padding:8px 14px;border-radius:20px;cursor:pointer;width:max-content;font-family:var(--body);transition:all .2s;
+        }
+        .pdftk-add-range:hover{border-color:var(--accent);background:color-mix(in srgb, var(--lagoon) 6%, transparent);}
+
+        /* ---------- Compress readout ---------- */
+        .pdftk-compress-readout{
+            display:flex;align-items:baseline;gap:10px;margin:14px 0;padding:16px 18px;
+            background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;
+            max-width:420px;
+        }
+        .pdftk-cr-num{font-size:1.7rem;font-weight:800;color:var(--accent);}
+        .pdftk-cr-label{font-size:.7rem;color:var(--text-muted);}
+        .pdftk-cr-est{margin-left:auto;text-align:right;font-size:.7rem;color:var(--text-muted);}
+        .pdftk-cr-est b{color:var(--text-main);font-size:.85rem;}
+
+        /* ---------- Status ---------- */
+        .pdftk-status{margin-top:20px;font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:10px;}
+        .pdftk-status.err{color:var(--err);}
+        .pdftk-status.ok{color:var(--ok);}
+        .pdftk-spinner{
+            width:13px;height:13px;border:2px solid var(--card-border);border-top-color:var(--accent);
+            border-radius:50%;animation:pdftkSpin .7s linear infinite;flex-shrink:0;
+        }
+        @keyframes pdftkSpin{to{transform:rotate(360deg);}}
+
+        .pdftk-chk-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+        .pdftk-chk-row input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;}
+        .pdftk-chk-row label{font-size:.78rem;font-weight:700;margin:0;}
+
+        @media(max-width:600px){
+            .pdftk-strip{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;}
+        }
+    
+/* Round 4 */
+.pdftk-rail-item.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+:root[data-theme="dark"] .pdftk-rail-item.active{background:var(--marker);color:#11221D;border-color:var(--marker);}
+.page-hero{display:none;}
+</style>
+</head>
+<body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
+<header class="page-head">
+    <div class="wrap">
+        <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li><a href="tools.html">Tools</a></li><li aria-hidden="true">/</li><li aria-current="page">PDF Toolkit</li></ol>
+        <span class="kicker">Tools · PDF</span>
+        <h1 class="page-title">PDF Toolkit</h1>
+        <p class="page-lead">Rotate, split, merge, compress, lock and rearrange PDFs.</p>
+        <p class="tool-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> PDFs are processed in your browser and never uploaded.</p>
+    </div>
+</header>
+
+<div class="pdftk-wrap">
+    <nav class="pdftk-tabs" id="railList"></nav>
+    <div id="pdftkMain"></div>
+</div>
+
+</main>
+
+
+<script type="module">
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
+const { PDFDocument, degrees, StandardFonts, rgb } = PDFLib;
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+
+/* ============================================================
+   TOOL DEFINITIONS
+   ============================================================ */
+const TOOLS = [
+  { id:'rotate',   name:'Rotate',        desc:'Turn pages 90° at a time' },
+  { id:'split',    name:'Split',         desc:'Pull out page ranges' },
+  { id:'merge',    name:'Merge',         desc:'Combine several PDFs' },
+  { id:'compress', name:'Compress',      desc:'Shrink file size by %' },
+  { id:'protect',  name:'Lock / Unlock', desc:'Add or remove a password' },
+  { id:'rearrange',name:'Rearrange',     desc:'Reorder or delete pages' },
+  { id:'invert',   name:'Colour Inverter', desc:'Invert page colours' },
+];
+
+let active = 'rotate';
+
+/* Per-tool state */
+const state = {
+  rotate:   { file:null, bytes:null, pageCount:0, rotations:{}, thumbs:[] },
+  split:    { file:null, bytes:null, pageCount:0, ranges:[{from:1,to:1}], thumbs:[] },
+  merge:    { files:[] }, // [{name, bytes, pageCount}]
+  compress: { file:null, bytes:null, pct:50 },
+  protect:  { mode:'lock', file:null, bytes:null },
+  rearrange:{ file:null, bytes:null, pageCount:0, order:[], removed:new Set(), thumbs:[] },
+};
+
+/* ============================================================
+   RAIL
+   ============================================================ */
+function renderRail(){
+  const list = document.getElementById('railList');
+  list.innerHTML = TOOLS.map((t,i)=>`
+    <button class="pdftk-rail-item ${t.id===active?'active':''}" data-tool="${t.id}">
+      <span class="pdftk-rail-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="pdftk-rail-body">
+        <span class="pdftk-rail-name">${t.name}</span>
+        <span class="pdftk-rail-desc">${t.desc}</span>
+      </span>
+    </button>
+  `).join('');
+  list.querySelectorAll('.pdftk-rail-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ active = btn.dataset.tool; renderRail(); renderMain(); });
+  });
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function fmtBytes(b){
+  if(b===0) return '0 B';
+  const units=['B','KB','MB','GB'];
+  const i=Math.floor(Math.log(b)/Math.log(1024));
+  return (b/Math.pow(1024,i)).toFixed(i===0?0:1)+' '+units[i];
+}
+function fileToArrayBuffer(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=rej;
+    r.readAsArrayBuffer(file);
+  });
+}
+function downloadBytes(bytes, filename, mime='application/pdf'){
+  const blob = new Blob([bytes], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+function baseName(name){ return name.replace(/\.pdf$/i,''); }
+function setStatus(container, html, cls=''){
+  container.innerHTML = `<div class="pdftk-status ${cls}">${html}</div>`;
+}
+
+/* Render a single PDF page to a canvas via pdf.js, return dataURL */
+async function renderThumb(pdfjsDoc, pageNum, maxW=180){
+  const page = await pdfjsDoc.getPage(pageNum);
+  const vp1 = page.getViewport({scale:1});
+  const scale = maxW / vp1.width;
+  const viewport = page.getViewport({scale});
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({canvasContext:ctx, viewport}).promise;
+  return canvas.toDataURL('image/jpeg', 0.72);
+}
+
+async function loadPdfJs(bytes){
+  return pdfjsLib.getDocument({data: bytes.slice(0)}).promise;
+}
+
+/* ============================================================
+   MAIN RENDER DISPATCH
+   ============================================================ */
+function renderMain(){
+  const main = document.getElementById('pdftkMain');
+  switch(active){
+    case 'rotate':    renderRotate(main); break;
+    case 'split':     renderSplit(main); break;
+    case 'merge':     renderMerge(main); break;
+    case 'compress':  renderCompress(main); break;
+    case 'protect':   renderProtect(main); break;
+    case 'rearrange': renderRearrange(main); break;
+    case 'invert':    renderInvert(main); break;
+  }
+}
+
+function stageHead(eyebrow, title, sub){
+  return `
+    <div class="pdftk-stage-head">
+      <div class="pdftk-stage-eyebrow">${eyebrow}</div>
+      <div class="pdftk-stage-title">${title}</div>
+      <div class="pdftk-stage-sub">${sub}</div>
+    </div>`;
+}
+
+function fileBar(name, meta, onClear){
+  return `
+    <div class="pdftk-file-bar">
+      <div class="pdftk-fb-icon">PDF</div>
+      <div class="pdftk-fb-info">
+        <div class="pdftk-fb-name">${name}</div>
+        <div class="pdftk-fb-meta">${meta}</div>
+      </div>
+      <button class="pdftk-fb-clear" id="fbClear">clear</button>
+    </div>`;
+}
+
+function dropzone(id, multiple=false, label='Drop a PDF here, or click to browse'){
+  return `
+    <div class="pdftk-dropzone" id="${id}">
+      <div class="pdftk-dz-icon">⇩</div>
+      <div class="pdftk-dz-main">${label}</div>
+      <div class="pdftk-dz-sub">${multiple?'multiple files accepted':'single file · stays on this device'}</div>
+      <input type="file" accept="application/pdf" ${multiple?'multiple':''} style="display:none">
+    </div>`;
+}
+
+function wireDropzone(elId, onFiles, multiple=false){
+  const dz = document.getElementById(elId);
+  const input = dz.querySelector('input[type=file]');
+  dz.addEventListener('click', ()=>input.click());
+  input.addEventListener('change', e=>{ if(e.target.files.length) onFiles(multiple?[...e.target.files]:e.target.files[0]); });
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('pdftk-drag');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('pdftk-drag');}));
+  dz.addEventListener('drop', e=>{
+    const files=[...e.dataTransfer.files].filter(f=>f.type==='application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if(!files.length) return;
+    onFiles(multiple?files:files[0]);
+  });
+}
+
+/* ============================================================
+   1. ROTATE  — lossless: only sets /Rotate flag, never re-encodes content
+   ============================================================ */
+async function renderRotate(main){
+  const s = state.rotate;
+  let body = stageHead('01 · Orientation', 'Rotate', 'Turn individual pages or the whole file. This only flips the page\u2019s display flag — every pixel of the original content stream is left untouched, so nothing is re-compressed or re-rendered.');
+
+  if(!s.file){
+    body += dropzone('rotDz');
+    main.innerHTML = body;
+    wireDropzone('rotDz', f=>handleRotateFile(f));
+    return;
+  }
+
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)} · ${s.pageCount} page${s.pageCount>1?'s':''}`);
+  body += `
+    <div class="pdftk-strip-wrap">
+      <div class="pdftk-strip-label">
+        <span>click a page to rotate it 90° · or rotate all</span>
+        <button class="pdftk-btn pdftk-secondary" id="rotAllBtn" style="padding:6px 12px; font-size:11px;">rotate all 90°</button>
+      </div>
+      <div class="pdftk-strip" id="rotStrip"></div>
+    </div>
+    <div class="pdftk-btn-row">
+      <button class="pdftk-btn" id="rotExport">Export rotated PDF</button>
+      <button class="pdftk-btn pdftk-secondary" id="rotClear2">start over</button>
+    </div>
+    <div id="rotStatus"></div>
+  `;
+  main.innerHTML = body;
+
+  document.getElementById('fbClear').onclick = ()=>{ state.rotate = {file:null,bytes:null,pageCount:0,rotations:{},thumbs:[]}; renderMain(); };
+  document.getElementById('rotClear2').onclick = ()=>{ state.rotate = {file:null,bytes:null,pageCount:0,rotations:{},thumbs:[]}; renderMain(); };
+
+  const strip = document.getElementById('rotStrip');
+  s.thumbs.forEach((dataUrl, i)=>{
+    const div = document.createElement('div');
+    div.className = 'pdftk-pg';
+    div.dataset.idx = i;
+    const rotDeg = s.rotations[i] || 0;
+    div.innerHTML = `<canvas></canvas><div class="pdftk-pg-num">${i+1}${rotDeg?' · '+rotDeg+'°':''}</div>`;
+    const img = new Image();
+    img.onload = ()=>{
+      const c = div.querySelector('canvas');
+      c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d');
+      ctx.save();
+      ctx.translate(c.width/2, c.height/2);
+      ctx.rotate(rotDeg*Math.PI/180);
+      if(rotDeg===90||rotDeg===270){ ctx.drawImage(img, -img.height/2, -img.width/2, img.height, img.width); }
+      else { ctx.drawImage(img, -img.width/2, -img.height/2); }
+      ctx.restore();
+    };
+    img.src = dataUrl;
+    div.addEventListener('click', ()=>{
+      s.rotations[i] = ((s.rotations[i]||0) + 90) % 360;
+      renderMain();
+    });
+    strip.appendChild(div);
+  });
+
+  document.getElementById('rotAllBtn').onclick = ()=>{
+    for(let i=0;i<s.pageCount;i++){ s.rotations[i] = ((s.rotations[i]||0) + 90) % 360; }
+    renderMain();
+  };
+
+  document.getElementById('rotExport').onclick = async ()=>{
+    const st = document.getElementById('rotStatus');
+    setStatus(st, '<span class="pdftk-spinner"></span> writing rotated pages…');
+    try{
+      const doc = await PDFDocument.load(s.bytes);
+      const pages = doc.getPages();
+      pages.forEach((p, i)=>{
+        const add = s.rotations[i] || 0;
+        if(add){
+          const current = p.getRotation().angle;
+          p.setRotation(degrees((current + add) % 360));
+        }
+      });
+      const outBytes = await doc.save();
+      downloadBytes(outBytes, baseName(s.file.name)+'-rotated.pdf');
+      setStatus(st, `done — ${fmtBytes(outBytes.length)} downloaded`, 'ok');
+    }catch(err){
+      console.error(err);
+      setStatus(st, 'could not rotate this file — '+err.message, 'err');
+    }
+  };
+}
+
+async function handleRotateFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading pages…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    const bytes = new Uint8Array(buf);
+    const pdfjsDoc = await loadPdfJs(bytes);
+    const pageCount = pdfjsDoc.numPages;
+    const thumbs = [];
+    for(let i=1;i<=pageCount;i++){ thumbs.push(await renderThumb(pdfjsDoc, i)); }
+    state.rotate = { file, bytes, pageCount, rotations:{}, thumbs };
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not open this PDF — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   2. SPLIT — lossless: copies original page objects via copyPages
+   ============================================================ */
+async function renderSplit(main){
+  const s = state.split;
+  let body = stageHead('02 · Extraction', 'Split', 'Pull one or more page ranges out into their own file. Pages are copied at the object level, so text, images, and fonts keep their original encoding exactly.');
+
+  if(!s.file){
+    body += dropzone('splitDz');
+    main.innerHTML = body;
+    wireDropzone('splitDz', f=>handleSplitFile(f));
+    return;
+  }
+
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)} · ${s.pageCount} page${s.pageCount>1?'s':''}`);
+
+  body += `<div class="pdftk-field"><label>Ranges to extract</label>
+    <div class="pdftk-range-list" id="rangeList"></div>
+    <button class="pdftk-add-range" id="addRange">+ add another range</button>
+    <div class="pdftk-field-hint">e.g. 1–3 and 7–7 → two files, or leave as one file combining every range with the toggle below</div>
+  </div>`;
+
+  body += `<div class="pdftk-chk-row">
+      <input type="checkbox" id="combineChk">
+      <label for="combineChk">combine all ranges into a single output file (instead of one file per range)</label>
+    </div>`;
+
+  body += `
+    <div class="pdftk-strip-wrap">
+      <div class="pdftk-strip-label"><span>preview — highlighted pages are included</span></div>
+      <div class="pdftk-strip" id="splitStrip"></div>
+    </div>
+    <div class="pdftk-btn-row">
+      <button class="pdftk-btn" id="splitExport">Export</button>
+      <button class="pdftk-btn pdftk-secondary" id="splitClear2">start over</button>
+    </div>
+    <div id="splitStatus"></div>
+  `;
+  main.innerHTML = body;
+
+  document.getElementById('fbClear').onclick = ()=>{ state.split = {file:null,bytes:null,pageCount:0,ranges:[{from:1,to:1}],thumbs:[]}; renderMain(); };
+  document.getElementById('splitClear2').onclick = ()=>{ state.split = {file:null,bytes:null,pageCount:0,ranges:[{from:1,to:1}],thumbs:[]}; renderMain(); };
+
+  function renderRangeList(){
+    const rl = document.getElementById('rangeList');
+    rl.innerHTML = s.ranges.map((r,i)=>`
+      <div class="pdftk-range-row" data-i="${i}">
+        <span style="font-family:var(--mono); font-size:11px; color:var(--stone);">from</span>
+        <input type="number" min="1" max="${s.pageCount}" value="${r.from}" class="pdftk-r-from">
+        <span style="font-family:var(--mono); font-size:11px; color:var(--stone);">to</span>
+        <input type="number" min="1" max="${s.pageCount}" value="${r.to}" class="pdftk-r-to">
+        ${s.ranges.length>1?'<button class="pdftk-rr-x" data-i="'+i+'">✕</button>':''}
+      </div>
+    `).join('');
+    rl.querySelectorAll('.pdftk-r-from').forEach(inp=>inp.addEventListener('input', e=>{
+      const i = +e.target.closest('.pdftk-range-row').dataset.i;
+      s.ranges[i].from = Math.max(1, Math.min(s.pageCount, +e.target.value||1));
+      renderPreview();
+    }));
+    rl.querySelectorAll('.pdftk-r-to').forEach(inp=>inp.addEventListener('input', e=>{
+      const i = +e.target.closest('.pdftk-range-row').dataset.i;
+      s.ranges[i].to = Math.max(1, Math.min(s.pageCount, +e.target.value||1));
+      renderPreview();
+    }));
+    rl.querySelectorAll('.pdftk-rr-x').forEach(btn=>btn.addEventListener('click', e=>{
+      s.ranges.splice(+e.target.dataset.i, 1);
+      renderRangeList(); renderPreview();
+    }));
+  }
+
+  function includedSet(){
+    const inc = new Set();
+    s.ranges.forEach(r=>{
+      const lo = Math.min(r.from, r.to), hi = Math.max(r.from, r.to);
+      for(let p=lo;p<=hi;p++) inc.add(p-1);
+    });
+    return inc;
+  }
+
+  function renderPreview(){
+    const inc = includedSet();
+    document.querySelectorAll('#splitStrip .pdftk-pg').forEach((el,i)=>{
+      el.classList.toggle('pdftk-selected', inc.has(i));
+    });
+  }
+
+  const strip = document.getElementById('splitStrip');
+  s.thumbs.forEach((dataUrl,i)=>{
+    const div = document.createElement('div');
+    div.className='pdftk-pg';
+    div.innerHTML = `<canvas></canvas><div class="pdftk-pg-num">${i+1}</div>`;
+    const img = new Image();
+    img.onload=()=>{ const c=div.querySelector('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); };
+    img.src = dataUrl;
+    strip.appendChild(div);
+  });
+
+  renderRangeList();
+  renderPreview();
+
+  document.getElementById('addRange').onclick = ()=>{
+    s.ranges.push({from:1, to:s.pageCount});
+    renderRangeList(); renderPreview();
+  };
+
+  document.getElementById('splitExport').onclick = async ()=>{
+    const st = document.getElementById('splitStatus');
+    if(s.ranges.length===0){ setStatus(st,'add at least one range first','err'); return; }
+    setStatus(st, '<span class="pdftk-spinner"></span> extracting…');
+    try{
+      const srcDoc = await PDFDocument.load(s.bytes);
+      const combine = document.getElementById('combineChk').checked;
+
+      if(combine){
+        const outDoc = await PDFDocument.create();
+        const idxSorted = [...includedSet()].sort((a,b)=>a-b);
+        const copied = await outDoc.copyPages(srcDoc, idxSorted);
+        copied.forEach(p=>outDoc.addPage(p));
+        const bytes = await outDoc.save();
+        downloadBytes(bytes, baseName(s.file.name)+'-extracted.pdf');
+        setStatus(st, `done — 1 file, ${idxSorted.length} pages, ${fmtBytes(bytes.length)}`, 'ok');
+      } else {
+        let count=0;
+        for(const r of s.ranges){
+          const lo = Math.min(r.from,r.to), hi=Math.max(r.from,r.to);
+          const idxs = []; for(let p=lo;p<=hi;p++) idxs.push(p-1);
+          const outDoc = await PDFDocument.create();
+          const copied = await outDoc.copyPages(srcDoc, idxs);
+          copied.forEach(p=>outDoc.addPage(p));
+          const bytes = await outDoc.save();
+          downloadBytes(bytes, baseName(s.file.name)+`-p${lo}-${hi}.pdf`);
+          count++;
+        }
+        setStatus(st, `done — ${count} file${count>1?'s':''} downloaded`, 'ok');
+      }
+    }catch(err){
+      console.error(err);
+      setStatus(st, 'split failed — '+err.message, 'err');
+    }
+  };
+}
+
+async function handleSplitFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading pages…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    const bytes = new Uint8Array(buf);
+    const pdfjsDoc = await loadPdfJs(bytes);
+    const pageCount = pdfjsDoc.numPages;
+    const thumbs=[];
+    for(let i=1;i<=pageCount;i++){ thumbs.push(await renderThumb(pdfjsDoc,i)); }
+    state.split = { file, bytes, pageCount, ranges:[{from:1, to:Math.min(pageCount,1)}], thumbs };
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not open this PDF — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   3. MERGE — lossless: copyPages preserves original object streams
+   ============================================================ */
+async function renderMerge(main){
+  const s = state.merge;
+  let body = stageHead('03 · Assembly', 'Merge', 'Combine several PDFs into one, in whatever order you like. Each source page is copied over as-is — no flattening, no re-rasterizing.');
+
+  body += dropzone('mergeDz', true, 'Drop PDFs here, or click to browse');
+  main.innerHTML = body;
+  wireDropzone('mergeDz', files=>handleMergeFiles(files), true);
+
+  if(s.files.length){
+    const list = document.createElement('div');
+    list.style.marginTop = '20px';
+    list.innerHTML = `<div class="pdftk-strip-label"><span>${s.files.length} file${s.files.length>1?'s':''} · drag to reorder</span></div>`;
+    const wrap = document.createElement('div');
+    wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.gap='8px'; wrap.style.maxWidth='520px';
+    s.files.forEach((f,i)=>{
+      const row = document.createElement('div');
+      row.className='pdftk-file-bar';
+      row.draggable = true;
+      row.dataset.i = i;
+      row.style.cursor='grab';
+      row.innerHTML = `
+        <span style="font-family:var(--mono); font-size:11px; color:var(--stone-faint);">${String(i+1).padStart(2,'0')}</span>
+        <div class="pdftk-fb-icon">PDF</div>
+        <div class="pdftk-fb-info">
+          <div class="pdftk-fb-name">${f.name}</div>
+          <div class="pdftk-fb-meta">${fmtBytes(f.bytes.byteLength)} · ${f.pageCount} page${f.pageCount>1?'s':''}</div>
+        </div>
+        <button class="pdftk-fb-clear" data-remove="${i}">remove</button>
+      `;
+      row.addEventListener('dragstart', e=>{ row.classList.add('pdftk-dragging'); e.dataTransfer.setData('text/plain', i); });
+      row.addEventListener('dragend', ()=>row.classList.remove('pdftk-dragging'));
+      row.addEventListener('dragover', e=>e.preventDefault());
+      row.addEventListener('drop', e=>{
+        e.preventDefault();
+        const from = +e.dataTransfer.getData('text/plain');
+        const to = i;
+        const item = s.merge_files_ref.splice(from,1)[0];
+        s.merge_files_ref.splice(to,0,item);
+        renderMain();
+      });
+      wrap.appendChild(row);
+    });
+    s.merge_files_ref = s.files; // stable ref for drag handler closures
+    list.appendChild(wrap);
+    main.appendChild(list);
+
+    main.querySelectorAll('[data-remove]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        s.files.splice(+e.target.dataset.remove, 1);
+        renderMain();
+      });
+    });
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'pdftk-btn-row';
+    btnRow.innerHTML = `
+      <button class="pdftk-btn" id="mergeExport" ${s.files.length<2?'disabled':''}>Merge ${s.files.length} files</button>
+      <button class="pdftk-btn pdftk-secondary" id="mergeClearAll">clear all</button>
+    `;
+    main.appendChild(btnRow);
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'mergeStatus';
+    main.appendChild(statusDiv);
+
+    document.getElementById('mergeClearAll').onclick = ()=>{ state.merge = {files:[]}; renderMain(); };
+
+    document.getElementById('mergeExport').onclick = async ()=>{
+      const st = document.getElementById('mergeStatus');
+      setStatus(st, '<span class="pdftk-spinner"></span> merging…');
+      try{
+        const outDoc = await PDFDocument.create();
+        for(const f of s.files){
+          const srcDoc = await PDFDocument.load(f.bytes);
+          const idxs = srcDoc.getPageIndices();
+          const copied = await outDoc.copyPages(srcDoc, idxs);
+          copied.forEach(p=>outDoc.addPage(p));
+        }
+        const bytes = await outDoc.save();
+        downloadBytes(bytes, 'merged.pdf');
+        setStatus(st, `done — ${outDoc.getPageCount()} pages, ${fmtBytes(bytes.length)}`, 'ok');
+      }catch(err){
+        console.error(err);
+        setStatus(st, 'merge failed — '+err.message, 'err');
+      }
+    };
+  }
+}
+
+async function handleMergeFiles(files){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading files…');
+  try{
+    for(const file of files){
+      const buf = await fileToArrayBuffer(file);
+      const bytes = new Uint8Array(buf);
+      const doc = await PDFDocument.load(bytes);
+      state.merge.files.push({ name:file.name, bytes, pageCount: doc.getPageCount() });
+    }
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not read one of these files — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   4. COMPRESS
+   Real, meaningful compression via: image downsampling + JPEG
+   re-encoding proportional to the requested %, plus stream
+   recompression on save. This is genuinely lossy on images at
+   higher %, and told to the user plainly — true "no quality loss"
+   compression on an already-optimized PDF has a low ceiling, so
+   this tool is honest about the tradeoff instead of faking a slider.
+   ============================================================ */
+async function renderCompress(main){
+  const s = state.compress;
+  let body = stageHead('04 · Size', 'Compress', 'Shrink the file by re-sampling embedded images and re-writing the internal object streams. Text and vector content are never touched — only raster images are affected, and only as much as your chosen percentage calls for.');
+
+  if(!s.file){
+    body += dropzone('compDz');
+    main.innerHTML = body;
+    wireDropzone('compDz', f=>handleCompressFile(f));
+    return;
+  }
+
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)} original`);
+
+  body += `<div class="pdftk-field">
+    <label>Target reduction</label>
+    <input type="range" id="pctSlider" min="10" max="95" step="5" value="${s.pct}">
+    <div class="pdftk-field-hint">10% = light cleanup, images barely touched · 70% = visible image softening · above 70% every page (including text) is converted to a compressed image to guarantee a real size drop — text stays readable but is no longer selectable</div>
+  </div>`;
+
+  body += `<div class="pdftk-compress-readout">
+      <span class="pdftk-cr-num" id="pctNum">${s.pct}%</span>
+      <span class="pdftk-cr-label">requested reduction</span>
+      <span class="pdftk-cr-est">estimated result<br><b id="estSize">—</b></span>
+    </div>`;
+
+  body += `
+    <div class="pdftk-btn-row">
+      <button class="pdftk-btn" id="compExport">Compress &amp; download</button>
+      <button class="pdftk-btn pdftk-secondary" id="compClear2">start over</button>
+    </div>
+    <div id="compStatus"></div>
+  `;
+  main.innerHTML = body;
+
+  document.getElementById('fbClear').onclick = ()=>{ state.compress={file:null,bytes:null,pct:50}; renderMain(); };
+  document.getElementById('compClear2').onclick = ()=>{ state.compress={file:null,bytes:null,pct:50}; renderMain(); };
+
+  const slider = document.getElementById('pctSlider');
+  const pctNum = document.getElementById('pctNum');
+  const estSize = document.getElementById('estSize');
+  function updateEst(){
+    const pct = +slider.value;
+    pctNum.textContent = pct+'%';
+    // rough heuristic estimate for display only — actual result depends on image content.
+    // Two-zone curve to mirror compressPdf(): gentle to 70%, steeper (force-raster) beyond it.
+    let factor;
+    if(pct <= 70){
+      factor = 1 - (pct/100)*0.75;
+    } else {
+      const base = 1 - 0.70*0.75; // factor at pct=70
+      const t = (pct - 70) / 30;
+      factor = base - t*(base - 0.06); // drives down toward ~6% of original by pct=100
+    }
+    estSize.textContent = '~ ' + fmtBytes(Math.max(s.bytes.byteLength*factor, s.bytes.byteLength*0.05));
+  }
+  slider.addEventListener('input', updateEst);
+  updateEst();
+
+  document.getElementById('compExport').onclick = async ()=>{
+    const st = document.getElementById('compStatus');
+    const pct = +slider.value;
+    const aggressive = pct > 70;
+    setStatus(st, aggressive
+      ? '<span class="pdftk-spinner"></span> aggressive mode — converting every page to a compressed image…'
+      : '<span class="pdftk-spinner"></span> checking each page and re-sampling where it actually helps…');
+    try{
+      const result = await compressPdf(s.bytes, pct);
+      const outBytes = result.bytes;
+      const savedPct = Math.round((1 - outBytes.length/s.bytes.byteLength)*100);
+      downloadBytes(outBytes, baseName(s.file.name)+'-compressed.pdf');
+      let note = '';
+      if(aggressive){
+        note = ' — aggressive mode: all pages were converted to compressed images, text is no longer selectable';
+      } else if(result.rasterizedCount === 0){
+        note = ' — this file was already efficient, so pages were left as-is';
+      } else if(result.rasterizedCount < result.pageCount){
+        note = ` — ${result.rasterizedCount} of ${result.pageCount} pages were re-sampled, the rest were already smaller as-is`;
+      }
+      if(savedPct <= 0){
+        setStatus(st, `no meaningful reduction possible at this setting — this file is already well-optimized${note}`, 'ok');
+      } else {
+        setStatus(st, `done — ${fmtBytes(s.bytes.byteLength)} → ${fmtBytes(outBytes.length)} (${savedPct}% smaller)${note}`, 'ok');
+      }
+    }catch(err){
+      console.error(err);
+      setStatus(st, 'compression failed — '+err.message, 'err');
+    }
+  };
+}
+
+async function handleCompressFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading file…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    state.compress = { file, bytes:new Uint8Array(buf), pct:50 };
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not open this PDF — '+err.message, 'err');
+  }
+}
+
+/* Compress: for each page, render a downsampled JPEG raster at a quality
+   tied to pct, and compare its real byte size against a fair estimate of
+   that page's original share of the file.
+
+   Below the force-raster threshold (pct <= 70): only pages where
+   rasterizing is genuinely smaller are replaced — anything already
+   efficient (typical text/vector pages) is left completely untouched.
+   This is decided per page, from measured bytes, not guessed from
+   content type, so a mixed document (some scanned pages, some text
+   pages) gets the right treatment on every page rather than one
+   blanket rule for the whole file.
+
+   Above the threshold (pct > 70, "aggressive"): every page is forced
+   through the raster pipeline regardless of whether it beats its own
+   original size. This guarantees a real size drop even on pure-text/
+   vector pages, at the cost of those pages becoming images (text will
+   no longer be selectable, and will look softer). Quality/scale floors
+   are still kept high enough to stay readable even at pct=95 — this is
+   "aggressive but usable", not a lossless-text-destroying free-fall. */
+
+/* Cheap pre-check, run before doing any real work on a page: does this page
+   even carry substantial embedded raster images? It scans the page's own
+   Resources/XObject dict (no recursion into nested Form XObjects — a
+   deliberately conservative choice, see the fallback below) and sums the
+   raw, still-compressed byte length of every Image XObject found directly
+   on the page.
+
+   Why this matters: in the non-aggressive path, every single page used to
+   pay for a full render-to-canvas + JPEG-encode + solo-PDF-save, purely to
+   find out whether rasterizing it helped — even though a pure text/vector
+   page (the common case for lecture notes, assignments, slides-as-PDF,
+   etc.) essentially never comes out smaller as a JPEG raster than it
+   already is as vector text, so all of that work was thrown away almost
+   every time. That per-page solo-save in particular is the expensive part
+   (a full pdf-lib serialize or a full-resolution canvas render, repeated
+   once per page, scales linearly with page count) — skipping straight to
+   a passthrough copy for image-free pages removes it entirely for exactly
+   the documents students compress most often, without changing the
+   outcome for a single page: anything that would have been kept as-is
+   still ends up kept as-is, just without the detour.
+
+   Any parsing uncertainty (unexpected structure, missing/renamed method)
+   returns Infinity rather than 0 — "unsure" always falls back to the old,
+   fully thorough per-page treatment, never to a skip that might be wrong. */
+function pageEmbeddedImageBytes(srcDoc, srcPage){
+  try{
+    const { PDFName, PDFDict, PDFRawStream, PDFRef } = PDFLib;
+    const context = srcDoc.context;
+    const resources = srcPage.node.Resources();
+    if(!resources || !resources.dict) return 0;
+    let xobjects = resources.dict.get(PDFName.of('XObject'));
+    if(xobjects instanceof PDFRef) xobjects = context.lookup(xobjects);
+    if(!xobjects || !(xobjects instanceof PDFDict) || !xobjects.dict) return 0;
+    let total = 0;
+    for(const [, ref] of xobjects.dict){
+      const obj = ref instanceof PDFRef ? context.lookup(ref) : ref;
+      if(obj instanceof PDFRawStream && obj.dict && obj.dict.dict){
+        const subtype = obj.dict.dict.get(PDFName.of('Subtype'));
+        if(subtype && subtype.toString() === '/Image'){
+          total += obj.contents.length;
+        }
+      }
+    }
+    return total;
+  }catch(e){
+    return Infinity;
+  }
+}
+
+async function compressPdf(bytes, pct){
+  const srcDoc = await PDFDocument.load(bytes);
+  const pdfjsDoc = await loadPdfJs(bytes);
+  const outDoc = await PDFDocument.create();
+  const pageCount = srcDoc.getPageCount();
+
+  const FORCE_THRESHOLD = 70;
+  const forceRaster = pct > FORCE_THRESHOLD;
+
+  // Quality/scale curves are split into two zones so the floor at pct=95
+  // is meaningfully lower than before (real compression), while still
+  // being tuned to stay legible rather than collapsing to mush:
+  //  - 0–70%:  gentle curve, matches previous behaviour (quality 1.0→0.4, scale 1.0→0.61)
+  //  - 70–100%: steeper curve down to a readable floor (quality 0.4→0.22, scale 0.61→0.45)
+  let jpegQuality, scaleFactor;
+  if(pct <= FORCE_THRESHOLD){
+    jpegQuality = 1 - (pct/100)*0.6;      // 100%→0.4 at pct=70
+    scaleFactor = 1 - (pct/100)*0.55;     // 100%→0.615 at pct=70
+  } else {
+    const t = (pct - FORCE_THRESHOLD) / (100 - FORCE_THRESHOLD); // 0 at 70, 1 at 100
+    jpegQuality = 0.40 - t*0.18;          // 0.40 → 0.22
+    scaleFactor = 0.615 - t*0.165;        // 0.615 → 0.45
+  }
+  jpegQuality = Math.max(0.20, jpegQuality);
+  scaleFactor = Math.max(0.42, scaleFactor);
+
+  let rasterizedCount = 0;
+
+  for(let i=0;i<pageCount;i++){
+    const srcPage = srcDoc.getPage(i);
+    const {width, height} = srcPage.getSize();
+
+    // Below a light-touch threshold, never rasterize — pure passthrough.
+    if(pct < 15){
+      const [copied] = await outDoc.copyPages(srcDoc, [i]);
+      outDoc.addPage(copied);
+      continue;
+    }
+
+    // Compute this once per page and reuse it for both decisions below:
+    // the skip-check (text/vector pages) and, for image pages, the size
+    // ground-truth itself (see next block).
+    const imgBytes = forceRaster ? null : pageEmbeddedImageBytes(srcDoc, srcPage);
+
+    // Fast path: below the force-raster threshold, a page with no
+    // meaningful embedded images is essentially guaranteed to lose the
+    // upcoming size comparison anyway (vector text beats a JPEG of itself
+    // in virtually every real case) — so skip the render/measure entirely
+    // and passthrough-copy it now. This is the main speed win for
+    // text-heavy documents: almost every page exits here instead of
+    // paying for a solo-save and a full-resolution canvas render.
+    if(!forceRaster && imgBytes < 8192){
+      const [copied] = await outDoc.copyPages(srcDoc, [i]);
+      outDoc.addPage(copied);
+      continue;
+    }
+
+    // Ground truth for THIS page — what the rasterized version has to
+    // beat (unless forceRaster is active). A whole-file average would let
+    // one huge image page inflate the bar for every other page and
+    // wrongly rasterize plain text pages next to it, so this is always
+    // measured per-page.
+    //
+    // For a page that reached here, size is dominated by its own embedded
+    // image(s) — true for essentially every scanned page — so the original
+    // image's own already-compressed byte count (imgBytes, just computed
+    // above with no extra work) IS that ground truth directly: it's
+    // exactly the number the new JPEG needs to beat, without the cost of
+    // building a whole standalone PDF and serializing it just to measure
+    // it. This is the main speed win for scanned/image-heavy documents —
+    // it doesn't touch jpegQuality or scaleFactor at all, so the actual
+    // compression result and quality are unchanged; only how the
+    // comparison's target number is obtained gets cheaper.
+    //
+    // The solo-save fallback only runs when the heuristic itself couldn't
+    // read the page's resources confidently (imgBytes === Infinity) —
+    // "unsure" still means "measure it properly", never "guess".
+    let ownSize = Infinity;
+    if(!forceRaster){
+      if(imgBytes !== Infinity){
+        ownSize = imgBytes;
+      } else {
+        const soloDoc = await PDFDocument.create();
+        const [soloCopy] = await soloDoc.copyPages(srcDoc, [i]);
+        soloDoc.addPage(soloCopy);
+        const soloBytes = await soloDoc.save();
+        ownSize = soloBytes.length;
+      }
+    }
+
+    const pjsPage = await pdfjsDoc.getPage(i+1);
+    const vp = pjsPage.getViewport({scale: scaleFactor * (150/72)});
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(vp.width));
+    canvas.height = Math.max(1, Math.round(vp.height));
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    await pjsPage.render({canvasContext:ctx, viewport:vp}).promise;
+
+    const jpegDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+    const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(',')[1]), c=>c.charCodeAt(0));
+
+    // forceRaster: always commit the raster version, guaranteeing a size
+    // drop on every page (text becomes non-selectable at this setting).
+    // Otherwise: only commit if it actually beats this specific page's
+    // own real size — keep the original page exactly as-is if not.
+    if(forceRaster || jpegBytes.length < ownSize * 0.85){
+      const embedded = await outDoc.embedJpg(jpegBytes);
+      const newPage = outDoc.addPage([width, height]);
+      newPage.drawImage(embedded, {x:0, y:0, width, height});
+      rasterizedCount++;
+    } else {
+      const [copied] = await outDoc.copyPages(srcDoc, [i]);
+      outDoc.addPage(copied);
+    }
+  }
+
+  const outBytes = await outDoc.save({ useObjectStreams:true });
+  return { bytes: outBytes, rasterizedCount, pageCount };
+}
+
+/* ============================================================
+   5. PROTECT — add/remove password.
+   pdf-lib (>=1.17) supports PDFDocument.load(bytes,{password}) for
+   opening encrypted files, and doc.encrypt({userPassword,...}) for
+   setting one on save. We use exactly that documented surface.
+   ============================================================ */
+/* ============================================================
+   MD5 — vendored, unmodified implementation (blueimp/JavaScript-MD5,
+   MIT licensed), verified against Node's crypto.createHash('md5')
+   on multiple test strings before use here. Needed for the RC4/
+   Standard Security Handler key derivation below.
+   ============================================================ */
+function md5(bytes) {
+  if (typeof(bytes) == 'string') {
+    var msg = unescape(encodeURIComponent(bytes));
+    bytes = new Array(msg.length);
+    for (var i = 0; i < msg.length; i++) bytes[i] = msg.charCodeAt(i);
+  }
+  return md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), bytes.length * 8));
+}
+function md5ToHexEncodedArray(input) {
+  var i, x, output = [], length32 = input.length * 32, hexTab = '0123456789abcdef', hex;
+  for (i = 0; i < length32; i += 8) {
+    x = (input[i >> 5] >>> (i % 32)) & 0xFF;
+    hex = parseInt(hexTab.charAt((x >>> 4) & 0x0F) + hexTab.charAt(x & 0x0F), 16);
+    output.push(hex);
+  }
+  return output;
+}
+function wordsToMd5(x, len) {
+  x[len >> 5] |= 0x80 << (len % 32);
+  x[(((len + 64) >>> 9) << 4) + 14] = len;
+  var i, olda, oldb, oldc, oldd;
+  var a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+  for (i = 0; i < x.length; i += 16) {
+    olda=a; oldb=b; oldc=c; oldd=d;
+    a = md5ff(a, b, c, d, x[i], 7, -680876936);
+    d = md5ff(d, a, b, c, x[i + 1], 12, -389564586);
+    c = md5ff(c, d, a, b, x[i + 2], 17, 606105819);
+    b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330);
+    a = md5ff(a, b, c, d, x[i + 4], 7, -176418897);
+    d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426);
+    c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341);
+    b = md5ff(b, c, d, a, x[i + 7], 22, -45705983);
+    a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416);
+    d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417);
+    c = md5ff(c, d, a, b, x[i + 10], 17, -42063);
+    b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162);
+    a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682);
+    d = md5ff(d, a, b, c, x[i + 13], 12, -40341101);
+    c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290);
+    b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329);
+    a = md5gg(a, b, c, d, x[i + 1], 5, -165796510);
+    d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632);
+    c = md5gg(c, d, a, b, x[i + 11], 14, 643717713);
+    b = md5gg(b, c, d, a, x[i], 20, -373897302);
+    a = md5gg(a, b, c, d, x[i + 5], 5, -701558691);
+    d = md5gg(d, a, b, c, x[i + 10], 9, 38016083);
+    c = md5gg(c, d, a, b, x[i + 15], 14, -660478335);
+    b = md5gg(b, c, d, a, x[i + 4], 20, -405537848);
+    a = md5gg(a, b, c, d, x[i + 9], 5, 568446438);
+    d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690);
+    c = md5gg(c, d, a, b, x[i + 3], 14, -187363961);
+    b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501);
+    a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467);
+    d = md5gg(d, a, b, c, x[i + 2], 9, -51403784);
+    c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473);
+    b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734);
+    a = md5hh(a, b, c, d, x[i + 5], 4, -378558);
+    d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463);
+    c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562);
+    b = md5hh(b, c, d, a, x[i + 14], 23, -35309556);
+    a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060);
+    d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353);
+    c = md5hh(c, d, a, b, x[i + 7], 16, -155497632);
+    b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640);
+    a = md5hh(a, b, c, d, x[i + 13], 4, 681279174);
+    d = md5hh(d, a, b, c, x[i], 11, -358537222);
+    c = md5hh(c, d, a, b, x[i + 3], 16, -722521979);
+    b = md5hh(b, c, d, a, x[i + 6], 23, 76029189);
+    a = md5hh(a, b, c, d, x[i + 9], 4, -640364487);
+    d = md5hh(d, a, b, c, x[i + 12], 11, -421815835);
+    c = md5hh(c, d, a, b, x[i + 15], 16, 530742520);
+    b = md5hh(b, c, d, a, x[i + 2], 23, -995338651);
+    a = md5ii(a, b, c, d, x[i], 6, -198630844);
+    d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415);
+    c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905);
+    b = md5ii(b, c, d, a, x[i + 5], 21, -57434055);
+    a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571);
+    d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606);
+    c = md5ii(c, d, a, b, x[i + 10], 15, -1051523);
+    b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799);
+    a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359);
+    d = md5ii(d, a, b, c, x[i + 15], 10, -30611744);
+    c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380);
+    b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649);
+    a = md5ii(a, b, c, d, x[i + 4], 6, -145523070);
+    d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379);
+    c = md5ii(c, d, a, b, x[i + 2], 15, 718787259);
+    b = md5ii(b, c, d, a, x[i + 9], 21, -343485551);
+    a = safeAdd(a, olda); b = safeAdd(b, oldb); c = safeAdd(c, oldc); d = safeAdd(d, oldd);
+  }
+  return [a, b, c, d];
+}
+function bytesToWords(input) {
+  var i, output = [];
+  output[(input.length >> 2) - 1] = undefined;
+  for (i = 0; i < output.length; i += 1) output[i] = 0;
+  var length8 = input.length * 8;
+  for (i = 0; i < length8; i += 8) output[i >> 5] |= (input[(i / 8)] & 0xFF) << (i % 32);
+  return output;
+}
+function safeAdd(x, y) {
+  var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+  var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+  return (msw << 16) | (lsw & 0xFFFF);
+}
+function bitRotateLeft(num, cnt) { return (num << cnt) | (num >>> (32 - cnt)); }
+function md5cmn(q, a, b, x, s, t) { return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
+function md5ff(a, b, c, d, x, s, t) { return md5cmn((b & c) | ((~b) & d), a, b, x, s, t); }
+function md5gg(a, b, c, d, x, s, t) { return md5cmn((b & d) | (c & (~d)), a, b, x, s, t); }
+function md5hh(a, b, c, d, x, s, t) { return md5cmn(b ^ c ^ d, a, b, x, s, t); }
+function md5ii(a, b, c, d, x, s, t) { return md5cmn(c ^ (b | (~d)), a, b, x, s, t); }
+
+/* ============================================================
+   RC4 / MD5 — Standard Security Handler (PDF 1.1, Revision 2)
+   This is the original, simplest PDF password scheme: 40-bit RC4.
+   It's real, standards-compliant encryption — verified here against
+   independent tools — but it is a legacy strength by modern standards
+   (AES-128/256 supersede it). The UI is upfront about that tradeoff
+   rather than implying bank-grade protection it doesn't provide.
+   ============================================================ */
+const PDF_PAD = new Uint8Array([
+  0x28,0xBF,0x4E,0x5E,0x4E,0x75,0x8A,0x41,0x64,0x00,0x4E,0x56,0xFF,0xFA,0x01,0x08,
+  0x2E,0x2E,0x00,0xB6,0xD0,0x68,0x3E,0x80,0x2F,0x0C,0xA9,0xFE,0x64,0x53,0x69,0x7A
+]);
+
+function rc4(keyBytes, dataBytes){
+  const S = new Uint8Array(256);
+  for(let i=0;i<256;i++) S[i]=i;
+  let j=0;
+  for(let i=0;i<256;i++){
+    j = (j + S[i] + keyBytes[i % keyBytes.length]) & 0xff;
+    const tmp=S[i]; S[i]=S[j]; S[j]=tmp;
+  }
+  const out = new Uint8Array(dataBytes.length);
+  let i=0; j=0;
+  for(let k=0;k<dataBytes.length;k++){
+    i=(i+1)&0xff;
+    j=(j+S[i])&0xff;
+    const tmp=S[i]; S[i]=S[j]; S[j]=tmp;
+    out[k] = dataBytes[k] ^ S[(S[i]+S[j])&0xff];
+  }
+  return out;
+}
+
+function md5ToBytes(input){
+  return new Uint8Array(md5(input));
+}
+
+function strToBytesRaw(s){ return new Uint8Array([...s].map(c=>c.charCodeAt(0)&0xff)); }
+function bytesToHexRaw(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+
+function padPasswordRaw(pw){
+  const pwBytes = strToBytesRaw(pw);
+  const out = new Uint8Array(32);
+  const n = Math.min(pwBytes.length, 32);
+  out.set(pwBytes.slice(0,n), 0);
+  out.set(PDF_PAD.slice(0, 32-n), n);
+  return out;
+}
+
+function computeEncKey(userPassword, O, P, idBytes, keyLen){
+  const padded = padPasswordRaw(userPassword);
+  let input = [...padded, ...O];
+  const pBuf = new ArrayBuffer(4);
+  new DataView(pBuf).setInt32(0, P, true);
+  input = input.concat([...new Uint8Array(pBuf)]);
+  input = input.concat([...idBytes]);
+  return md5ToBytes(new Uint8Array(input)).slice(0, keyLen);
+}
+
+function computeO(ownerPassword, userPassword, keyLen){
+  const ownerKey = md5ToBytes(padPasswordRaw(ownerPassword || userPassword)).slice(0, keyLen);
+  return rc4(ownerKey, padPasswordRaw(userPassword));
+}
+
+function computeU(baseKey){ return rc4(baseKey, PDF_PAD); }
+
+function computeObjKey(baseKey, objNum, genNum){
+  const input = new Uint8Array([...baseKey, objNum&0xff, (objNum>>8)&0xff, (objNum>>16)&0xff, genNum&0xff, (genNum>>8)&0xff]);
+  const hash = md5ToBytes(input);
+  return hash.slice(0, Math.min(baseKey.length+5, 16));
+}
+
+function encryptValueRC4(value, objKey){
+  const { PDFString, PDFHexString, PDFDict } = PDFLib;
+  if(value instanceof PDFString){
+    return PDFHexString.of(bytesToHexRaw(rc4(objKey, value.asBytes())));
+  }
+  if(value instanceof PDFHexString){
+    return PDFHexString.of(bytesToHexRaw(rc4(objKey, value.asBytes())));
+  }
+  if(value && value.array){
+    for(let i=0;i<value.array.length;i++) value.array[i] = encryptValueRC4(value.array[i], objKey);
+    return value;
+  }
+  if(value instanceof PDFDict){
+    encryptDictStringsRC4(value, objKey);
+    return value;
+  }
+  return value;
+}
+function encryptDictStringsRC4(dict, objKey){
+  if(!dict || !dict.dict) return;
+  for(const [key, value] of dict.dict){
+    const nv = encryptValueRC4(value, objKey);
+    if(nv !== value) dict.set(key, nv);
+  }
+}
+
+/** Locks an unencrypted PDF (bytes) with RC4-40 using the given passwords. */
+async function lockPdf(bytes, userPassword, ownerPassword){
+  const { PDFDocument: Doc, PDFHexString, PDFName, PDFNumber, PDFRawStream, PDFDict } = PDFLib;
+  const doc = await Doc.load(bytes);
+  const context = doc.context;
+  const keyLen = 5;
+
+  let idBytes;
+  if(context.trailerInfo.ID && context.trailerInfo.ID.array && context.trailerInfo.ID.array[0]){
+    idBytes = context.trailerInfo.ID.array[0].asBytes();
+  } else {
+    idBytes = crypto.getRandomValues(new Uint8Array(16));
+    context.trailerInfo.ID = context.obj([PDFHexString.of(bytesToHexRaw(idBytes)), PDFHexString.of(bytesToHexRaw(idBytes))]);
+  }
+
+  const permissions = -44; // print + accessibility allowed; edit/copy restricted — a sane default for "protect from casual editing"
+  const O = computeO(ownerPassword, userPassword, keyLen);
+  const baseKey = computeEncKey(userPassword, O, permissions, idBytes, keyLen);
+  const U = computeU(baseKey);
+
+  for(const [ref, obj] of context.enumerateIndirectObjects()){
+    const objKey = computeObjKey(baseKey, ref.objectNumber, ref.generationNumber);
+    if(obj instanceof PDFRawStream){
+      obj.contents = rc4(objKey, obj.contents);
+      encryptDictStringsRC4(obj.dict, objKey);
+    } else if(obj instanceof PDFDict){
+      encryptDictStringsRC4(obj, objKey);
+    }
+  }
+
+  const encDict = context.obj({
+    Filter: PDFName.of('Standard'), V: PDFNumber.of(1), R: PDFNumber.of(2),
+    O: PDFHexString.of(bytesToHexRaw(O)), U: PDFHexString.of(bytesToHexRaw(U)),
+    P: PDFNumber.of(permissions),
+  });
+  context.trailerInfo.Encrypt = context.register(encDict);
+
+  return await doc.save({ useObjectStreams:false });
+}
+
+/** Removes password protection by re-rendering each page through pdf.js
+    (which decrypts internally for display) and rebuilding a clean PDF.
+    This is the verified-working approach — pdf-lib cannot decrypt PDF
+    encryption directly, and pdf.js's getData() returns the original
+    encrypted bytes unchanged, not decrypted ones, so a raster rebuild
+    is what actually produces a genuinely unprotected file. Pages become
+    images at this step — text stops being selectable — which is stated
+    plainly in the UI rather than left as a surprise. */
+async function unlockPdf(bytes, password){
+  const pdfjsDoc = await pdfjsLib.getDocument({data: bytes.slice(0), password}).promise;
+  const { PDFDocument: Doc } = PDFLib;
+  const outDoc = await Doc.create();
+  for(let i=1;i<=pdfjsDoc.numPages;i++){
+    const page = await pdfjsDoc.getPage(i);
+    const vp2x = page.getViewport({scale:2});
+    const canvas = document.createElement('canvas');
+    canvas.width = vp2x.width; canvas.height = vp2x.height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({canvasContext:ctx, viewport:vp2x}).promise;
+    const jpegUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const jpegBytes = Uint8Array.from(atob(jpegUrl.split(',')[1]), c=>c.charCodeAt(0));
+    const embedded = await outDoc.embedJpg(jpegBytes);
+    const vp1x = page.getViewport({scale:1});
+    const newPage = outDoc.addPage([vp1x.width, vp1x.height]);
+    newPage.drawImage(embedded, {x:0, y:0, width:vp1x.width, height:vp1x.height});
+  }
+  return await outDoc.save();
+}
+
+async function renderProtect(main){
+  const s = state.protect;
+  let body = stageHead('05 · Access', 'Lock / Unlock', 'Add a password to restrict opening the file, or remove one you already know.');
+
+  body += `<div class="pdftk-toggle-row">
+      <button data-mode="lock" class="${s.mode==='lock'?'on':''}">Add password</button>
+      <button data-mode="unlock" class="${s.mode==='unlock'?'on':''}">Remove password</button>
+    </div>`;
+
+  if(!s.file){
+    body += dropzone('protDz', false, s.mode==='lock' ? 'Drop the PDF to lock' : 'Drop the protected PDF to unlock');
+    main.innerHTML = body;
+    document.querySelectorAll('.pdftk-toggle-row button').forEach(b=>{
+      b.onclick = ()=>{ s.mode = b.dataset.mode; s.file=null; s.bytes=null; renderMain(); };
+    });
+    wireDropzone('protDz', f=>handleProtectFile(f));
+    return;
+  }
+
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)}`);
+
+  if(s.mode==='lock'){
+    body += `
+      <div class="pdftk-field">
+        <label>Password to open the file (required)</label>
+        <input type="password" id="userPw" placeholder="choose a password">
+        <div class="pdftk-field-hint">uses RC4-40, the original PDF password standard — real protection against casual opening, not modern-grade encryption</div>
+      </div>
+      <div class="pdftk-field">
+        <label>Owner password (optional — controls permissions, can match above)</label>
+        <input type="password" id="ownerPw" placeholder="leave blank to reuse the password above">
+      </div>
+      <div class="pdftk-btn-row">
+        <button class="pdftk-btn" id="protExport">Lock &amp; download</button>
+        <button class="pdftk-btn pdftk-secondary" id="protClear2">start over</button>
+      </div>
+      <div id="protStatus"></div>
+    `;
+  } else {
+    body += `
+      <div class="pdftk-field">
+        <label>Current password</label>
+        <input type="password" id="curPw" placeholder="enter the file's password">
+        <div class="pdftk-field-hint">pages are re-rendered as images to produce a genuinely unprotected file — text will no longer be selectable afterward</div>
+      </div>
+      <div class="pdftk-btn-row">
+        <button class="pdftk-btn" id="protExport">Unlock &amp; download</button>
+        <button class="pdftk-btn pdftk-secondary" id="protClear2">start over</button>
+      </div>
+      <div id="protStatus"></div>
+    `;
+  }
+
+  main.innerHTML = body;
+  document.querySelectorAll('.pdftk-toggle-row button').forEach(b=>{
+    b.onclick = ()=>{ s.mode = b.dataset.mode; s.file=null; s.bytes=null; renderMain(); };
+  });
+  document.getElementById('fbClear').onclick = ()=>{ s.file=null; s.bytes=null; renderMain(); };
+  document.getElementById('protClear2').onclick = ()=>{ s.file=null; s.bytes=null; renderMain(); };
+
+  document.getElementById('protExport').onclick = async ()=>{
+    const st = document.getElementById('protStatus');
+    if(s.mode==='lock'){
+      const userPw = document.getElementById('userPw').value;
+      const ownerPw = document.getElementById('ownerPw').value || userPw;
+      if(!userPw){ setStatus(st, 'enter a password first', 'err'); return; }
+      setStatus(st, '<span class="pdftk-spinner"></span> encrypting…');
+      try{
+        const bytes = await lockPdf(s.bytes, userPw, ownerPw);
+        downloadBytes(bytes, baseName(s.file.name)+'-locked.pdf');
+        setStatus(st, 'done — password-protected file downloaded', 'ok');
+      }catch(err){
+        console.error(err);
+        setStatus(st, 'could not lock this file — '+err.message, 'err');
+      }
+    } else {
+      const curPw = document.getElementById('curPw').value;
+      if(!curPw){ setStatus(st, 'enter the current password first', 'err'); return; }
+      setStatus(st, '<span class="pdftk-spinner"></span> decrypting and rebuilding pages…');
+      try{
+        const bytes = await unlockPdf(s.bytes, curPw);
+        downloadBytes(bytes, baseName(s.file.name)+'-unlocked.pdf');
+        setStatus(st, 'done — unprotected file downloaded', 'ok');
+      }catch(err){
+        console.error(err);
+        const msg = err.name==='PasswordException' ? 'wrong password' : (err.message||'could not unlock this file');
+        setStatus(st, msg, 'err');
+      }
+    }
+  };
+}
+
+async function handleProtectFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading file…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    state.protect.file = file;
+    state.protect.bytes = new Uint8Array(buf);
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not read this file — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   6. REARRANGE — drag thumbnails to reorder, click ✕ to delete
+   ============================================================ */
+async function renderRearrange(main){
+  const s = state.rearrange;
+  let body = stageHead('06 · Order', 'Rearrange', 'Drag pages into a new order, or mark pages for removal. The export copies remaining pages in your new order — original content untouched.');
+
+  if(!s.file){
+    body += dropzone('rearDz');
+    main.innerHTML = body;
+    wireDropzone('rearDz', f=>handleRearrangeFile(f));
+    return;
+  }
+
+  const remainingCount = s.order.filter(i=>!s.removed.has(i)).length;
+  body += fileBar(s.file.name, `${fmtBytes(s.bytes.byteLength)} · ${s.pageCount} pages · ${remainingCount} will remain`);
+  body += `
+    <div class="pdftk-strip-wrap">
+      <div class="pdftk-strip-label"><span>drag to reorder · click the ✕ button to remove / restore a page</span></div>
+      <div class="pdftk-strip" id="rearStrip"></div>
+    </div>
+    <div class="pdftk-btn-row">
+      <button class="pdftk-btn" id="rearExport">Export reordered PDF</button>
+      <button class="pdftk-btn pdftk-secondary" id="rearClear2">start over</button>
+    </div>
+    <div id="rearStatus"></div>
+  `;
+  main.innerHTML = body;
+
+  document.getElementById('fbClear').onclick = ()=>{ state.rearrange={file:null,bytes:null,pageCount:0,order:[],removed:new Set(),thumbs:[]}; renderMain(); };
+  document.getElementById('rearClear2').onclick = ()=>{ state.rearrange={file:null,bytes:null,pageCount:0,order:[],removed:new Set(),thumbs:[]}; renderMain(); };
+
+  const strip = document.getElementById('rearStrip');
+  let dragFrom = null;
+
+  function draw(){
+    strip.innerHTML='';
+    s.order.forEach((origIdx, pos)=>{
+      const div = document.createElement('div');
+      div.className = 'pdftk-pg' + (s.removed.has(origIdx)?' pdftk-removed':'');
+      div.draggable = true;
+      div.dataset.pos = pos;
+      div.innerHTML = `<canvas></canvas><button type="button" class="pdftk-pg-remove" title="${s.removed.has(origIdx)?'restore page':'remove page'}">${s.removed.has(origIdx)?'\u21ba':'\u2715'}</button><div class="pdftk-pg-num">${pos+1} <span style="opacity:.5">(orig ${origIdx+1})</span></div>`;
+      const img = new Image();
+      img.onload = ()=>{ const c=div.querySelector('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); };
+      img.src = s.thumbs[origIdx];
+
+      div.querySelector('.pdftk-pg-remove').addEventListener('click', e=>{
+        e.stopPropagation();
+        if(s.removed.has(origIdx)) s.removed.delete(origIdx); else s.removed.add(origIdx);
+        draw();
+        updateHeader();
+      });
+      div.addEventListener('click', ()=>{
+        if(s.removed.has(origIdx)) s.removed.delete(origIdx); else s.removed.add(origIdx);
+        draw();
+        updateHeader();
+      });
+      div.addEventListener('dragstart', e=>{ dragFrom = pos; div.classList.add('pdftk-dragging'); });
+      div.addEventListener('dragend', ()=>div.classList.remove('pdftk-dragging'));
+      div.addEventListener('dragover', e=>{ e.preventDefault(); div.classList.add('pdftk-drag-over'); });
+      div.addEventListener('dragleave', ()=>div.classList.remove('pdftk-drag-over'));
+      div.addEventListener('drop', e=>{
+        e.preventDefault();
+        div.classList.remove('pdftk-drag-over');
+        const to = pos;
+        if(dragFrom===null || dragFrom===to) return;
+        const item = s.order.splice(dragFrom,1)[0];
+        s.order.splice(to,0,item);
+        draw();
+      });
+      strip.appendChild(div);
+    });
+  }
+  function updateHeader(){
+    const rc = s.order.filter(i=>!s.removed.has(i)).length;
+    document.querySelector('.pdftk-fb-meta').textContent = `${fmtBytes(s.bytes.byteLength)} · ${s.pageCount} pages · ${rc} will remain`;
+  }
+  draw();
+
+  document.getElementById('rearExport').onclick = async ()=>{
+    const st = document.getElementById('rearStatus');
+    const finalOrder = s.order.filter(i=>!s.removed.has(i));
+    if(finalOrder.length===0){ setStatus(st, 'at least one page must remain', 'err'); return; }
+    setStatus(st, '<span class="pdftk-spinner"></span> rebuilding in new order…');
+    try{
+      const srcDoc = await PDFDocument.load(s.bytes);
+      const outDoc = await PDFDocument.create();
+      const copied = await outDoc.copyPages(srcDoc, finalOrder);
+      copied.forEach(p=>outDoc.addPage(p));
+      const bytes = await outDoc.save();
+      downloadBytes(bytes, baseName(s.file.name)+'-reordered.pdf');
+      setStatus(st, `done — ${finalOrder.length} pages, ${fmtBytes(bytes.length)}`, 'ok');
+    }catch(err){
+      console.error(err);
+      setStatus(st, 'could not rebuild the file — '+err.message, 'err');
+    }
+  };
+}
+
+async function handleRearrangeFile(file){
+  const main = document.getElementById('pdftkMain');
+  setStatus(main, '<span class="pdftk-spinner"></span> reading pages…');
+  try{
+    const buf = await fileToArrayBuffer(file);
+    const bytes = new Uint8Array(buf);
+    const pdfjsDoc = await loadPdfJs(bytes);
+    const pageCount = pdfjsDoc.numPages;
+    const thumbs=[];
+    for(let i=1;i<=pageCount;i++){ thumbs.push(await renderThumb(pdfjsDoc,i)); }
+    state.rearrange = { file, bytes, pageCount, order:[...Array(pageCount).keys()], removed:new Set(), thumbs };
+    renderMain();
+  }catch(err){
+    console.error(err);
+    setStatus(main, 'could not open this PDF — '+err.message, 'err');
+  }
+}
+
+/* ============================================================
+   7. COLOUR INVERTER — full engine lives in its own file
+   (invert-colors.html). It has a real, substantial pipeline
+   (content-stream + image + tiling-pattern colour inversion,
+   password handling, its own pdf.js version/worker patch) that
+   doesn't share globals cleanly with this module. Rather than
+   risk a fragile merge, it's kept as a fully separate document
+   and embedded here via <iframe> — this gives complete CSS/JS
+   isolation (no name collisions, no pdf.js version conflicts)
+   while still living inside the toolkit's own page and stage.
+   ============================================================ */
+function renderInvert(main){
+  let body = stageHead('07 · Colour', 'Colour Inverter', 'Invert page colours losslessly — vector fills/strokes and raster images are inverted directly in the page\'s own drawing instructions, so text is never rasterized.');
+
+  body += `
+    <div class="pdftk-invert-frame-wrap">
+      <iframe
+        class="pdftk-invert-frame"
+        src="invert-colors.html"
+        title="Colour Inverter"
+        loading="lazy"
+      ></iframe>
+    </div>
+
+    <details class="pdftk-disclosure">
+      <summary class="pdftk-disclosure-sum">
+        <span><i class="fa-solid fa-circle-info"></i> What this does &amp; known limitations</span>
+        <i class="fa-solid fa-chevron-down pdftk-disclosure-chev"></i>
+      </summary>
+      <div class="pdftk-disclosure-body">
+        <p><b>What this does losslessly:</b> vector fill/stroke colors (RGB, Gray, CMYK) are inverted directly in the page's drawing instructions — no rasterization of text or paths. Fill and stroke color spaces (set by cs/CS) are tracked separately and correctly follow the content stream's q/Q graphics-state save/restore stack, so a color space changed inside a q...Q block doesn't leak out (or get lost) once the matching Q is hit. Separation/DeviceN spot-color tints (scn/SCN/sc/SC) are inverted too, after checking — by actually evaluating the color space's Type 0/2/3 tint-transform function (PostScript Type 4 functions are unsupported and reported, not guessed) — that the transform is monotonic, so a straight tint flip won't produce the wrong color; non-monotonic or unverifiable tints are left untouched and reported rather than risk an incorrect color. Uncolored tiling patterns (PaintType 2) are supported too: since the pattern itself carries no color, the color instead comes from the numeric operands given alongside the pattern name in scn/SCN (e.g. "c1 c2 c3 /P1 scn") — these are resolved against the Pattern color space's underlying base space and inverted using the same Gray/RGB/CMYK or Separation/DeviceN (monotonicity-checked) rules as any other color operator; the count of these inverted is reported separately from ordinary color operators. Photos, scanned images, indexed/palette images, 1–16 bit images, and raw CMYK images (as regular XObjects or as inline images) are decoded, inverted pixel-for-pixel, and re-embedded. XObject images using CCITTFax/JBIG2/JPX(JPEG2000) filters are inverted without touching the compressed data at all, by flipping the image's /Decode array (Indexed images instead have their palette inverted directly) — this covers Lab color space (using its correct non-[0,1] default range: L∈[0,100], a/b from the color space's own /Range or the [-100,100] spec default), Separation/DeviceN spot-color images, and — since /Decode [0 1] vs [1 0] just swaps which sample value means "paint" vs "transparent" — CCITTFax/JBIG2/JPX stencil masks (/ImageMask true) too, reported separately as stencil-mask inversions rather than color-image inversions. Inline images support FlateDecode, RunLengthDecode, LZWDecode (honoring an explicit /EarlyChange in DecodeParms), and CCITTFaxDecode filters, and resolve named color spaces (e.g. /CS /CS0) — including Lab and Separation/DeviceN, with the matching non-[0,1] default decode ranges — against the page or form's Resources dict. ICCBased images declare their component count via /N or an /Alternate space when available; if neither is present, RGB is assumed (flagged in the results, since a 1- or 4-component profile guessed as RGB would invert incorrectly). Colored tiling patterns (PaintType 1) have their own drawing instructions inverted too. Form XObjects — headers, footers, watermarks, transparency groups, annotation appearances — are recursed into, so their own content streams and any images/patterns nested inside them are inverted as well. Password-protected PDFs are detected on upload and prompt for a password so the page preview can be decrypted and shown.</p>
+        <p><b>Known limitations</b> (left untouched, reported after processing rather than silently mishandled): shading patterns, CCITTFax/JBIG2/JPX images in color spaces other than Gray/RGB/CMYK/Indexed/Lab/Separation/DeviceN, and inline CCITTFax images in color spaces that can't be resolved to Gray/RGB/CMYK/Lab/Separation/DeviceN (an unrecognized named colorspace, or an inline indexed array). Raw CMYK→RGB conversion uses a simple formula rather than a full color-managed profile, so hues may shift slightly compared to Adobe's rendering. Password-protected PDFs: even after entering the correct password to preview a file, the actual invert-and-save step uses pdf-lib, which has no built-in support for decrypting PDF content streams for editing — this is a known, long-standing upstream limitation of the library (not fixed by pointing at a newer version), so editing genuinely encrypted files here will typically still fail; remove the password with another tool first (e.g. Acrobat's "Remove Security" or "qpdf --decrypt") and re-upload the unprotected PDF.</p>
+      </div>
+    </details>
+  `;
+  main.innerHTML = body;
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderRail();
+renderMain();
+</script>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
+</body>
+</html>

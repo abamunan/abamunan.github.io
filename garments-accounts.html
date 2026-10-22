@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Garments Accounts | Munan.hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Private accounts for the garments business: sales, expenses, stock and partner capital.">
+<meta name="theme-color" content="#0A6F48">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="canonical" href="https://abamunan.github.io/garments-accounts.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://abamunan.github.io/garments-accounts.html">
+<meta property="og:site_name" content="Munan.hub">
+<meta property="og:title" content="Garments Accounts | Munan.hub">
+<meta property="og:description" content="Private accounts for the garments business.">
+<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Icons used by the floating calculator (fa-calculator, fa-xmark, fa-clock-rotate-left, magnifying glasses) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<script src="theme.js"></script>
+<script src="owner.js"></script>
+<link rel="stylesheet" href="site.css?v=3">
+<link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="garments-calc.css?v=3">
+<style>
+/* Round 6 (pass 1): colour tokens come from site.css; the old names (--accent --accent2 --danger --surface --card-bg ... --font)
+   are mapped onto them in app.css under body.app-ga, so everything below keeps working. */
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0)}
+body{margin:0;background:var(--bg);color:var(--text-main);font-family:var(--font);padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+.hidden{display:none!important}
+.wrap{max-width:820px;margin:0 auto;padding:16px 14px 40px}
+@media (min-width:900px){.wrap{max-width:1180px;padding:22px 20px 50px}}
+@media (min-width:1300px){.wrap{max-width:1360px}}
+.top{background:var(--ink);color:var(--on-ink);border-radius:var(--radius-lg);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-size:1.02rem;margin:0;font-weight:700}
+.top p{margin:2px 0 0;font-size:.7rem;opacity:.8}
+.status{font-size:.64rem;padding:4px 9px;border-radius:999px;background:color-mix(in srgb,var(--on-ink) 16%,transparent);white-space:nowrap}
+.tabbar{display:flex;gap:6px;overflow-x:auto;margin:14px 0;padding-bottom:2px;scrollbar-width:none}
+.tabbar::-webkit-scrollbar{display:none}
+.tabbtn{flex:0 0 auto;padding:8px 14px;border-radius:999px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-soft);font:600 .76rem var(--font);cursor:pointer}
+.tabbtn.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tabpanel{display:none}
+.section{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:14px;box-shadow:none}
+.section h2{font-size:.85rem;margin:0;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.card{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:none}
+.card .l{font-size:.64rem;color:var(--text-soft);font-weight:600;text-transform:uppercase}
+.card .v{font-size:1.05rem;font-weight:700;margin-top:4px;overflow-wrap:anywhere}
+.card.in .v{color:var(--accent2)}.card.out .v{color:var(--danger)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row.end{align-items:flex-end}
+.field{flex:1;min-width:110px;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.field label{font-size:.66rem;color:var(--text-soft);font-weight:600}
+.field.wide{flex:2}.field.narrow{max-width:100px}
+input,select{font:500 .82rem var(--font);padding:9px 10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:var(--surface);color:var(--text-main);width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.addbtn{margin-top:12px;width:100%;padding:11px;border:0;border-radius:var(--radius-md);font:700 .84rem var(--font);color:var(--on-accent);cursor:pointer;background:var(--accent2);box-shadow:0 4px 16px var(--accent2-glow)}
+.addbtn:disabled{opacity:.6;cursor:wait}
+.ghostbtn{margin-top:8px;width:100%;padding:10px;border:1px solid var(--card-border);border-radius:var(--radius-md);background:transparent;color:var(--text-main);font:600 .8rem var(--font);cursor:pointer}
+.btngrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.btngrid .ghostbtn{margin-top:0}
+.hint{font-size:.66rem;color:var(--text-soft);margin-top:8px;line-height:1.5}
+.warnbox{background:var(--warn-bg);border:1px solid var(--warn);color:var(--text-main);border-radius:var(--radius-md);padding:10px 12px;font-size:.74rem;margin-bottom:14px;line-height:1.5}
+.warnbox ul{margin:6px 0 0;padding-left:18px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:620px}
+th{text-align:left;color:var(--text-soft);font-size:.62rem;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--card-border)}
+td{padding:8px;border-bottom:1px solid var(--card-border);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.editing td{background:var(--surface)}
+tr.total td{font-weight:700}
+tbody[id^="tbl_"] td:first-child{white-space:nowrap}
+.sub{display:block;font-size:.62rem;color:var(--text-soft);font-weight:500;margin-top:2px}
+.badge{padding:2px 8px;border-radius:999px;font-size:.62rem;font-weight:700;color:var(--on-accent);display:inline-block}
+.b-ok{background:var(--accent2)}.b-bad{background:var(--danger)}.b-soft{background:var(--text-soft)}
+.amt.income{color:var(--accent2);font-weight:700}.amt.expense{color:var(--danger);font-weight:700}
+.rowbtns{white-space:nowrap;text-align:right}
+.del,.edit{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.85rem;padding:4px 6px}
+.del:hover{color:var(--danger)}
+.edit:hover{color:var(--accent)}
+.empty{text-align:center;color:var(--text-soft);padding:14px 0}
+.kv-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--card-border);font-size:.78rem}
+.kv-row:last-child{border-bottom:0}
+.kv-strong{font-weight:700}
+.kv-row span:last-child{white-space:nowrap;flex-shrink:0}
+.kv-row span:first-child{min-width:0}
+.catbar-row{display:flex;align-items:center;gap:8px;font-size:.74rem;margin-bottom:7px}
+.catbar-name{width:110px;flex-shrink:0;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catbar-track{flex:1;height:8px;border-radius:6px;background:var(--surface);overflow:hidden}
+.catbar-fill{height:100%;background:var(--danger);border-radius:6px}
+.catbar-amt{width:70px;text-align:right;font-weight:700;flex-shrink:0}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--card-border);font-size:.74rem;margin:3px 4px 3px 0}
+.tag button{border:0;background:transparent;color:var(--text-soft);cursor:pointer;font-size:.68rem}
+.sechead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.sortsel{width:auto;max-width:180px;padding:6px 8px;font-size:.72rem;cursor:pointer}
+.lockbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);color:inherit;font:700 .68rem var(--font);cursor:pointer;white-space:nowrap}
+.lockbtn.open{border-color:var(--accent2);color:var(--accent2)}
+.lockmsg{font-size:.7rem;color:var(--text-soft);margin-top:8px;line-height:1.6}.lockmsg b{color:inherit}
+.sechead+.lockmsg{margin:0 0 10px}
+.subh{font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:700;margin:14px 0 2px}
+.bigcash{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 12px;border-radius:var(--radius-md);background:var(--surface)}
+.bigcash .l{font-size:.72rem;color:var(--text-soft);font-weight:600}
+.bigcash .v{font-size:1.3rem;font-weight:700;overflow-wrap:anywhere}
+.pgrid{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1000px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+.pcard{border:1px solid var(--card-border);border-radius:var(--radius-md);padding:10px 12px;background:var(--card-bg)}
+.pcard h3{margin:0 0 4px;font-size:.84rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.minibtn{padding:5px 11px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:var(--accent);font:700 .66rem var(--font);cursor:pointer}
+.minibtn.solid{background:var(--accent);color:var(--on-accent)}
+.minibtn.danger{background:var(--danger);border-color:var(--danger)}
+.limit{font-size:.7rem;line-height:1.6;margin-top:10px;padding:8px 10px;border-radius:var(--radius-md);background:var(--surface)}
+.limit.bad{background:var(--danger-glow);color:var(--danger)}
+/* phones: 16px inputs stop iOS Safari from zooming in on focus */
+@media (max-width:640px){input,select,.sortsel{font-size:16px}}
+
+/* ---------- login / access gate ---------- */
+.authbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:.7rem;color:var(--text-soft)}
+.authbar .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.authbar .who i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font:700 .68rem var(--font);flex-shrink:0}
+.authbar .who b{color:var(--text-main);font-weight:600}
+.authbar .who .em{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.authbar .who .em{display:none}}
+.authbtns{display:flex;gap:6px;flex-shrink:0}
+.abtn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-main);font:600 .72rem var(--font);cursor:pointer;text-decoration:none;white-space:nowrap}
+.abtn:hover{border-color:var(--accent)}
+.abtn.out{color:var(--danger);border-color:var(--danger)}
+.abtn.out:hover{background:var(--danger-glow)}
+.abtn.in{background:var(--accent2);border-color:var(--accent2);color:var(--on-accent)}
+.gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+.gatebox{width:100%;max-width:400px;text-align:center;background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:var(--radius-lg);padding:28px 22px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.gatebox h2{margin:12px 0 8px;font-size:1.05rem}
+.gatebox p{margin:0 0 6px;font-size:.78rem;color:var(--text-soft);line-height:1.6;overflow-wrap:anywhere}
+.gatebox p b{color:var(--text-main)}
+.gatebox .abtn{margin:14px 4px 0;padding:10px 18px;font-size:.78rem}
+.gicon{width:54px;height:54px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--surface2)}
+.gicon.bad{background:var(--danger-glow)}
+.spinr{width:34px;height:34px;margin:0 auto;border:3px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:gspin .8s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+.by{display:inline-block;margin-top:3px;padding:1px 7px;border-radius:999px;background:var(--surface2);color:var(--text-soft);font-size:.6rem;font-weight:600;white-space:nowrap}
+.bys{display:block;line-height:1.5}
+/* ---------- toast (Backup & Export) ---------- */
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--ink);color:var(--on-ink);padding:10px 18px;border-radius:999px;font:600 .78rem var(--font);box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.toast.err{background:var(--danger)}
+.fltbar{margin-bottom:10px}.fltbar .row{margin-top:0}.fltbar input[type=search]{-webkit-appearance:none}
+
+</style>
+</head>
+<body class="v2 app app-ga" data-nav-hide="off">
+<!-- Nothing below is shown until the login check passes -->
+<div class="gate" id="gate">
+ <div class="gatebox" id="gateBox">
+  <div class="spinr"></div>
+  <h2>Checking your login…</h2>
+  <p>Please wait a moment.</p>
+ </div>
+</div>
+<div class="wrap hidden" id="appWrap" role="main">
+ <div class="authbar">
+  <div class="who" id="whoBox"></div>
+  <div class="authbtns"><button type="button" class="abtn out" id="logoutBtn"><span aria-hidden="true">⎋</span> Logout</button></div>
+ </div>
+ <div class="top"><div><h1>Garments Accounts</h1><p id="subtitle">Connecting to the shared database…</p></div><div class="status" id="status">Connecting…</div></div>
+ <div class="tabbar" id="tabbar"></div>
+ <div id="tab-summary" class="tabpanel"></div>
+ <div id="tab-sales" class="tabpanel"></div>
+ <div id="tab-expenses" class="tabpanel"></div>
+ <div id="tab-stock" class="tabpanel"></div>
+ <div id="tab-capital" class="tabpanel"></div>
+ <div id="tab-inventory" class="tabpanel"></div>
+ <div id="tab-history" class="tabpanel"></div>
+ <div id="tab-settings" class="tabpanel"></div>
+</div>
+<!-- Reports & Export: Excel engine (used by the Excel report button in the Settings tab) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';"></script>
+<script>
+'use strict';
+/* =====================================================================
+   Garments Accounts — shared partner ledger
+   Rules the numbers follow (so every screen agrees):
+   • Profit counts an order only when it is Delivered, Returned or Lost.
+   • Cost of goods = average buying price of the purchases made on or before the order date,
+     so buying more stock later never rewrites earlier profit.
+   • Pending = parcel already with the courier: it leaves the shelf (In Transit)
+     and its courier fee is paid (cash), but revenue/COGS wait for delivery.
+   • Returned: "With charge" = the customer paid the delivery charge (it counts as revenue and can be
+     received as cash); "Without charge" = the customer did not pay it. Condition Good comes back to
+     stock, Damaged is written off, Lost = the product never came back (written off).
+   • Cash = capital in − withdrawals + money received − costs paid from the
+     business account − repayments to partners.
+   • A cost a partner paid personally does NOT touch business cash; it becomes
+     "owed back" to that partner until a Reimbursement is recorded (Accounts tab).
+   • A partner can take out at most: investment + share of profit (− share of loss)
+     − what they already took — and never more than the cash in the business account.
+   • Every order can name its Courier. The Accounts tab groups the customer money still to receive by courier
+     (orders saved before couriers existed sit under "No courier set"); the groups always add up to
+     Summary's "Customer money not yet received". Marking orders received from there uses the normal save path.
+   ===================================================================== */
+const KEYS=['sales','expenses','stock','capital'];
+const BIZ='biz', BIZ_NAME='Business Account';
+const DEFAULT_COURIERS=['Pathao','Steadfast','RedX'];
+const NO_COURIER='__no_courier__';   // sentinel bucket for orders with no Courier set — never a real courier name a partner would type
+const PLACEHOLDERS=['Partner 1','Partner 2','Partner 3'], REAL_NAMES=['Munan','Jeet','Riti'];
+// Costs the app already counts by itself. They can never be an Expense category, or they would be counted twice:
+//  product cost -> Stock tab (cash out when bought, profit cost when sold) · courier/return -> Sales order · damaged goods -> damaged returns
+const RESERVED=[
+ {re:/^(product|stock|inventory|goods|raw material)s?( (cost|purchase|buying))?s?$/,use:'the Stock tab'},
+ {re:/^(courier|delivery)( (cost|charge|fee))?s?$|^return( (charge|cost|fee))?s?$/,use:'the Courier Fee / Return Fee fields on the Sales tab'},
+ {re:/^loss\s*(&|and)\s*damage$|^damage(d)?( (goods|loss|return)s?)?$/,use:'damaged returns (choose Damaged on the return in the Sales tab)'}];
+function reservedUse(name){const n=String(name||'').toLowerCase().replace(/\s+/g,' ').trim();const r=RESERVED.find(x=>x.re.test(n));return r?r.use:'';}
+
+let db=null, activeTab='summary';
+let S={
+ partners:[{id:'p_munan',name:'Munan',share:33.33,legacy:[]},{id:'p_jeet',name:'Jeet',share:33.33,legacy:[]},{id:'p_riti',name:'Riti',share:33.34,legacy:[]}],
+ categories:['Packaging','Marketing','Payment Charges','Transport (Fare)','Operations','Staff','Official / Legal','Others'],
+ products:['Product A','Product B','Product C'],
+ couriers:DEFAULT_COURIERS.slice(),
+ dupOk:[]   // warnings a partner marked "Not a problem"
+};
+let state={sales:[],expenses:[],stock:[],capital:[]};
+const editing={}, built={};
+const sortBy={sales:'new',expenses:'new',stock:'new',capital:'new',cash:'new'};   // history sort choice per table (always starts on "Newest first")
+const autoTouched={};   // date / time inputs a partner changed by hand: these are never auto-updated
+
+/* ---------- small helpers ---------- */
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));   // db snapshots are read-only, so always work on copies
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function num(v){return +v||0;}
+function money(n){const v=num(n);return (v<0?'−':'')+'৳'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:2});}
+function pad(n){return String(n).padStart(2,'0');}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}   // local date, not UTC
+function nowTimeStr(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}   // local time, 24h "HH:MM" (stored that way)
+function fmtTime(t){const m=/^(\d{1,2}):(\d{2})/.exec(String(t||''));if(!m)return '';const h=+m[1];return (h%12||12)+':'+m[2]+' '+(h>=12?'PM':'AM');}   // shown as 3:45 PM
+function sum(arr,k){return arr.reduce((a,x)=>a+num(x[k]),0);}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'x';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function isLocalId(id){return /^local_/.test(id)||/^l\d{12,}/.test(id);}
+const st=r=>r.status||'Pending';
+const norm=v=>String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase();
+/* ---------- history sorting (date + time; entries saved before time existed count as 00:00) ---------- */
+const cmp=(a,b)=>a<b?-1:a>b?1:0;
+const whenKey=r=>(r.date||'')+' '+(r.time||'00:00');
+const byNewest=(a,b)=>cmp(whenKey(b),whenKey(a))||num(b.createdAt)-num(a.createdAt);
+const SORT_LABELS=[['new','Newest first'],['old','Oldest first'],['amtHigh','Highest amount'],['amtLow','Lowest amount'],['qtyHigh','Highest quantity'],['qtyLow','Lowest quantity']];
+const sortOpts=(hasQty,cur)=>SORT_LABELS.filter(([v])=>hasQty||!/^qty/.test(v)).map(([v,l])=>`<option value="${v}"${v===cur?' selected':''}>${l}</option>`).join('');
+function sortRows(rows,mode,amt,qty){   // ties on amount / quantity fall back to newest first
+ const by={
+  new:byNewest,
+  old:(a,b)=>byNewest(b,a),
+  amtHigh:(a,b)=>amt(b)-amt(a)||byNewest(a,b),
+  amtLow:(a,b)=>amt(a)-amt(b)||byNewest(a,b),
+  qtyHigh:(a,b)=>qty(b)-qty(a)||byNewest(a,b),
+  qtyLow:(a,b)=>qty(a)-qty(b)||byNewest(a,b)}[mode]||byNewest;
+ return rows.slice().sort(by);
+}   // "Polo", "polo " and "POLO" are the same thing
+
+/* ---------- Backup & Export helpers ---------- */
+function downloadBlob(content,mime,filename){
+ const blob=new Blob([content],{type:mime});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+ setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},0);
+}
+function csvEscape(v){
+ let s=v==null?'':String(v);
+ if(/^[=+\-@]/.test(s))s="'"+s;   // stop spreadsheet apps from treating a cell as a formula
+ if(/[",\n]/.test(s))s='"'+s.replace(/"/g,'""')+'"';
+ return s;
+}
+let toastTimer=null;
+function showToast(msg,isError){
+ let t=$('gatToast');
+ if(!t){t=document.createElement('div');t.id='gatToast';t.className='toast';document.body.appendChild(t);}
+ t.textContent=msg;t.className='toast show'+(isError?' err':'');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='toast';},isError?4500:2600);
+}
+function yieldToUI(){return new Promise(r=>setTimeout(r,0));}
+
+/* ---------- status pill + subtitle ---------- */
+function setStatus(kind){
+ const map={
+  connecting:['Connecting…','Connecting to the shared database…'],
+  synced:['Synced','Shared with all partners — live sync'],
+  offline:['Offline','Offline — reconnect to load and save shared data'],
+  error:['Sync problem','Sync problem — recent changes may not be saved'],
+  denied:['No access','Your account is not allowed to use this page']};
+ const m=map[kind]||map.connecting;
+ $('status').textContent=m[0];$('subtitle').textContent=m[1];
+}
+function saveFailed(e){
+ setStatus('error');
+ const c=e&&e.code;
+ const why=c==='invalid_argument'?'You may have view-only access to this page.'
+  :c==='quota_exceeded'?'The shared database is full. Delete old entries first.'
+  :c==='resource_exhausted'?'Too many requests — wait a moment and try again.'
+  :'Check your internet connection and try again.';
+ alert('Could not save to the shared database.\n'+why+'\nNothing was changed.');
+}
+
+/* ---------- local copy (works offline, refreshed on every sync) ---------- */
+function saveLocal(){try{localStorage.setItem('gat_state',JSON.stringify(state));localStorage.setItem('gat_settings',JSON.stringify(S));}catch(e){}}
+let cacheTimer=null;
+function cacheLocal(){clearTimeout(cacheTimer);cacheTimer=setTimeout(saveLocal,400);}
+function loadLocal(){try{
+ const s=JSON.parse(localStorage.getItem('gat_state')||'{}');
+ KEYS.forEach(k=>{if(Array.isArray(s[k]))state[k]=s[k];});
+ const ss=JSON.parse(localStorage.getItem('gat_settings')||'null');
+ if(ss&&typeof ss==='object')S=Object.assign(S,ss);
+}catch(e){}}
+
+/* ---------- partners: stable ids so renames never break history ---------- */
+function normalizeSettings(){
+ const list=Array.isArray(S.partners)?S.partners:[];
+ const oldFormat=list.some(p=>!p.id);
+ const seen=new Set();
+ S.partners=list.map((p,i)=>{
+  const name=String(p.name||'').trim()||('Partner '+(i+1));
+  const legacy=Array.isArray(p.legacy)?p.legacy.slice():(p.id?[]:[name]);   // names old records may still carry
+  let id=p.id||('p_'+slug(name));const base=id;let n=2;
+  while(seen.has(id))id=base+'_'+n++;
+  seen.add(id);
+  return {id,name,share:num(p.share),legacy};
+ });
+ // one-time: data saved by the old version still has the placeholder names
+ if(oldFormat&&S.partners.length===3&&S.partners.every((p,i)=>p.name===PLACEHOLDERS[i]))S.partners.forEach((p,i)=>{p.name=REAL_NAMES[i];});
+ S.categories=(Array.isArray(S.categories)?S.categories:[]).filter(c=>!reservedUse(c));
+ S.products=Array.isArray(S.products)?S.products:[];
+ S.couriers=Array.isArray(S.couriers)?S.couriers:DEFAULT_COURIERS.slice();   // old settings docs have no couriers list — fall back to the defaults
+ S.dupOk=Array.isArray(S.dupOk)?S.dupOk:[];
+}
+function partnerById(id){return S.partners.find(p=>p.id===id)||null;}
+function partnerByName(n){return S.partners.find(p=>p.name===n)||S.partners.find(p=>(p.legacy||[]).includes(n))||null;}
+// who does a record point at?  -> {kind:'biz'} | {kind:'partner',p} | {kind:'unknown',name}
+function payer(rec,idKey,nameKey){
+ const id=rec[idKey],name=rec[nameKey];
+ if(id===BIZ)return {kind:'biz'};
+ if(id){const p=partnerById(id);return p?{kind:'partner',p}:{kind:'unknown',name:name||id};}
+ if(!name||name===BIZ_NAME)return {kind:'biz'};
+ const p=partnerByName(name);return p?{kind:'partner',p}:{kind:'unknown',name};
+}
+function payerLabel(pr){return pr.kind==='biz'?BIZ_NAME:pr.kind==='partner'?pr.p.name:(pr.name+' (removed)');}
+function partnerUsage(id){
+ let n=0;const hit=pr=>{if(pr.kind==='partner'&&pr.p.id===id)n++;};
+ state.capital.forEach(c=>hit(payer(c,'partnerId','partner')));
+ state.expenses.forEach(e=>hit(payer(e,'paidById','paidBy')));
+ state.stock.forEach(s=>hit(payer(s,'paidById','paidBy')));
+ state.sales.forEach(s=>hit(payer(s,'courierPaidById','courierPaidBy')));
+ return n;
+}
+
+/* ---------- option lists ---------- */
+function partnerOptions(){return S.partners.map(p=>({v:p.id,l:p.name}));}
+function paidByOptions(){return [{v:BIZ,l:BIZ_NAME}].concat(partnerOptions());}
+function productOptions(){return S.products.slice();}
+function courierOptions(){return S.couriers.slice();}
+function categoryOptions(){const c=S.categories.filter(x=>!reservedUse(x));return c.length?c:['Others'];}
+function optList(f){return f.opts().map(o=>typeof o==='string'?{v:o,l:o}:o);}
+
+/* ---------- tab definitions ---------- */
+const statusCell=r=>{
+ const s=st(r);const c=s==='Delivered'?'b-ok':(s==='Returned'||s==='Lost')?'b-bad':'b-soft';
+ let sub='';
+ if(s==='Returned'){const bits=[r.returnCond&&r.returnCond!=='—'?r.returnCond:'condition not set'];if(r.returnMode)bits.push(r.returnMode.toLowerCase());if(num(r.returnCharge))bits.push('return fee '+money(r.returnCharge));sub=`<span class="sub">${esc(bits.join(' · '))}</span>`;}
+ return `<span class="badge ${c}">${esc(s)}</span>${sub}`;
+};
+const TYPE_LABEL={Investment:'Investment',Withdrawal:'Withdrawal',Reimbursement:'Bills repaid'};
+const dateCell=r=>esc(r.date)+(r.time?`<span class="sub">${esc(fmtTime(r.time))}</span>`:'');
+// Time is picked automatically (current time) but can be changed. It is required, except when editing an older entry that was saved before time existed.
+const timeField=key=>({key:'time',label:'Time',type:'time',req:()=>{const id=editing[key],old=id&&state[key].find(r=>r.id===id);return !(old&&!old.time);}});
+const codOf=r=>num(r.qty)*num(r.unitPrice)+num(r.deliveryCharge);
+const collects=r=>st(r)==='Delivered'||(st(r)==='Returned'&&r.returnMode==='With charge');   // orders where the customer pays us: COD on delivery, or the delivery charge on a "With charge" return
+const dueOf=r=>st(r)==='Delivered'?codOf(r):(collects(r)?num(r.deliveryCharge):0);   // how much the customer pays us on this order
+const TAB_CONFIGS={
+ sales:{title:'Sales',single:'Sale',amount:r=>num(r.qty)*num(r.unitPrice),qty:r=>num(r.qty),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('sales'),
+  {key:'orderNo',label:'Order No',type:'text',ph:'ORD-001',req:true},
+  {key:'customerName',old:'customer',label:'Customer Name',type:'text',wide:true},
+  {key:'customerPhone',label:'Phone',type:'tel'},
+  {key:'customerAddress',label:'Address',type:'text',wide:true},
+  {key:'note',label:'Note',type:'text',wide:true},
+  {key:'product',label:'Product',type:'select',opts:productOptions,req:true,emptyMsg:'Add a product in Settings first'},
+  {key:'qty',label:'Qty',type:'number',step:1,int:true,req:true},
+  {key:'unitPrice',label:'Unit Price',type:'number',req:true},
+  {key:'deliveryCharge',label:'Delivery Charge',type:'number'},
+  {key:'courier',label:'Courier',type:'select',opts:courierOptions,blank:'Select…',emptyMsg:'Add a courier in Settings first',req:()=>{const id=editing.sales,old=id&&state.sales.find(r=>r.id===id);return !(old&&!old.courier);}},
+  {key:'courierCharge',label:'Courier Fee',type:'number'},
+  {key:'courierPaidById',nameKey:'courierPaidBy',label:'Courier / Return Fee Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'status',label:'Status',type:'select',opts:()=>['Pending','Delivered','Returned','Lost']},
+  {key:'returnMode',label:'Return Option',type:'select',blank:'Select…',opts:()=>['With charge','Without charge'],showIf:d=>d.status==='Returned',req:d=>d.status==='Returned'},
+  {key:'returnCharge',label:'Return Fee',type:'number',showIf:d=>d.status==='Returned'},
+  {key:'returnCond',label:'Return Condition',type:'select',blank:'Select…',opts:()=>['Good','Damaged','Lost'],showIf:d=>d.status==='Returned',req:d=>d.status==='Returned'},
+  {key:'received',label:'Money Received?',type:'select',opts:()=>['No','Yes'],showIf:collects,def:'No'},
+  {key:'receivedDate',label:'Received On',type:'date',showIf:d=>collects(d)&&d.received==='Yes',req:d=>collects(d)&&d.received==='Yes'}],
+  dupWarn:true,
+  hint:'Pending = parcel is with the courier. Profit is counted when the order is Delivered, Returned or Lost (status Lost = the parcel never arrived: goods and courier fee are written off). Return option: "With charge" = the customer paid the delivery charge, "Without charge" = the customer did not. Return condition: Good = product came back fine, Damaged = came back damaged, Lost = the product did not come back (written off). One order with several products = one line per product; enter the courier fee on one line only, and pick the same courier on every line. Open the order with ✎ to update its status.',
+  columns:[
+   {label:'Date & Time',fmt:dateCell},
+   {label:'Order',fmt:r=>esc(r.orderNo)},
+   {label:'Customer',fmt:r=>{const nm=r.customerName||r.customer;return [nm?esc(nm):'',r.customerPhone?`<span class="sub">${esc(r.customerPhone)}</span>`:'',r.customerAddress?`<span class="sub">${esc(r.customerAddress)}</span>`:'',r.note?`<span class="sub">Note: ${esc(r.note)}</span>`:''].join('')||'—';}},
+   {label:'Product',fmt:r=>esc(r.product)},
+   {label:'Qty',fmt:r=>esc(r.qty)},
+   {label:'Amount',fmt:r=>money(num(r.qty)*num(r.unitPrice))},
+   {label:'COD Total',fmt:r=>money(codOf(r))},
+   {label:'Courier',fmt:r=>esc(r.courier||'—')},
+   {label:'Courier Fee',fmt:r=>money(r.courierCharge)+`<span class="sub">paid by ${esc(payerLabel(payer(r,'courierPaidById','courierPaidBy')))}</span>`},
+   {label:'Status',fmt:statusCell},
+   {label:'Received',fmt:r=>collects(r)?esc(r.received||'No')+(r.received==='Yes'&&r.receivedDate?`<span class="sub">${esc(r.receivedDate)}</span>`:''):'—'},
+   {label:'Entered by',fmt:byCell}]},
+ expenses:{title:'Expenses',single:'Expense',amount:r=>num(r.amount),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('expenses'),
+  {key:'category',label:'Category',type:'select',opts:categoryOptions},
+  {key:'item',label:'Item / Details',type:'text',wide:true,req:true},
+  {key:'amount',label:'Amount',type:'number',req:true},
+  {key:'paidById',nameKey:'paidBy',label:'Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'note',label:'Note',type:'text'}],
+  dupWarn:true,
+  hint:'Product cost goes in the Stock tab, courier and return fees on the Sales order, damaged goods on the return. Do not enter them here — they would be counted twice.',
+  columns:[
+   {label:'Date & Time',fmt:dateCell},{label:'Category',fmt:r=>esc(r.category)},{label:'Item',fmt:r=>esc(r.item)},
+   {label:'Amount',fmt:r=>`<span class="amt expense">${money(r.amount)}</span>`},
+   {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]},
+ stock:{title:'Stock',single:'Stock Purchase',amount:r=>num(r.qty)*num(r.buyingPrice),qty:r=>num(r.qty),dupWarn:true,hint:'Product cost is entered here only. Do not add the same purchase again in Expenses — it would be counted twice.',fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('stock'),
+  {key:'product',label:'Product',type:'select',opts:productOptions,req:true,emptyMsg:'Add a product in Settings first'},
+  {key:'supplier',label:'Supplier / Source',type:'text'},
+  {key:'qty',label:'Qty Bought',type:'number',step:1,int:true,req:true},
+  {key:'buyingPrice',label:'Buying Price/pc',type:'number',req:true},
+  {key:'paidById',nameKey:'paidBy',label:'Paid By',type:'select',opts:paidByOptions,req:true},
+  {key:'note',label:'Note',type:'text'}],
+  columns:[
+   {label:'Date & Time',fmt:dateCell},{label:'Product',fmt:r=>esc(r.product)},{label:'Supplier',fmt:r=>esc(r.supplier)},
+   {label:'Qty',fmt:r=>esc(r.qty)},{label:'Price/pc',fmt:r=>money(r.buyingPrice)},
+   {label:'Total Cost',fmt:r=>money(num(r.qty)*num(r.buyingPrice))},
+   {label:'Paid By',fmt:r=>esc(payerLabel(payer(r,'paidById','paidBy')))},{label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]},
+ capital:{title:'Partner money history',single:'Entry',addTitle:'Withdraw or add money',editTitle:'Edit entry',addBtn:'Save entry',slots:true,amount:r=>num(r.amount),fields:[
+  {key:'date',label:'Date',type:'date',req:true},timeField('capital'),
+  {key:'partnerId',nameKey:'partner',noBiz:true,label:'Partner',type:'select',opts:partnerOptions,req:true,emptyMsg:'Add a partner in Settings first'},
+  {key:'type',label:'What is this?',type:'select',wide:true,minw:230,opts:()=>[{v:'Withdrawal',l:'Withdraw — partner takes money out'},{v:'Investment',l:'Investment — partner puts money in'},{v:'Reimbursement',l:'Repay bills the partner paid personally'}]},
+  {key:'amount',label:'Amount',type:'number',req:true},
+  {key:'note',label:'Note',type:'text',wide:true}],
+  columns:[
+   {label:'Date & Time',fmt:dateCell},
+   {label:'Partner',fmt:r=>{const pr=payer(r,'partnerId','partner');return esc(pr.kind==='partner'?pr.p.name:pr.kind==='unknown'?pr.name+' (removed)':'—');}},
+   {label:'Type',fmt:r=>esc(TYPE_LABEL[r.type]||r.type)},
+   {label:'Amount',fmt:r=>`<span class="amt ${(r.type==='Withdrawal'||r.type==='Reimbursement')?'expense':'income'}">${money(r.amount)}</span>`},
+   {label:'Note',fmt:r=>esc(r.note)},
+   {label:'Entered by',fmt:byCell}]}
+};
+
+/* ---------- forms (ids are unique per tab: in_<tab>_<field>) ---------- */
+const fid=(key,f)=>'in_'+key+'_'+f.key;
+function fieldInput(key,f){
+ const id=fid(key,f);
+ if(f.type==='select')return `<select id="${id}"></select>`;
+ if(f.type==='date')return `<input type="date" id="${id}" value="${todayStr()}">`;
+ if(f.type==='time')return `<input type="time" id="${id}" value="${nowTimeStr()}">`;
+ const isNum=f.type==='number';
+ return `<input type="${f.type}" id="${id}" ${isNum?`step="${f.step||0.01}" min="0" inputmode="${f.step===1?'numeric':'decimal'}"`:''} placeholder="${esc(f.ph||'')}">`;
+}
+function fillSelect(el,f,wanted){
+ const cur=wanted!==undefined?wanted:el.value;
+ const opts=optList(f);
+ el.innerHTML=opts.length===0&&f.emptyMsg?`<option value="">${esc(f.emptyMsg)}</option>`
+  :(f.blank?`<option value="">${esc(f.blank)}</option>`:'')+opts.map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join('');
+ if(cur&&[...el.options].some(o=>o.value===cur))el.value=cur;
+ else if(cur){   // chosen value was removed from Settings — keep it visible instead of silently switching
+  el.insertAdjacentHTML('afterbegin',`<option value="${esc(cur)}">${esc(f.nameKey?'Removed partner':cur)} (removed)</option>`);el.value=cur;}
+}
+function refreshSelects(key){
+ TAB_CONFIGS[key].fields.forEach(f=>{if(f.type==='select'){const el=$(fid(key,f));if(el)fillSelect(el,f);}});
+ applyShowIf(key);
+}
+function applyShowIf(key){
+ const cfg=TAB_CONFIGS[key],d={};
+ cfg.fields.forEach(f=>{const el=$(fid(key,f));d[f.key]=el?el.value:'';});
+ cfg.fields.forEach(f=>{if(f.showIf){const w=$('fw_'+key+'_'+f.key);if(w)w.classList.toggle('hidden',!f.showIf(d));}});
+ if(key==='capital')updateCapitalHint();
+}
+function collectForm(key){
+ const cfg=TAB_CONFIGS[key],d={};
+ cfg.fields.forEach(f=>{
+  const el=$(fid(key,f));
+  d[f.key]=f.type==='number'?(parseFloat(el.value)||0):((f.type==='text'||f.type==='tel')?el.value.trim():el.value);
+  if(f.type==='select'&&f.nameKey)d[f.nameKey]=el.value&&el.selectedOptions[0]?el.selectedOptions[0].textContent:'';
+ });
+ // fields that don't apply to this status are stored empty, so they can never leak into the totals
+ cfg.fields.forEach(f=>{if(f.showIf&&!f.showIf(d))d[f.key]=f.def!==undefined?f.def:(f.type==='number'?0:'');});
+ return d;
+}
+function validate(key,d){
+ for(const f of TAB_CONFIGS[key].fields){
+  if(f.showIf&&!f.showIf(d))continue;
+  const need=typeof f.req==='function'?f.req(d):f.req,v=d[f.key];
+  if(f.type==='select'&&f.emptyMsg&&optList(f).length===0&&need&&!String(v??'').trim()){alert(f.emptyMsg+'.');return false;}   // an empty list only blocks a required field with nothing chosen (an old order without a courier can still be edited)
+  if(need){const bad=f.type==='number'?!(v>0):!String(v??'').trim();if(bad){alert('Please fill in: '+f.label);return false;}}
+  if(f.type==='number'){
+   if(v<0){alert(f.label+' cannot be negative.');return false;}
+   if(f.int&&!Number.isInteger(v)){alert(f.label+' must be a whole number.');return false;}
+  }
+  if(f.nameKey&&v!==BIZ&&!partnerById(v)){alert('Please choose: '+f.label);return false;}
+ }
+ return true;
+}
+function loadIntoForm(key,rec){
+ TAB_CONFIGS[key].fields.forEach(f=>{
+  const el=$(fid(key,f));if(!el)return;
+  if(f.type==='select'){
+   if(f.nameKey){   // older records stored only a name — map it to a partner
+    let pr=payer(rec,f.key,f.nameKey);
+    if(f.noBiz&&pr.kind==='biz')pr={kind:'unknown',name:'not set'};
+    fillSelect(el,f,pr.kind==='biz'?BIZ:pr.kind==='partner'?pr.p.id:'');
+    if(pr.kind==='unknown'){el.insertAdjacentHTML('afterbegin',`<option value="">Choose… (was: ${esc(pr.name)})</option>`);el.value='';}
+   }else{let w=rec[f.key];if(w==null||w==='—')w='';fillSelect(el,f,String(w));}
+  }else if(f.type==='date'){el.value=rec[f.key]||todayStr();if(f.key==='date')autoTouched[el.id]=true;}   // while editing, the saved date/time stay as they are
+  else if(f.type==='time'){el.value=rec[f.key]||'';autoTouched[el.id]=true;}
+  else if(f.type==='number')el.value=num(rec[f.key])?rec[f.key]:'';
+  else el.value=rec[f.key]||(f.old&&rec[f.old])||'';
+ });
+ applyShowIf(key);
+}
+function clearForm(key,keepSelects){
+ TAB_CONFIGS[key].fields.forEach(f=>{
+  const el=$(fid(key,f));if(!el)return;
+  if(f.type==='date'){el.value=todayStr();delete autoTouched[el.id];}
+  else if(f.type==='time'){el.value=nowTimeStr();delete autoTouched[el.id];}
+  else if(f.type==='select'){if(!keepSelects){fillSelect(el,f,'');el.selectedIndex=0;}}
+  else el.value='';
+ });
+ applyShowIf(key);
+}
+function updateFormMode(key){
+ const cfg=TAB_CONFIGS[key],ed=!!editing[key];
+ $('h_'+key).textContent=ed?(cfg.editTitle||'Edit '+cfg.single):(cfg.addTitle||'Add '+cfg.single);
+ $('addbtn_'+key).textContent=ed?'Save changes':(cfg.addBtn||'+ Add '+cfg.single);
+ $('cancel_'+key).classList.toggle('hidden',!ed);
+}
+
+/* ---------- CRUD panels: built once per tab, then only the table refreshes ---------- */
+function buildCrudPanel(key){
+ const cfg=TAB_CONFIGS[key];
+ $('tab-'+key).innerHTML=`${cfg.slots?'<div id="acctTop"></div><div id="acctCouriers"></div>':''}${cfg.dupWarn?`<div id="dupWarn_${key}"></div>`:''}
+  <div class="section">${secHead(esc(cfg.addTitle||'Add '+cfg.single),'','h_'+key)}
+   <div class="row crudform" id="form_${key}" data-key="${key}">${cfg.fields.map(f=>`<div class="field${f.wide?' wide':''}" id="fw_${key}_${f.key}"${f.minw?` style="min-width:${f.minw}px"`:''}><label for="${fid(key,f)}">${esc(f.label)}</label>${fieldInput(key,f)}</div>`).join('')}</div>
+   ${cfg.hint?`<div class="hint">${esc(cfg.hint)}</div>`:''}
+   ${key==='capital'?'<div class="limit" id="limit_capital"></div>':''}
+   <button class="addbtn" id="addbtn_${key}" data-act="add" data-key="${key}">${esc(cfg.addBtn||'+ Add '+cfg.single)}</button>
+   <button class="ghostbtn hidden" id="cancel_${key}" data-act="cancel" data-key="${key}">Cancel editing</button></div>
+  <div class="section">${secHead(esc(cfg.title),`<select class="sortsel" id="sort_${key}" data-act="sort" data-key="${key}" aria-label="Sort ${esc(cfg.title)}">${sortOpts(!!cfg.qty,sortBy[key])}</select>`)}<div class="tablewrap"><table><thead><tr>${cfg.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody id="tbl_${key}"></tbody></table></div></div>
+  ${cfg.slots?'<div id="acctBottom"></div>':''}`;
+ refreshSelects(key);
+}
+function renderTab(key){
+ const cfg=TAB_CONFIGS[key];
+ if(editing[key]&&!state[key].some(r=>r.id===editing[key])){editing[key]=null;updateFormMode(key);}   // someone deleted it meanwhile
+ const all=state[key],rows=sortRows(applyFilter(key,all),sortBy[key],cfg.amount,cfg.qty);syncFltUi(key,rows.length,all.length);
+ $('tbl_'+key).innerHTML=rows.length?rows.map(r=>`<tr class="${editing[key]===r.id?'editing':''}">${cfg.columns.map(c=>`<td>${c.fmt(r)}</td>`).join('')}<td class="rowbtns"><button class="edit" data-act="edit" data-key="${key}" data-id="${esc(r.id)}" aria-label="Edit entry">✎</button><button class="del" data-act="del" data-key="${key}" data-id="${esc(r.id)}" aria-label="Delete entry">✕</button></td></tr>`).join('')
+  :`<tr><td colspan="${cfg.columns.length+1}" class="empty">No entries yet.</td></tr>`;
+}
+function refreshAutoStamp(){   // date + time follow the clock until a partner changes them by hand (never while editing or while the field is focused)
+ KEYS.forEach(key=>{
+  if(!built[key]||editing[key])return;
+  [['date',todayStr],['time',nowTimeStr]].forEach(([k,now])=>{
+   const id='in_'+key+'_'+k,el=$(id),v=now();
+   if(el&&!autoTouched[id]&&document.activeElement!==el&&el.value!==v)el.value=v;
+  });
+ });
+}
+function setSort(key,mode){sortBy[key]=mode;if(key==='cash')renderAccounts();else renderTab(key);}
+function startEdit(key,id){
+ {const r0=state[key].find(r=>r.id===id);
+  if(r0&&!isOwner(r0)){
+   if(key!=='sales'){alert('This entry was entered by '+(r0.enteredBy||'another partner')+'. Only that partner can edit it.');return;}
+   showToast('Entered by '+(r0.enteredBy||'another partner')+' — you can change Money Received / Received On only');}}
+ const rec=state[key].find(r=>r.id===id);if(!rec)return;
+ editing[key]=id;loadIntoForm(key,rec);updateFormMode(key);renderTab(key);
+ $('form_'+key).scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelEdit(key){editing[key]=null;clearForm(key,false);updateFormMode(key);renderTab(key);}
+
+function availableStock(product,skipSaleId){const i=computeInventory(skipSaleId).find(x=>norm(x.product)===norm(product));return i?i.inStock:0;}
+function confirmRisky(key,d){
+ const dup=key==='sales'?null:sameEntry(key,d,editing[key]);   // sales have their own order-number check below
+ if(dup&&!confirm(`An identical ${DUP_LABEL[key]} is already saved (${dupText(key,dup)}).\n\nIf this is the same entry, adding it again counts it twice.\n\nAdd it anyway?`))return false;
+ if(key==='expenses'){
+  const use=reservedUse(d.category);
+  if(use){alert(`"${d.category}" is already counted automatically through ${use}.\n\nEnter it there — adding it here would count it twice.`);return false;}
+  const why=expenseIssue(d,true);
+  if(why&&!confirm(`This expense may already be counted somewhere else: ${why}.\n\nProduct cost is counted from Stock only, and courier, return and damage costs from the Sales tab — adding it here can count it twice.\n\nAdd it as an expense anyway?`))return false;
+  const im=investMsg(d.paidById,num(d.amount));
+  if(im&&!confirm(`${im}\n\nSave it anyway?`))return false;
+ }
+ if(key==='stock'){
+  const twin=expenseTwin(d);
+  if(twin&&!confirm(`This purchase looks like an expense that is already entered (${twin}).\n\nProduct cost should be entered once — here in Stock. If that expense is the same purchase, delete it from Expenses first, otherwise it is counted twice.\n\nAdd it anyway?`))return false;
+  const im=investMsg(d.paidById,stockTotal(d));
+  if(im&&!confirm(`${im}\n\nSave it anyway?`))return false;
+ }
+ if(key==='sales'){
+  const same=d.orderNo?state.sales.filter(s=>s.id!==editing.sales&&norm(s.orderNo)===norm(d.orderNo)):[];
+  if(same.length){
+   const exact=same.some(s=>DUP_SIG.sales(s)===DUP_SIG.sales(d));
+   const courier=num(d.courierCharge)>0&&same.some(s=>num(s.courierCharge)>0);
+   const lines=same.slice(0,3).map(s=>`• ${s.product} × ${s.qty} at ${money(s.unitPrice)} (${s.date})`).join('\n');
+   const msg=`Order ${d.orderNo} is already in Sales:\n${lines}\n\n`
+    +(exact?'This line has the same product, quantity and price, so it looks like a duplicate — revenue, product cost and courier would all be counted twice.':'If this is another product in the same order, that is fine.')
+    +(courier?'\n\nThat order already has a courier fee — enter it once per parcel, or it is counted twice.':'')
+    +'\n\nAdd it anyway?';
+   if(!confirm(msg))return false;
+  }
+  const need=(d.status==='Returned'&&d.returnCond==='Good')?0:d.qty;
+  const have=availableStock(d.product,editing.sales);
+  if(need>0&&have-need<0&&!confirm(`Only ${have} unit(s) of ${d.product} in stock, but this order needs ${need}.\n\nAdd it anyway?`))return false;
+ }
+ if(key==='capital'){
+  const who=(partnerById(d.partnerId)||{}).name||'This partner';
+  if(d.type==='Investment'){
+   const t=personalTwin(d.partnerId,d.amount);
+   if(t&&!confirm(`${who} also paid ${t} personally.\n\nIf this Investment is the same money, ${who} is credited twice — once as a bill owed back and again as capital.\n\nSave it anyway?`))return false;
+  }
+  if(d.type==='Withdrawal'){
+   const owed=computeSummary(state.capital.filter(r=>r.id!==editing.capital)).owed[d.partnerId]||0;
+   if(owed>0.005&&Math.abs(owed-d.amount)<0.005&&!confirm(`This is exactly the ${money(owed)} that ${who} is owed for bills paid personally.\n\nIf you are paying those bills back, cancel and use "Repay bills" — a Withdrawal lowers their profit balance but leaves the bills owed, so they would be paid twice.\n\nSave it as a Withdrawal anyway?`))return false;
+  }
+ }
+ return true;
+}
+async function addTabRecord(key){
+ const btn=$('addbtn_'+key);if(btn.disabled)return;
+ refreshAutoStamp();   // an untouched date/time is stamped with the moment of saving
+ const d=collectForm(key);
+ if(!validate(key,d)||!confirmRisky(key,d))return;
+ if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==editing.capital).concat([Object.assign({},d,{id:editing.capital||'__new'})])))return;
+ btn.disabled=true;
+ try{
+  const editId=editing[key];let ok;
+  if(editId){const old=state[key].find(r=>r.id===editId);d.createdAt=(old&&old.createdAt)||Date.now();stampEdit(d,old);ok=await updateRecord(key,editId,d);}
+  else{d.createdAt=Date.now();stampNew(d);ok=await addRecord(key,d);}
+  if(ok){editing[key]=null;clearForm(key,!editId);updateFormMode(key);refreshActive();}
+ }finally{btn.disabled=false;}
+}
+
+/* ===== Ownership · History log · Bin · Search & filter (added) ===== */
+const SHARED_FIELDS=['received','receivedDate','editedBy'];   // what another partner may still change on someone else's ORDER. Add more field names here (e.g. 'status') if needed, and in firestore.rules too.
+const ownerEmail=r=>String((r&&r.enteredEmail)||'').toLowerCase();
+const isOwner=r=>{const o=ownerEmail(r);return !o||!!(me&&o===me.email);};   // entries saved before logins have no owner and stay open to every partner
+const sameVal=(a,b)=>(a==null?'':String(a))===(b==null?'':String(b));
+function changedKeys(a,b){a=a||{};b=b||{};return Array.from(new Set(Object.keys(a).concat(Object.keys(b)))).filter(k=>k!=='id'&&!sameVal(a[k],b[k]));}
+function mayChange(key,old,next){return !old||isOwner(old)||(key==='sales'&&changedKeys(old,next).every(k=>SHARED_FIELDS.includes(k)));}
+const LOG_LABEL={sales:'Sale',expenses:'Expense',stock:'Stock',capital:'Accounts'};
+function briefOf(key,r){
+ if(!r)return '';
+ if(key==='sales')return (r.orderNo||'')+' · '+(r.product||'')+' × '+(r.qty||0)+' · '+money(num(r.qty)*num(r.unitPrice));
+ if(key==='expenses')return (r.category||'')+' · '+(r.item||'')+' · '+money(r.amount);
+ if(key==='stock')return (r.product||'')+' × '+(r.qty||0)+' @ '+money(r.buyingPrice);
+ return (r.type||'')+' · '+(r.partner||'')+' · '+money(r.amount);
+}
+async function logEvent(action,key,id,before,after){   // append-only History log; true = written
+ if(!db||!me)return true;
+ try{
+  await db.collection('log').add({at:Date.now(),by:me.name,email:me.email,action,tab:key,entryId:id||'',summary:briefOf(key,after||before),
+   before:before?JSON.stringify(before):'',after:after?JSON.stringify(after):''});
+  return true;
+ }catch(e){return false;}
+}
+let LOG=[],BIN=[],histBuilt=false;const HF={who:'',tab:'',act:''};
+function fmtAt(ms){const d=new Date(+ms||0);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+fmtTime(pad(d.getHours())+':'+pad(d.getMinutes()));}
+function changeText(l){
+ if(l.action!=='edit'||!l.before||!l.after)return '';
+ try{const b=JSON.parse(l.before),a=JSON.parse(l.after);
+  return changedKeys(b,a).filter(k=>!['editedBy','createdAt'].includes(k)).map(k=>esc(k)+': '+esc(b[k]==null||b[k]===''?'—':b[k])+' → '+esc(a[k]==null||a[k]===''?'—':a[k])).join('<br>');}catch(e){return '';}
+}
+function renderHistory(){
+ if(!histBuilt){
+  const opt=(a)=>a.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  $('tab-history').innerHTML=`<div class="section">${secHead('Bin — deleted entries')}<div id="binBody"></div>
+   <div class="hint">Deleting an entry moves it here. Restore puts it back exactly as it was, still under its original owner. Nothing in the Bin or the History log can be edited or removed.</div></div>
+   <div class="section">${secHead('History log')}
+    <div class="row">
+     <div class="field"><label>Who</label><select data-hf="who">${opt([['','Everyone']].concat(Object.values(ALLOWED).map(n=>[n,n])))}</select></div>
+     <div class="field"><label>What</label><select data-hf="act">${opt([['','All'],['add','Added'],['edit','Edited'],['delete','Deleted'],['restore','Restored']])}</select></div>
+     <div class="field"><label>Tab</label><select data-hf="tab">${opt([['','All'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts']])}</select></div>
+    </div><div id="histBody"></div></div>`;
+  histBuilt=true;
+ }
+ const bins=BIN.filter(b=>!b.restoredAt).sort((a,b)=>num(b.deletedAt)-num(a.deletedAt));
+ $('binBody').innerHTML=bins.length?`<div class="tablewrap"><table><thead><tr><th>Deleted</th><th>By</th><th>Entry</th><th></th></tr></thead><tbody>${bins.map(b=>{let r={};try{r=JSON.parse(b.data);}catch(e){}
+  return `<tr><td>${esc(fmtAt(b.deletedAt))}</td><td><span class="by">${esc(b.deletedBy)}</span></td><td>${esc(LOG_LABEL[b.key]||b.key)}: ${esc(briefOf(b.key,r))}</td><td class="rowbtns"><button class="edit" data-bin-restore="${esc(b.id)}">Restore</button></td></tr>`;}).join('')}</tbody></table></div>`:'<div class="hint">The Bin is empty.</div>';
+ const rows=LOG.filter(l=>(!HF.who||l.by===HF.who)&&(!HF.act||l.action===HF.act)&&(!HF.tab||l.tab===HF.tab)).sort((a,b)=>num(b.at)-num(a.at));
+ const shown=rows.slice(0,150);
+ $('histBody').innerHTML=shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Entry</th></tr></thead><tbody>${shown.map(l=>{const ch=changeText(l);
+  return `<tr><td>${esc(fmtAt(l.at))}</td><td><span class="by">${esc(l.by)}</span></td><td><span class="badge ${l.action==='delete'?'b-bad':(l.action==='add'||l.action==='restore')?'b-ok':'b-soft'}">${esc(l.action)}</span></td><td>${esc(LOG_LABEL[l.tab]||l.tab)}: ${esc(l.summary)}${ch?`<span class="sub">${ch}</span>`:''}</td></tr>`;}).join('')}</tbody></table></div>${rows.length>150?`<div class="hint">Showing the latest 150 of ${rows.length}.</div>`:''}`:'<div class="hint">No history yet.</div>';
+}
+async function restoreBin(binId){
+ const b=BIN.find(x=>x.id===binId);if(!b||b.restoredAt||!db)return;
+ if(state[b.key]&&state[b.key].some(r=>r.id===b.entryId)){alert('This entry is already back.');return;}
+ if(!confirm('Restore this entry?'))return;
+ try{
+  const data=JSON.parse(b.data);delete data.id;
+  await db.collection(b.key).doc(b.entryId).set(data);
+  const doc=Object.assign({},b);delete doc.id;doc.restoredAt=Date.now();doc.restoredBy=me.name;
+  await db.collection('bin').doc(binId).set(doc);
+  await logEvent('restore',b.key,b.entryId,null,Object.assign({id:b.entryId},data));
+  showToast('Entry restored');
+ }catch(e){saveFailed(e);}
+}
+/* search & filter (Sales, Expenses, Stock) */
+const FLT={};
+const fltOf=k=>FLT[k]||(FLT[k]={q:'',status:'',courier:'',from:'',to:''});
+const fltActive=f=>!!(f.q||f.status||f.courier||f.from||f.to);
+function applyFilter(key,rows){
+ const f=fltOf(key);if(!fltActive(f))return rows;
+ const q=norm(f.q),qd=String(f.q).replace(/\D/g,'');
+ return rows.filter(r=>{
+  if(f.status&&st(r)!==f.status)return false;
+  if(f.courier&&(r.courier||'')!==f.courier)return false;
+  if(f.from&&(r.date||'')<f.from)return false;
+  if(f.to&&(r.date||'')>f.to)return false;
+  if(q){
+   const hay=norm(['orderNo','customerName','customer','customerPhone','customerAddress','product','supplier','category','item','note','courier','paidBy','enteredBy'].map(k=>r[k]).join(' '));
+   const ph=String(r.customerPhone||'').replace(/\D/g,'');
+   if(!hay.includes(q)&&!(qd.length>=3&&ph.includes(qd)))return false;
+  }
+  return true;
+ });
+}
+function addFilterBar(key){
+ if(!['sales','expenses','stock'].includes(key))return;
+ const wrap=$('tbl_'+key).closest('.tablewrap');if(!wrap)return;
+ const sales=key==='sales'?`<div class="field"><label>Status</label><select data-flt="status" data-key="${key}"><option value="">All</option><option>Pending</option><option>Delivered</option><option>Returned</option><option>Lost</option></select></div><div class="field"><label>Courier</label><select data-flt="courier" data-key="${key}"></select></div>`:'';
+ wrap.insertAdjacentHTML('beforebegin',`<div class="fltbar" id="flt_${key}"><div class="field wide"><input type="search" data-flt="q" data-key="${key}" placeholder="Search order no, name, phone, product…" aria-label="Search"></div>
+  <div class="row">${sales}<div class="field"><label>From</label><input type="date" data-flt="from" data-key="${key}"></div><div class="field"><label>To</label><input type="date" data-flt="to" data-key="${key}"></div></div>
+  <div class="hint" id="fltinfo_${key}"></div><button type="button" class="ghostbtn hidden" data-flt-clear="${key}" id="fltclr_${key}">Clear filters</button></div>`);
+}
+function syncFltUi(key,shown,total){
+ const bar=$('flt_'+key);if(!bar)return;
+ const f=fltOf(key),sel=bar.querySelector('[data-flt=courier]');
+ if(sel){const list=courierBuckets(),sig=list.join('|');if(sel.dataset.sig!==sig){sel.dataset.sig=sig;sel.innerHTML='<option value="">All</option>'+list.map(c=>`<option>${esc(c)}</option>`).join('');sel.value=f.courier;}}
+ $('fltinfo_'+key).textContent=fltActive(f)?`Showing ${shown} of ${total}`:'';
+ $('fltclr_'+key).classList.toggle('hidden',!fltActive(f));
+}
+['input','change'].forEach(ev=>document.addEventListener(ev,e=>{
+ const t=e.target,k=t.dataset&&t.dataset.flt;
+ if(k&&t.dataset.key){fltOf(t.dataset.key)[k]=t.value;renderTab(t.dataset.key);}
+}));
+document.addEventListener('change',e=>{const t=e.target,h=t.dataset&&t.dataset.hf;if(h){HF[h]=t.value;renderHistory();}});
+document.addEventListener('click',e=>{
+ const c=e.target.closest&&e.target.closest('[data-flt-clear]');
+ if(c){const k=c.dataset.fltClear;FLT[k]={q:'',status:'',courier:'',from:'',to:''};document.querySelectorAll('#flt_'+k+' [data-flt]').forEach(el=>{el.value='';});renderTab(k);return;}
+ const b=e.target.closest&&e.target.closest('[data-bin-restore]');if(b)restoreBin(b.dataset.binRestore);
+});
+
+/* ---------- saving: shared db when available, this device otherwise. Failures are never silent. ---------- */
+async function addRecord(key,data){
+ if(db){try{const ref=await db.collection(key).add(clone(data));setStatus('synced');logEvent('add',key,ref.id,null,Object.assign({id:ref.id},data)).then(ok=>{if(!ok)showToast('Saved, but the History log could not be written',true);});return true;}catch(e){saveFailed(e);return false;}}
+ state[key].push(Object.assign({id:'local_'+uid()},clone(data)));saveLocal();refreshActive();return true;
+}
+async function updateRecord(key,id,data,quiet){
+ {const old0=state[key].find(r=>r.id===id);
+  if(old0&&!mayChange(key,old0,data)){if(!quiet)alert('This entry was entered by '+(old0.enteredBy||'another partner')+'. Only that partner can change it'+(key==='sales'?' (you can change Money Received / Received On only)':'')+'.');return false;}
+  if(db&&!isLocalId(id)&&old0&&changedKeys(old0,data).some(k=>!['editedBy','createdAt'].includes(k))&&!(await logEvent('edit',key,id,old0,Object.assign({id},data)))){if(!quiet)alert('The History log could not be written, so nothing was changed. Check your connection and try again.');return false;}}   // quiet = the caller lists failures itself (batch receive), so no pop-up per record
+ if(db&&!isLocalId(id)){try{await db.collection(key).doc(id).set(clone(data));setStatus('synced');return true;}catch(e){if(quiet){setStatus('error');return false;}saveFailed(e);return false;}}
+ const i=state[key].findIndex(r=>r.id===id);if(i<0)return false;
+ state[key][i]=Object.assign({id},clone(data));saveLocal();refreshActive();return true;
+}
+async function delRecord(key,id){
+ const rec=state[key].find(r=>r.id===id);
+ if(rec&&!isOwner(rec)){alert('This entry was entered by '+(rec.enteredBy||'another partner')+'. Only that partner can delete it.');return;}
+ if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==id)))return;
+ if(!confirm('Delete this entry?\nIt moves to the Bin (History tab), where it can be restored.'))return;
+ if(db&&!isLocalId(id)){try{
+  await db.collection('bin').add({key,entryId:id,deletedBy:me.name,deletedEmail:me.email,deletedAt:Date.now(),data:JSON.stringify(rec||{})});
+  if(!(await logEvent('delete',key,id,rec,null))){alert('The History log could not be written, so nothing was deleted.');return;}
+  await db.collection(key).doc(id).delete();setStatus('synced');}catch(e){saveFailed(e);return;}}
+ else{state[key]=state[key].filter(r=>r.id!==id);saveLocal();}
+ if(editing[key]===id){editing[key]=null;clearForm(key,false);updateFormMode(key);}
+ refreshActive();
+}
+let settingsQueue=Promise.resolve();   // one settings write at a time
+function commitSettings(mutator){
+ const run=async()=>{
+  const next=clone(S);
+  if(mutator(next)===false)return false;
+  if(db){try{await db.doc('settings/main').set(next);setStatus('synced');}catch(e){saveFailed(e);return false;}}
+  S=next;normalizeSettings();if(!db)saveLocal();
+  refreshActive();return true;
+ };
+ const p=settingsQueue.then(run);settingsQueue=p.catch(()=>{});return p;
+}
+async function uploadOfflineRecords(){   // entries typed while offline are pushed once the shared db is reachable
+ for(const key of KEYS){
+  for(const r of state[key].filter(x=>isLocalId(x.id))){
+   const data=clone(r);delete data.id;
+   try{await db.collection(key).add(data);}catch(e){saveFailed(e);return;}   // entries not sent yet stay on this device (see the snapshot handler)
+   state[key]=state[key].filter(x=>x.id!==r.id);saveLocal();   // saved right away, so closing the tab can never upload the same entry twice
+  }
+ }
+}
+
+/* ---------- calculations ---------- */
+function costAt(stk,date,fallback){   // average buying price of the purchases made on or before `date`: buying more stock later never rewrites older profit
+ let q=0,t=0;
+ stk.forEach(x=>{if((x.date||'')<=(date||'')){q+=num(x.qty);t+=num(x.qty)*num(x.buyingPrice);}});
+ return q>0?t/q:fallback;   // sale entered before any purchase: use the overall average
+}
+function inPeriod(dateStr,period){   // true when the (order/expense) date falls inside {from,to}; no period, or a blank bound, = no limit on that side
+ if(!period)return true;
+ const d=dateStr||'';
+ if(period.from&&d<period.from)return false;
+ if(period.to&&d>period.to)return false;
+ return true;
+}
+function computeInventory(skipSaleId,period){   // period (optional {from,to}) scopes which SALES count, by order date. Buying history (stk / avgCost) is never scoped, so a sale's cost is still today's same average-cost-on-order-date rule either way.
+ const names=[],seen=new Set();
+ const add=n=>{if(n===undefined||n===null||n==='')return;const k=norm(n);if(!seen.has(k)){seen.add(k);names.push(n);}};   // "Polo" and "polo" are one product
+ S.products.forEach(add);state.stock.forEach(s=>add(s.product));state.sales.forEach(s=>add(s.product));   // removed products keep counting
+ const sales=state.sales.filter(s=>s.id!==skipSaleId&&inPeriod(s.date,period));
+ return names.map(p=>{
+  const k=norm(p);
+  const stk=state.stock.filter(s=>norm(s.product)===k);
+  const qtyBought=sum(stk,'qty'),totalPurchaseCost=stk.reduce((a,s)=>a+num(s.qty)*num(s.buyingPrice),0);
+  const avgCost=qtyBought?totalPurchaseCost/qtyBought:0;
+  const sal=sales.filter(s=>norm(s.product)===k),q=l=>sum(l,'qty');
+  const costOf=l=>l.reduce((a,s)=>a+num(s.qty)*costAt(stk,s.date,avgCost),0);   // what these orders' goods cost when they were sent
+  const del=sal.filter(s=>st(s)==='Delivered'),pen=sal.filter(s=>st(s)==='Pending'),ret=sal.filter(s=>st(s)==='Returned'),lost=sal.filter(s=>st(s)==='Lost');
+  const returnedGood=q(ret.filter(s=>s.returnCond==='Good')),returnedDamaged=q(ret.filter(s=>s.returnCond==='Damaged')),returnedLost=q(ret.filter(s=>s.returnCond==='Lost'));
+  const returnedUnchecked=q(ret)-returnedGood-returnedDamaged-returnedLost;   // came back, condition not recorded yet
+  const sentOut=q(sal),inTransit=q(pen);
+  const inStock=qtyBought-sentOut+returnedGood+returnedUnchecked;
+  const cogs=costOf(del),damageLoss=costOf(ret.filter(s=>s.returnCond==='Damaged')),lostLoss=costOf(lost.concat(ret.filter(s=>s.returnCond==='Lost'))),transitValue=costOf(pen);
+  return {product:p,removed:!S.products.some(x=>norm(x)===k),qtyBought,totalPurchaseCost,avgCost,sentOut,inTransit,lost:q(lost)+returnedLost,returnedGood,returnedDamaged,returnedUnchecked,
+   inStock,transitValue,cogs,damageLoss,lostLoss,
+   stockValue:totalPurchaseCost-cogs-damageLoss-lostLoss-transitValue};   // every purchased taka lands in exactly one bucket: shelf, transit, sold, damaged or lost
+ });
+}
+function inventoryWarnings(inv){
+ const w=[];
+ inv.filter(i=>i.inStock<0).forEach(i=>w.push(`Stock for <b>${esc(i.product)}</b> is negative (${i.inStock}): more was sold than bought, so cost of goods is understated. Add the missing purchase.`));
+ const unc=sum(inv,'returnedUnchecked');
+ if(unc>0)w.push(`${unc} returned unit(s) have no condition set. Edit those returns and choose Good, Damaged or Lost.`);
+ inv.filter(i=>/^product [a-z]$/.test(norm(i.product))&&(i.qtyBought||i.sentOut)).forEach(i=>{
+  const sig='ph|'+norm(i.product);
+  if(!okSig(sig))w.push(`<b>${esc(i.product)}</b> is a placeholder product name but has entries. If they were test entries, delete them — otherwise they are counted in your totals.`+okBtn(sig));
+ });
+ return w;
+}
+function computeSummary(capitalList,period){   // capitalList lets us test "what if this entry changed?"; period (optional {from,to}) scopes Revenue/Costs/Orders/Expenses-by-category by order/expense date. Cash, Stock and Partners' capital/paid/owed below are always all-time, whatever `period` is.
+ const inv=computeInventory();   // unfiltered — feeds Stock & money still to come, and the Inventory tab; never changes with the period
+ const invScoped=period?computeInventory(undefined,period):inv;   // same average-cost-on-order-date rule; only which orders are counted changes
+ const salesAll=state.sales,pendingAll=salesAll.filter(s=>st(s)==='Pending');
+ const salesScoped=period?salesAll.filter(s=>inPeriod(s.date,period)):salesAll;
+ const delivered=salesScoped.filter(s=>st(s)==='Delivered'),returned=salesScoped.filter(s=>st(s)==='Returned'),pending=salesScoped.filter(s=>st(s)==='Pending'),lostOrders=salesScoped.filter(s=>st(s)==='Lost');
+ // profit & loss — only orders that are finished (Delivered / Returned / Lost); counted by order date when a period is set
+ const productSales=delivered.reduce((a,s)=>a+num(s.qty)*num(s.unitPrice),0);
+ const deliveryCollected=sum(delivered,'deliveryCharge')+sum(returned.filter(s=>s.returnMode==='With charge'),'deliveryCharge');   // a returned order still earns the delivery charge when the customer paid it
+ const revenue=productSales+deliveryCollected,cogs=sum(invScoped,'cogs'),damageLoss=sum(invScoped,'damageLoss'),lostLoss=sum(invScoped,'lostLoss');
+ const grossProfit=revenue-cogs-damageLoss-lostLoss;
+ const courierResolved=sum(delivered,'courierCharge')+sum(returned,'courierCharge')+sum(lostOrders,'courierCharge');
+ const returnCharges=sum(returned,'returnCharge');
+ const expensesScoped=period?state.expenses.filter(e=>inPeriod(e.date,period)):state.expenses;   // by expense date
+ const operatingExpenses=sum(expensesScoped,'amount');
+ const totalCosts=cogs+damageLoss+lostLoss+courierResolved+returnCharges+operatingExpenses;
+ const netProfit=revenue-totalCosts;
+ const decided=delivered.length+returned.length,returnRate=decided?returned.length/decided:0;
+ // money still to come in / stock — always as of today, never scoped to a period
+ const collectible=salesAll.filter(s=>collects(s));
+ const moneyReceived=collectible.filter(s=>s.received==='Yes').reduce((a,s)=>a+dueOf(s),0);
+ const moneyPending=collectible.filter(s=>s.received!=='Yes').reduce((a,s)=>a+dueOf(s),0);
+ const codPending=pendingAll.reduce((a,s)=>a+codOf(s),0);
+ const stockPurchases=sum(inv,'totalPurchaseCost'),stockValue=sum(inv,'stockValue'),transitValue=sum(inv,'transitValue');
+ const courierAll=sum(salesAll,'courierCharge');   // paid to the courier when dispatched, pending orders included
+ // who paid what — always all-time, never scoped
+ const paidPersonally={},capitalByPartner={},repaid={},invested={},withdrawn={};
+ S.partners.forEach(p=>{paidPersonally[p.id]=0;capitalByPartner[p.id]=0;repaid[p.id]=0;invested[p.id]=0;withdrawn[p.id]=0;});
+ const unmatched={paid:0,capital:0,repaid:0,count:0};
+ let bizPaid=0;const bizBy={stock:0,expenses:0,courier:0};
+ const pay=(pr,amt,cat)=>{if(pr.kind==='biz'){bizPaid+=amt;bizBy[cat]+=amt;}else if(pr.kind==='partner')paidPersonally[pr.p.id]+=amt;else{unmatched.paid+=amt;unmatched.count++;}};
+ state.expenses.forEach(e=>pay(payer(e,'paidById','paidBy'),num(e.amount),'expenses'));
+ state.stock.forEach(s=>pay(payer(s,'paidById','paidBy'),num(s.qty)*num(s.buyingPrice),'stock'));
+ salesAll.forEach(s=>pay(payer(s,'courierPaidById','courierPaidBy'),num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0),'courier'));
+ let investedTotal=0,withdrawnTotal=0,repaidTotal=0;
+ (capitalList||state.capital).forEach(c=>{
+  const a=num(c.amount),pr=payer(c,'partnerId','partner'),p=pr.kind==='partner'?pr.p:null;
+  if(c.type==='Reimbursement'){repaidTotal+=a;if(p)repaid[p.id]+=a;else{unmatched.repaid+=a;unmatched.count++;}}
+  else if(c.type==='Withdrawal'){withdrawnTotal+=a;if(p){withdrawn[p.id]+=a;capitalByPartner[p.id]-=a;}else{unmatched.capital-=a;unmatched.count++;}}
+  else{investedTotal+=a;if(p){invested[p.id]+=a;capitalByPartner[p.id]+=a;}else{unmatched.capital+=a;unmatched.count++;}}
+ });
+ const capitalNet=investedTotal-withdrawnTotal;
+ const owed={};S.partners.forEach(p=>{owed[p.id]=paidPersonally[p.id]-repaid[p.id];});
+ unmatched.owed=unmatched.paid-unmatched.repaid;
+ const paidPersonallyTotal=Object.values(paidPersonally).reduce((a,x)=>a+x,0)+unmatched.paid;
+ const cashBalance=capitalNet+moneyReceived-bizPaid-repaidTotal;
+ // each partner's account = what they put in + their share of profit (or − loss) − what they already took.
+ // NOTE: profitShare/entitlement below follow `netProfit`, so they are only "as of today" when no `period` is passed — every existing caller of computeSummary() does that; the Summary tab's period filter reads `netProfit` directly instead of through `acct`, for exactly this reason.
+ const acct={};
+ S.partners.forEach(p=>{
+  const profitShare=netProfit*num(p.share)/100;
+  const entitlement=invested[p.id]-withdrawn[p.id]+profitShare;
+  acct[p.id]={invested:invested[p.id],withdrawn:withdrawn[p.id],profitShare,entitlement,owed:owed[p.id],
+   canTake:Math.max(0,entitlement),canNow:Math.max(0,Math.min(entitlement,cashBalance))};
+ });
+ const expByCat={};expensesScoped.forEach(e=>{expByCat[e.category]=(expByCat[e.category]||0)+num(e.amount);});
+ const shareTotal=S.partners.reduce((a,p)=>a+num(p.share),0);
+ const warnings=inventoryWarnings(inv).concat(duplicateWarnings());
+ if(Math.abs(shareTotal-100)>0.005)warnings.push(`Profit shares add up to ${shareTotal.toFixed(2)}%, not 100%. Fix this in Settings.`);
+ if(unmatched.count)warnings.push(`${unmatched.count} record(s) name a partner who no longer exists. Edit them so the partner totals add up.`);
+ if(cashBalance<-0.005)warnings.push(`Cash in the business account is negative (${money(cashBalance)}): more money has gone out than came in. Check recent withdrawals and entries.`);
+ S.partners.forEach(p=>{const a=acct[p.id];if(a.withdrawn>0.005&&a.entitlement<-0.005)warnings.push(`<b>${esc(p.name)}</b> has taken ${money(-a.entitlement)} more than investment + profit share.`);});
+ return {revenue,productSales,deliveryCollected,cogs,damageLoss,lostLoss,grossProfit,courierResolved,courierAll,returnCharges,operatingExpenses,totalCosts,netProfit,
+  deliveredCount:delivered.length,returnedCount:returned.length,pendingCount:pending.length,lostCount:lostOrders.length,totalOrders:salesScoped.length,returnRate,
+  capitalNet,investedTotal,withdrawnTotal,bizBy,acct,moneyReceived,moneyPending,codPending,stockPurchases,stockValue,transitValue,bizPaid,repaidTotal,paidPersonallyTotal,cashBalance,
+  paidPersonally,capitalByPartner,owed,unmatched,shareTotal,expByCat,warnings};
+}
+
+/* ---------- double-entry checks ---------- */
+const stockTotal=s=>num(s.qty)*num(s.buyingPrice);
+const okSig=sig=>(S.dupOk||[]).includes(sig);   // warnings a partner has marked "Not a problem"
+const okBtn=sig=>` <button type="button" class="minibtn" data-act="dupOk" data-sig="${esc(sig)}">Not a problem</button>`;
+const COST_WORDS=/\b(courier|pathao|steadfast|redx|paperfly|sundarban|delivery|parcel|returns?|returned|damage[sd]?)\b/i;   // costs the Sales tab already counts
+const partnerKey=(r,idKey,nameKey)=>{const pr=payer(r,idKey,nameKey);return pr.kind==='partner'?pr.p.id:pr.kind==='biz'?BIZ:'x:'+norm(pr.name);};
+const DUP_LABEL={sales:'order line',stock:'stock purchase',expenses:'expense',capital:'partner money entry'};
+const DUP_SIG={   // two saved entries with the same signature are the same thing entered twice
+ sales:r=>[norm(r.orderNo),norm(r.product),num(r.qty),num(r.unitPrice)].join('|'),
+ stock:r=>[r.date,norm(r.product),num(r.qty),num(r.buyingPrice)].join('|'),
+ expenses:r=>[r.date,norm(r.item),num(r.amount).toFixed(2)].join('|'),
+ capital:r=>[r.date,partnerKey(r,'partnerId','partner'),r.type,num(r.amount).toFixed(2)].join('|')};
+function dupText(key,r){
+ if(key==='sales')return `order ${r.orderNo}: ${r.product} × ${r.qty} at ${money(r.unitPrice)}`;
+ if(key==='stock')return `${r.product} × ${r.qty} at ${money(r.buyingPrice)} on ${r.date}`;
+ if(key==='expenses')return `"${r.item}" ${money(r.amount)} on ${r.date}`;
+ return `${r.type} ${money(r.amount)} by ${payerLabel(payer(r,'partnerId','partner'))} on ${r.date}`;
+}
+function sameEntry(key,d,skipId){return state[key].find(r=>r.id!==skipId&&DUP_SIG[key](r)===DUP_SIG[key](d))||null;}
+function dupGroups(key){   // saved entries that share a signature
+ const m={};
+ state[key].forEach(r=>{if(key==='sales'&&!norm(r.orderNo))return;const g=DUP_SIG[key](r);(m[g]=m[g]||[]).push(r);});
+ return Object.entries(m).filter(([,l])=>l.length>1);
+}
+const dayGap=(a,b)=>Math.abs(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/864e5;
+function sameMoney(amtA,dateA,amtB,dateB){   // same amount within 3 days, or about the same amount (±10%) on the same day
+ if(!(amtA>0&&amtB>0))return false;
+ const gap=dayGap(dateA,dateB),diff=Math.abs(amtA-amtB);
+ if(!isFinite(gap))return dateA===dateB&&diff<0.005;
+ return (gap<=3&&diff<0.005)||(gap===0&&diff<=Math.max(amtA,amtB)*0.1);
+}
+const stockDesc=s=>`${s.product}: ${s.qty} × ${money(s.buyingPrice)} = ${money(stockTotal(s))} on ${s.date}`;
+function stockTwin(e){return state.stock.find(s=>sameMoney(stockTotal(s),s.date,num(e.amount),e.date))||null;}   // a purchase this expense may be the same money as
+function expenseIssue(e,withNames){   // why might this expense already be counted somewhere else? ('' = looks fine)
+ const hit=stockTwin(e);
+ if(hit)return 'it looks like the stock purchase '+stockDesc(hit);
+ const text=(String(e.item||'')+' '+String(e.note||'')).trim();
+ const w=text.match(COST_WORDS);
+ if(w)return 'the details mention "'+w[0]+'" — courier, return and damage costs are counted from the Sales tab';
+ if(/\b(stock|product cost)\b/i.test(text))return 'the details mention stock / product cost';
+ if(withNames){
+  const names=Array.from(new Set(S.products.concat(state.stock.map(s=>s.product)))).filter(n=>n&&String(n).length>=3);
+  const pn=names.find(n=>norm(text).includes(norm(n)));
+  if(pn)return 'the details mention the product "'+pn+'"';
+ }
+ return '';
+}
+function personalTwin(pid,amt){   // a bill this partner paid personally for exactly this amount ('' = none)
+ const mine=(r,idKey,nameKey)=>{const p=payer(r,idKey,nameKey);return p.kind==='partner'&&p.p.id===pid;};
+ const e=state.expenses.find(x=>mine(x,'paidById','paidBy')&&Math.abs(num(x.amount)-amt)<0.005);
+ if(e)return `the expense "${e.item}" (${money(e.amount)})`;
+ const s=state.stock.find(x=>mine(x,'paidById','paidBy')&&Math.abs(stockTotal(x)-amt)<0.005);
+ if(s)return `the stock purchase of ${s.product} (${money(stockTotal(s))})`;
+ return '';
+}
+function investMsg(pid,amt){   // a bill paid personally must not also be an Investment for the same money
+ if(!pid||pid===BIZ||!(amt>0))return '';
+ const p=partnerById(pid);if(!p)return '';
+ const inv=state.capital.find(c=>c.type==='Investment'&&Math.abs(num(c.amount)-amt)<0.005&&partnerKey(c,'partnerId','partner')===pid);
+ return inv?`${p.name} also has an Investment of ${money(inv.amount)} (${inv.date}). If it is the same money, ${p.name} is credited twice — once as a bill paid personally and again as an Investment.`:'';
+}
+function expenseTwin(s){   // does this stock purchase look like an expense already entered?
+ const tot=stockTotal(s);
+ const hit=state.expenses.find(e=>sameMoney(num(e.amount),e.date,tot,s.date));
+ return hit?`"${hit.item}" ${money(hit.amount)} on ${hit.date}`:'';
+}
+function duplicateWarnings(only){   // the same checks, run over everything already saved
+ const tabs={sales:['sales'],expenses:['expenses','stock'],stock:['expenses','stock']};   // which checks each tab shows (no argument = all, for the Summary)
+ const want=t=>!only||(tabs[only]||[]).includes(t);
+ const w=[];
+ const add=(sig,html)=>{if(!okSig(sig))w.push(html+okBtn(sig));};
+ if(want('expenses')){
+  const bad=state.expenses.filter(e=>reservedUse(e.category));
+  if(bad.length)w.push(`${bad.length} expense entr${bad.length===1?'y':'ies'} (${money(sum(bad,'amount'))}) use ${Array.from(new Set(bad.map(e=>'"'+esc(e.category)+'"'))).join(', ')} — a cost the app already counts by itself. If it is also entered in Stock or Sales it is counted twice. Delete or fix these entries.`);
+  const exp=[];
+  state.expenses.forEach(e=>{
+   if(reservedUse(e.category))return;
+   const why=expenseIssue(e,false),sig='exp|'+e.id;
+   if(why&&!okSig(sig))exp.push(`expense "${esc(e.item)}" ${money(e.amount)} on ${esc(e.date)}: ${esc(why)}.`+okBtn(sig));
+  });
+  if(exp.length)w.push(`Possible double cost:<br>${exp.slice(0,3).join('<br>')}${exp.length>3?`<br>…and ${exp.length-3} more.`:''}<br>If it is already counted elsewhere, delete the expense; otherwise tap “Not a problem”.`);
+ }
+ [['expenses','expenses'],['stock','stock'],['sales','sales'],['capital','money']].forEach(([key,t])=>{   // the same entry saved more than once
+  if(!want(t))return;
+  dupGroups(key).forEach(([sig,l])=>add(key+'|'+sig,`${l.length} copies of the same ${DUP_LABEL[key]}: ${esc(dupText(key,l[0]))}. If it was entered twice, delete the extra one${l.length>2?'s':''}.`));
+ });
+ if(want('sales')){   // one parcel, but the courier charge typed on every product line
+  const byOrder={};
+  state.sales.forEach(s=>{const k=norm(s.orderNo);if(k)(byOrder[k]=byOrder[k]||[]).push(s);});
+  Object.entries(byOrder).forEach(([k,l])=>{
+   const c=l.filter(s=>num(s.courierCharge)>0);
+   if(c.length>1&&new Set(c.map(s=>DUP_SIG.sales(s))).size>1)add('courier|'+k,`Order ${esc(l[0].orderNo)} has a courier fee on ${c.length} lines. If it went in one parcel, enter the fee on one line only.`);
+  });
+ }
+ if(!only){   // an Investment that repeats a bill the same partner paid personally
+  state.capital.filter(c=>c.type==='Investment').forEach(c=>{
+   const pk=partnerKey(c,'partnerId','partner');if(pk===BIZ||pk.startsWith('x:'))return;
+   const t=personalTwin(pk,num(c.amount));
+   if(t)add('inv|'+c.id,`Investment of ${money(c.amount)} on ${esc(c.date)} equals ${esc(t)} paid personally by the same partner. If it is the same money, they are credited twice — delete one.`);
+  });
+ }
+ return w;
+}
+
+/* ---------- rendering ---------- */
+/* Every block on every tab is built the same way: .section > secHead(title, optional control) > content > .hint */
+function secHead(title,extra,id){return `<div class="sechead"><h2${id?` id="${id}"`:''}>${title}</h2>${extra||''}</div>`;}
+// numbers are money (green/red by sign, grey when zero); pass a string for counts, and plain=1 for values that are neither income nor cost
+function kvRows(pairs){return `<div>${pairs.map(([k,v,strong,plain])=>{
+ const isNum=typeof v==='number';
+ const cls=isNum&&!plain&&v!==0?(v<0?'amt expense':'amt income'):'';
+ return `<div class="kv-row${strong?' kv-strong':''}"><span>${k}</span><span class="${cls}">${isNum?money(v):esc(v)}</span></div>`;}).join('')}</div>`;}
+function renderCatBars(map){
+ const arr=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+ if(!arr.length)return '<div class="empty">No expenses yet</div>';
+ const max=arr[0][1]||1;
+ return arr.map(([n,v])=>`<div class="catbar-row"><div class="catbar-name">${esc(n)}</div><div class="catbar-track"><div class="catbar-fill" style="width:${Math.max(4,v/max*100)}%"></div></div><div class="catbar-amt">${money(v)}</div></div>`).join('');
+}
+function renderWarnings(list){return list.length?`<div class="warnbox"><b>Please check</b><ul>${list.map(w=>`<li>${w}</li>`).join('')}</ul></div>`:'';}
+
+/* ---------- Summary tab: period filter (state lives in JS only, never read back from the DOM) ---------- */
+let summaryPeriod={mode:'all',from:'',to:''};
+let summaryShellBuilt=false;
+const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function monthBounds(y,m){   // m is 0-indexed; returns the calendar month as {from,to} date strings
+ const from=y+'-'+pad(m+1)+'-01';
+ return {from,to:y+'-'+pad(m+1)+'-'+pad(new Date(y,m+1,0).getDate())};
+}
+function monthLabel(y,m){return MONTH_NAMES[m]+' '+String(y).slice(2);}
+function resolveSummaryPeriod(p){   // -> {from,to,label} (from/to=null means no bound) or {error}
+ const d=new Date();
+ if(p.mode==='this'){const{from,to}=monthBounds(d.getFullYear(),d.getMonth());return{from,to,label:'This month ('+from+' to '+to+')'};}
+ if(p.mode==='last'){let y=d.getFullYear(),m=d.getMonth()-1;if(m<0){m=11;y--;}const{from,to}=monthBounds(y,m);return{from,to,label:'Last month ('+from+' to '+to+')'};}
+ if(p.mode==='custom'){
+  const from=p.from||'',to=p.to||'';
+  if(from&&to&&from>to)return{error:'The "From" date is after the "To" date — pick a valid range.'};
+  if(!from&&!to)return{from:null,to:null,label:'Custom (no dates picked yet — showing all time)'};
+  return{from:from||null,to:to||null,label:'Custom ('+(from||'start')+' to '+(to||'today')+')'};
+ }
+ return{from:null,to:null,label:'All time'};
+}
+function summaryMonthRange(){   // last 12 calendar months or fewer, capped to when sales/expenses actually start
+ const d=new Date(),curY=d.getFullYear(),curM=d.getMonth();
+ let startY=curY,startM=curM-11;while(startM<0){startM+=12;startY--;}
+ const dates=[];
+ state.sales.forEach(s=>{if(s.date)dates.push(s.date);});
+ state.expenses.forEach(e=>{if(e.date)dates.push(e.date);});
+ if(dates.length){
+  const earliest=dates.reduce((a,b)=>a<b?a:b),ey=+earliest.slice(0,4),em=+earliest.slice(5,7)-1;
+  if(ey>startY||(ey===startY&&em>startM)){startY=ey;startM=em;}
+ }
+ const out=[];let y=startY,m=startM;
+ while(y<curY||(y===curY&&m<=curM)){out.push({y,m});m++;if(m>11){m=0;y++;}}
+ return out;
+}
+function renderMonthlyProfitChart(){   // dependency-free inline SVG bar chart; always all-time, never affected by summaryPeriod
+ const vals=summaryMonthRange().map(({y,m})=>{const{from,to}=monthBounds(y,m);return{y,m,net:computeSummary(null,{from,to}).netProfit};});
+ const maxAbs=Math.max(1,...vals.map(v=>Math.abs(v.net)));
+ const barW=40,gap=14,padL=10,padR=10,padT=10,plotH=110,padB=26;
+ const zeroY=padT+plotH/2,scale=(plotH/2-6)/maxAbs;
+ const W=padL+padR+vals.length*(barW+gap)-gap,H=padT+plotH+padB;
+ let bars='';
+ vals.forEach((v,i)=>{
+  const x=padL+i*(barW+gap),h=Math.max(1,Math.abs(v.net)*scale),y=v.net>=0?zeroY-h:zeroY;
+  const color=v.net>0?'var(--accent2)':v.net<0?'var(--danger)':'var(--text-soft)';
+  bars+=`<rect x="${x}" y="${y.toFixed(1)}" width="${barW}" height="${h.toFixed(1)}" rx="3" fill="${color}"><title>${esc(monthLabel(v.y,v.m))}: ${esc(money(v.net))}</title></rect>`;
+  bars+=`<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--text-soft)">${esc(monthLabel(v.y,v.m))}</text>`;
+ });
+ bars+=`<line x1="${padL-4}" y1="${zeroY.toFixed(1)}" x2="${(W-padR+4).toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="var(--card-border)"/>`;
+ return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Net profit by month">${bars}</svg>`;
+}
+function syncPeriodFieldVisibility(){
+ const show=summaryPeriod.mode==='custom';
+ $('sumFromF').classList.toggle('hidden',!show);$('sumToF').classList.toggle('hidden',!show);
+}
+function ensureSummaryShell(){   // builds the period selector ONCE; Summary re-renders on every live sync and must never re-create these inputs, or an open date picker / half-typed date would be lost
+ if(summaryShellBuilt)return;
+ $('tab-summary').innerHTML=`<div class="section">${secHead('Period')}
+  <div class="row">
+   <div class="field"><label for="sumPeriodSel">Period</label><select id="sumPeriodSel" data-act="periodMode">
+    <option value="all">All time</option><option value="this">This month</option><option value="last">Last month</option><option value="custom">Custom</option>
+   </select></div>
+   <div class="field" id="sumFromF"><label for="sumFromI">From</label><input type="date" id="sumFromI" data-act="periodFrom"></div>
+   <div class="field" id="sumToF"><label for="sumToI">To</label><input type="date" id="sumToI" data-act="periodTo"></div>
+  </div>
+  <div class="hint" id="sumPeriodHint"></div></div>
+ <div id="summaryBody"></div>`;
+ syncPeriodFieldVisibility();
+ summaryShellBuilt=true;
+}
+function renderSummary(){
+ ensureSummaryShell();
+ const resolved=resolveSummaryPeriod(summaryPeriod),validPeriod=!resolved.error;
+ $('sumPeriodHint').innerHTML=resolved.error?`<span class="amt expense">${esc(resolved.error)}</span>`:esc('Showing: '+resolved.label+'.');
+ const sAll=computeSummary();   // Cash, Stock and Partners' capital/paid/owed below always come from this — never filtered
+ const sP=validPeriod?computeSummary(null,{from:resolved.from,to:resolved.to}):null;
+ const netForShare=validPeriod?sP.netProfit:sAll.netProfit;   // invalid range: fall back to all-time so the Partners table isn't left blank
+ const owedTotal=sAll.paidPersonallyTotal-sAll.repaidTotal;
+ const prow=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(sAll.capitalByPartner[p.id])}</td><td>${money(sAll.paidPersonally[p.id])}</td><td>${money(sAll.owed[p.id])}</td><td>${esc(p.share)}%</td><td>${money(netForShare*num(p.share)/100)}</td></tr>`);
+ if(sAll.unmatched.count)prow.push(`<tr><td>Unmatched records</td><td>${money(sAll.unmatched.capital)}</td><td>${money(sAll.unmatched.paid)}</td><td>${money(sAll.unmatched.owed)}</td><td>—</td><td>—</td></tr>`);
+ prow.push(`<tr class="total"><td>Total</td><td>${money(sAll.capitalNet)}</td><td>${money(sAll.paidPersonallyTotal)}</td><td>${money(owedTotal)}</td><td>${sAll.shareTotal.toFixed(2)}%</td><td>${money(netForShare*sAll.shareTotal/100)}</td></tr>`);
+ const periodBlocks=validPeriod?`<div class="cards"><div class="card in"><div class="l">Revenue</div><div class="v">${money(sP.revenue)}</div></div>
+ <div class="card out"><div class="l">Total Costs</div><div class="v">${money(sP.totalCosts)}</div></div>
+ <div class="card"><div class="l">Net Profit</div><div class="v amt ${sP.netProfit<0?'expense':'income'}">${money(sP.netProfit)}</div></div></div>
+ <div class="section">${secHead('Profit &amp; Loss')}${kvRows([['Product sales (delivered)',sP.productSales],['Delivery charges collected',sP.deliveryCollected],['Total Revenue',sP.revenue,1],
+  ['Cost of goods sold',-sP.cogs],['Loss from damaged returns',-sP.damageLoss],['Loss from lost products',-sP.lostLoss],['Gross Profit',sP.grossProfit,1],
+  ['Courier fees (delivered, returned &amp; lost orders)',-sP.courierResolved],['Return fees',-sP.returnCharges],['Operating expenses',-sP.operatingExpenses],['NET PROFIT',sP.netProfit,1]])}
+  <div class="hint">Pending orders do not affect profit until they are marked Delivered, Returned or Lost. Orders are counted by order date — there is no delivered date recorded — and expenses by expense date. Total Costs = everything subtracted above, so Revenue − Total Costs = Net Profit.</div></div>
+ <div class="section">${secHead('Orders')}${kvRows([['Delivered',String(sP.deliveredCount)],['Returned',String(sP.returnedCount)],['Lost',String(sP.lostCount)],['Pending (with courier)',String(sP.pendingCount)],['Total',String(sP.totalOrders),1],['Return rate (delivered + returned)',(sP.returnRate*100).toFixed(1)+'%']])}
+  <div class="hint">Counted by order date — there is no delivered date recorded.</div></div>
+ <div class="section">${secHead('Operating expenses by category')}${renderCatBars(sP.expByCat)}
+  <div class="hint">Counted by expense date.</div></div>`:`<div class="warnbox">${esc(resolved.error)}</div>`;
+ $('summaryBody').innerHTML=`${renderWarnings(sAll.warnings)}
+ ${periodBlocks}
+ <div class="section">${secHead('Cash')}${kvRows([['Cash in business account',sAll.cashBalance,1],['Owed back to partners (bills they paid)',owedTotal,0,1]])}
+  <div class="hint">As of today — not affected by the period filter above. Full breakdown, partner withdrawals and each partner's balance are in the Accounts tab.</div></div>
+ <div class="section">${secHead('Stock &amp; money still to come')}${kvRows([['Customer money not yet received',sAll.moneyPending,0,1],['Pending orders (COD value)',sAll.codPending,0,1],
+  ['Stock on shelf (at cost)',sAll.stockValue,0,1],['Stock in transit (at cost)',sAll.transitValue,0,1]])}
+  <div class="hint">As of today — not affected by the period filter above.</div></div>
+ <div class="section">${secHead('Partners')}<div class="tablewrap"><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${prow.join('')}</tbody></table></div>
+  <div class="hint">Capital, paid personally and owed back are as of today. Only Profit share follows the period filter above.</div></div>
+ <div class="section">${secHead('Profit by month')}<div class="tablewrap">${renderMonthlyProfitChart()}</div>
+  <div class="hint">Last 12 months (or fewer for a newer business), counted by order/expense date. Always all-time — not affected by the period filter above. Green = profit, red = loss.</div></div>`;
+}
+function renderInventory(){
+ const inv=computeInventory(),showUnc=sum(inv,'returnedUnchecked')>0,showLost=sum(inv,'lost')>0;
+ const head=['Product','Bought','Avg Cost','Sent Out','In Transit','Ret. Good','Ret. Damaged'].concat(showUnc?['Ret. Unchecked']:[],showLost?['Lost']:[],['In Stock','Stock Value']);
+ const cell=v=>`<td>${v}</td>`;
+ const rows=inv.map(i=>`<tr><td>${esc(i.product)}${i.removed?' <span class="sub">removed from Settings</span>':''}</td>${[i.qtyBought,money(i.avgCost),i.sentOut,i.inTransit,i.returnedGood,i.returnedDamaged].map(cell).join('')}${showUnc?cell(i.returnedUnchecked):''}${showLost?cell(i.lost):''}<td${i.inStock<0?' class="amt expense"':''}>${i.inStock}</td><td>${money(i.stockValue)}</td></tr>`).join('');
+ const tot=`<tr class="total"><td>Total</td><td>${sum(inv,'qtyBought')}</td><td></td><td>${sum(inv,'sentOut')}</td><td>${sum(inv,'inTransit')}</td><td>${sum(inv,'returnedGood')}</td><td>${sum(inv,'returnedDamaged')}</td>${showUnc?`<td>${sum(inv,'returnedUnchecked')}</td>`:''}${showLost?`<td>${sum(inv,'lost')}</td>`:''}<td>${sum(inv,'inStock')}</td><td>${money(sum(inv,'stockValue'))}</td></tr>`;
+ $('tab-inventory').innerHTML=`${renderWarnings(inventoryWarnings(inv))}<div class="section">${secHead('Inventory (auto)')}<div class="tablewrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${inv.length?rows+tot:`<tr><td colspan="${head.length}" class="empty">No products yet.</td></tr>`}</tbody></table></div>
+  <div class="hint">Sent Out = every order that has left the shelf, including pending ones (In Transit). Returns come back to stock when their condition is Good (or not yet checked); Damaged returns, lost products (returns that never came back) and lost parcels are written off as a loss. Stock value = purchases − cost of goods sold − write-offs − stock in transit, where each order is costed at the average buying price up to its date.</div></div>`;
+}
+
+/* ---------- accounts: business cash, partner balances, limits ---------- */
+function cashLedger(){   // every movement of business cash, oldest first, with a running balance
+ const rows=[];
+ const add=(date,time,created,label,inn,out)=>{if(inn||out)rows.push({date:date||'',time:time||'',createdAt:num(created),label,inn,out});};
+ state.capital.forEach(c=>{
+  const pr=payer(c,'partnerId','partner'),name=pr.kind==='partner'?pr.p.name:(pr.kind==='unknown'?pr.name:'—'),a=num(c.amount);
+  if(c.type==='Reimbursement')add(c.date,c.time,c.createdAt,'Bills repaid to '+name,0,a);
+  else if(c.type==='Withdrawal')add(c.date,c.time,c.createdAt,'Withdrawal by '+name,0,a);
+  else add(c.date,c.time,c.createdAt,'Investment by '+name,a,0);
+ });
+ state.sales.forEach(s=>{
+  if(collects(s)&&s.received==='Yes')add(s.receivedDate||s.date,s.receivedDate?'':s.time,s.createdAt,st(s)==='Delivered'?'Order '+s.orderNo+' received':'Order '+s.orderNo+' delivery charge (returned)',dueOf(s),0);   // older entries have no received date: they keep the order date
+  if(payer(s,'courierPaidById','courierPaidBy').kind==='biz')add(s.date,s.time,s.createdAt,'Courier / return — '+s.orderNo,0,num(s.courierCharge)+(st(s)==='Returned'?num(s.returnCharge):0));
+ });
+ state.stock.forEach(s=>{if(payer(s,'paidById','paidBy').kind==='biz')add(s.date,s.time,s.createdAt,'Stock: '+s.product+' × '+s.qty,0,num(s.qty)*num(s.buyingPrice));});
+ state.expenses.forEach(e=>{if(payer(e,'paidById','paidBy').kind==='biz')add(e.date,e.time,e.createdAt,'Expense: '+e.item+' ('+e.category+')',0,num(e.amount));});
+ rows.sort((a,b)=>cmp(whenKey(a),whenKey(b))||a.createdAt-b.createdAt);
+ let bal=0;rows.forEach(r=>{bal+=r.inn-r.out;r.bal=bal;});
+ return rows;
+}
+function renderAccounts(){
+ const top=$('acctTop'),bot=$('acctBottom'),cour=$('acctCouriers');if(!top||!bot||!cour)return;
+ const s=computeSummary();
+ const moneyIn=s.investedTotal+s.moneyReceived;
+ const moneyOut=s.bizBy.stock+s.bizBy.expenses+s.bizBy.courier+s.withdrawnTotal+s.repaidTotal;
+ const cards=S.partners.map(p=>{
+  const a=s.acct[p.id];
+  const rows=[['Invested',a.invested,0,1],[a.profitShare<0?'Loss share':'Profit share',a.profitShare],['Already withdrawn',-a.withdrawn],['Can still take',a.canTake,1,1]];
+  if(a.canNow<a.canTake-0.005)rows.push(['Can withdraw right now (limited by cash)',a.canNow,0,1]);
+  if(Math.abs(a.owed)>0.005)rows.push(['Bills paid personally — owed back',a.owed,0,1]);
+  return `<div class="pcard"><h3><span>${esc(p.name)}</span><span><button class="minibtn solid" data-act="withdrawFor" data-pid="${esc(p.id)}">Withdraw</button> <button class="minibtn" data-act="investFor" data-pid="${esc(p.id)}">+ Invest</button>${a.owed>0.005?` <button class="minibtn" data-act="repayFor" data-pid="${esc(p.id)}">Repay bills</button>`:''}</span></h3>${kvRows(rows)}</div>`;
+ }).join('')||'<div class="empty">Add partners in Settings</div>';
+ top.innerHTML=`${renderWarnings(s.warnings)}
+  <div class="section">${secHead('Business account')}
+   <div class="bigcash"><span class="l">Cash in business account</span><span class="v amt ${s.cashBalance<0?'expense':'income'}">${money(s.cashBalance)}</span></div>
+   <div class="subh">Money in</div>${kvRows([['Investments by partners',s.investedTotal],['Customer payments received',s.moneyReceived],['Total in',moneyIn,1]])}
+   <div class="subh">Money out</div>${kvRows([['Stock purchases',-s.bizBy.stock],['Expenses',-s.bizBy.expenses],['Courier &amp; return fees',-s.bizBy.courier],['Withdrawn by partners',-s.withdrawnTotal],['Bills repaid to partners',-s.repaidTotal],['Total out',-moneyOut,1]])}
+   <div class="subh">Balance</div>${kvRows([['Cash balance (in − out)',s.cashBalance,1]])}
+   <div class="hint">Bills a partner paid personally do not come out of this cash; they stay "owed back" until you use Repay bills. Still to collect: customer money not yet received ${money(s.moneyPending)}, pending orders ${money(s.codPending)}.</div></div>
+  <div class="section">${secHead('Partner accounts')}<div class="pgrid">${cards}</div>
+   <div class="hint">Can still take = investment + profit share (− loss share) − already withdrawn. A withdrawal is also limited by the cash in the business account.</div></div>`;
+ renderCourierBlock();
+ const led=cashLedger(),mode=sortBy.cash;
+ if(!$('cashTbl')){   // the sort dropdown lives in a frame that is drawn once, so a live sync never closes it
+  bot.innerHTML=`<div class="section">${secHead('Cash statement',`<select class="sortsel" id="sort_cash" data-act="sort" data-key="cash" aria-label="Sort cash statement">${sortOpts(false,mode)}</select>`)}<div class="tablewrap"><table><thead><tr><th>Date &amp; Time</th><th>Details</th><th>In</th><th>Out</th><th>Balance</th></tr></thead><tbody id="cashTbl"></tbody></table></div><div id="cashLimit"></div>
+  <div class="hint">Customer payments use the Received On date (the order date for older entries). Bills a partner paid personally are not listed because they did not touch business cash. Balance is the cash after that movement, whatever the sort order.</div></div>`;
+ }
+ const show=sortRows(mode==='old'?led:led.slice().reverse(),mode,r=>r.inn||r.out).slice(0,100);
+ $('cashTbl').innerHTML=show.length?show.map(r=>`<tr><td>${dateCell(r)}</td><td>${esc(r.label)}</td><td>${r.inn?`<span class="amt income">${money(r.inn)}</span>`:''}</td><td>${r.out?`<span class="amt expense">${money(r.out)}</span>`:''}</td><td>${money(r.bal)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No money movements yet.</td></tr>';
+ $('cashLimit').innerHTML=led.length>100?`<div class="hint">Showing 100 of ${led.length} entries (${(SORT_LABELS.find(x=>x[0]===mode)||[])[1]||'Newest first'}).</div>`:'';
+}
+
+/* ---------- Accounts tab: money to collect from couriers ---------- */
+/* Every order lands in exactly ONE bucket: its courier's name, or "No courier set" (orders saved before the Courier field existed).
+   Each bucket uses the same collects()/dueOf() rule as Summary, so the buckets always add up to Summary's
+   "Customer money not yet received" and "Pending orders (COD value)". */
+function courierBuckets(){   // every courier currently in Settings, plus any that only appear on saved orders (renamed/removed since) — 'No courier set' is added separately by the caller
+ const seen=new Set(),list=[];
+ S.couriers.forEach(c=>{if(c&&!seen.has(c)){seen.add(c);list.push(c);}});
+ state.sales.forEach(s=>{if(s.courier&&!seen.has(s.courier)){seen.add(s.courier);list.push(s.courier);}});
+ return list;
+}
+const courierOf=s=>s.courier||NO_COURIER;   // which bucket a sale belongs to
+const courierLabel=b=>b===NO_COURIER?'No courier set':b;
+function courierOrdersFor(bucket){   // this courier's orders that still owe money — same rule as Summary's "Customer money not yet received"
+ return state.sales.filter(s=>collects(s)&&s.received!=='Yes'&&courierOf(s)===bucket);
+}
+function courierMoneyPending(bucket){return courierOrdersFor(bucket).reduce((a,s)=>a+dueOf(s),0);}
+function courierPendingCodValue(bucket){return state.sales.filter(s=>st(s)==='Pending'&&courierOf(s)===bucket).reduce((a,s)=>a+codOf(s),0);}
+
+let courierBatch={open:null,date:todayStr(),selected:new Set(),failed:[],busy:false};   // JS-only state, same reasoning as the Summary period filter
+let courierBlockBuilt=false,courierPanelBuiltFor=null;
+function ensureCourierBlockShell(){   // built ONCE: renderAccounts() runs on every live sync and must never re-create the Received-on date input mid-use
+ const box=$('acctCouriers');if(!box||courierBlockBuilt)return;
+ box.innerHTML=`<div class="section">${secHead('Money to collect from couriers')}
+  <div class="tablewrap"><table><thead><tr><th>Courier</th><th>Money still to receive</th><th>Pending COD value</th></tr></thead><tbody id="cbRows"></tbody></table></div>
+  <div id="cbPanel"></div>
+  <div class="hint">Tap a courier to open its unreceived orders and mark them received. Money still to receive = customer money not yet received on Delivered orders, plus the delivery charge on "With charge" returns; its Total is the same figure as Summary's "Customer money not yet received". Pending COD value = orders still with the courier (not due yet), so it is not part of that total. Orders saved before couriers were added are under "No courier set".</div></div>`;
+ courierBlockBuilt=true;
+}
+function ensureCourierPanelShell(){   // built once per courier that's open; the date input is never recreated while that courier stays open
+ const box=$('cbPanel');if(!box)return;
+ if(!courierBatch.open){box.innerHTML='';courierPanelBuiltFor=null;return;}
+ if(courierPanelBuiltFor===courierBatch.open)return;
+ box.innerHTML=`<div class="subh">Unreceived orders — ${esc(courierLabel(courierBatch.open))}</div>
+  <div class="row"><div class="field"><label for="cbDateInput">Received on</label><input type="date" id="cbDateInput" value="${esc(courierBatch.date)}" data-act="cbDate"></div></div>
+  <div id="cbOrderList"></div>
+  <button class="ghostbtn" data-act="cbOpen" data-courier="${esc(courierBatch.open)}">Close</button>`;
+ courierPanelBuiltFor=courierBatch.open;
+}
+function renderCourierOrderList(){   // rebuilt freely: checkboxes/labels/button are fully driven by courierBatch, so a rebuild never loses a selection
+ const list=$('cbOrderList');if(!list)return;
+ const courier=courierBatch.open;if(!courier)return;
+ const orders=courierOrdersFor(courier).slice().sort((a,b)=>cmp(whenKey(a),whenKey(b))||num(a.createdAt)-num(b.createdAt));
+ const ids=orders.map(s=>s.id);
+ const allChecked=ids.length>0&&ids.every(id=>courierBatch.selected.has(id));
+ const selOrders=orders.filter(s=>courierBatch.selected.has(s.id));
+ const dis=courierBatch.busy?' disabled':'';
+ const failHtml=courierBatch.failed.length?`<div class="hint"><span class="amt expense">Not saved: ${esc(courierBatch.failed.join(', '))}</span> — they are still unreceived. Check your connection and try again.</div>`:'';
+ if(!orders.length){list.innerHTML=`<div class="empty">All caught up — nothing pending from this courier.</div>${failHtml}`;return;}
+ // checkboxes carry .sortsel only to reset the global input{width:100%} rule (it would stretch them); no new CSS needed
+ const rows=orders.map(s=>`<label class="kv-row"><span><input type="checkbox" class="sortsel" data-act="cbCheck" data-id="${esc(s.id)}"${courierBatch.selected.has(s.id)?' checked':''}${dis}> ${esc(s.orderNo)}<small class="sub">${esc(s.date)} · ${esc(s.product)} × ${esc(s.qty)}${st(s)==='Returned'?' · delivery charge on a return':''}</small></span><span>${money(dueOf(s))}</span></label>`).join('');
+ list.innerHTML=`<label class="kv-row kv-strong"><span><input type="checkbox" class="sortsel" data-act="cbSelectAll"${allChecked?' checked':''}${dis}> Select all</span><span>${orders.length} order${orders.length===1?'':'s'}</span></label>${rows}
+  <button class="addbtn" data-act="cbReceive"${(!selOrders.length||courierBatch.busy)?' disabled':''}>${courierBatch.busy?'Saving…':'Mark '+selOrders.length+' order'+(selOrders.length===1?'':'s')+' received ('+money(selOrders.reduce((a,s)=>a+dueOf(s),0))+')'}</button>${failHtml}`;
+}
+function renderCourierBlock(){
+ ensureCourierBlockShell();
+ const rows=$('cbRows');if(!rows)return;
+ const inSettings=new Set(S.couriers),buckets=courierBuckets().concat([NO_COURIER]);
+ if(courierBatch.open&&!buckets.includes(courierBatch.open)&&!courierBatch.busy){courierBatch.open=null;courierBatch.selected=new Set();courierBatch.failed=[];}   // the open courier was renamed or deleted meanwhile
+ let totDue=0,totCod=0;
+ const body=buckets.map(c=>{
+  const due=courierMoneyPending(c),cod=courierPendingCodValue(c),open=courierBatch.open===c;
+  totDue+=due;totCod+=cod;
+  const gone=c!==NO_COURIER&&!inSettings.has(c);   // still on saved orders, but no longer in Settings
+  return `<tr><td><button class="minibtn${open?' solid':''}" data-act="cbOpen" data-courier="${esc(c)}" aria-expanded="${open}">${esc(courierLabel(c))}</button>${gone?'<span class="sub">removed from Settings</span>':''}</td><td>${money(due)}</td><td>${money(cod)}</td></tr>`;
+ }).join('');
+ rows.innerHTML=body+`<tr class="total"><td>Total</td><td>${money(totDue)}</td><td>${money(totCod)}</td></tr>`;
+ ensureCourierPanelShell();
+ renderCourierOrderList();
+}
+function toggleCourierPanel(courier){
+ if(courierBatch.busy)return;   // never switch couriers while a batch is being saved
+ courierBatch.open=courierBatch.open===courier?null:courier;
+ courierBatch.selected=new Set();courierBatch.date=todayStr();courierBatch.failed=[];
+ renderCourierBlock();
+}
+async function batchReceiveCourier(){   // marks the ticked orders received through the normal save path (updateRecord + stampEdit), 5 at a time; the cash statement refreshes by itself once state changes
+ const courier=courierBatch.open;if(!courier||courierBatch.busy)return;
+ const orders=courierOrdersFor(courier).filter(s=>courierBatch.selected.has(s.id));
+ if(!orders.length)return;
+ const box=$('cbDateInput'),date=box?box.value:courierBatch.date;   // the date the person sees right now (a change event may not have fired yet)
+ if(!date){alert('Please fill in: Received on');return;}
+ courierBatch.date=date;
+ const n=orders.length,total=orders.reduce((a,s)=>a+dueOf(s),0);
+ if(!confirm(`Mark ${n} order${n===1?'':'s'} from ${courierLabel(courier)} as received on ${date}?\n\n${money(total)} will be added to the cash statement on that date.`))return;
+ courierBatch.busy=true;courierBatch.failed=[];renderCourierOrderList();   // busy is set before the first await, so a double tap cannot start a second batch
+ const failed=[],CHUNK=5;let saved=0;
+ try{
+  for(let i=0;i<orders.length;i+=CHUNK){
+   await Promise.all(orders.slice(i,i+CHUNK).map(async s=>{
+    const old=state.sales.find(r=>r.id===s.id),name=s.orderNo||s.id;
+    if(!old||!collects(old)){failed.push(name);return;}   // deleted, or changed by another partner while this was open
+    if(old.received==='Yes'){courierBatch.selected.delete(s.id);return;}   // another partner already marked it
+    const d=clone(old);delete d.id;d.received='Yes';d.receivedDate=date;d.createdAt=old.createdAt||Date.now();stampEdit(d,old);
+    if(await updateRecord('sales',s.id,d,true)){saved++;courierBatch.selected.delete(s.id);}else failed.push(name);
+   }));
+  }
+ }finally{courierBatch.busy=false;courierBatch.failed=failed;}
+ refreshActive();
+ showToast(failed.length?`${failed.length} order${failed.length===1?'':'s'} could not be saved — see the list`:`${saved} order${saved===1?'':'s'} marked received`,failed.length>0);
+}
+function capitalLimit(){   // what may the selected partner do right now with this kind of entry?
+ const pid=$('in_capital_partnerId').value,type=$('in_capital_type').value,p=partnerById(pid);
+ if(!p)return null;
+ const s=computeSummary(state.capital.filter(r=>r.id!==editing.capital)),a=s.acct[pid];
+ let limit=null;
+ if(type==='Withdrawal')limit=Math.max(0,Math.min(a.entitlement,s.cashBalance));
+ else if(type==='Reimbursement')limit=Math.max(0,Math.min(a.owed,s.cashBalance));
+ return {p,s,a,type,limit};
+}
+function updateCapitalHint(){
+ const box=$('limit_capital');if(!box||!$('in_capital_type'))return;
+ const L=capitalLimit();
+ if(!L){box.className='limit';box.textContent='Add a partner in Settings first.';return;}
+ const {p,s,a,type,limit}=L,amt=parseFloat($('in_capital_amount').value)||0;
+ let text;
+ if(type==='Withdrawal')text=`Business cash: <b>${money(s.cashBalance)}</b>. ${esc(p.name)} can still take <b>${money(a.canTake)}</b> (invested ${money(a.invested)} ${a.profitShare<0?'−':'+'} ${a.profitShare<0?'loss':'profit'} share ${money(Math.abs(a.profitShare))} − already withdrawn ${money(a.withdrawn)}). Withdraw up to <b>${money(limit)}</b> now.${a.owed>0.005?` <br>${esc(p.name)} is also owed <b>${money(a.owed)}</b> for bills paid personally — to pay those back, choose “Repay bills”, not Withdraw.`:''}`;
+ else if(type==='Reimbursement')text=`Business cash: <b>${money(s.cashBalance)}</b>. ${esc(p.name)} paid <b>${money(Math.max(0,a.owed))}</b> of business bills personally and has not been repaid. Repay up to <b>${money(limit)}</b> now.`;
+ else text=`This adds money to the business account (cash now <b>${money(s.cashBalance)}</b>).`;
+ const over=limit!==null&&amt>limit+0.005;
+ box.className='limit'+(over?' bad':'');
+ box.innerHTML=text+(over?'<br><b>This amount is more than allowed and will be blocked.</b>':'')+(limit>0?` <button type="button" class="minibtn" data-act="fillMax">Use ${money(limit)}</button>`:'');
+}
+function fillMax(){
+ const L=capitalLimit();if(!L||L.limit===null)return;
+ $('in_capital_amount').value=Math.floor(L.limit*100)/100;updateCapitalHint();
+}
+function prefillAccount(pid,type){
+ if(editing.capital)cancelEdit('capital');
+ $('in_capital_partnerId').value=pid;$('in_capital_type').value=type;$('in_capital_amount').value='';
+ updateCapitalHint();
+ $('form_capital').scrollIntoView({behavior:'smooth',block:'center'});
+ $('in_capital_amount').focus({preventScroll:true});
+}
+// would this list of partner-money entries overspend the cash or the partner's balance?
+function capitalProblems(newCapital){
+ const before=computeSummary(),after=computeSummary(newCapital),eps=0.005,msgs=[];
+ if(after.cashBalance<-eps&&after.cashBalance<before.cashBalance-eps)
+  msgs.push(`Not enough cash in the business account. Cash now: ${money(before.cashBalance)}; after this it would be ${money(after.cashBalance)}.`);
+ S.partners.forEach(p=>{
+  const a=before.acct[p.id],b=after.acct[p.id];
+  if(b.withdrawn>eps&&b.entitlement<-eps&&b.entitlement<a.entitlement-eps)
+   msgs.push(`${p.name} can only take ${money(a.canTake)} more (investment + profit share − loss − already withdrawn).`);
+  if(b.owed<-eps&&b.owed<a.owed-eps)
+   msgs.push(`${p.name} has only ${money(Math.max(0,a.owed))} of personally paid bills left to repay.`);
+ });
+ return msgs;
+}
+function guardCapital(list){
+ const m=capitalProblems(list);if(!m.length)return true;
+ alert('Not allowed:\n\n• '+m.join('\n• '));return false;
+}
+
+/* ---------- settings ---------- */
+function buildSettings(){
+ $('tab-settings').innerHTML=`
+ <div class="section">${secHead('Products','<button class="lockbtn" id="lock_products" data-act="toggleList" data-list="products"></button>')}
+  <div id="prodList"></div>
+  <div id="addWrap_products" class="hidden"><div class="row"><div class="field wide"><input id="newProd" placeholder="New product" aria-label="New product"></div></div><button class="addbtn" data-act="addProd">+ Add product</button></div>
+  <div class="hint">Removing a product only hides it from the dropdowns — past sales and stock still count in the totals. Renaming a product also renames it on the saved entries.</div></div>
+ <div class="section">${secHead('Couriers','<button class="lockbtn" id="lock_couriers" data-act="toggleList" data-list="couriers"></button>')}
+  <div id="courierList"></div>
+  <div id="addWrap_couriers" class="hidden"><div class="row"><div class="field wide"><input id="newCourier" placeholder="New courier" aria-label="New courier"></div></div><button class="addbtn" data-act="addCourier">+ Add courier</button></div>
+  <div class="hint">Removing a courier only hides it from the Sales dropdown — past orders still show it. Renaming a courier also renames it on the saved orders.</div></div>
+ <div class="section">${secHead('Expense categories','<button class="lockbtn" id="lock_categories" data-act="toggleList" data-list="categories"></button>')}
+  <div id="catList"></div>
+  <div id="addWrap_categories" class="hidden"><div class="row"><div class="field wide"><input id="newCat" placeholder="New category" aria-label="New category"></div></div><button class="addbtn" data-act="addCat">+ Add category</button></div>
+  <div class="hint">Renaming a category also renames it on the saved expenses.</div></div>
+ <div class="section" id="shareSection"></div>
+ <div class="section" id="exportCard">${secHead('Reports &amp; Export')}
+  <div class="row">
+   <div class="field"><label for="expFrom">From</label><input type="date" id="expFrom"></div>
+   <div class="field"><label for="expTo">To</label><input type="date" id="expTo"></div>
+  </div>
+  <div class="subh">Reports</div>
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="xlsxExport">Excel report</button>
+   <button type="button" class="ghostbtn" data-act="pdfExport">PDF report</button>
+  </div>
+  <div class="subh">CSV files</div>
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="sales">Sales CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="expenses">Expenses CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="stock">Stock CSV</button>
+   <button type="button" class="ghostbtn" data-act="csvExport" data-list="capital">Accounts CSV</button>
+  </div>
+  <div class="hint">From/To are optional — leave them empty to export all-time data. The dates filter the Sales, Expenses, Stock and Accounts data. The Summary, Inventory and Partners parts of the Excel/PDF report always show all-time totals, so they match those tabs.</div>
+ </div>
+ <div class="section" id="backupCard">${secHead('Backup &amp; Restore')}
+  <div class="btngrid">
+   <button type="button" class="ghostbtn" data-act="backupDownload">Full backup (JSON)</button>
+   <button type="button" class="ghostbtn" data-act="restoreClick">Restore backup</button>
+  </div>
+  <input type="file" id="restoreFile" accept=".json" class="hidden">
+  <div class="hint">The backup file contains customer names, phone numbers and addresses — keep it private.</div>
+  <div class="hint">Restoring replaces the shared data for every partner. A safety backup of the current data downloads automatically first, and you'll need to type RESTORE to confirm.</div>
+ </div>
+ <div class="section" id="calcCard">${secHead('Calculator')}
+  <div class="mtc-status" id="mtCalcStatus"></div>
+  <button type="button" class="ghostbtn" onclick="mtCalcAdd()">+ Add calculator</button>
+  <div class="hint">Tap the floating icon to open it and drag it anywhere on screen. Hold it and drop it on the ✕ that appears to hide it for 10 minutes — use this button to bring it back sooner. Resize it with the −/+ buttons in its title bar.</div>
+ </div>`;   // Business share stays last, always
+ if(window.mtCalc)window.mtCalc.refresh();
+}
+function renderSettingsLists(fromSync){
+ const ae=document.activeElement;
+ if(fromSync&&ae&&ae.tagName==='INPUT'&&$('tab-settings').contains(ae))return;   // don't disturb someone who is typing
+ [['products','prodList'],['couriers','courierList'],['categories','catList']].forEach(([list,boxId])=>{
+  const open=listUnlocked[list];
+  const tags=S[list].map(x=>`<span class="tag">${esc(x)}${open?`<button data-act="editItem" data-list="${list}" data-name="${esc(x)}" aria-label="Rename" title="Rename">✎</button><button data-act="rmItem" data-list="${list}" data-name="${esc(x)}" aria-label="Remove" title="Remove">✕</button>`:''}</span>`).join('')||'<div class="empty">None yet</div>';
+  $(boxId).innerHTML=tags+`<div class="hint">${open?'🔓 Unlocked — it locks again when you leave Settings.':'🔒 Locked — tap Unlock to add, rename or remove.'}</div>`;
+  $('addWrap_'+list).classList.toggle('hidden',!open);
+  const b=$('lock_'+list);b.textContent=open?'🔓 Lock':'🔒 Unlock';b.classList.toggle('open',open);
+ });
+ renderShare();
+}
+/* ---------- locks: lists unlock at once; profit shares need a wait; removing a partner needs a longer wait ---------- */
+const SHARE_WAIT=5*60*1000,REMOVE_WAIT=10*60*1000,OPEN_WINDOW=10*60*1000;   // cooling-off waits, and how long an unlocked action stays available
+let LOCKS={share:0,rm:{}},shareSig='';   // start times, kept on this device so a reload or a phone switching apps does not restart the wait
+const listUnlocked={products:false,categories:false,couriers:false};
+function loadLocks(){try{const x=JSON.parse(localStorage.getItem('gat_locks')||'null');if(x&&typeof x==='object')LOCKS={share:+x.share||0,rm:(x.rm&&typeof x.rm==='object')?x.rm:{}};}catch(e){}}
+function saveLocks(){try{localStorage.setItem('gat_locks',JSON.stringify(LOCKS));}catch(e){}}
+function gate(start,wait){   // s: 'off' (never started / expired) · 'wait' (left = ms until it opens) · 'open' (left = ms until it locks again)
+ const now=Date.now(),t=+start||0;
+ if(!t||now<t)return {s:'off'};
+ if(now<t+wait)return {s:'wait',left:t+wait-now};
+ if(now<t+wait+OPEN_WINDOW)return {s:'open',left:t+wait+OPEN_WINDOW-now};
+ return {s:'off'};
+}
+const fmtLeft=ms=>{const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+pad(s%60);};
+const shareOpen=()=>gate(LOCKS.share,SHARE_WAIT).s==='open';
+function lockSig(){return gate(LOCKS.share,SHARE_WAIT).s+'|'+S.partners.map(p=>p.id+':'+gate(LOCKS.rm[p.id],REMOVE_WAIT).s).join(',');}
+function renderShare(){
+ const box=$('shareSection');if(!box)return;
+ Object.keys(LOCKS.rm).forEach(id=>{if(!partnerById(id)||gate(LOCKS.rm[id],REMOVE_WAIT).s==='off')delete LOCKS.rm[id];});   // partner already gone, or the removal window ran out
+ const g=gate(LOCKS.share,SHARE_WAIT),open=g.s==='open';
+ const t=S.partners.reduce((a,p)=>a+num(p.share),0);
+ const total=Math.abs(t-100)<=0.005?`Total share: ${t.toFixed(2)}%`:`<span class="amt expense">Total share: ${t.toFixed(2)}% — must add up to 100%</span>`;
+ const btn=open?'<button class="lockbtn open" data-act="lockShare">🔓 Lock</button>':g.s==='wait'?'<button class="lockbtn" data-act="cancelShare">Cancel</button>':'<button class="lockbtn" data-act="unlockShare">🔒 Unlock</button>';
+ const note=g.s==='wait'?`⏳ Editing opens in <b id="shareLeft">${fmtLeft(g.left)}</b> — this wait is here to stop hasty changes to profit shares.`
+  :open?`🔓 Open for editing — locks again in <b id="shareLeft">${fmtLeft(g.left)}</b>.`
+  :'🔒 Locked — tap Unlock; editing opens after a 5 minute wait.';
+ const rows=!S.partners.length?'<div class="empty">No partners yet</div>'
+  :open?S.partners.map(p=>`<div class="row end"><div class="field"><label for="pn_${esc(p.id)}">Name</label><input id="pn_${esc(p.id)}" value="${esc(p.name)}" data-act="pname" data-pid="${esc(p.id)}"></div><div class="field narrow"><label for="ps_${esc(p.id)}">Share %</label><input id="ps_${esc(p.id)}" type="number" step="0.01" min="0" value="${esc(p.share)}" data-act="pshare" data-pid="${esc(p.id)}"></div>${gate(LOCKS.rm[p.id],REMOVE_WAIT).s==='off'?`<button class="minibtn" data-act="rmStart" data-pid="${esc(p.id)}">Remove…</button>`:''}</div>`).join('')
+  :kvRows(S.partners.map(p=>[esc(p.name),num(p.share).toFixed(2)+'%']));
+ const pend=S.partners.map(p=>{
+  const r=gate(LOCKS.rm[p.id],REMOVE_WAIT);
+  if(r.s==='wait')return `<div class="lockmsg">⏳ Removing <b>${esc(p.name)}</b> is allowed in <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
+  if(r.s==='open')return `<div class="lockmsg">Ready to remove <b>${esc(p.name)}</b> (available for <b data-rmleft="${esc(p.id)}">${fmtLeft(r.left)}</b>) <button class="minibtn solid danger" data-act="rmNow" data-pid="${esc(p.id)}">Remove now</button> <button class="minibtn" data-act="rmCancel" data-pid="${esc(p.id)}">Cancel</button></div>`;
+  return '';
+ }).join('');
+ const add=open?`<div class="row"><div class="field"><label for="newPartnerName">Name</label><input id="newPartnerName"></div><div class="field"><label for="newPartnerShare">Share %</label><input id="newPartnerShare" type="number" step="0.01" min="0"></div></div><button class="addbtn" data-act="addPartner">+ Add partner</button>`:'';
+ box.innerHTML=`${secHead('Business share',btn)}<div class="lockmsg">${note}</div>${rows}${pend}<div class="hint">${total}</div>${add}<div class="hint">Renaming a partner keeps all their history. A partner who has entries can't be deleted. Removing a partner needs a 10 minute wait after you tap Remove…</div>`;
+ shareSig=lockSig();
+}
+function tickLocks(){   // runs every second; only redraws when a lock changes state, so nobody loses what they are typing
+ if(activeTab!=='settings'||!built.settings)return;
+ if(lockSig()!==shareSig){renderShare();return;}
+ const g=gate(LOCKS.share,SHARE_WAIT),e=$('shareLeft');
+ if(e&&g.left!==undefined)e.textContent=fmtLeft(g.left);
+ document.querySelectorAll('[data-rmleft]').forEach(n=>{const r=gate(LOCKS.rm[n.dataset.rmleft],REMOVE_WAIT);if(r.left!==undefined)n.textContent=fmtLeft(r.left);});
+}
+function toggleList(list){if(!(list in listUnlocked))return;listUnlocked[list]=!listUnlocked[list];renderSettingsLists();}
+function unlockShare(){LOCKS.share=Date.now();saveLocks();renderShare();}
+function lockShare(){LOCKS.share=0;saveLocks();renderShare();}
+function nameTaken(list,name,exceptIndex){return list.some((x,i)=>i!==exceptIndex&&String(x.name!==undefined?x.name:x).toLowerCase()===name.toLowerCase());}
+async function updatePartner(pid,key,val){
+ if(!shareOpen()){alert('Business share is locked. Tap Unlock and wait 5 minutes to edit.');renderShare();return;}
+ const ok=await commitSettings(next=>{
+  const p=next.partners.find(x=>x.id===pid);if(!p)return false;
+  if(key==='share'){p.share=Math.max(0,parseFloat(val)||0);return;}
+  const n=String(val).trim();
+  if(!n){alert('Name cannot be empty.');return false;}
+  if(n.toLowerCase()===BIZ_NAME.toLowerCase()||next.partners.some(q=>q.id!==pid&&q.name.toLowerCase()===n.toLowerCase())){alert('That name is already used.');return false;}
+  if(p.name!==n){p.legacy=Array.from(new Set((p.legacy||[]).concat(p.name)));p.name=n;}   // remember the old name for older records
+ });
+ if(!ok)renderSettingsLists();
+}
+function rmStart(pid){   // step 1: start the 10 minute wait
+ const p=partnerById(pid);if(!p)return;
+ if(!shareOpen()){renderShare();return;}
+ const n=partnerUsage(pid);
+ if(n>0){alert(`${p.name} has ${n} entr${n===1?'y':'ies'} (capital or payments) and can't be deleted. Rename the partner instead.`);return;}
+ LOCKS.rm[pid]=Date.now();saveLocks();renderShare();
+}
+function rmCancel(pid){delete LOCKS.rm[pid];saveLocks();renderShare();}
+function rmNow(pid){   // step 2: only after the wait, and only inside the window that follows it
+ const p=partnerById(pid);if(!p)return;
+ if(gate(LOCKS.rm[pid],REMOVE_WAIT).s!=='open'){renderShare();return;}
+ const n=partnerUsage(pid);
+ if(n>0){alert(`${p.name} now has ${n} entr${n===1?'y':'ies'} (capital or payments) and can't be deleted. Rename the partner instead.`);rmCancel(pid);return;}
+ if(!confirm(`Remove partner ${p.name}?`))return;
+ commitSettings(next=>{next.partners=next.partners.filter(x=>x.id!==pid);}).then(ok=>{if(ok){delete LOCKS.rm[pid];saveLocks();renderShare();}});
+}
+function addPartner(){
+ if(!shareOpen()){alert('Business share is locked. Tap Unlock and wait 5 minutes to edit.');renderShare();return;}
+ const n=$('newPartnerName').value.trim();if(!n)return;
+ if(n.toLowerCase()===BIZ_NAME.toLowerCase()||S.partners.some(p=>p.name.toLowerCase()===n.toLowerCase())){alert('That name is already used.');return;}
+ const share=Math.max(0,parseFloat($('newPartnerShare').value)||0);
+ commitSettings(next=>{next.partners.push({id:'p_'+uid(),name:n,share,legacy:[]});}).then(ok=>{if(ok){$('newPartnerName').value='';$('newPartnerShare').value='';}});
+}
+function addItem(list,inputId){
+ if(!listUnlocked[list])return;
+ const v=$(inputId).value.trim();if(!v)return;
+ if(list==='categories'){const use=reservedUse(v);if(use){alert(`"${v}" is already counted automatically through ${use}, so it can't be an expense category.`);return;}}
+ if(S[list].some(x=>x.toLowerCase()===v.toLowerCase())){alert('Already in the list.');return;}
+ commitSettings(next=>{next[list].push(v);}).then(ok=>{if(ok)$(inputId).value='';});
+}
+function removeItem(list,name){if(!listUnlocked[list])return;commitSettings(next=>{next[list]=next[list].filter(x=>x!==name);});}
+async function renameItem(list,oldName){   // renames the list entry and every saved entry that uses it, so history stays together
+ if(!listUnlocked[list])return;
+ const raw=prompt(`Rename "${oldName}" to:`,oldName);
+ if(raw===null)return;
+ const v=raw.trim();
+ if(!v||v===oldName)return;
+ if(list==='categories'){const use=reservedUse(v);if(use){alert(`"${v}" is already counted automatically through ${use}, so it can't be an expense category.`);return;}}
+ if(S[list].some(x=>x!==oldName&&norm(x)===norm(v))){alert('Already in the list.');return;}
+ const RENAME_TARGETS={products:{keys:['stock','sales'],field:'product'},couriers:{keys:['sales'],field:'courier'},categories:{keys:['expenses'],field:'category'}};
+ const {keys,field}=RENAME_TARGETS[list]||{keys:[],field:''};
+ const hit=r=>list==='categories'?r[field]===oldName:norm(r[field])===norm(oldName);
+ const affected=[];keys.forEach(k=>state[k].filter(hit).forEach(r=>affected.push([k,r])));
+ if(affected.length&&!confirm(`This also renames "${oldName}" on ${affected.length} saved entr${affected.length===1?'y':'ies'}, so the history stays together.\n\nContinue?`))return;
+ const ok=await commitSettings(next=>{const i=next[list].indexOf(oldName);if(i<0)return false;next[list][i]=v;});
+ if(!ok)return;
+ for(const [k,r] of affected){
+  const d=clone(r);delete d.id;d[field]=v;stampEdit(d,r);
+  if(!(await updateRecord(k,r.id,d))){alert(`The name was changed in the list, but some saved entries could not be updated. Rename "${v}" back and try again when the connection is fine.`);break;}
+ }
+ refreshActive();
+}
+function markOk(sig){if(!sig)return;commitSettings(next=>{next.dupOk=Array.from(new Set((next.dupOk||[]).concat(sig)));});}   // shared with all partners
+
+/* ---------- navigation & refresh ---------- */
+function showTab(key){
+ activeTab=key;
+ if(key!=='settings'){listUnlocked.products=false;listUnlocked.categories=false;listUnlocked.couriers=false;}   // lists lock again when you leave Settings
+ document.querySelectorAll('.tabpanel').forEach(p=>p.style.display=p.id==='tab-'+key?'block':'none');
+ document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));
+ if(TAB_CONFIGS[key]&&!built[key]){buildCrudPanel(key);addFilterBar(key);built[key]=true;}
+ if(TAB_CONFIGS[key])refreshAutoStamp();
+ if(key==='settings'&&!built.settings){buildSettings();built.settings=true;}
+ refreshActive();
+}
+function refreshActive(fromSync){   // never rebuilds a form, so nobody loses what they are typing
+ const key=activeTab;
+ if(key==='summary')renderSummary();
+ else if(key==='inventory')renderInventory();
+ else if(key==='history')renderHistory();
+ else if(key==='settings')renderSettingsLists(fromSync);
+ else if(TAB_CONFIGS[key]){refreshSelects(key);renderTab(key);if(key==='capital')renderAccounts();if(TAB_CONFIGS[key].dupWarn)$('dupWarn_'+key).innerHTML=renderWarnings(duplicateWarnings(key));}
+}
+function buildTabbar(){
+ const TABS=[['summary','Summary'],['sales','Sales'],['expenses','Expenses'],['stock','Stock'],['capital','Accounts'],['inventory','Inventory'],['history','History'],['settings','Settings']];
+ $('tabbar').innerHTML=TABS.map(([k,l])=>`<button class="tabbtn" data-act="tab" data-tab="${k}">${l}</button>`).join('');
+}
+
+/* ---------- events (delegated: no ids or names are ever pasted into inline handlers) ---------- */
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;
+ const a=b.dataset.act;
+ if(a==='tab')showTab(b.dataset.tab);
+ else if(a==='add')addTabRecord(b.dataset.key);
+ else if(a==='cancel')cancelEdit(b.dataset.key);
+ else if(a==='edit')startEdit(b.dataset.key,b.dataset.id);
+ else if(a==='withdrawFor'||a==='repayFor'||a==='investFor')prefillAccount(b.dataset.pid,a==='repayFor'?'Reimbursement':a==='investFor'?'Investment':'Withdrawal');
+ else if(a==='fillMax')fillMax();
+ else if(a==='del')delRecord(b.dataset.key,b.dataset.id);
+ else if(a==='addPartner')addPartner();
+ else if(a==='addCat')addItem('categories','newCat');
+ else if(a==='addProd')addItem('products','newProd');
+ else if(a==='addCourier')addItem('couriers','newCourier');
+ else if(a==='toggleList')toggleList(b.dataset.list);
+ else if(a==='editItem')renameItem(b.dataset.list,b.dataset.name);
+ else if(a==='unlockShare')unlockShare();
+ else if(a==='cancelShare'||a==='lockShare')lockShare();
+ else if(a==='rmStart')rmStart(b.dataset.pid);
+ else if(a==='rmCancel')rmCancel(b.dataset.pid);
+ else if(a==='rmNow')rmNow(b.dataset.pid);
+ else if(a==='rmItem')removeItem(b.dataset.list,b.dataset.name);
+ else if(a==='dupOk')markOk(b.dataset.sig);
+ else if(a==='cbOpen')toggleCourierPanel(b.dataset.courier);
+ else if(a==='cbReceive')batchReceiveCourier();
+});
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#form_capital'))updateCapitalHint();});   // live limit while typing an amount
+['input','change'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target&&/^in_(sales|expenses|stock|capital)_(date|time)$/.test(e.target.id))autoTouched[e.target.id]=true;}));   // changed by hand -> stop auto-updating it
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAutoStamp();});
+document.addEventListener('change',e=>{
+ const t=e.target,a=t.dataset&&t.dataset.act;
+ if(a==='sort')setSort(t.dataset.key,t.value);
+ else if(a==='pname')updatePartner(t.dataset.pid,'name',t.value);
+ else if(a==='pshare')updatePartner(t.dataset.pid,'share',t.value);
+ else if(a==='periodMode'){summaryPeriod.mode=t.value;syncPeriodFieldVisibility();renderSummary();}
+ else if(a==='periodFrom'){summaryPeriod.from=t.value;renderSummary();}
+ else if(a==='periodTo'){summaryPeriod.to=t.value;renderSummary();}
+ else if(a==='cbCheck'){if(t.checked)courierBatch.selected.add(t.dataset.id);else courierBatch.selected.delete(t.dataset.id);renderCourierOrderList();}
+ else if(a==='cbSelectAll'){const ids=courierOrdersFor(courierBatch.open).map(s=>s.id);if(t.checked)ids.forEach(id=>courierBatch.selected.add(id));else ids.forEach(id=>courierBatch.selected.delete(id));renderCourierOrderList();}
+ else if(a==='cbDate'){courierBatch.date=t.value;}
+ else if(t.closest&&t.closest('.crudform'))applyShowIf(t.closest('.crudform').dataset.key);   // show/hide status-specific fields
+});
+
+/* =====================================================================
+   BACKUP & EXPORT  (added feature — reads/writes via the same `state`,
+   `S` and `db` the rest of the app uses; never touches gat_locks)
+   ===================================================================== */
+const EXPORT_LIST_NAME={sales:'sales',expenses:'expenses',stock:'stock',capital:'accounts'};
+
+/* ---------- 1. Full backup (JSON) ---------- */
+function backupPayload(){
+ return {app:'garments-accounts',version:1,exportedAt:new Date().toISOString(),exportedBy:(me&&me.email)||'',
+  settings:clone(S),sales:clone(state.sales),expenses:clone(state.expenses),stock:clone(state.stock),capital:clone(state.capital)};
+}
+function downloadFullBackup(silent){
+ downloadBlob(JSON.stringify(backupPayload(),null,2),'application/json','garments-accounts-backup-'+todayStr()+'.json');
+ if(!silent)showToast('Backup downloaded');
+}
+
+/* ---------- 2. Restore from backup (JSON) ---------- */
+async function handleRestoreFile(file){
+ if(!file)return;
+ if(!db){showToast('Restore needs you to be online and logged in.',true);return;}
+ let data;
+ try{data=JSON.parse(await file.text());}catch(e){showToast('Invalid backup file',true);return;}
+ const listsOk=data&&typeof data==='object'&&KEYS.every(k=>Array.isArray(data[k])&&data[k].every(r=>r&&typeof r==='object'));
+ if(!data||data.app!=='garments-accounts'||!listsOk){showToast('Invalid backup file',true);return;}
+ const counts=KEYS.map(k=>`${(TAB_CONFIGS[k]&&TAB_CONFIGS[k].title)||k}: ${data[k].length}`).join('\n');
+ const when=data.exportedAt?new Date(data.exportedAt).toLocaleString():'unknown date';
+ if(!confirm(`Restore this backup?\n\nBackup date: ${when}\n${counts}\n\nThis REPLACES the shared data for ALL partners.\n\nContinue?`))return;
+ downloadFullBackup(true);   // safety copy of the current data before anything is overwritten
+ if(prompt('This cannot be undone. Type RESTORE to continue:')!=='RESTORE'){showToast('Restore cancelled');return;}
+ await runRestore(data);
+}
+async function runRestore(data){
+ try{
+  for(const key of KEYS){
+   const incoming=data[key];
+   const incomingIds=new Set(incoming.map(r=>r.id).filter(id=>id&&!isLocalId(id)));
+   const toDelete=state[key].map(r=>r.id).filter(id=>!isLocalId(id)&&!incomingIds.has(id));
+   const label=(TAB_CONFIGS[key]&&TAB_CONFIGS[key].title)||key;
+   const ops=incoming.map(rec=>()=>{
+    const d=clone(rec);const id=d.id;delete d.id;
+    return (!id||isLocalId(id))?db.collection(key).add(d):db.collection(key).doc(id).set(d);
+   }).concat(toDelete.map(id=>()=>db.collection(key).doc(id).delete()));
+   for(let i=0;i<ops.length;i+=15){
+    showToast(`Restoring ${label}… ${Math.min(i+15,ops.length)}/${ops.length}`);
+    try{await Promise.all(ops.slice(i,i+15).map(fn=>fn()));}
+    catch(e){console.error(e);showToast(`Restore failed while writing ${label} — run the same restore again.`,true);return;}
+    await yieldToUI();
+   }
+  }
+  showToast('Restoring settings…');
+  try{
+   const nextSettings=clone(data.settings||{});
+   await db.doc('settings/main').set(nextSettings);
+   S=Object.assign({},S,nextSettings);normalizeSettings();
+  }catch(e){console.error(e);showToast('Restore failed while writing settings — run the same restore again.',true);return;}
+  // the onSnapshot listeners refresh `state` by themselves — never overwrite it manually here
+  refreshActive();
+  showToast('Backup restored');
+ }catch(e){console.error(e);showToast('Restore failed — run the same restore again.',true);}
+}
+
+/* ---------- shared: field-driven columns + date filtering (used by CSV, Excel and PDF) ---------- */
+function exportRange(){const f=$('expFrom'),t=$('expTo');return {from:f?f.value:'',to:t?t.value:''};}   // one From/To pair (Settings > Reports & Export) for every export
+function csvColumnsFor(key){
+ return TAB_CONFIGS[key].fields.map(f=>({
+  header:f.label,type:f.type,
+  get:r=>{
+   if(f.nameKey)return payerLabel(payer(r,f.key,f.nameKey));
+   let v=r[f.key];if((v===undefined||v===null||v==='')&&f.old)v=r[f.old];
+   return v==null?'':v;
+  }
+ }));
+}
+function rowsForExport(key,from,to){
+ return state[key].filter(r=>{
+  const d=r.date||'';
+  if(from&&d<from)return false;
+  if(to&&d>to)return false;
+  return true;
+ }).slice().sort((a,b)=>cmp(whenKey(a),whenKey(b))||num(a.createdAt)-num(b.createdAt));
+}
+
+/* ---------- 3. CSV export ---------- */
+function exportCsv(key){
+ const cols=csvColumnsFor(key);
+ const {from,to}=exportRange();
+ const rows=rowsForExport(key,from,to);
+ const lines=[cols.map(c=>csvEscape(c.header)).join(',')].concat(rows.map(r=>cols.map(c=>csvEscape(c.get(r))).join(',')));
+ downloadBlob('\ufeff'+lines.join('\r\n'),'text/csv;charset=utf-8','garments-accounts-'+EXPORT_LIST_NAME[key]+'-'+todayStr()+'.csv');
+ showToast('CSV downloaded');
+}
+
+/* ---------- 4. Excel report (.xlsx) — every number below comes from the app's own compute functions ---------- */
+function xlAutoWidth(ws){ws.columns.forEach(col=>{let max=10;col.eachCell({includeEmpty:false},c=>{const l=(c.value==null?'':String(c.value)).length;if(l>max)max=l;});col.width=Math.min(40,max+2);});}
+function xlBanner(ws,title,cols){
+ ws.mergeCells(1,1,1,Math.max(1,cols));
+ const c=ws.getCell(1,1);c.value=title;c.font={bold:true,size:13,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0A6F48'}};
+ ws.getRow(1).height=22;
+}
+function addSummarySheet(wb){
+ const s=computeSummary(),ws=wb.addWorksheet('Summary');
+ xlBanner(ws,'Garments Accounts — Summary',3);ws.addRow([]);
+ const put=(label,val)=>{const r=ws.addRow([label,val]);r.getCell(2).numFmt='"৳"#,##0.00';};
+ ws.addRow(['Profit & Loss']).getCell(1).font={bold:true};
+ put('Product sales (delivered)',s.productSales);put('Delivery charges collected',s.deliveryCollected);put('Total Revenue',s.revenue);
+ put('Cost of goods sold',-s.cogs);put('Loss from damaged returns',-s.damageLoss);put('Loss from lost products',-s.lostLoss);put('Gross Profit',s.grossProfit);
+ put('Courier fees',-s.courierResolved);put('Return fees',-s.returnCharges);put('Operating expenses',-s.operatingExpenses);put('NET PROFIT',s.netProfit);
+ ws.addRow([]);ws.addRow(['Cash']).getCell(1).font={bold:true};
+ put('Cash in business account',s.cashBalance);put('Owed back to partners',s.paidPersonallyTotal-s.repaidTotal);
+ ws.addRow([]);ws.addRow(['Orders']).getCell(1).font={bold:true};
+ ws.addRow(['Delivered',s.deliveredCount]);ws.addRow(['Returned',s.returnedCount]);ws.addRow(['Lost',s.lostCount]);
+ ws.addRow(['Pending',s.pendingCount]);ws.addRow(['Total',s.totalOrders]);
+ ws.addRow([]);ws.addRow(['Operating expenses by category']).getCell(1).font={bold:true};
+ Object.entries(s.expByCat).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>put(k,v));
+ ws.getColumn(1).width=36;ws.getColumn(2).width=18;
+ ws.views=[{state:'frozen',ySplit:2}];
+}
+function addListSheet(wb,key,sheetName,from,to){
+ const cfg=TAB_CONFIGS[key],cols=csvColumnsFor(key),rows=rowsForExport(key,from,to),ws=wb.addWorksheet(sheetName);
+ ws.addRow([cfg.title]);ws.addRow([]);
+ const hRow=ws.addRow(cols.map(c=>c.header));
+ hRow.eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDDEBE1'}};});
+ rows.forEach(r=>{
+  const excelRow=ws.addRow(cols.map(c=>c.get(r)));
+  cols.forEach((c,i)=>{const cell=excelRow.getCell(i+1);if(c.type==='number')cell.numFmt='"৳"#,##0.00';else if(c.type==='tel')cell.numFmt='@';});
+ });
+ xlBanner(ws,cfg.title,cols.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+function addInventorySheet(wb){
+ const inv=computeInventory(),ws=wb.addWorksheet('Inventory');
+ const headers=['Product','Bought','Avg Cost','Sent Out','In Transit','Ret. Good','Ret. Damaged','Ret. Unchecked','Lost','In Stock','Stock Value'];
+ ws.addRow(['Garments Accounts — Inventory']);ws.addRow([]);
+ ws.addRow(headers).eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDDEBE1'}};});
+ inv.forEach(i=>{
+  const row=ws.addRow([i.product,i.qtyBought,i.avgCost,i.sentOut,i.inTransit,i.returnedGood,i.returnedDamaged,i.returnedUnchecked,i.lost,i.inStock,i.stockValue]);
+  row.getCell(3).numFmt='"৳"#,##0.00';row.getCell(11).numFmt='"৳"#,##0.00';
+ });
+ xlBanner(ws,'Garments Accounts — Inventory',headers.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+function addPartnersSheet(wb){
+ const s=computeSummary(),ws=wb.addWorksheet('Partners');
+ const headers=['Partner','Capital (net)','Paid personally','Owed back','Share %','Profit share'];
+ ws.addRow(['Garments Accounts — Partners']);ws.addRow([]);
+ ws.addRow(headers).eachCell(c=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDDEBE1'}};});
+ S.partners.forEach(p=>{
+  const row=ws.addRow([p.name,s.capitalByPartner[p.id],s.paidPersonally[p.id],s.owed[p.id],num(p.share),s.netProfit*num(p.share)/100]);
+  [2,3,4,6].forEach(i=>row.getCell(i).numFmt='"৳"#,##0.00');
+  row.getCell(5).numFmt='0.00"%"';
+ });
+ xlBanner(ws,'Garments Accounts — Partners',headers.length);
+ ws.views=[{state:'frozen',ySplit:3}];
+ xlAutoWidth(ws);
+}
+async function exportExcel(){
+ if(typeof ExcelJS==='undefined'){showToast('Excel engine still loading — try again in a sec',true);return;}
+ const {from,to}=exportRange();
+ try{
+  const wb=new ExcelJS.Workbook();wb.creator='Garments Accounts';wb.created=new Date();
+  addSummarySheet(wb);
+  addListSheet(wb,'sales','Sales',from,to);addListSheet(wb,'expenses','Expenses',from,to);
+  addListSheet(wb,'stock','Stock',from,to);addListSheet(wb,'capital','Accounts',from,to);
+  addInventorySheet(wb);addPartnersSheet(wb);
+  const buf=await wb.xlsx.writeBuffer();
+  downloadBlob(buf,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','garments-accounts-report-'+todayStr()+'.xlsx');
+  showToast('Excel report downloaded');
+ }catch(e){console.error(e);showToast('Could not build the Excel report',true);}
+}
+
+/* ---------- 5. PDF report (print window) ---------- */
+function pdfListTable(key,from,to){
+ const cfg=TAB_CONFIGS[key],cols=csvColumnsFor(key),rows=rowsForExport(key,from,to);
+ return `<h2>${esc(cfg.title)}</h2><table><thead><tr>${cols.map(c=>`<th>${esc(c.header)}</th>`).join('')}</tr></thead><tbody>${
+  rows.length?rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(c.get(r))}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}">No entries</td></tr>`}</tbody></table>`;
+}
+function buildPdfHtml(from,to){
+ const s=computeSummary();
+ const kv=(label,val)=>`<tr><td>${esc(label)}</td><td>${money(val)}</td></tr>`;
+ const partnersRows=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(num(p.share))}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`).join('');
+ const catRows=Object.entries(s.expByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${money(v)}</td></tr>`).join('')||'<tr><td colspan="2">No expenses yet</td></tr>';
+ return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Garments Accounts Report</title>
+<style>
+ body{font-family:Arial,Helvetica,sans-serif;color:#1a2632;padding:20px}
+ h1{margin:0 0 4px;font-size:1.2rem}
+ h2{margin:22px 0 8px;font-size:1rem}
+ table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:.78rem}
+ th,td{border:1px solid #ccc;padding:5px 7px;text-align:left}
+ th{background:#f0f0f0}
+ .banner{background:#0A6F48;color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:16px}
+ @media print{.banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{margin:14mm}}
+</style></head><body>
+<div class="banner"><h1>Garments Accounts — Report</h1><div>Generated ${esc(new Date().toLocaleString())}${from||to?` · ${esc(from||'start')} to ${esc(to||'today')}`:''}</div></div>
+<h2>Profit &amp; Loss</h2><table><tbody>${kv('Product sales (delivered)',s.productSales)}${kv('Delivery charges collected',s.deliveryCollected)}${kv('Total Revenue',s.revenue)}${kv('Cost of goods sold',-s.cogs)}${kv('Loss from damaged returns',-s.damageLoss)}${kv('Loss from lost products',-s.lostLoss)}${kv('Gross Profit',s.grossProfit)}${kv('Courier fees',-s.courierResolved)}${kv('Return fees',-s.returnCharges)}${kv('Operating expenses',-s.operatingExpenses)}${kv('NET PROFIT',s.netProfit)}</tbody></table>
+<h2>Orders</h2><table><tbody><tr><td>Delivered</td><td>${s.deliveredCount}</td></tr><tr><td>Returned</td><td>${s.returnedCount}</td></tr><tr><td>Lost</td><td>${s.lostCount}</td></tr><tr><td>Pending</td><td>${s.pendingCount}</td></tr><tr><td>Total</td><td>${s.totalOrders}</td></tr></tbody></table>
+<h2>Operating Expenses By Category</h2><table><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody>${catRows}</tbody></table>
+<h2>Cash</h2><table><tbody>${kv('Cash in business account',s.cashBalance)}${kv('Owed back to partners',s.paidPersonallyTotal-s.repaidTotal)}</tbody></table>
+<h2>Stock &amp; Money Still To Come</h2><table><tbody>${kv('Customer money not yet received',s.moneyPending)}${kv('Pending orders (COD value)',s.codPending)}${kv('Stock on shelf (at cost)',s.stockValue)}${kv('Stock in transit (at cost)',s.transitValue)}</tbody></table>
+<h2>Partners</h2><table><thead><tr><th>Partner</th><th>Capital (net)</th><th>Paid personally</th><th>Owed back</th><th>Share %</th><th>Profit share</th></tr></thead><tbody>${partnersRows}</tbody></table>
+${pdfListTable('sales',from,to)}${pdfListTable('expenses',from,to)}${pdfListTable('stock',from,to)}${pdfListTable('capital',from,to)}
+<script>window.onload=function(){setTimeout(function(){window.print();},200);};</` + `script>
+</body></html>`;
+}
+function exportPdf(){
+ const {from,to}=exportRange();
+ const w=window.open('','_blank');   // opened synchronously, before any async work, so popup blockers allow it
+ if(!w||w.closed){showToast('Popup blocked — allow popups to export PDF',true);return;}
+ w.document.open();w.document.write(buildPdfHtml(from,to));w.document.close();
+}
+
+/* ---------- Backup & Export: own delegated listeners (kept separate from the app's own handlers above) ---------- */
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;
+ const a=b.dataset.act;
+ if(a==='backupDownload')downloadFullBackup();
+ else if(a==='restoreClick'){const f=$('restoreFile');if(f)f.click();}
+ else if(a==='csvExport')exportCsv(b.dataset.list);
+ else if(a==='xlsxExport')exportExcel();
+ else if(a==='pdfExport')exportPdf();
+});
+document.addEventListener('change',e=>{
+ if(e.target&&e.target.id==='restoreFile'){const f=e.target.files&&e.target.files[0];e.target.value='';handleRestoreFile(f);}
+});
+
+
+/* =====================================================================
+   LOGIN + SHARED DATABASE  (Firebase Auth + Firestore)
+   • Same Firebase project as the rest of the site (login.html / dashboard.html).
+   • Only the 3 e-mails in ALLOWED can open this page. Everyone else is signed out.
+   • The client-side list below only decides what to SHOW. The real lock is the
+     Firestore rules (firestore.rules) — those refuse reads/writes from any other e-mail.
+   • Data lives in ONE shared place (garments/…), not per-user, so every partner
+     sees every change instantly.
+   ===================================================================== */
+const FB_VER='10.12.0', FB_BASE='https://www.gstatic.com/firebasejs/'+FB_VER+'/';
+const LOGIN_PAGE='login.html', THIS_PAGE='garments-accounts.html';
+const ROOT='garments';   // Firestore: garments/{sales|expenses|stock|capital}/items/{id}  and  garments/settings
+// allowed e-mail  ->  name shown in "Entered by"
+const ALLOWED={
+ 'allmunanabdullah@gmail.com':'Munan',
+ 'maitrariti@gmail.com':'Riti',
+ 'jeetm6863@gmail.com':'Jeet'
+};
+let me=null;   // {email,name,uid} once logged in and allowed
+
+function allowedName(email){return ALLOWED[String(email||'').trim().toLowerCase()]||null;}
+function gateShow(html){$('gate').classList.remove('hidden');$('gateBox').innerHTML=html;}
+function gateHide(){$('gate').classList.add('hidden');$('appWrap').classList.remove('hidden');}
+function goLogin(){try{sessionStorage.setItem('gat_return',THIS_PAGE);}catch(e){}location.href=LOGIN_PAGE;}
+function clearSiteFlags(){['munan_auth','isLoggedIn','loggedInUser'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});}
+function showBlocked(email){
+ setStatus('denied');
+ gateShow(`<div class="gicon bad">🚫</div><h2>Access blocked</h2>
+  <p>You are signed in as <b>${esc(email||'unknown')}</b>.</p>
+  <p>This page is private and only open to the 3 partner accounts. Your login has been signed out.</p>
+  <button type="button" class="abtn in" data-act="gotoLogin">Login with another account</button>
+  <a class="abtn" href="index.html">Home</a>`);
+}
+function showLoginNeeded(){
+ gateShow(`<div class="gicon">🔒</div><h2>Login required</h2>
+  <p>Please login with an approved account to open Garments Accounts.</p>
+  <button type="button" class="abtn in" data-act="gotoLogin">Login</button>
+  <a class="abtn" href="index.html">Home</a>`);
+}
+function showFatal(msg){
+ gateShow(`<div class="gicon bad">⚠️</div><h2>Could not start</h2><p>${esc(msg)}</p>
+  <button type="button" class="abtn in" onclick="location.reload()">Try again</button>`);
+}
+function renderWho(){
+ $('whoBox').innerHTML=`<i>${esc(me.name.charAt(0))}</i><span>Signed in as <b>${esc(me.name)}</b><span class="em"> · ${esc(me.email)}</span></span>`;
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-act="gotoLogin"]');if(b)goLogin();
+});
+
+/* "Entered by" stamps.  enteredBy = who created it (never changes);
+   editedBy = the last person who changed it, only kept when that is somebody else. */
+function stampNew(d){d.enteredBy=me.name;d.enteredEmail=me.email;delete d.editedBy;return d;}
+function stampEdit(d,old){
+ // Never invent an author: an entry saved before logins existed stays untagged ("—"),
+ // and the person who touched it is recorded only as the editor.
+ if(old&&old.enteredBy){d.enteredBy=old.enteredBy;d.enteredEmail=old.enteredEmail||'';}
+ else{delete d.enteredBy;delete d.enteredEmail;}
+ if(d.enteredBy!==me.name)d.editedBy=me.name;else delete d.editedBy;
+ return d;
+}
+function byCell(r){
+ if(!r.enteredBy)return r.editedBy?`<span class="sub">edited by ${esc(r.editedBy)}</span>`:'—';
+ return `<span class="by">${esc(r.enteredBy)}</span>`+(r.editedBy&&r.editedBy!==r.enteredBy?`<span class="sub">edited by ${esc(r.editedBy)}</span>`:'');
+}
+
+/* Adapter: gives the ledger code the small db API it was written for
+   (collection().add / doc().set / doc().delete / onSnapshot) on top of Firestore. */
+function makeDb(fs,fstore){
+ const C=(key)=>fs.collection(fstore,ROOT,key,'items');
+ return {
+  collection:key=>({
+   add:async data=>{const r=await fs.addDoc(C(key),data);return {id:r.id};},
+   doc:id=>({
+    set:data=>fs.setDoc(fs.doc(fstore,ROOT,key,'items',id),data),
+    delete:()=>fs.deleteDoc(fs.doc(fstore,ROOT,key,'items',id))}),
+   onSnapshot:(ok,err)=>fs.onSnapshot(C(key),ok,err)}),
+  doc:path=>{   // only used for 'settings/main'
+   const ref=fs.doc(fstore,ROOT,'settings');
+   // the modern SDK has snap.exists() as a METHOD; the ledger code reads snap.exists as a value
+   return {set:data=>fs.setDoc(ref,data),
+    onSnapshot:(ok,err)=>fs.onSnapshot(ref,snap=>{const has=snap.exists();ok({exists:has,data:()=>has?snap.data():undefined});},err)};}
+ };
+}
+
+let fbAuth=null, fbSignOut=null;
+async function doLogout(){
+ try{ if(fbAuth&&fbSignOut)await fbSignOut(fbAuth); }catch(e){}
+ clearSiteFlags();
+ try{ sessionStorage.setItem('gat_return',THIS_PAGE); }catch(e){}
+ location.href=LOGIN_PAGE;
+}
+
+async function startAuth(){
+ let cfgMod,authMod,fsMod;
+ try{
+  [cfgMod,authMod,fsMod]=await Promise.all([import('./firebase-config.js'),import(FB_BASE+'firebase-auth.js'),import(FB_BASE+'firebase-firestore.js')]);
+ }catch(e){showFatal('Could not load the login system. Check your internet connection and try again.');return;}
+ // app, auth and db come from the shared firebase-config.js
+ const auth=cfgMod.auth;fbAuth=auth;fbSignOut=authMod.signOut;
+ const fstore=cfgMod.db;
+ let started=false, blocked=false;
+ authMod.onAuthStateChanged(auth,async user=>{
+  if(!user){                                   // not logged in -> login page
+   me=null;db=null;
+   if(blocked)return;                          // WE signed a non-partner out: keep the "Access blocked" message on screen
+   if(!started){showLoginNeeded();setTimeout(goLogin,600);}
+   else goLogin();                             // logged out in another tab
+   return;
+  }
+  const name=allowedName(user.email);
+  // must be an allowed e-mail AND a verified e-mail (blocks look-alike accounts)
+  if(!name||!user.emailVerified){
+   const shown=user.email;
+   blocked=true;                               // set BEFORE signOut, which fires this listener again with user=null
+   showBlocked(shown);
+   try{await authMod.signOut(auth);}catch(e){}
+   clearSiteFlags();me=null;db=null;
+   return;
+  }
+  blocked=false;
+  if(started)return;                           // token refresh — already running
+  started=true;
+  me={email:String(user.email).toLowerCase(),name,uid:user.uid};
+  renderWho();
+  db=makeDb(fsMod,fstore);
+  gateHide();
+  await connect();
+ });
+}
+$('logoutBtn').addEventListener('click',doLogout);
+
+/* ---------- start ---------- */
+async function connect(){
+ bootUi();
+ if(!db){setStatus('offline');refreshActive();return;}
+ await uploadOfflineRecords();
+ KEYS.forEach(key=>{
+  try{db.collection(key).onSnapshot(snap=>{
+   const unsent=state[key].filter(r=>isLocalId(r.id));   // offline entries that could not be uploaded yet: never overwrite them
+   state[key]=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id})).concat(unsent);
+   setStatus('synced');cacheLocal();refreshActive(true);
+  },()=>setStatus('error'));}catch(e){setStatus('error');}
+ });
+ try{db.collection('log').onSnapshot(snap=>{LOG=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id}));if(activeTab==='history')renderHistory();},()=>{});}catch(e){}
+ try{db.collection('bin').onSnapshot(snap=>{BIN=snap.docs.map(d=>Object.assign(clone(d.data()),{id:d.id}));if(activeTab==='history')renderHistory();},()=>{});}catch(e){}
+ try{db.doc('settings/main').onSnapshot(snap=>{
+  if(snap.exists){S=Object.assign({},S,clone(snap.data()));normalizeSettings();cacheLocal();}
+  refreshActive(true);
+ },()=>setStatus('error'));}catch(e){setStatus('error');}
+ setStatus('synced');
+}
+function init(){
+ // Nothing is read from this device or from the database until login is confirmed.
+ // (the page body stays hidden behind the gate until then)
+ startAuth();
+}
+let booted=false;
+function bootUi(){   // runs once, right after the login check passes
+ if(booted)return;booted=true;
+ loadLocal();loadLocks();normalizeSettings();buildTabbar();setStatus('connecting');
+ setInterval(tickLocks,1000);
+ setInterval(refreshAutoStamp,15000);
+ showTab('summary');   // draw immediately; the shared database connects in the background
+}
+init();
+</script>
+
+<script src="garments-calc.js?v=3"></script>
+<script src="nav.js"></script>
+</body>
+</html>

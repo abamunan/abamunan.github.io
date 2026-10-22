@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics, all built with HTML, JS and curiosity.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Munan | Developer Portfolio, Projects, Blog &amp; WebComics</title>
+    <link rel="canonical" href="https://abamunan.github.io/">
+    <link rel="icon" type="image/png" href="icon.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta property="og:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Munan | Developer Portfolio, Projects, Blog &amp; WebComics">
+    <meta name="twitter:description" content="Abdullah All Munan (Munan) — developer, student &amp; builder from Bangladesh. Explore my projects, blog posts and webcomics.">
+    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+
+    <!-- Performance: warm up connections to third-party origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Shared theme logic — blocking, must run before first paint -->
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        /* Home page glass dashboard layer */
+        :root {
+            --home-glass: rgba(255, 255, 255, .58);
+            --home-glass-strong: rgba(255, 255, 255, .78);
+            --home-glass-line: rgba(255, 255, 255, .78);
+            --home-glass-shadow: 0 22px 70px rgba(29, 64, 48, .10), 0 3px 12px rgba(29, 64, 48, .04);
+        }
+        :root[data-theme="dark"] {
+            --home-glass: rgba(20, 35, 29, .68);
+            --home-glass-strong: rgba(25, 43, 35, .86);
+            --home-glass-line: rgba(231, 239, 234, .11);
+            --home-glass-shadow: 0 24px 70px rgba(0, 0, 0, .25), 0 3px 12px rgba(0, 0, 0, .16);
+        }
+        body.home-glass {
+            background:
+                radial-gradient(ellipse at 86% 3%, rgba(91, 207, 161, .20), transparent 34rem),
+                radial-gradient(ellipse at 5% 42%, rgba(103, 167, 224, .14), transparent 36rem),
+                var(--bg);
+        }
+        :root[data-theme="dark"] body.home-glass {
+            background:
+                radial-gradient(ellipse at 86% 3%, rgba(28, 137, 94, .18), transparent 34rem),
+                radial-gradient(ellipse at 5% 42%, rgba(42, 84, 122, .16), transparent 36rem),
+                var(--bg);
+        }
+        body.home-glass .navbar {
+            width: min(calc(100% - 32px), 1160px);
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            top: 14px;
+            height: 66px;
+            padding: 0 18px;
+            border: 1px solid var(--home-glass-line);
+            border-radius: 22px;
+            background: var(--home-glass);
+            box-shadow: 0 12px 40px rgba(29, 64, 48, .08);
+            -webkit-backdrop-filter: blur(24px) saturate(145%);
+            backdrop-filter: blur(24px) saturate(145%);
+        }
+        body.home-glass .navbar.navbar-hidden {
+            transform: translate(-50%, calc(-100% - 20px));
+        }
+        body.home-glass .nav-logo {
+            font-size: 1.45rem;
+            letter-spacing: -.045em;
+        }
+        body.home-glass .nav-links a,
+        body.home-glass .theme-toggle,
+        body.home-glass .nav-burger {
+            border-radius: 12px;
+        }
+        body.home-glass .nav-links a:hover,
+        body.home-glass .nav-links a[aria-current="page"] {
+            background: color-mix(in srgb, var(--lagoon) 10%, transparent);
+        }
+        body.home-glass .nav-login-btn {
+            border-radius: 14px;
+            padding: 10px 17px;
+            box-shadow: 0 7px 18px color-mix(in srgb, var(--lagoon) 18%, transparent);
+        }
+        body.home-glass main#main {
+            overflow: clip;
+        }
+        body.home-glass .hero {
+            min-height: 720px;
+            display: grid;
+            align-items: center;
+            isolation: isolate;
+            padding: 156px 0 88px;
+        }
+        body.home-glass .hero-grid {
+            position: relative;
+            z-index: 1;
+        }
+        body.home-glass .hero-copy {
+            animation: home-copy-in .9s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        body.home-glass .hero-copy > * {
+            animation: home-stagger-in .8s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        body.home-glass .hero-copy > :nth-child(1) { animation-delay: .08s; }
+        body.home-glass .hero-copy > :nth-child(2) { animation-delay: .18s; }
+        body.home-glass .hero-copy > :nth-child(3) { animation-delay: .3s; }
+        body.home-glass .hero-copy > :nth-child(4) { animation-delay: .42s; }
+        body.home-glass .hero-grid {
+            gap: clamp(36px, 7vw, 110px);
+        }
+        body.home-glass .hero-title {
+            max-width: 780px;
+            font-size: clamp(3.2rem, 7.8vw, 6.4rem);
+            text-wrap: balance;
+        }
+        body.home-glass .hero-lead {
+            max-width: 39em;
+            font-size: clamp(1.05rem, 1.8vw, 1.22rem);
+        }
+        body.home-glass .hero-cta .btn-solid,
+        body.home-glass .hero-cta .btn-line {
+            min-height: 52px;
+            border-radius: 15px;
+            padding-inline: 21px;
+        }
+        body.home-glass .hero-cta .btn-solid {
+            box-shadow: 0 12px 26px color-mix(in srgb, var(--lagoon) 22%, transparent);
+        }
+        body.home-glass .tag-wrap {
+            position: relative;
+            padding-top: 12px;
+            perspective: 1200px;
+            animation: home-card-in 1s .2s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        body.home-glass .tag-card {
+            max-width: 390px;
+            padding: 32px 28px 23px;
+            border: 1px solid var(--home-glass-line);
+            border-radius: 24px;
+            transform: rotate(-2deg);
+            background: var(--home-glass);
+            box-shadow: var(--home-glass-shadow), 10px 10px 0 color-mix(in srgb, var(--marker) 72%, transparent);
+            -webkit-backdrop-filter: blur(22px) saturate(145%);
+            backdrop-filter: blur(22px) saturate(145%);
+            transform-style: preserve-3d;
+            will-change: transform;
+            animation: home-card-float 7s .9s ease-in-out infinite;
+        }
+        body.home-glass .tag-card > * {
+            animation: home-card-content-in .85s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        body.home-glass .tag-card > :nth-child(1) { animation-delay: 1.05s; }
+        body.home-glass .tag-card > :nth-child(2) { animation-delay: 1.18s; }
+        body.home-glass .tag-card > :nth-child(3) { animation-delay: 1.31s; }
+        body.home-glass .tag-card > :nth-child(4) { animation-delay: 1.44s; }
+        body.home-glass .tag-card > :nth-child(5) { animation-delay: 1.57s; }
+        body.home-glass .tag-card > :nth-child(6) { animation-delay: 1.7s; }
+        body.home-glass .tag-card::after {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(120deg, transparent 15%, color-mix(in srgb, var(--marker) 80%, transparent), transparent 48%, color-mix(in srgb, #7bdab0 75%, transparent), transparent 82%);
+            background-size: 240% 100%;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            animation: home-border-sweep 5s linear infinite;
+        }
+        body.home-glass .tag-card:hover {
+            animation-play-state: paused;
+            transform: rotate(0) translateY(-8px) rotateX(2deg) rotateY(-3deg);
+            box-shadow: 0 30px 80px rgba(29, 64, 48, .17), 12px 12px 0 color-mix(in srgb, var(--marker) 72%, transparent);
+        }
+        body.home-glass .tag-card::before {
+            background: color-mix(in srgb, var(--ink) 70%, transparent);
+        }
+        body.home-glass .profile-photo {
+            border-color: var(--home-glass-line);
+            border-radius: 17px;
+            animation: home-photo-pulse 4s ease-in-out infinite;
+        }
+        @keyframes home-copy-in {
+            from { opacity: 0; transform: translateX(-34px); }
+            to { opacity: 1; transform: none; }
+        }
+        @keyframes home-stagger-in {
+            from { opacity: 0; transform: translateY(22px); }
+            to { opacity: 1; transform: none; }
+        }
+        @keyframes home-card-in {
+            from { opacity: 0; transform: translateY(36px) rotate(4deg); }
+            to { opacity: 1; transform: translateY(0) rotate(0); }
+        }
+        @keyframes home-card-float {
+            0%, 100% {
+                transform: rotate(-2deg) translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+                box-shadow: var(--home-glass-shadow), 10px 10px 0 color-mix(in srgb, var(--marker) 72%, transparent);
+            }
+            25% {
+                transform: rotate(-1deg) translate3d(7px, -10px, 0) rotateX(1deg) rotateY(-2deg) scale(1.012);
+            }
+            50% {
+                transform: rotate(1deg) translate3d(0, -23px, 0) rotateX(-2deg) rotateY(3deg) scale(1.025);
+                box-shadow: 0 34px 82px rgba(29, 64, 48, .18), 13px 13px 0 color-mix(in srgb, var(--marker) 72%, transparent);
+            }
+            75% {
+                transform: rotate(-1deg) translate3d(-7px, -10px, 0) rotateX(1deg) rotateY(-2deg) scale(1.012);
+            }
+        }
+        @keyframes home-card-content-in {
+            from { opacity: 0; transform: translate3d(0, 16px, 25px); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes home-border-sweep {
+            from { background-position: 220% 0; }
+            to { background-position: -40% 0; }
+        }
+        @keyframes home-photo-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lagoon) 0%, transparent); }
+            50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--lagoon) 10%, transparent); }
+        }
+        body.home-glass .section {
+            padding: 88px 0 10px;
+        }
+        body.home-glass .section-head {
+            margin-bottom: 34px;
+        }
+        body.home-glass .section-title {
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            text-wrap: balance;
+        }
+        body.home-glass .tracker {
+            min-height: 285px;
+            padding: 27px;
+            border: 1px solid var(--home-glass-line);
+            border-radius: 24px;
+            background: var(--home-glass);
+            box-shadow: var(--home-glass-shadow);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            backdrop-filter: blur(20px) saturate(140%);
+            transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+        }
+        body.home-glass .tracker:hover {
+            border-color: color-mix(in srgb, var(--lagoon) 35%, var(--home-glass-line));
+            box-shadow: 0 28px 75px rgba(29, 64, 48, .14);
+            transform: translateY(-6px);
+        }
+        body.home-glass .tracker .tile,
+        body.home-glass .util .tile,
+        body.home-glass .link-row .tile {
+            background: color-mix(in srgb, var(--lagoon) 12%, var(--home-glass-strong));
+            border: 1px solid color-mix(in srgb, var(--lagoon) 16%, transparent);
+        }
+        body.home-glass .tracker .go,
+        body.home-glass .util .go,
+        body.home-glass .link-row .go {
+            background: color-mix(in srgb, var(--home-glass-strong) 62%, transparent);
+            border-color: var(--home-glass-line);
+        }
+        body.home-glass .util-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid var(--home-glass-line);
+            border-radius: 24px;
+            background: var(--home-glass);
+            box-shadow: var(--home-glass-shadow);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            backdrop-filter: blur(20px) saturate(140%);
+        }
+        body.home-glass .util {
+            border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+            border-radius: 17px;
+            background: color-mix(in srgb, var(--home-glass-strong) 54%, transparent);
+        }
+        body.home-glass .util:last-child {
+            border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+        }
+        body.home-glass .post,
+        body.home-glass .comic {
+            border: 1px solid var(--home-glass-line);
+            border-radius: 24px;
+            background: var(--home-glass);
+            box-shadow: var(--home-glass-shadow);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            backdrop-filter: blur(20px) saturate(140%);
+            transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+        }
+        body.home-glass .post:hover,
+        body.home-glass .comic:hover {
+            border-color: color-mix(in srgb, var(--lagoon) 30%, var(--home-glass-line));
+            box-shadow: 0 26px 70px rgba(29, 64, 48, .13);
+            transform: translateY(-5px);
+        }
+        body.home-glass .notes-band,
+        body.home-glass .connect {
+            border: 1px solid var(--home-glass-line);
+            border-radius: 28px;
+            background: var(--home-glass);
+            color: var(--ink);
+            box-shadow: var(--home-glass-shadow);
+            -webkit-backdrop-filter: blur(22px) saturate(145%);
+            backdrop-filter: blur(22px) saturate(145%);
+        }
+        body.home-glass .notes-band {
+            padding: 30px 34px;
+        }
+        body.home-glass .connect {
+            padding: 34px;
+        }
+        body.home-glass .connect .util-list {
+            box-shadow: none;
+            background: color-mix(in srgb, var(--home-glass-strong) 42%, transparent);
+        }
+        body.home-glass .connect .link-row {
+            border: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+            border-radius: 15px;
+            margin-bottom: 8px;
+        }
+        body.home-glass .connect .link-row:last-child {
+            margin-bottom: 0;
+        }
+        body.home-glass .section {
+            position: relative;
+            isolation: isolate;
+        }
+        body.home-glass .home-reveal {
+            opacity: 0;
+            transform: translate3d(0, 42px, 0) scale(.97);
+            transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1);
+            transition-delay: var(--reveal-delay, 0ms);
+        }
+        body.home-glass .home-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+        }
+        body.home-glass .tracker,
+        body.home-glass .post,
+        body.home-glass .comic,
+        body.home-glass .notes-band,
+        body.home-glass .connect {
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+        body.home-glass .tracker::after,
+        body.home-glass .post::after,
+        body.home-glass .comic::after,
+        body.home-glass .notes-band::after,
+        body.home-glass .connect::after {
+            content: "";
+            position: absolute;
+            inset: -40% auto -40% -35%;
+            width: 28%;
+            background: linear-gradient(105deg, transparent, color-mix(in srgb, white 28%, transparent), transparent);
+            transform: translateX(-180%) rotate(12deg);
+            transition: transform .7s ease;
+            pointer-events: none;
+        }
+        body.home-glass .tracker:hover::after,
+        body.home-glass .post:hover::after,
+        body.home-glass .comic:hover::after,
+        body.home-glass .notes-band:hover::after,
+        body.home-glass .connect:hover::after {
+            transform: translateX(680%) rotate(12deg);
+        }
+        body.home-glass .util,
+        body.home-glass .link-row {
+            transition: transform .3s cubic-bezier(.16, 1, .3, 1), border-color .25s ease, background .25s ease;
+        }
+        body.home-glass .util:hover,
+        body.home-glass .link-row:hover {
+            transform: translateX(7px);
+            border-color: color-mix(in srgb, var(--lagoon) 35%, var(--home-glass-line));
+        }
+        @media (max-width: 900px) {
+            body.home-glass .navbar {
+                width: calc(100% - 20px);
+                top: 10px;
+                height: 60px;
+                border-radius: 18px;
+            }
+            body.home-glass .hero {
+                min-height: auto;
+                padding: 132px 0 66px;
+            }
+            body.home-glass .hero-title {
+                font-size: clamp(3rem, 14vw, 5rem);
+            }
+            body.home-glass .tag-wrap {
+                padding-top: 20px;
+            }
+            body.home-glass .tag-card {
+                max-width: 430px;
+            }
+            body.home-glass .section {
+                padding-top: 66px;
+            }
+        }
+        @media (max-width: 600px) {
+            body.home-glass .nav-links {
+                display: none;
+            }
+            body.home-glass .hero-cta {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            body.home-glass .hero-cta a {
+                width: 100%;
+            }
+            body.home-glass .tracker {
+                min-height: 0;
+            }
+            body.home-glass .util-list {
+                grid-template-columns: 1fr;
+            }
+            body.home-glass .notes-band,
+            body.home-glass .connect {
+                padding: 22px;
+                border-radius: 22px;
+            }
+            body.home-glass .section-head {
+                align-items: flex-start;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            body.home-glass *,
+            body.home-glass *::before,
+            body.home-glass *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
+            body.home-glass .hero-copy > *,
+            body.home-glass .tag-wrap,
+            body.home-glass .tag-card {
+                animation-delay: 0s !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
+    </style>
+
+    <!-- Structured data: helps Google understand who/what this site is -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abdullah All Munan",
+        "alternateName": "Munan",
+        "url": "https://abamunan.github.io/",
+        "image": "https://abamunan.github.io/Image.jpeg",
+        "jobTitle": "Developer",
+        "description": "Developer, student and builder from Bangladesh.",
+        "sameAs": [
+            "https://github.com/abamunan"
+        ]
+    }
+    </script>
+    
+</head>
+<body class="v2 home-glass">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <noscript><p style="padding:20px 24px"><a href="index.html"><b>Munan.hub</b></a> &nbsp;·&nbsp; <a href="projects.html">Projects</a> &nbsp;·&nbsp; <a href="blog.html">Blog</a> &nbsp;·&nbsp; <a href="about.html">About</a> &nbsp;·&nbsp; <a href="contact.html">Contact</a></p></noscript>
+
+    <main id="main">
+    <header class="hero">
+        <div class="wrap hero-grid">
+            <div class="hero-copy">
+                <h1 class="hero-title">Knowledge &amp; Creation Zone</h1>
+                <p class="hero-lead">Hi, I'm <strong>Munan</strong> — a developer and thinker from Bangladesh. I solve problems with code and learn something new every day. This is where I keep what I build, write and study.</p>
+                <div class="hero-cta">
+                    <a href="#tools" class="btn-solid">See what I've built <i class="fas fa-arrow-down" style="font-size:.8rem;"></i></a>
+                    <a href="about.html" class="btn-line">About me</a>
+                </div>
+                <div class="hero-typed">I'm a <span class="typed-text" id="typed"></span><span class="cursor" aria-hidden="true"></span></div>
+            </div>
+
+            <div class="tag-wrap">
+                <div class="tag-card">
+                    <span class="tag-hole" aria-hidden="true"></span>
+                    <div class="tag-head">
+                        <img src="Image.jpeg" alt="Abdullah All Munan — developer and builder from Bangladesh" class="profile-photo" width="68" height="68" fetchpriority="high">
+                        <div>
+                            <div class="tag-name">Munan</div>
+                            <div class="tag-full">Abdullah All Munan</div>
+                        </div>
+                    </div>
+                    <dl>
+                        <div><dt>Based in</dt><dd>Dhaka, Bangladesh</dd></div>
+                        <div><dt>Studying</dt><dd>Zoology, University of Dhaka</dd></div>
+                        <div><dt>Building</dt><dd>Web apps in plain HTML &amp; JS</dd></div>
+                        <div><dt>Also</dt><dd>Blog posts and webcomics</dd></div>
+                    </dl>
+                    <div class="tag-foot">Tawakkul &amp; Grind</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tools -->
+    <section class="section" id="tools">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Things I've built</h2>
+                    <p class="section-sub">Small web apps I made for my own daily use. Open one and try it.</p>
+                </div>
+                <a href="projects.html" class="more-link">All projects <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+
+            <div class="tracker-grid">
+                <a href="/apps/money/index.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-wallet"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Money Tracker</h3>
+                    <p>Manage income and expenses with monthly summaries and PDF or CSV export.</p>
+                    <div class="chips"><span class="chip">Finance</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="/apps/health/index.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-heart-pulse"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Health Tracker</h3>
+                    <p>Log weight, vitals, sleep, activity and mood, with insights, streaks and forecasts.</p>
+                    <div class="chips"><span class="chip">Health</span><span class="chip">Tracker</span></div>
+                </a>
+                <a href="english-tracker.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-language"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>English Fluency Tracker</h3>
+                    <p>A 365-day habit tracker: read, summarize, listen and speak daily, with AI scores, vocabulary, mistakes and quizzes.</p>
+                    <div class="chips"><span class="chip">Learning</span><span class="chip">Tracker</span><span class="chip">Syncs to your account</span></div>
+                </a>
+                <a href="diary.html" class="tracker">
+                    <div class="tracker-top"><span class="tile"><i class="fas fa-book"></i></span><span class="go"><i class="fas fa-arrow-right"></i></span></div>
+                    <h3>Diary</h3>
+                    <p>Write dated, sectioned entries privately, and export them as a PDF anytime.</p>
+                    <div class="chips"><span class="chip">Journal</span><span class="chip">Private</span></div>
+                </a>
+            </div>
+
+            <h3 class="sub-title">Quick utilities</h3>
+            <div class="util-list">
+                <a href="TypeMaster.html" class="util">
+                    <span class="tile"><i class="fas fa-keyboard"></i></span>
+                    <span class="row-body"><span class="row-title">TypeMaster</span><br><span class="row-desc">Track your typing speed and accuracy in real time.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="photo-resizer.html" class="util">
+                    <span class="tile"><i class="fas fa-images"></i></span>
+                    <span class="row-body"><span class="row-title">Photo Resizer</span><br><span class="row-desc">Batch resize and compress photos. Nothing is uploaded.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="pdf-toolkit.html" class="util">
+                    <span class="tile"><i class="fas fa-file-pdf"></i></span>
+                    <span class="row-body"><span class="row-title">PDF Toolkit</span><br><span class="row-desc">Split, rotate, merge or unlock PDFs in your browser.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="projects.html" class="util util-all">
+                    <span class="tile"><i class="fas fa-layer-group"></i></span>
+                    <span class="row-body"><span class="row-title">Browse all projects</span><br><span class="row-desc">Every tool, app and experiment in one place.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Writing -->
+    <section class="section" id="writing">
+        <div class="wrap">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title">Writing and comics</h2>
+                    <p class="section-sub">Thoughts and lessons from code and life, plus stories I draw.</p>
+                </div>
+            </div>
+
+            <div class="section-head" style="margin-bottom:18px;">
+                <h3 class="sub-title" style="margin:0;">Latest from the blog</h3>
+                <a href="blog.html" class="more-link">All posts <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+            <div class="post-grid" id="blogPreviewGrid"></div>
+
+            <div class="section-head" style="margin:48px 0 18px;">
+                <h3 class="sub-title" style="margin:0;">Latest comics</h3>
+                <a href="webcomic.html" class="more-link">All comics <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+            <div class="comic-grid" id="webcomicPreviewGrid"></div>
+        </div>
+    </section>
+
+    <!-- Academic -->
+    <section class="section" id="notes">
+        <div class="wrap">
+            <div class="notes-band">
+                <span class="notes-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></span>
+                <div>
+                    <h2>Study notes</h2>
+                    <p>PDF notes by subject. Read them online with bookmarks, a focus timer, and dark or sepia reading modes.</p>
+                </div>
+                <a href="notes.html" class="btn-solid">Browse notes <i class="fas fa-arrow-right" style="font-size:.8rem;"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact + links -->
+    <section class="section" id="contact">
+        <div class="wrap connect">
+            <div>
+                <h2>Let's talk</h2>
+                <p>Have a question or want to connect? Send a message and I'll reply soon.</p>
+                <a href="contact.html" class="btn-solid"><i class="fas fa-envelope"></i> Get in touch</a>
+            </div>
+            <div class="util-list">
+                <a href="about.html" class="link-row">
+                    <span class="tile"><i class="fas fa-user"></i></span>
+                    <span class="row-body"><span class="row-title">About me</span><br><span class="row-desc">Who I am, what I build, and what drives me.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="tools.html" class="link-row">
+                    <span class="tile"><i class="fas fa-tools"></i></span>
+                    <span class="row-body"><span class="row-title">My toolbox</span><br><span class="row-desc">Software, extensions and AI tools I use every day.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="https://github.com/abamunan" class="link-row" target="_blank" rel="noopener noreferrer">
+                    <span class="tile"><i class="fab fa-github"></i></span>
+                    <span class="row-body"><span class="row-title">GitHub</span><br><span class="row-desc">Open-source work and active repositories.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="part1.html" class="link-row" data-owner-only>
+                    <span class="tile"><i class="fas fa-folder-open"></i></span>
+                    <span class="row-body"><span class="row-title">Files</span><br><span class="row-desc">My personal files and resources.</span></span>
+                    <span class="go"><i class="fas fa-arrow-right"></i></span>
+                </a>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Load shared data files -->
+    <script src="posts.js"></script>
+    <script src="webcomic.js"></script>
+    <script>
+        /* ── RENDER BLOG PREVIEW ─── */
+        function renderBlogPreview() {
+            const grid = document.getElementById('blogPreviewGrid');
+            if (typeof BLOG_POSTS === 'undefined' || !Array.isArray(BLOG_POSTS)) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>Posts could not load.<br><strong>Check that posts.js is in the same folder.</strong></p></div>`;
+                return;
+            }
+            const count = window.innerWidth <= 768 ? 1 : 2;
+            const latest = BLOG_POSTS.slice(0, count);
+            if (!latest.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed"></i><p>No posts yet.<br><strong>The first one is on its way.</strong></p></div>`;
+                return;
+            }
+            grid.innerHTML = latest.map(p => `
+                <a href="blog.html#post-${p.id}" class="post" style="--a:${p.stripA};--b:${p.stripB}">
+                    <span class="post-bar"></span>
+                    <span class="post-body">
+                        <span class="post-meta"><span class="post-tag">${p.tag}</span><span><i class="far fa-calendar"></i> ${p.date}</span><span><i class="far fa-clock"></i> ${p.readTime}</span></span>
+                        <h3>${p.title}</h3>
+                        <p>${p.excerpt}</p>
+                        <span class="post-read">Read post <i class="fas fa-arrow-right" style="font-size:.75rem;"></i></span>
+                    </span>
+                </a>`).join('');
+        }
+        renderBlogPreview();
+
+        /* ── RENDER WEBCOMIC PREVIEW ─── */
+        function renderWebcomicPreview() {
+            const grid = document.getElementById('webcomicPreviewGrid');
+            if (typeof WEBCOMICS === 'undefined' || !Array.isArray(WEBCOMICS) || !WEBCOMICS.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-book-open"></i><p>No webcomics yet.<br><strong>The first series is coming soon.</strong></p></div>`;
+                return;
+            }
+            grid.innerHTML = WEBCOMICS.slice(0, 3).map(c => `
+                <a href="webcomic.html" class="comic" style="--a:${c.stripA};--b:${c.stripB}">
+                    <div class="comic-cover"><i class="fas fa-book-open" aria-hidden="true"></i><h3>${c.title}</h3></div>
+                    <div class="comic-body">
+                        <p>${c.description}</p>
+                        <div class="comic-foot">
+                            <span>${c.genre}</span>
+                            <span class="comic-status ${String(c.status).toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;"></i> ${c.status}</span>
+                            <span><i class="fas fa-images"></i> ${c.episodes.length} ep${c.episodes.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                </a>`).join('');
+        }
+        renderWebcomicPreview();
+
+        /* ── SCROLL REVEALS ─── */
+        function initHomeMotion() {
+            const revealTargets = document.querySelectorAll(
+                '.section-head, .tracker, .sub-title, .util, .post, .comic, .notes-band, .connect'
+            );
+            revealTargets.forEach((element, index) => {
+                element.classList.add('home-reveal');
+                element.style.setProperty('--reveal-delay', `${Math.min(index % 4, 3) * 80}ms`);
+            });
+
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                revealTargets.forEach(element => element.classList.add('is-visible'));
+                return;
+            }
+
+            if (!('IntersectionObserver' in window)) {
+                revealTargets.forEach(element => element.classList.add('is-visible'));
+                return;
+            }
+
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: .12, rootMargin: '0px 0px -40px' });
+            revealTargets.forEach(element => revealObserver.observe(element));
+        }
+        initHomeMotion();
+
+        /* ── TYPING ANIMATION ─── */
+        const words = ['Developer', 'Student', 'Builder', 'Learner', 'Creator'];
+        const typedEl = document.getElementById('typed');
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            typedEl.textContent = 'Developer, student and builder';
+        } else {
+            let wi = 0, ci = 0, deleting = false;
+            (function type() {
+                const word = words[wi];
+                if (!deleting) {
+                    typedEl.textContent = word.slice(0, ++ci);
+                    if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+                } else {
+                    typedEl.textContent = word.slice(0, --ci);
+                    if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+                }
+                setTimeout(type, deleting ? 60 : 100);
+            })();
+        }
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

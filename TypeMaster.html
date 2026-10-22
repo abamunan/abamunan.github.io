@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>TypeMaster | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/TypeMaster.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/TypeMaster.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="TypeMaster | Munan.hub">
+    <meta property="og:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="TypeMaster | Munan.hub">
+    <meta name="twitter:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <link rel="stylesheet" href="tool.css?v=3">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        /* ── PAGE-SPECIFIC VARIABLES ─────────────────── */
+        :root {
+            --surface:    color-mix(in srgb, var(--paper) 62%, transparent);
+            --border:     color-mix(in srgb, var(--lagoon) 22%, transparent);
+            --border-acc: color-mix(in srgb, var(--lagoon) 50%, transparent);
+            --correct:    var(--ok);
+            --wrong:      var(--err);
+            --wrong-bg:   color-mix(in srgb, var(--err) 10%, transparent);
+            --key-bg:     color-mix(in srgb, var(--paper) 75%, transparent);
+            --key-shadow: color-mix(in srgb, var(--lagoon) 18%, transparent);
+            --radius:     16px;
+        }
+
+        /* ── BODY OVERRIDE ───────────────────────────── */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-height: 100vh;
+        }
+
+        /* ── MAIN CONTENT WRAPPER ────────────────────── */
+        .page-content {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: calc(var(--nav-h) + 32px) 20px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* ── HEADER ──────────────────────────────────── */
+        header { text-align: center; padding: 14px 0 6px; }
+        .logo-main {
+            font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+            color: var(--text-main); display: block; line-height: 1.15;
+        }
+        .logo-sub {
+            font-size: .72rem; font-weight: 400; letter-spacing: 3px;
+            color: var(--text-soft); text-transform: uppercase;
+            margin-top: 7px; display: block;
+            white-space: nowrap;
+        }
+
+        /* ── SOUND TOGGLE ────────────────────────────── */
+        .sound-toggle {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-top: 10px;
+        }
+        .sound-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: color-mix(in srgb, var(--paper) 60%, transparent); border: 1.5px solid var(--border);
+            border-radius: 20px; padding: 5px 16px;
+            font-size: .75rem; font-weight: 600; color: var(--text-soft);
+            cursor: pointer; transition: var(--trans); user-select: none;
+            
+        }
+        .sound-btn.on  { background: color-mix(in srgb, var(--lagoon) 10%, transparent); border-color: var(--border-acc); color: var(--accent); }
+        .sound-btn:hover { border-color: var(--border-acc); }
+
+        /* ── CARD OVERRIDE (reset shared .card flex) ─── */
+        .card {
+            display: block;          /* override shared flex */
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            
+            padding: 24px 28px;
+            transition: border-color var(--trans), box-shadow var(--trans);
+            
+            animation: none;
+            overflow: visible;
+        }
+        .card::after { display: none; }  /* remove top accent line */
+        .card:hover {
+            border-color: var(--border-acc);
+            
+            transform: none;
+            background: var(--surface);
+        }
+        [data-theme="dark"] .card:hover { background: var(--surface); }
+
+        /* ── CONFIG BOX ──────────────────────────────── */
+        .config-box { transition: all .4s ease; overflow: hidden; }
+        .config-box.hidden {
+            max-height: 0 !important; padding-top: 0; padding-bottom: 0;
+            border-color: transparent; opacity: 0; pointer-events: none; margin-bottom: -20px;
+        }
+        .config-label {
+            font-size: .76rem; color: var(--text-soft); margin-bottom: 10px;
+            display: block; font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
+        }
+        textarea#custom-text-input {
+            width: 100%; height: 72px; background: color-mix(in srgb, var(--paper) 55%, transparent);
+            border: 1.5px solid var(--border); color: var(--text-main);
+            padding: 12px 14px; border-radius: 10px; resize: none;
+            font-family:var(--mono); font-size: .9rem; outline: none;
+            transition: border-color var(--trans), box-shadow var(--trans);
+        }
+        textarea#custom-text-input:focus {
+            border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lagoon) 10%, transparent);
+        }
+        .btn-row { display: flex; justify-content: flex-end; margin-top: 12px; }
+        button#set-text-btn {
+            background: var(--lagoon); color: var(--on-accent); border: none;
+            padding: 10px 26px; border-radius: 9px; cursor: pointer;
+            font-weight: 700; font-family:var(--body); font-size: .85rem;
+            transition: var(--trans); 
+            display: flex; align-items: center; gap: 7px;
+        }
+        button#set-text-btn:hover { transform: translateY(-2px);  }
+
+        /* ── NEW TEXT BUTTON ─────────────────────────── */
+        .new-text-wrap { display: none; justify-content: center; }
+        .new-text-wrap.show { display: flex; }
+        button#new-text-btn {
+            background: color-mix(in srgb, var(--paper) 70%, transparent); color: var(--accent);
+            border: 1.5px solid var(--border-acc); padding: 9px 22px;
+            border-radius: 9px; cursor: pointer; font-weight: 600;
+            font-family:var(--body); font-size: .82rem; transition: var(--trans);
+            display: flex; align-items: center; gap: 7px;
+        }
+        button#new-text-btn:hover { background: var(--accent); color: var(--on-accent); }
+
+        /* ── STATS BAR ───────────────────────────────── */
+        .stats-bar {
+            display: flex !important;   /* override card block */
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            padding: 18px 26px;
+            gap: 16px;
+        }
+        .stat-item { text-align: center; flex: 1; }
+        .stat-label {
+            font-size: .68rem; text-transform: uppercase; letter-spacing: .1em;
+            color: var(--text-soft); display: block; margin-bottom: 6px; font-weight: 600;
+        }
+        .stat-value {
+            font-size: 2rem; font-weight: 800; color: var(--accent);
+            font-family:var(--mono); line-height: 1; transition: color .3s;
+        }
+        .stat-divider { width: 1px; background: var(--border); align-self: stretch; min-height: 40px; }
+
+        /* ── TYPING AREA ─────────────────────────────── */
+        #display-text {
+            font-size: 1.35rem; line-height: 2; color: var(--text-soft);
+            margin-bottom: 20px; white-space: pre-wrap;
+            font-family:var(--mono); min-height: 60px;
+            text-align: left;
+        }
+        .char-correct { color: var(--correct); }
+        .char-wrong   { background: var(--wrong-bg); color: var(--wrong); border-radius: 3px; }
+        .char-current { border-bottom: 3px solid var(--accent); animation: blink 1s infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #typing-input {
+            width: 100%; background: color-mix(in srgb, var(--paper) 75%, transparent);
+            border: 2px solid var(--border); color: var(--text-main);
+            padding: 14px 18px; border-radius: 11px; outline: none;
+            font-size: 1.05rem; font-family:var(--mono);
+            transition: border-color var(--trans), box-shadow var(--trans);
+            display: block;
+        }
+        #typing-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--lagoon) 10%, transparent); }
+        #typing-input:disabled { opacity: .55; cursor: not-allowed; }
+
+        /* ── KEYBOARD ────────────────────────────────── */
+        .keyboard {
+            display: block !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px 0;
+        }
+        .keyboard-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            padding: 0 16px;
+            min-width: min-content;
+        }
+        .row { display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap; }
+        .key {
+            height: 46px; width: 46px; background: var(--key-bg);
+            border-radius: 9px; border: 1.5px solid var(--border);
+            border-bottom: 3px solid var(--key-shadow);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: .76rem; color: var(--text-muted);
+            transition: all .1s; user-select: none;
+            box-shadow: 0 1px 4px color-mix(in srgb, var(--lagoon) 6%, transparent);
+            flex-shrink: 0;
+        }
+        .key.wide  { width: 80px; }
+        .key.space { width: 320px; }
+        .key.active  { transform: translateY(3px); border-bottom: 0; background: var(--accent); color: var(--on-accent); box-shadow: none; }
+        .key.correct { background: var(--ok-bg); color: var(--correct); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+        .key.wrong   { background: var(--err-bg); color: var(--wrong);   border-color: color-mix(in srgb, var(--err) 35%, transparent); }
+
+        /* ── HISTORY ─────────────────────────────────── */
+        .history-section { display: none; }
+        .history-title {
+            font-size: .76rem; text-transform: uppercase; letter-spacing: .08em;
+            color: var(--accent); margin-bottom: 14px; font-weight: 700;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .history-table { width: 100%; border-collapse: collapse; font-size: .82rem; table-layout: fixed; }
+        .history-table th {
+            color: var(--text-soft); padding: 8px 8px;
+            border-bottom: 1px solid var(--border); text-align: left;
+            font-weight: 600; font-size: .68rem; text-transform: uppercase; letter-spacing: .04em;
+            white-space: nowrap; overflow: hidden;
+        }
+        .history-table td {
+            padding: 8px 8px; border-bottom: 1px solid color-mix(in srgb, var(--lagoon) 10%, transparent);
+            color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .history-table tr:first-child td { color: var(--accent); font-weight: 700; }
+        .history-table col.col-wpm      { width: 18%; }
+        .history-table col.col-acc      { width: 22%; }
+        .history-table col.col-time     { width: 18%; }
+        .history-table col.col-err      { width: 22%; }
+        .history-table col.col-date     { width: 20%; }
+        .best-banner {
+            display: flex; align-items: center; justify-content: space-between;
+            background: color-mix(in srgb, var(--lagoon) 7%, transparent); border: 1px solid color-mix(in srgb, var(--lagoon) 20%, transparent);
+            border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; gap: 10px;
+            flex-wrap: wrap;
+        }
+        .best-banner .bb-label { font-size: .68rem; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: .07em; }
+        .best-banner .bb-val   { font-size: 1.1rem; font-weight: 800; color: var(--accent); font-family:var(--mono); }
+        .see-more-btn {
+            width: 100%; margin-top: 12px; padding: 9px;
+            background: transparent; border: 1.5px solid var(--border);
+            border-radius: 9px; color: var(--accent); font-family:var(--body);
+            font-size: .78rem; font-weight: 700; cursor: pointer; transition: var(--trans);
+        }
+        .see-more-btn:hover { background: color-mix(in srgb, var(--lagoon) 7%, transparent); border-color: var(--accent); }
+        .history-loading { text-align: center; padding: 16px; color: var(--text-soft); font-size: .8rem; }
+
+        /* ── FINISH BANNER ───────────────────────────── */
+        .finish-banner {
+            display: none; text-align: center; padding: 18px 24px;
+            background: color-mix(in srgb, var(--ok) 10%, transparent); border: 1.5px solid color-mix(in srgb, var(--ok) 30%, transparent);
+            border-radius: var(--radius);
+        }
+        .finish-banner.show { display: block; }
+        .finish-banner p { font-size: .95rem; font-weight: 600; color: var(--correct); }
+
+        /* ── RESPONSIVE ──────────────────────────────── */
+        @media (max-width: 600px) {
+            .logo-main { font-size: 2.2rem; }
+            .key { width: 30px; height: 40px; font-size: .62rem; }
+            .key.wide { width: 48px; }
+            .key.space { width: 150px; }
+            .stat-value { font-size: 1.5rem; }
+            .page-content { padding: calc(var(--nav-h) + 20px) 12px 32px; }
+            .stat-divider { display: none; }
+            .card { padding: 16px 14px; }
+        }
+    
+/* Round 4: workbench look */
+.logo-main{font-family:var(--display);margin:0;}
+.stats-bar,.stats-bar:hover{display:grid !important;grid-template-columns:repeat(3,1fr);gap:14px;padding:0;background:transparent;border:0;}
+.stats-bar .stat-item{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:16px 12px;}
+.stats-bar .stat-value{font-family:var(--display);}
+.text-display{font-family:var(--mono);}
+.stats-bar .stat-divider{display:none;}
+@media(max-width:600px){.stats-bar,.stats-bar:hover{gap:8px;}.stats-bar .stat-item{padding:12px 6px;}.stats-bar .stat-value{font-size:1.3rem;}}
+</style>
+</head>
+<body class="v2 tool">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <main id="main" class="page-content">
+
+        <header>
+            <h1 class="logo-main">TypeMaster</h1>
+            <span class="logo-sub">Speed &nbsp;·&nbsp; Accuracy &nbsp;·&nbsp; Progress</span>
+            <p class="tool-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Sign-in required. Your scores are saved to your account.</p>
+            <div class="sound-toggle">
+                <div class="sound-btn on" id="sound-btn">
+                    <i class="fas fa-volume-high"></i> Sound On
+                </div>
+            </div>
+        </header>
+
+        <!-- Config box -->
+        <div class="card config-box" id="config-box">
+            <label class="config-label">
+                <i class="fas fa-keyboard" style="margin-right:6px;"></i>Set Practice Text
+            </label>
+            <textarea id="custom-text-input" aria-label="Custom text input">Master the keyboard with TypeMaster by Abdullah All Munan</textarea>
+            <div class="btn-row">
+                <button id="set-text-btn"><i class="fas fa-play"></i> Start Practice</button>
+            </div>
+        </div>
+
+        <!-- Change Text button -->
+        <div class="new-text-wrap" id="new-text-wrap">
+            <button id="new-text-btn"><i class="fas fa-pen"></i> Change Text</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="card stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">WPM</span>
+                <span class="stat-value" id="wpm">0</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-label">Accuracy</span>
+                <span class="stat-value" id="accuracy">100%</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-label">Time</span>
+                <span class="stat-value" id="time">0s</span>
+            </div>
+        </div>
+
+        <!-- Typing area -->
+        <div class="card">
+            <div id="display-text"></div>
+            <input type="text" id="typing-input" placeholder="Click Start Practice to begin…" autocomplete="off" disabled aria-label="Click Start Practice to begin…">
+        </div>
+
+        <!-- Finish banner -->
+        <div class="finish-banner" id="finish-banner">
+            <p><i class="fas fa-check-circle" style="margin-right:8px;"></i>Well done! Session complete — check your stats above.</p>
+        </div>
+
+        <!-- Keyboard -->
+        <div class="card keyboard" id="keyboard">
+          <div class="keyboard-inner">
+            <div class="row">
+                <div class="key" data-key="Backquote">`</div><div class="key" data-key="Digit1">1</div><div class="key" data-key="Digit2">2</div><div class="key" data-key="Digit3">3</div><div class="key" data-key="Digit4">4</div><div class="key" data-key="Digit5">5</div><div class="key" data-key="Digit6">6</div><div class="key" data-key="Digit7">7</div><div class="key" data-key="Digit8">8</div><div class="key" data-key="Digit9">9</div><div class="key" data-key="Digit0">0</div><div class="key" data-key="Minus">-</div><div class="key" data-key="Equal">=</div><div class="key wide" data-key="Backspace">BKSP</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="Tab">TAB</div><div class="key" data-key="KeyQ">Q</div><div class="key" data-key="KeyW">W</div><div class="key" data-key="KeyE">E</div><div class="key" data-key="KeyR">R</div><div class="key" data-key="KeyT">T</div><div class="key" data-key="KeyY">Y</div><div class="key" data-key="KeyU">U</div><div class="key" data-key="KeyI">I</div><div class="key" data-key="KeyO">O</div><div class="key" data-key="KeyP">P</div><div class="key" data-key="BracketLeft">[</div><div class="key" data-key="BracketRight">]</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="CapsLock">CAPS</div><div class="key" data-key="KeyA">A</div><div class="key" data-key="KeyS">S</div><div class="key" data-key="KeyD">D</div><div class="key" data-key="KeyF">F</div><div class="key" data-key="KeyG">G</div><div class="key" data-key="KeyH">H</div><div class="key" data-key="KeyJ">J</div><div class="key" data-key="KeyK">K</div><div class="key" data-key="KeyL">L</div><div class="key" data-key="Semicolon">;</div><div class="key" data-key="Quote">'</div><div class="key wide" data-key="Enter">ENTER</div>
+            </div>
+            <div class="row">
+                <div class="key wide" data-key="ShiftLeft">SHIFT</div><div class="key" data-key="KeyZ">Z</div><div class="key" data-key="KeyX">X</div><div class="key" data-key="KeyC">C</div><div class="key" data-key="KeyV">V</div><div class="key" data-key="KeyB">B</div><div class="key" data-key="KeyN">N</div><div class="key" data-key="KeyM">M</div><div class="key" data-key="Comma">,</div><div class="key" data-key="Period">.</div><div class="key" data-key="Slash">/</div><div class="key wide" data-key="ShiftRight">SHIFT</div>
+            </div>
+            <div class="row">
+                <div class="key space" data-key="Space">SPACEBAR</div>
+            </div>
+          </div><!-- /.keyboard-inner -->
+        </div>
+
+        <!-- History -->
+        <div class="card history-section" id="history-section">
+            <div class="history-title"><i class="fas fa-clock"></i> Session History</div>
+            <div class="best-banner" id="best-banner" style="display:none;">
+                <div>
+                    <div class="bb-label">🏆 All-time Best WPM</div>
+                    <div class="bb-val" id="best-wpm">—</div>
+                </div>
+                <div>
+                    <div class="bb-label">Best Accuracy</div>
+                    <div class="bb-val" id="best-acc">—</div>
+                </div>
+                <div>
+                    <div class="bb-label">Total Sessions</div>
+                    <div class="bb-val" id="total-sessions">—</div>
+                </div>
+            </div>
+            <div class="history-loading" id="history-loading" style="display:none;">
+                <i class="fas fa-circle-notch" style="animation:spin .8s linear infinite;display:inline-block;margin-right:6px;"></i>Loading…
+            </div>
+            <table class="history-table">
+                <colgroup>
+                    <col class="col-wpm"><col class="col-acc"><col class="col-time"><col class="col-err"><col class="col-date">
+                </colgroup>
+                <thead><tr><th>WPM</th><th>Acc</th><th>Time</th><th>Err</th><th>Date</th></tr></thead>
+                <tbody id="history-body"></tbody>
+            </table>
+            <button class="see-more-btn" id="see-more-btn" style="display:none;" onclick="loadMore()">
+                <i class="fas fa-chevron-down" style="margin-right:6px;"></i>See more (last 50)
+            </button>
+        </div>
+
+    </main><!-- /.page-content -->
+
+    <script src="nav.js"></script>
+<script src="footer.js"></script>
+    <script type="module">
+    /* ── FIREBASE ─────────────────────────────────────── */
+    import { auth as _auth, db as _db } from "./firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    let   _uid  = null;
+
+    onAuthStateChanged(_auth, async (user) => {
+        if (!user) { window.location.href = "login.html?redirect="+encodeURIComponent((location.pathname.split("/").pop()||"index").replace(/(\.html)?$/,".html")); return; }
+        _uid = user.uid;
+        await loadBestStats();
+        await loadRecentHistory(9);
+    });
+
+    window.saveSessionToFirestore = async (data) => {
+        if (!_uid) return;
+        try {
+            await addDoc(collection(_db, "users", _uid, "typemaster"), {
+                ...data, ts: serverTimestamp()
+            });
+        } catch(e){ console.error("Save failed:", e); }
+    };
+
+    window.loadBestStats = async () => {
+        if (!_uid) return;
+        try {
+            const snap = await getDocs(collection(_db, "users", _uid, "typemaster"));
+            if (snap.empty) return;
+            let bestWpm = 0, bestAcc = 0, total = 0;
+            snap.forEach(d => {
+                const s = d.data();
+                total++;
+                if (s.wpm > bestWpm) bestWpm = s.wpm;
+                if (s.acc > bestAcc) bestAcc = s.acc;
+            });
+            document.getElementById('best-banner').style.display = 'flex';
+            document.getElementById('best-wpm').textContent       = bestWpm + ' WPM';
+            document.getElementById('best-acc').textContent       = bestAcc + '%';
+            document.getElementById('total-sessions').textContent = total;
+        } catch(e){ console.error("Load stats failed:", e); }
+    };
+
+    window.loadRecentHistory = async (count) => {
+        if (!_uid) return;
+        const loading = document.getElementById('history-loading');
+        loading.style.display = 'block';
+        try {
+            const q    = query(collection(_db,"users",_uid,"typemaster"), orderBy("ts","desc"), limit(count));
+            const snap = await getDocs(q);
+            if (snap.empty) { loading.style.display='none'; return; }
+
+            const historySection = document.getElementById('history-section');
+            const historyBody    = document.getElementById('history-body');
+            historySection.style.display = 'block';
+            historyBody.innerHTML = '';
+
+            snap.forEach(d => {
+                const s = d.data();
+                const dateStr = s.date ? new Date(s.date).toLocaleDateString('en-US',{day:'numeric',month:'short'}) : '—';
+                historyBody.insertAdjacentHTML('beforeend',
+                    `<tr><td>${s.wpm}</td><td>${s.acc}%</td><td>${s.duration||'—'}</td><td>${s.errors??'—'}</td><td>${dateStr}</td></tr>`
+                );
+            });
+
+            // Show see more only if there might be more
+            document.getElementById('see-more-btn').style.display = snap.size >= count ? 'block' : 'none';
+        } catch(e){ console.error("Load history failed:", e); }
+        loading.style.display = 'none';
+    };
+
+    window.loadMore = async () => {
+        document.getElementById('see-more-btn').style.display = 'none';
+        await loadRecentHistory(50);
+    };
+
+    </script>
+    <script>
+        /* ── DOM REFS ─────────────────────────────────── */
+        const displayTextEl   = document.getElementById('display-text');
+        const inputEl         = document.getElementById('typing-input');
+        const wpmEl           = document.getElementById('wpm');
+        const accuracyEl      = document.getElementById('accuracy');
+        const timeEl          = document.getElementById('time');
+        const setTextBtn      = document.getElementById('set-text-btn');
+        const newTextBtn      = document.getElementById('new-text-btn');
+        const customTextInput = document.getElementById('custom-text-input');
+        const historySection  = document.getElementById('history-section');
+        const historyBody     = document.getElementById('history-body');
+        const configBox       = document.getElementById('config-box');
+        const newTextWrap     = document.getElementById('new-text-wrap');
+        const finishBanner    = document.getElementById('finish-banner');
+        const soundBtn        = document.getElementById('sound-btn');
+
+        let targetText = "", timer = null, startTime = null;
+        let isRunning = false, charIndex = 0, errors = 0;
+        let soundEnabled = true;
+
+        /* ── TONE.JS SOUND SETUP ─────────────────────── */
+        const correctSynth = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.001, decay: 0.06, sustain: 0, release: 0.04 }
+        }).toDestination();
+        correctSynth.volume.value = -10;
+
+        const wrongSynth = new Tone.Synth({
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.05 }
+        }).toDestination();
+        wrongSynth.volume.value = -8;
+
+        function playKeySound(isWrong = false) {
+            if (!soundEnabled) return;
+            Tone.start();
+            if (isWrong) wrongSynth.triggerAttackRelease('C3', '32n');
+            else         correctSynth.triggerAttackRelease('G5', '64n');
+        }
+
+        /* ── SOUND TOGGLE ────────────────────────────── */
+        soundBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundBtn.classList.toggle('on', soundEnabled);
+            soundBtn.innerHTML = soundEnabled
+                ? '<i class="fas fa-volume-high"></i> Sound On'
+                : '<i class="fas fa-volume-xmark"></i> Sound Off';
+        });
+
+        /* ── CONFIG SHOW/HIDE ────────────────────────── */
+        function hideConfig() { configBox.classList.add('hidden'); newTextWrap.classList.add('show'); }
+        function showConfig() { configBox.classList.remove('hidden'); newTextWrap.classList.remove('show'); }
+
+        /* ── INIT ────────────────────────────────────── */
+        function init() {
+            targetText = customTextInput.value.trim();
+            if (!targetText) return;
+            displayTextEl.innerHTML = targetText.split('').map(c => `<span>${c}</span>`).join('');
+            inputEl.value = ""; inputEl.disabled = false;
+            clearInterval(timer);
+            isRunning = false; startTime = null; charIndex = 0; errors = 0;
+            wpmEl.innerText = "0"; accuracyEl.innerText = "100%"; timeEl.innerText = "0s";
+            finishBanner.classList.remove('show');
+            if (displayTextEl.firstChild) displayTextEl.firstChild.classList.add('char-current');
+            hideConfig();
+            inputEl.focus();
+        }
+
+        /* ── TIMER ───────────────────────────────────── */
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true; startTime = new Date();
+            timer = setInterval(() => {
+                timeEl.innerText = `${Math.floor((new Date() - startTime) / 1000)}s`;
+                updateStats();
+            }, 1000);
+        }
+
+        function updateStats() {
+            if (!startTime) return;
+            const timeMins = (new Date() - startTime) / 60000;
+            const wpm = Math.round((charIndex / 5) / timeMins) || 0;
+            const acc = charIndex > 0 ? Math.round(((charIndex - errors) / charIndex) * 100) : 100;
+            wpmEl.innerText = wpm;
+            accuracyEl.innerText = `${acc}%`;
+            return { wpm, acc };
+        }
+
+        /* ── TYPING INPUT ────────────────────────────── */
+        inputEl.addEventListener('input', () => {
+            const spans = displayTextEl.querySelectorAll('span');
+            const typedText = inputEl.value;
+            if (!isRunning && typedText.length > 0) startTimer();
+
+            if (typedText.length < charIndex) {
+                for (let i = typedText.length; i < charIndex; i++) spans[i].className = '';
+                charIndex = typedText.length;
+            } else {
+                const i = typedText.length - 1;
+                if (typedText[i] === targetText[i]) {
+                    spans[i].className = 'char-correct';
+                    highlightKey(typedText[i], 'correct');
+                    playKeySound(false);
+                } else {
+                    spans[i].className = 'char-wrong';
+                    errors++;
+                    highlightKey(typedText[i], 'wrong');
+                    playKeySound(true);
+                }
+                charIndex = typedText.length;
+            }
+
+            spans.forEach(s => s.classList.remove('char-current'));
+            if (charIndex < targetText.length) {
+                spans[charIndex].classList.add('char-current');
+            } else {
+                finishSession();
+            }
+        });
+
+        /* ── FINISH ──────────────────────────────────── */
+        async function finishSession() {
+            clearInterval(timer);
+            inputEl.disabled = true;
+            const stats = updateStats();
+            const duration = timeEl.innerText;
+            const dateStr  = new Date().toLocaleDateString('en-US', {day:'numeric',month:'short'});
+
+            // Add to UI immediately
+            historySection.style.display = 'block';
+            historyBody.insertAdjacentHTML('afterbegin',
+                `<tr><td>${stats.wpm}</td><td>${stats.acc}%</td><td>${duration}</td><td>${errors}</td><td>${dateStr}</td></tr>`
+            );
+
+            finishBanner.classList.add('show');
+            showConfig();
+            historySection.scrollIntoView({ behavior: 'smooth' });
+
+            // Save to Firestore
+            await saveSessionToFirestore({ wpm: stats.wpm, acc: stats.acc, duration, errors, date: new Date().toISOString() });
+            // Refresh best stats
+            await loadBestStats();
+        }
+
+        /* ── KEY HIGHLIGHT ───────────────────────────── */
+        function highlightKey(char, type) {
+            const keyEl = Array.from(document.querySelectorAll('.key')).find(k =>
+                k.innerText === (char === " " ? "SPACEBAR" : char.toUpperCase())
+            );
+            if (keyEl) {
+                keyEl.classList.add(type);
+                setTimeout(() => keyEl.classList.remove(type), 200);
+            }
+        }
+
+        /* ── PHYSICAL KEYBOARD ───────────────────────── */
+        document.addEventListener('keydown', e => {
+            const key = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (key) key.classList.add('active');
+            if (document.activeElement !== customTextInput) inputEl.focus();
+        });
+        document.addEventListener('keyup', e => {
+            const key = document.querySelector(`.key[data-key="${e.code}"]`);
+            if (key) key.classList.remove('active');
+        });
+
+        /* ── BUTTONS ─────────────────────────────────── */
+        setTextBtn.addEventListener('click', init);
+        newTextBtn.addEventListener('click', () => {
+            clearInterval(timer); isRunning = false;
+            showConfig(); customTextInput.focus();
+        });
+
+
+        /* ── ON LOAD ─────────────────────────────────── */
+        window.onload = () => {
+            displayTextEl.innerHTML = customTextInput.value.trim()
+                .split('').map(c => `<span>${c}</span>`).join('');
+            if (displayTextEl.firstChild) displayTextEl.firstChild.classList.add('char-current');
+        };
+    </script>
+</body>
+</html>

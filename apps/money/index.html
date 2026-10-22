@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="ui-splash-lock">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Money Tracker | Munan.hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A6F48">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Money Tracker">
+<link rel="manifest" href="/apps/money/manifest.json">
+<link rel="apple-touch-icon" href="/apps/money/icon-touch.png">
+<link rel="icon" type="image/png" href="/apps/money/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/theme.js"></script>
+<script src="/owner.js"></script>
+<link rel="stylesheet" href="/site.css?v=3">
+<link rel="stylesheet" href="/apps/shared/ui.css">
+<link rel="stylesheet" href="/apps/money/app.css">
+</head>
+<body class="v2">
+<div id="splash" class="ui-splash" role="progressbar" aria-label="Loading Money Tracker" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
+  <div class="ui-splash__inner">
+    <div class="ui-splash__title"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h16a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 0V6a2 2 0 012-2h11"/><circle cx="17" cy="13.5" r="1.2"/></svg> Money Tracker</div>
+    <div class="ui-splash__track"><div class="ui-splash__bar"></div></div>
+    <div class="ui-splash__label" aria-live="polite">Opening…</div>
+  </div>
+</div>
+<noscript><p style="padding:24px">Money Tracker needs JavaScript.</p></noscript>
+<div id="app">
+  <header class="appbar"><h1>Money Tracker</h1><span id="syncState" class="sync" role="status">Starting…</span></header>
+  <main id="main" tabindex="-1" aria-label="Money Tracker"></main>
+  <button id="fab" class="fab" type="button" aria-label="Add entry"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+  <nav id="tabbar"></nav>
+</div>
+<script type="module" src="/apps/money/main.js"></script>
+</body>
+</html>

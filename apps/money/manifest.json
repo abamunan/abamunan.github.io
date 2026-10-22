@@ -1,0 +1,33 @@
+{
+  "name": "Money Tracker",
+  "short_name": "Money Tracker",
+  "description": "Personal finance tracker",
+  "id": "/apps/money/index.html",
+  "start_url": "/apps/money/index.html",
+  "scope": "/apps/money/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "background_color": "#EEF1EA",
+  "theme_color": "#0A6F48",
+  "icons": [
+    {
+      "src": "/apps/money/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apps/money/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apps/money/icon-touch.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

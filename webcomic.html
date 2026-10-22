@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Webcomics by Abdullah All Munan — humor, drama, and relatable moments told through illustrated stories.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Webcomics | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/webcomic.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/webcomic.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Webcomics | Munan.hub">
+    <meta property="og:description" content="Webcomics by Abdullah All Munan — humor, drama, and relatable moments told through illustrated stories.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Webcomics | Munan.hub">
+    <meta name="twitter:description" content="Webcomics by Abdullah All Munan — humor, drama, and relatable moments told through illustrated stories.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .comic { position:relative; cursor:pointer; text-align:left; }
+        .comic:hover { transform:translateY(-3px); transition:border-color .2s, transform .2s; }
+        .comic-cover img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-2; }
+        .comic-cover h3 { position:relative; }
+        .comic-grid { margin-top:8px; }
+
+        .viewer-card { max-width:860px; padding:0; position:relative; }
+        .viewer-bar { height:8px; border-radius:18px 18px 0 0; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .viewer-in { padding:26px 30px 8px; }
+        .viewer-in h2 { font-size:clamp(1.4rem,4vw,2rem); letter-spacing:-.03em; line-height:1.15; padding-right:50px; margin-bottom:8px; }
+        .viewer-info { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--soft); font-size:.9rem; margin-bottom:18px; }
+        .viewer-info i { color:var(--lagoon); margin-right:6px; }
+        .episode-image { background:var(--bg); border:1.5px solid var(--line); border-radius:16px; overflow:hidden; min-height:160px; display:flex; align-items:center; justify-content:center; color:var(--soft); }
+        .episode-image img { display:block; width:100%; height:auto; }
+        .episode-content { margin-top:20px; font-size:1.08rem; line-height:1.85; color:var(--muted); max-width:680px; }
+        .episode-content em { font-style:normal; color:var(--ink); }
+        .episode-nav { position:sticky; bottom:0; z-index:1; background:var(--paper); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 30px 16px; margin-top:16px; border-top:1.5px solid var(--line); border-radius:0 0 18px 18px; }
+        .ep-counter { font-weight:700; color:var(--soft); font-variant-numeric:tabular-nums; }
+        .modal-x { position:absolute; right:14px; top:20px; width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); background:var(--paper); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); z-index:2; }
+        .modal-x:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        @media (max-width:560px) { .viewer-in { padding:22px 18px 6px; } .episode-nav { padding:12px 18px 14px; } .modal { padding:10px; } .episode-nav .btn-line .lbl { display:none; } }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Comics</li></ol>
+                <span class="kicker">Visual stories</span>
+                <h1 class="page-title">Webcomics</h1>
+                <p class="page-lead">Humor, drama, and relatable moments told through illustrated stories.</p>
+            </div>
+        </header>
+
+        <section class="wrap listing" aria-label="Comic series">
+            <div class="comic-grid" id="seriesGrid"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>Comics need JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
+
+    <!-- Episode viewer -->
+    <div class="modal" id="modalOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="handleOverlayClick(event)">
+        <div class="modal-card viewer-card" id="modal">
+            <div class="viewer-bar" id="modalStrip"></div>
+            <button type="button" class="modal-x" id="modalClose" onclick="closeViewer()" aria-label="Close viewer"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            <div class="viewer-in">
+                <h2 id="modalTitle"></h2>
+                <div class="viewer-info" id="modalInfo"></div>
+                <div id="episodeViewer"></div>
+            </div>
+            <div class="episode-nav">
+                <button type="button" class="btn-line btn-sm" id="prevBtn" onclick="previousEpisode()"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span class="lbl">Previous</span></button>
+                <div class="ep-counter" aria-live="polite"><span id="epCounter"></span></div>
+                <button type="button" class="btn-line btn-sm" id="nextBtn" onclick="nextEpisode()"><span class="lbl">Next</span> <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load shared webcomics data -->
+    <script src="webcomic.js"></script>
+    <script>
+        let currentSeriesId = null;
+        let currentEpisodeNum = 1;
+        let lastFocus = null;
+
+        function renderSeriesGrid() {
+            const grid = document.getElementById('seriesGrid');
+            if (!WEBCOMICS.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-pencil" aria-hidden="true"></i><strong>No comics yet</strong><br>Check back soon — first webcomic is coming!</div>`;
+                return;
+            }
+            grid.innerHTML = WEBCOMICS.map((comic) => `
+                <a class="comic" href="#series-${comic.id}" style="--a:${comic.stripA};--b:${comic.stripB}" onclick="event.preventDefault();viewSeries('${comic.id}')">
+                    <div class="comic-cover">
+                        ${comic.coverImage ? `<img src="${comic.coverImage}" alt="" loading="lazy">` : `<i class="fas fa-book-open" aria-hidden="true"></i>`}
+                        <h3>${comic.title}</h3>
+                    </div>
+                    <div class="comic-body">
+                        <p>${comic.description}</p>
+                        <div class="comic-foot">
+                            <span>${comic.genre}</span>
+                            <span class="comic-status ${comic.status.toLowerCase()}"><i class="fas fa-circle" style="font-size:.4rem;" aria-hidden="true"></i> ${comic.status}</span>
+                            <span><i class="fas fa-images" aria-hidden="true"></i> ${comic.episodes.length} episode${comic.episodes.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                </a>`).join('');
+        }
+
+        function viewSeries(seriesId) {
+            const comic = WEBCOMICS.find(c => c.id === seriesId);
+            if (!comic) return;
+            lastFocus = document.activeElement;
+            currentSeriesId = seriesId;
+            currentEpisodeNum = 1;
+            openEpisode();
+        }
+
+        function openEpisode() {
+            const comic = WEBCOMICS.find(c => c.id === currentSeriesId);
+            const episode = comic.episodes[currentEpisodeNum - 1];
+            if (!episode) return;
+
+            document.getElementById('modalStrip').style.background = `linear-gradient(90deg,${comic.stripA},${comic.stripB})`;
+            document.getElementById('modalTitle').textContent = `${comic.title} — Episode ${episode.episodeNum}`;
+            document.getElementById('modalInfo').innerHTML = `
+                <span><i class="fas fa-heading" aria-hidden="true"></i>${episode.title}</span>
+                ${episode.date ? `<span><i class="far fa-calendar" aria-hidden="true"></i>${episode.date}</span>` : ''}
+            `;
+
+            const viewer = document.getElementById('episodeViewer');
+            viewer.innerHTML = `
+                <div class="episode-image">
+                    ${episode.imageUrl ? `<img src="${episode.imageUrl}" alt="Episode ${episode.episodeNum}: ${episode.title}">` : 'Comic image placeholder'}
+                </div>
+                <div class="episode-content">${episode.description}${episode.content ? `<br><br><em>${episode.content}</em>` : ''}</div>
+            `;
+
+            document.getElementById('prevBtn').disabled = currentEpisodeNum === 1;
+            document.getElementById('nextBtn').disabled = currentEpisodeNum === comic.episodes.length;
+            document.getElementById('epCounter').textContent = `${currentEpisodeNum} / ${comic.episodes.length}`;
+            const ov = document.getElementById('modalOverlay');
+            const wasHidden = ov.hidden;
+            ov.hidden = false;
+            document.getElementById('modal').scrollTop = 0;
+            if (wasHidden) document.getElementById('modalClose').focus();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function previousEpisode() {
+            if (currentEpisodeNum > 1) { currentEpisodeNum--; openEpisode(); }
+        }
+
+        function nextEpisode() {
+            const comic = WEBCOMICS.find(c => c.id === currentSeriesId);
+            if (comic && currentEpisodeNum < comic.episodes.length) { currentEpisodeNum++; openEpisode(); }
+        }
+
+        function closeViewer() {
+            document.getElementById('modalOverlay').hidden = true;
+            document.body.style.overflow = '';
+            currentSeriesId = null;
+            if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeViewer();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (!document.getElementById('modalOverlay').hidden) {
+                if (e.key === 'Escape') closeViewer();
+                if (e.key === 'ArrowLeft') previousEpisode();
+                if (e.key === 'ArrowRight') nextEpisode();
+            }
+        });
+
+        renderSeriesGrid();
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

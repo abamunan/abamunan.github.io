@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Log in or create your Munan.hub account.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Login | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/login.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/login.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Login | Munan.hub">
+    <meta property="og:description" content="Log in or create your Munan.hub account.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Login | Munan.hub">
+    <meta name="twitter:description" content="Log in or create your Munan.hub account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 36px) 18px 20px; }
+        .auth-card { width:100%; max-width:480px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; }
+        .auth-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
+        .auth-inner { padding:30px 30px 24px; }
+        .auth-head { text-align:center; margin-bottom:22px; }
+        .auth-head .tile-lg { margin-bottom:14px; }
+        .auth-title { font-family:var(--display); font-weight:800; font-size:clamp(1.6rem,5vw,2rem); letter-spacing:-.03em; line-height:1.1; margin-bottom:6px; }
+        .auth-sub { color:var(--muted); font-size:.98rem; }
+
+        .auth-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:5px; margin-bottom:22px; border:1.5px solid var(--line); border-radius:999px; background:var(--bg); }
+        .tab-btn { min-height:44px; padding:8px 12px; border-radius:999px; font-weight:700; font-size:.95rem; color:var(--muted); background:transparent; border:1.5px solid transparent; transition:background var(--trans), color var(--trans); }
+        .tab-btn i { margin-right:6px; }
+        .tab-btn:hover { color:var(--ink); }
+        .tab-btn.active { background:var(--ink); color:var(--bg); }
+        :root[data-theme="dark"] .tab-btn.active { background:var(--marker); color:#11221D; }
+
+        .auth-form { display:none; }
+        .auth-form.active { display:block; animation:authIn .25s ease; }
+        @keyframes authIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        @media (prefers-reduced-motion:reduce) { .auth-form.active { animation:none; } }
+
+        .auth-card .field > label .req { color:var(--err); font-weight:700; }
+        .auth-card .field > label .opt { font-weight:400; color:var(--soft); font-size:.82rem; }
+        .input-wrap { position:relative; }
+        .input-wrap > i { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--soft); font-size:.9rem; pointer-events:none; }
+        .input-wrap input { width:100%; min-height:48px; padding:11px 46px 11px 42px; background:var(--paper); color:var(--ink); border:1.5px solid var(--line); border-radius:var(--r-input); transition:border-color var(--trans), box-shadow var(--trans); }
+        .input-wrap input::placeholder { color:var(--soft); opacity:.8; }
+        .input-wrap input:hover { border-color:var(--soft); }
+        .input-wrap input:focus { outline:none; border-color:var(--lagoon); box-shadow:0 0 0 4px var(--lagoon-tint); }
+        .eye-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; color:var(--soft); display:flex; align-items:center; justify-content:center; transition:color var(--trans), background var(--trans); }
+        .eye-btn i { pointer-events:none; }
+        .eye-btn:hover { color:var(--ink); background:var(--lagoon-tint); }
+        .forgot-link { display:inline-block; margin-top:6px; font-size:.88rem; font-weight:700; color:var(--lagoon); padding:4px 0; }
+        .forgot-link:hover { color:var(--ink); text-decoration:underline; text-decoration-color:var(--marker); text-decoration-thickness:3px; text-underline-offset:4px; }
+        .right { text-align:right; }
+
+        .submit-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:999px; font-weight:700; font-size:1rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
+        .submit-btn:hover { background:var(--lagoon); color:#fff; }
+        :root[data-theme="dark"] .submit-btn { background:var(--marker); color:#11221D; }
+        :root[data-theme="dark"] .submit-btn:hover { background:#fff; }
+        .google-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:10px; border-radius:999px; font-weight:700; border:1.5px solid var(--ink); color:var(--ink); background:transparent; transition:background var(--trans), color var(--trans); }
+        .google-btn:hover { background:var(--ink); color:var(--bg); }
+        :root[data-theme="dark"] .google-btn { border-color:var(--line); }
+        :root[data-theme="dark"] .google-btn:hover { border-color:var(--ink); }
+        .google-btn img { width:18px; height:18px; background:#fff; border-radius:50%; padding:1px; }
+        .divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--soft); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--line); }
+
+        .msg-bar { display:none; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:14px; font-size:.92rem; font-weight:600; line-height:1.45; margin-top:14px; border:1.5px solid transparent; }
+        .msg-bar.show { display:flex; }
+        .msg-bar i { flex-shrink:0; margin-top:3px; }
+        .msg-bar.success { background:var(--ok-bg); color:var(--ok); border-color:var(--ok); }
+        .msg-bar.error { background:var(--err-bg); color:var(--err); border-color:var(--err); }
+        .msg-bar.loading { background:var(--info-bg); color:var(--info); border-color:var(--info); }
+        .spin { display:inline-block; animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (prefers-reduced-motion:reduce) { .spin { animation-duration:2.4s; } }
+
+        .pwd-strength { margin-top:8px; }
+        .pwd-bars { display:flex; gap:5px; margin-bottom:5px; }
+        .pwd-bar { flex:1; height:5px; border-radius:5px; background:var(--line); transition:background .3s; }
+        .pwd-label { font-size:.8rem; color:var(--soft); font-weight:700; }
+
+        .back-link { display:inline-flex; align-items:center; gap:8px; min-height:40px; margin-bottom:10px; font-weight:700; font-size:.92rem; color:var(--muted); padding:0; }
+        .back-link:hover { color:var(--ink); }
+        .forgot-text { color:var(--muted); font-size:.95rem; margin-bottom:12px; }
+        .forgot-note { margin-bottom:16px; font-size:.88rem; }
+        .timer-text { display:none; text-align:center; font-size:.86rem; color:var(--soft); margin-top:10px; font-weight:700; }
+
+        .verify-state { display:none; text-align:center; padding:6px 0 2px; }
+        .verify-state.show { display:block; animation:authIn .3s ease; }
+        .verify-icon { width:72px; height:72px; margin:0 auto 14px; border-radius:20px; background:var(--marker); color:#11221D; display:flex; align-items:center; justify-content:center; font-size:1.7rem; box-shadow:4px 4px 0 var(--ink); }
+        .verify-title { font-family:var(--display); font-weight:800; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:8px; }
+        .verify-sub { color:var(--muted); font-size:.96rem; margin-bottom:14px; }
+        .verify-sub strong { color:var(--ink); overflow-wrap:anywhere; }
+        .resend-btn { font-weight:700; font-size:.92rem; color:var(--lagoon); text-decoration:underline; text-underline-offset:4px; min-height:40px; padding:0 8px; }
+        .resend-btn:hover { color:var(--ink); }
+        .resend-btn:disabled { text-decoration:none; }
+        .verify-state .btn-solid { width:100%; margin-top:16px; }
+
+        .auth-footer { margin-top:22px; padding-top:16px; border-top:1px solid var(--line); text-align:center; font-size:.86rem; color:var(--soft); }
+        .auth-footer a { color:var(--lagoon); font-weight:700; }
+        .auth-footer a:hover { color:var(--ink); }
+        @media (max-width:480px) { .auth-inner { padding:24px 18px 20px; } }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <!-- ── AUTH CARD ──────────────────────────────────────── -->
+    <main class="auth-wrap" id="main">
+        <div class="auth-card">
+            <div class="auth-strip"></div>
+            <div class="auth-inner">
+
+                <div class="auth-head">
+                    <span class="tile-lg" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                    <h1 class="auth-title">Welcome to Munan<span style="color:var(--lagoon)">.hub</span></h1>
+                    <p class="auth-sub">Log in to your account or create a new one.</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="auth-tabs" role="group" aria-label="Choose login or sign up">
+                    <button type="button" class="tab-btn active" id="tabLogin" onclick="switchTab('login')" aria-current="true">
+                        <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Login
+                    </button>
+                    <button type="button" class="tab-btn" id="tabSignup" onclick="switchTab('signup')">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>Sign Up
+                    </button>
+                </div>
+
+                <!-- ─────────────── LOGIN FORM ──────────────── -->
+                <div class="auth-form active" id="formLogin">
+
+                    <div class="field">
+                        <label for="loginEmail">Email <span class="req" aria-hidden="true">*</span></label>
+                        <div class="input-wrap">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="loginPassword">Password <span class="req" aria-hidden="true">*</span></label>
+                        <div class="input-wrap">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+                            <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="right">
+                            <a href="#" class="forgot-link" onclick="openForgotPassword(event)">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
+                        <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Login
+                    </button>
+
+                    <div id="loginMsg" class="msg-bar" role="status" aria-live="polite"></div>
+
+                    <div class="divider">or</div>
+
+                    <button class="google-btn" onclick="handleGoogle()">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="" width="18" height="18">
+                        Continue with Google
+                    </button>
+
+                </div><!-- /formLogin -->
+
+                <!-- Forgot password panel -->
+                <div class="auth-form" id="formForgot" style="display:none;">
+                    <button type="button" class="back-link" onclick="closeForgotPassword()">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Login
+                    </button>
+
+                    <p class="forgot-text">
+                        Enter your email address and we'll send you a link to reset your password.
+                    </p>
+                    <div class="alert alert-info forgot-note">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>Signed up with Google? Use <strong>Continue with Google</strong> to log in instead — there's no password to reset.</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="forgotEmail">Email <span class="req" aria-hidden="true">*</span></label>
+                        <div class="input-wrap">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
+                        </div>
+                    </div>
+
+                    <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>Send Reset Link
+                    </button>
+
+                    <p id="forgotTimer" class="timer-text" style="display:none;"></p>
+
+                    <div id="forgotMsg" class="msg-bar" role="status" aria-live="polite"></div>
+                </div><!-- /formForgot -->
+
+                <!-- ─────────────── SIGNUP FORM ─────────────── -->
+                <div class="auth-form" id="formSignup">
+
+                    <!-- Verification waiting state (hidden by default) -->
+                    <div class="verify-state" id="verifyState">
+                        <div class="verify-icon" aria-hidden="true"><i class="fas fa-envelope-open-text"></i></div>
+                        <div class="verify-title">Check your inbox!</div>
+                        <p class="verify-sub">
+                            We sent a verification link to <strong id="verifyEmail"></strong>.
+                            Click it to activate your account. If you don't see it, please check your spam folder too.
+                            Then log in with your email &amp; password from the Login tab.
+                        </p>
+                        <button class="resend-btn" id="resendBtn" onclick="handleResend()">
+                            <i class="fas fa-rotate-right" aria-hidden="true"></i> Resend email
+                        </button>
+                        <p id="resendTimer" class="timer-text" style="display:none;"></p>
+                        <div id="resendMsg" class="msg-bar" role="status" aria-live="polite"></div>
+
+                        <button type="button" class="btn-solid" onclick="switchTab('login')">
+                            <i class="fas fa-right-to-bracket" aria-hidden="true"></i>Go to Login
+                        </button>
+                    </div>
+
+                    <!-- Signup fields (hidden after submit) -->
+                    <div id="signupFields">
+
+                        <div class="field">
+                            <label for="signupName">Full Name <span class="req" aria-hidden="true">*</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                <input type="text" id="signupName" placeholder="Your full name" autocomplete="name">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="signupEmail">Email <span class="req" aria-hidden="true">*</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="signupPhone">Phone Number <span class="opt">(optional)</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                <input type="tel" id="signupPhone" placeholder="+880 1XXX-XXXXXX" autocomplete="tel">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="signupPassword">Password <span class="req" aria-hidden="true">*</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-lock" aria-hidden="true"></i>
+                                <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <!-- Strength meter -->
+                            <div class="pwd-strength" id="pwdStrength" style="display:none;">
+                                <div class="pwd-bars">
+                                    <div class="pwd-bar" id="bar1"></div>
+                                    <div class="pwd-bar" id="bar2"></div>
+                                    <div class="pwd-bar" id="bar3"></div>
+                                    <div class="pwd-bar" id="bar4"></div>
+                                </div>
+                                <span class="pwd-label" id="pwdLabel">Weak</span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="signupConfirm">Re-enter Password <span class="req" aria-hidden="true">*</span></label>
+                            <div class="input-wrap">
+                                <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                                <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
+                                <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this,event)" tabindex="-1" aria-label="Show or hide password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="submit-btn" id="signupBtn" onclick="handleSignup()">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i>Create Account
+                        </button>
+
+                        <div id="signupMsg" class="msg-bar" role="status" aria-live="polite"></div>
+
+                        <div class="divider">or</div>
+
+                        <button class="google-btn" onclick="handleGoogle()">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E" alt="" width="18" height="18">
+                            Continue with Google
+                        </button>
+
+                    </div><!-- /signupFields -->
+                </div><!-- /formSignup -->
+
+                <p class="auth-footer">
+                    By continuing you agree to our
+                    <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a>
+                </p>
+
+            </div><!-- /auth-inner -->
+        </div><!-- /auth-card -->
+    </main>
+
+    <!-- Firebase Auth (ESM via CDN — works on GitHub Pages) -->
+    <script type="module" src="auth.js"></script>
+
+<script>
+    // ── TAB SWITCHER ─────────────────────────────────────────
+    function switchTab(tab) {
+        document.getElementById('formLogin').classList.toggle('active', tab === 'login');
+        document.getElementById('formSignup').classList.toggle('active', tab === 'signup');
+        document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+        document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+        // Always close the forgot-password panel when switching tabs
+        document.getElementById('formForgot').style.display = 'none';
+        clearInterval(forgotCountdownInterval);
+        clearMsg('loginMsg');
+        clearMsg('signupMsg');
+        clearMsg('forgotMsg');
+    }
+
+    // ── MESSAGE HELPERS ──────────────────────────────────────
+    function showMsg(id, type, icon, text) {
+        const el = document.getElementById(id);
+        el.className = `msg-bar show ${type}`;
+        el.innerHTML = `<i class="${icon}${type==='loading'?' spin':''}"></i><span>${text}</span>`;
+    }
+    function clearMsg(id) {
+        const el = document.getElementById(id);
+        el.className = 'msg-bar';
+        el.innerHTML = '';
+    }
+
+    // ── PASSWORD EYE TOGGLE ──────────────────────────────────
+    function toggleEye(inputId, btn, e) {
+        if (e) e.preventDefault();
+        const inp = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    // ── PASSWORD STRENGTH METER ──────────────────────────────
+    function checkStrength(val) {
+        const meter = document.getElementById('pwdStrength');
+        const label = document.getElementById('pwdLabel');
+        const bars  = [document.getElementById('bar1'),document.getElementById('bar2'),
+                       document.getElementById('bar3'),document.getElementById('bar4')];
+        meter.style.display = val.length ? 'block' : 'none';
+
+        let score = 0;
+        if (val.length >= 8)  score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        const colors  = ['#ef4444','#f97316','#eab308','#22c55e'];
+        const labels  = ['Weak','Fair','Good','Strong'];
+        bars.forEach((b,i) => { b.style.background = i < score ? colors[score-1] : ''; });
+        label.textContent = labels[score-1] || '';
+        label.style.color = colors[score-1] || 'var(--text-soft)';
+    }
+
+    // ── VALIDATE EMAIL ───────────────────────────────────────
+    function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+    // ── FRIENDLY ERROR MAPPER (never mentions Firebase) ──────
+    function friendlyAuthError(err) {
+        const map = {
+            'auth/wrong-password':        'Incorrect password. Please try again.',
+            'auth/invalid-credential':    'Incorrect email or password. Please try again.',
+            'auth/user-not-found':        'No account found with this email.',
+            'auth/email-not-verified':    'Please verify your email before logging in.',
+            'auth/too-many-requests':     'Too many attempts. Please wait a moment and try again.',
+            'auth/invalid-email':         'Enter a valid email address.',
+            'auth/network-request-failed':'Network error. Check your connection and try again.',
+            'auth/email-already-in-use':  'This email is already registered.',
+            'auth/weak-password':         'Choose a stronger password.',
+            'auth/popup-closed-by-user':  'Sign-in window closed before completing.',
+            'auth/cancelled-popup-request':'Sign-in was cancelled.',
+            'auth/user-disabled':         'This account has been disabled. Contact support.',
+            'auth/lookup-failed':         'Could not verify this email right now. Please try again.',
+        };
+        return map[err.code] || 'Something went wrong. Please try again.';
+    }
+
+    // ── LOGIN HANDLER ────────────────────────────────────────
+    // ── FORGOT PASSWORD ───────────────────────────────────────
+    let forgotCountdownInterval = null;
+
+    function formatRemaining(ms) {
+        const totalSec = Math.ceil(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${m}:${s.toString().padStart(2,'0')}`;
+    }
+
+    function startForgotCountdown(remainingMs) {
+        const timerEl = document.getElementById('forgotTimer');
+        const btn     = document.getElementById('forgotBtn');
+        btn.disabled  = true;
+        timerEl.style.display = 'block';
+
+        let remaining = remainingMs;
+        clearInterval(forgotCountdownInterval);
+
+        const tick = () => {
+            if (remaining <= 0) {
+                clearInterval(forgotCountdownInterval);
+                timerEl.style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+            timerEl.textContent = `You can request another link in ${formatRemaining(remaining)}`;
+            remaining -= 1000;
+        };
+        tick();
+        forgotCountdownInterval = setInterval(tick, 1000);
+    }
+
+    async function openForgotPassword(e) {
+        e.preventDefault();
+        document.getElementById('formLogin').classList.remove('active');
+        document.getElementById('formForgot').style.display = 'block';
+        // Pre-fill with whatever email was typed in login
+        const loginEmail = document.getElementById('loginEmail').value.trim();
+        if (loginEmail) document.getElementById('forgotEmail').value = loginEmail;
+        clearMsg('forgotMsg');
+
+        // If this email already has an active cooldown (even from another device), show it
+        if (loginEmail && validEmail(loginEmail)) {
+            try {
+                const remaining = await MunanAuth.getResetCooldownRemaining(loginEmail);
+                if (remaining > 0) startForgotCountdown(remaining);
+            } catch {}
+        }
+    }
+
+    function closeForgotPassword() {
+        document.getElementById('formForgot').style.display = 'none';
+        document.getElementById('formLogin').classList.add('active');
+        clearMsg('forgotMsg');
+        clearInterval(forgotCountdownInterval);
+    }
+
+    async function handleForgotPassword() {
+        clearMsg('forgotMsg');
+        const email = document.getElementById('forgotEmail').value.trim();
+
+        if (!email) {
+            showMsg('forgotMsg','error','fas fa-exclamation-circle','Please enter your email.'); return;
+        }
+        if (!validEmail(email)) {
+            showMsg('forgotMsg','error','fas fa-exclamation-circle','Enter a valid email address.'); return;
+        }
+
+        showMsg('forgotMsg','loading','fas fa-circle-notch','Sending reset link…');
+        document.getElementById('forgotBtn').disabled = true;
+
+        try {
+            await MunanAuth.resetPassword(email);
+            showMsg('forgotMsg','success','fas fa-check-circle','If an account exists with this email, a reset link has been sent. Check your inbox (and spam folder).');
+            startForgotCountdown(5 * 60 * 1000);
+        } catch(err) {
+            if (err.code === 'auth/reset-cooldown') {
+                showMsg('forgotMsg','error','fas fa-clock','A reset link was already sent recently. Please wait before requesting another.');
+                startForgotCountdown(err.remainingMs);
+                return;
+            }
+            showMsg('forgotMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
+            document.getElementById('forgotBtn').disabled = false;
+        }
+    }
+
+    async function handleLogin() {
+        clearMsg('loginMsg');
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass  = document.getElementById('loginPassword').value;
+
+        if (!email || !pass) {
+            showMsg('loginMsg','error','fas fa-exclamation-circle','Please fill in all fields.'); return;
+        }
+        if (!validEmail(email)) {
+            showMsg('loginMsg','error','fas fa-exclamation-circle','Enter a valid email address.'); return;
+        }
+
+        showMsg('loginMsg','loading','fas fa-circle-notch','Logging in…');
+        document.getElementById('loginBtn').disabled = true;
+
+        try {
+            await MunanAuth.loginWithEmail(email, pass);
+            showMsg('loginMsg','success','fas fa-check-circle','Logged in successfully! Redirecting…');
+        } catch(err) {
+            showMsg('loginMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
+        } finally {
+            document.getElementById('loginBtn').disabled = false;
+        }
+    }
+
+    // ── SIGNUP HANDLER ───────────────────────────────────────
+    async function handleSignup() {
+        clearMsg('signupMsg');
+        const name    = document.getElementById('signupName').value.trim();
+        const email   = document.getElementById('signupEmail').value.trim();
+        const phone   = document.getElementById('signupPhone').value.trim();
+        const pass    = document.getElementById('signupPassword').value;
+        const confirm = document.getElementById('signupConfirm').value;
+
+        if (!name || !email || !pass || !confirm) {
+            showMsg('signupMsg','error','fas fa-exclamation-circle','Please fill in all required fields.'); return;
+        }
+        if (!validEmail(email)) {
+            showMsg('signupMsg','error','fas fa-exclamation-circle','Enter a valid email address.'); return;
+        }
+        if (pass.length < 8) {
+            showMsg('signupMsg','error','fas fa-exclamation-circle','Password must be at least 8 characters.'); return;
+        }
+        if (pass !== confirm) {
+            showMsg('signupMsg','error','fas fa-exclamation-circle','Passwords do not match.'); return;
+        }
+
+        showMsg('signupMsg','loading','fas fa-circle-notch','Creating your account…');
+        document.getElementById('signupBtn').disabled = true;
+
+        try {
+            await MunanAuth.signupWithEmail(name, email, phone, pass);
+            // Show verification waiting state
+            document.getElementById('verifyEmail').textContent = email;
+            document.getElementById('signupFields').style.display = 'none';
+            document.getElementById('verifyState').classList.add('show');
+            // The first verification email was just sent during signup —
+            // start the cooldown timer right away so "Resend" can't be spammed immediately.
+            startResendCountdown(RESEND_COOLDOWN_MS);
+        } catch(err) {
+            showMsg('signupMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
+        } finally {
+            document.getElementById('signupBtn').disabled = false;
+        }
+    }
+
+    // ── GOOGLE HANDLER ───────────────────────────────────────
+    async function handleGoogle() {
+        try {
+            await MunanAuth.loginWithGoogle();
+        } catch(err) {
+            const targetMsg = document.getElementById('formLogin').classList.contains('active')
+                ? 'loginMsg' : 'signupMsg';
+            showMsg(targetMsg,'error','fas fa-triangle-exclamation', friendlyAuthError(err));
+        }
+    }
+
+    // ── RESEND VERIFICATION ──────────────────────────────────
+    let resendCountdownInterval = null;
+    const RESEND_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+    function startResendCountdown(remainingMs) {
+        const timerEl = document.getElementById('resendTimer');
+        const btn     = document.getElementById('resendBtn');
+        btn.disabled  = true;
+        timerEl.style.display = 'block';
+
+        let remaining = remainingMs;
+        clearInterval(resendCountdownInterval);
+
+        const tick = () => {
+            if (remaining <= 0) {
+                clearInterval(resendCountdownInterval);
+                timerEl.style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+            timerEl.textContent = `You can resend in ${formatRemaining(remaining)}`;
+            remaining -= 1000;
+        };
+        tick();
+        resendCountdownInterval = setInterval(tick, 1000);
+    }
+
+    async function handleResend() {
+        clearMsg('resendMsg');
+        const btn = document.getElementById('resendBtn');
+        btn.disabled = true;
+
+        try {
+            await MunanAuth.resendVerificationEmail();
+            showMsg('resendMsg','success','fas fa-check-circle','Verification email sent! Check your inbox (and spam folder).');
+            startResendCountdown(RESEND_COOLDOWN_MS);
+        } catch (err) {
+            showMsg('resendMsg','error','fas fa-triangle-exclamation', friendlyAuthError(err));
+            btn.disabled = false;
+        }
+    }
+
+    // ── ENTER KEY SUPPORT ────────────────────────────────────
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        if (document.getElementById('formLogin').classList.contains('active')) handleLogin();
+        else handleSignup();
+    });
+    </script>
+    <script>
+    // Keeps aria-current in step with the tab buttons (additive; does not touch the auth logic above)
+    (function () {
+        var tabs = [document.getElementById('tabLogin'), document.getElementById('tabSignup')];
+        function sync() { tabs.forEach(function (t) { if (t.classList.contains('active')) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); }); }
+        var mo = new MutationObserver(sync);
+        tabs.forEach(function (t) { mo.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+        sync();
+    })();
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

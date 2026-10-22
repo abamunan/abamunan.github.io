@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Abdullah's personal toolbox — dev tools, AI assistants, browser extensions, and productivity apps.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Tools & Extensions | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/tools.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/tools.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Tools & Extensions | Munan.hub">
+    <meta property="og:description" content="Abdullah's personal toolbox — dev tools, AI assistants, browser extensions, and productivity apps.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tools & Extensions | Munan.hub">
+    <meta name="twitter:description" content="Abdullah's personal toolbox — dev tools, AI assistants, browser extensions, and productivity apps.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .tool-row .row-body { min-width:0; flex:1; }
+        .tool-row .row-desc { display:block; margin-top:2px; }
+        .tools-wrap { margin-top:8px; }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Tools</li></ol>
+                <span class="kicker">Toolbox</span>
+                <h1 class="page-title">Tools &amp; extensions</h1>
+                <p class="page-lead">My favourite apps, AI tools, and browser extensions.</p>
+            </div>
+        </header>
+
+        <section class="wrap listing" aria-label="Tools">
+            <div class="list-tools">
+                <div class="searchbar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="q" type="search" placeholder="Search tools…" autocomplete="off" aria-label="Search tools">
+                    <span class="count" id="cnt" aria-live="polite"></span>
+                </div>
+                <div class="fchips" id="filters" role="group" aria-label="Filter tools by category"></div>
+            </div>
+            <div class="tools-wrap" id="grid"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>The tools list needs JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  ✏️  YOUR TOOLS LIST — ONLY EDIT THIS SECTION        ║ -->
+<!-- ║  ADD  → copy one line and fill it in                 ║ -->
+<!-- ║  REMOVE → delete the whole { ... } line              ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<script>
+const MY_TOOLS = [
+
+  /* ── Dev ───────────────────────────────────────────────── */
+  { name: "GitHub",     desc: "Host and review code, manage projects, and build software alongside millions of developers.",                                                               icon: "fa-brands fa-github",             iconBg: "linear-gradient(135deg,#1a1e2a,#3a3f52)", accent: "#7ec8e8", tag: "Dev", url: "https://github.com"                  },
+  { name: "VS Code",    desc: "Free, open-source code editor by Microsoft — powerful, fast, and endlessly extensible.",                                                                   icon: "fa-solid fa-code",                iconBg: "linear-gradient(135deg,#0065a9,#007acc)", accent: "#007acc", tag: "Dev", url: "https://code.visualstudio.com"       },
+  { name: "v0",         desc: "Vercel's AI that generates clean React and Tailwind UI components from a text prompt — ideal for quickly prototyping real dev projects.",                  icon: "fa-solid fa-wand-magic-sparkles", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#d4d4d4", tag: "Dev", url: "https://v0.dev"                   },
+  { name: "Bolt",       desc: "Prompt-to-full-stack app builder powered by StackBlitz — generates, runs, and deploys complete web apps directly in the browser.",                         icon: "fa-solid fa-bolt-lightning",      iconBg: "linear-gradient(135deg,#1a1a2e,#7c3aed)", accent: "#7c3aed", tag: "Dev", url: "https://bolt.new"                 },
+  { name: "Lovable",    desc: "Turn a plain English prompt into a fully functional web app with backend, auth, and database — syncs directly to GitHub.",                                 icon: "fa-solid fa-heart-pulse",         iconBg: "linear-gradient(135deg,#e11d48,#fb7185)", accent: "#fb7185", tag: "Dev", url: "https://lovable.dev"               },
+  { name: "Framer AI",  desc: "Design-first AI website builder that generates stunning, animation-rich sites from a prompt — best for portfolios and landing pages.",                     icon: "fa-solid fa-paintbrush",          iconBg: "linear-gradient(135deg,#0b0b0f,#1d4ed8)", accent: "#60a5fa", tag: "Dev", url: "https://framer.com"                 },
+  { name: "Durable",    desc: "Generates a complete business website with copy, images, and contact forms in under a minute — no design or coding skills needed.",                        icon: "fa-solid fa-globe",               iconBg: "linear-gradient(135deg,#0f766e,#14b8a6)", accent: "#14b8a6", tag: "Dev", url: "https://durable.co"                },
+
+  /* ── AI ────────────────────────────────────────────────── */
+  { name: "Claude",     desc: "Anthropic's AI assistant known for nuanced reasoning, long-context understanding, and safe, thoughtful responses across writing, coding, and analysis.",   icon: "fa-solid fa-brain",                  iconBg: "linear-gradient(135deg,#111111,#10a37f)", accent: "#1bc89a", tag: "AI", url: "https://claude.ai"               },
+  { name: "ChatGPT",    desc: "OpenAI's conversational AI for writing, coding, brainstorming, and answering complex questions.",                                                           icon: "fa-solid fa-robot",                  iconBg: "linear-gradient(135deg,#10a37f,#1bc89a)", accent: "#1bc89a", tag: "AI", url: "https://chat.openai.com"          },
+  { name: "Whisper",    desc: "OpenAI's speech-to-text AI that transcribes and translates audio in 99 languages with remarkable accuracy.",                                               icon: "fa-solid fa-microphone-lines",       iconBg: "linear-gradient(135deg,#0f172a,#1e40af)", accent: "#60a5fa", tag: "AI", url: "https://openai.com/index/whisper"  },
+  { name: "Gemini",     desc: "Google's multimodal AI assistant with deep Google Workspace integration, strong image generation, and real-time search grounding.",                        icon: "fa-solid fa-gem",                    iconBg: "linear-gradient(135deg,#4285f4,#34a853)", accent: "#4285f4", tag: "AI", url: "https://gemini.google.com"          },
+  { name: "Grok",       desc: "xAI's real-time AI assistant focused on trending topics, unfiltered answers, and image and video generation.",                                             icon: "fa-solid fa-bolt",                   iconBg: "linear-gradient(135deg,#1a1a1a,#444444)", accent: "#888888", tag: "AI", url: "https://grok.com"                    },
+  { name: "Perplexity", desc: "AI-powered answer engine that searches the web and cites sources in real time — ideal for research and fact-finding.",                                     icon: "fa-solid fa-magnifying-glass-chart", iconBg: "linear-gradient(135deg,#20b2aa,#008080)", accent: "#20b2aa", tag: "AI", url: "https://www.perplexity.ai"          },
+  { name: "Copilot",    desc: "Microsoft's AI assistant deeply embedded in Office 365, Windows, and Edge for productivity, writing, and coding help.",                                    icon: "fa-solid fa-microchip",              iconBg: "linear-gradient(135deg,#0078d4,#005a9e)", accent: "#0078d4", tag: "AI", url: "https://copilot.microsoft.com"      },
+  { name: "Mistral",    desc: "Open-weight European AI models known for efficiency and strong performance, available via API and self-hosting.",                                           icon: "fa-solid fa-wind",                   iconBg: "linear-gradient(135deg,#f97316,#c2410c)", accent: "#f97316", tag: "AI", url: "https://mistral.ai"                  },
+  { name: "DeepSeek",   desc: "High-performance open-source AI models rivaling top frontier models, with strong coding and reasoning capabilities.",                                      icon: "fa-solid fa-flask",                  iconBg: "linear-gradient(135deg,#6366f1,#4338ca)", accent: "#6366f1", tag: "AI", url: "https://www.deepseek.com"             },
+  { name: "NotebookLM", desc: "Google's document-grounded AI that answers questions solely from your uploaded sources, with podcast-style Audio Overviews.",                              icon: "fa-solid fa-book-open",              iconBg: "linear-gradient(135deg,#34a853,#1e7e34)", accent: "#34a853", tag: "AI", url: "https://notebooklm.google.com"       },
+
+  /* ── Extension ─────────────────────────────────────────── */
+  { name: "Grammarly",              desc: "AI writing assistant that checks grammar, tone, clarity, and style as you type anywhere on the web.",                                           icon: "fa-solid fa-spell-check",  iconBg: "linear-gradient(135deg,#15c39a,#00b386)", accent: "#15c39a", tag: "Extension", url: "https://grammarly.com"                                                                                     },
+  { name: "SBlock",                 desc: "Blocks ads and pop-ups on YouTube, Twitch, LinkedIn, Reddit, and 100+ other websites using exclusive, regularly updated scripts.",              icon: "fa-solid fa-shield-halved",iconBg: "linear-gradient(135deg,#4a90d9,#1a5fa8)", accent: "#4a90d9", tag: "Extension", url: "https://sblock.ch"                                                                                        },
+  { name: "News Feed Eradicator",   desc: "Replaces addictive social media feeds with a single inspirational quote — curbs mindless scrolling on Facebook, YouTube, LinkedIn, and more.", icon: "fa-solid fa-ban",          iconBg: "linear-gradient(135deg,#6c757d,#343a40)", accent: "#6c757d", tag: "Extension", url: "https://chromewebstore.google.com/detail/news-feed-eradicator/fjcldmjmjhkklehbacihaiopjklihlgg"},
+  { name: "Forest",                 desc: "Grow a virtual tree during focus sessions — open a distracting site and the tree dies, making procrastination feel personal.",                  icon: "fa-solid fa-tree",         iconBg: "linear-gradient(135deg,#2d6a4f,#52b788)", accent: "#52b788", tag: "Extension", url: "https://forestapp.cc"                                                                                      },
+  { name: "Scholarcy",              desc: "Summarizes research papers into interactive flashcards with key points, highlights, and linked references — saves hours of reading.",           icon: "fa-solid fa-file-lines",   iconBg: "linear-gradient(135deg,#e76f51,#f4a261)", accent: "#f4a261", tag: "Extension", url: "https://www.scholarcy.com"                                                                                },
+  { name: "Dark Reader",            desc: "Applies a customizable dark mode to every website — reduces eye strain during long study or coding sessions at night.",                         icon: "fa-solid fa-moon",         iconBg: "linear-gradient(135deg,#1a1a2e,#16213e)", accent: "#7ec8e8", tag: "Extension", url: "https://darkreader.org"                                                                                   },
+  { name: "Video Speed Controller", desc: "Control playback speed of any HTML5 video on any site — watch lectures at 1.5x or 2x and save hours every week.",                             icon: "fa-solid fa-gauge-high",   iconBg: "linear-gradient(135deg,#7b2d8b,#c77dff)", accent: "#c77dff", tag: "Extension", url: "https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk" },
+
+  /* ── Productivity ──────────────────────────────────────── */
+  { name: "Notion",          desc: "All-in-one workspace for notes, wikis, databases, tasks, and project planning.",                                                                      icon: "fa-solid fa-layer-group",         iconBg: "linear-gradient(135deg,#1a1a1a,#444444)", accent: "#c0c0c0", tag: "Productivity", url: "https://notion.so"             },
+  { name: "Canva",           desc: "Easy-to-use online design platform for creating stunning graphics, presentations, and social media posts — no design skills needed.",                  icon: "fa-solid fa-pen-nib",             iconBg: "linear-gradient(135deg,#7d2ae8,#00c4cc)", accent: "#00c4cc", tag: "Productivity", url: "https://www.canva.com"          },
+  { name: "Google Drive",    desc: "Store, sync, and share documents, spreadsheets, and files securely in Google's cloud.",                                                               icon: "fa-brands fa-google-drive",       iconBg: "linear-gradient(135deg,#1a73e8,#34a853)", accent: "#34a853", tag: "Productivity", url: "https://drive.google.com"       },
+  { name: "Google Docs",     desc: "Create, edit, and collaborate on documents in real time — works seamlessly with Drive and accessible from any device.",                               icon: "fa-solid fa-file-word",           iconBg: "linear-gradient(135deg,#1a73e8,#4285f4)", accent: "#4285f4", tag: "Productivity", url: "https://docs.google.com"        },
+  { name: "Google Translate",desc: "Instant translation across 100+ languages — text, images, voice, and full web pages.",                                                                icon: "fa-solid fa-language",            iconBg: "linear-gradient(135deg,#4285f4,#34a8f5)", accent: "#4285f4", tag: "Productivity", url: "https://translate.google.com"   },
+  { name: "Google Calendar", desc: "Manage your class schedule, assignment deadlines, and daily routine in one clean, shareable calendar.",                                               icon: "fa-solid fa-calendar-days",       iconBg: "linear-gradient(135deg,#1a73e8,#34a853)", accent: "#34a853", tag: "Productivity", url: "https://calendar.google.com"    },
+  { name: "Google Meet",     desc: "Google's free video conferencing tool — instantly join or host HD meetings with screen sharing, right from your browser.",                            icon: "fa-solid fa-video",               iconBg: "linear-gradient(135deg,#00897b,#00bfa5)", accent: "#00bfa5", tag: "Productivity", url: "https://meet.google.com"         },
+  { name: "Gmail",           desc: "Google's fast, secure email — smart labels and powerful search keep your inbox tidy.",                                                                icon: "fa-solid fa-envelope",            iconBg: "linear-gradient(135deg,#ea4335,#f97b6e)", accent: "#f97b6e", tag: "Productivity", url: "https://mail.google.com"         },
+  { name: "Zoom",            desc: "Industry-standard video meetings platform with breakout rooms, webinars, and reliable HD calls for teams and students alike.",                        icon: "fa-solid fa-users-rectangle",     iconBg: "linear-gradient(135deg,#0b5cff,#2d8cff)", accent: "#2d8cff", tag: "Productivity", url: "https://zoom.us"                },
+  { name: "Todoist",         desc: "Minimal yet powerful task manager with priorities, due dates, and project views to keep assignments and goals on track.",                             icon: "fa-solid fa-circle-check",        iconBg: "linear-gradient(135deg,#db4035,#ff6b6b)", accent: "#db4035", tag: "Productivity", url: "https://todoist.com"             },
+  { name: "WolframAlpha",    desc: "Computational knowledge engine that solves math, physics, chemistry, and complex queries with step-by-step explanations.",                           icon: "fa-solid fa-square-root-variable",iconBg: "linear-gradient(135deg,#e07000,#ff9a00)", accent: "#ff9a00", tag: "Productivity", url: "https://wolframalpha.com"       },
+  { name: "Dropbox",         desc: "Cloud storage for backing up and syncing files across all your devices — a reliable fallback alongside Google Drive.",                                icon: "fa-brands fa-dropbox",            iconBg: "linear-gradient(135deg,#0061ff,#0d7fff)", accent: "#0061ff", tag: "Productivity", url: "https://dropbox.com"            },
+
+  /* ── Social ────────────────────────────────────────────── */
+  { name: "Facebook",  desc: "Connect with friends, family, and communities through posts, groups, reels, and messaging on the world's largest social network.",                          icon: "fa-brands fa-facebook",  iconBg: "linear-gradient(135deg,#1877f2,#0a5dc2)", accent: "#1877f2", tag: "Social", url: "https://facebook.com"  },
+  { name: "Instagram", desc: "Share photos, reels, and stories with followers and explore visual content from creators around the world.",                                                icon: "fa-brands fa-instagram", iconBg: "linear-gradient(135deg,#f58529,#8134af)", accent: "#dd2a7b", tag: "Social", url: "https://instagram.com"  },
+  { name: "X",         desc: "Real-time microblogging platform for news, hot takes, tech discussions, and following people who actually matter to you.",                                  icon: "fa-brands fa-x-twitter", iconBg: "linear-gradient(135deg,#000000,#333333)", accent: "#888888", tag: "Social", url: "https://x.com"           },
+  { name: "Discord",   desc: "Voice, video, and text platform built for communities — from gaming servers to study groups and developer hangouts.",                                       icon: "fa-brands fa-discord",   iconBg: "linear-gradient(135deg,#5865f2,#404eed)", accent: "#5865f2", tag: "Social", url: "https://discord.com"      },
+  { name: "Telegram",  desc: "Fast, secure messaging app with channels, bots, file sharing up to 2GB, and group chats of up to 200,000 members.",                                        icon: "fa-brands fa-telegram",  iconBg: "linear-gradient(135deg,#0088cc,#29b6f6)", accent: "#29b6f6", tag: "Social", url: "https://telegram.org"     },
+
+  /* ── Media ─────────────────────────────────────────────── */
+  { name: "YouTube", desc: "Watch, upload, and discover videos across every topic on the world's largest video platform.",                                                                icon: "fa-brands fa-youtube", iconBg: "linear-gradient(135deg,#cc0000,#ff4e4e)", accent: "#ff5c5c", tag: "Media", url: "https://youtube.com"  },
+  { name: "Spotify", desc: "Stream millions of songs, podcasts, and audiobooks — create playlists and discover new music tailored to your taste.",                                        icon: "fa-brands fa-spotify", iconBg: "linear-gradient(135deg,#1db954,#158a3e)", accent: "#1db954", tag: "Media", url: "https://spotify.com"  },
+
+  /*
+  ┌──────────────────────────────────────────────────────┐
+  │  ADD A NEW TOOL → copy this line and fill it in:     │
+  │  { name: "", desc: "", icon: "", iconBg: "",         │
+  │    accent: "", tag: "", url: "" },                   │
+  └──────────────────────────────────────────────────────┘
+  */
+
+]; // ← do not delete
+</script>
+<!-- ══════════════════════════════════════════════════════ -->
+
+    <script>
+/* ── RENDER ENGINE — no need to edit ─────────────── */
+const grid      = document.getElementById('grid');
+const input     = document.getElementById('q');
+const cnt       = document.getElementById('cnt');
+const filtersEl = document.getElementById('filters');
+let activeFilter = 'all';
+
+/* Group titles and icons per tag (unknown tags fall back to the tag name) */
+const GROUPS = {
+  Dev:          { label: 'Software &amp; builders', icon: 'fa-solid fa-code' },
+  AI:           { label: 'AI tools',            icon: 'fa-solid fa-wand-magic-sparkles' },
+  Extension:    { label: 'Browser extensions',  icon: 'fa-solid fa-puzzle-piece' },
+  Productivity: { label: 'Productivity',        icon: 'fa-solid fa-list-check' },
+  Social:       { label: 'Social',              icon: 'fa-solid fa-comments' },
+  Media:        { label: 'Media',               icon: 'fa-solid fa-play' }
+};
+
+/* Count per tag */
+const tagCounts = MY_TOOLS.reduce((acc, t) => {
+  acc[t.tag] = (acc[t.tag] || 0) + 1; return acc;
+}, {});
+
+/* Build filter chips with counts */
+function buildFilters() {
+  filtersEl.innerHTML = '';
+  ['All', ...new Set(MY_TOOLS.map(t => t.tag))].forEach((tag) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'fchip';
+    const key = tag === 'All' ? 'all' : tag;
+    chip.setAttribute('aria-pressed', key === activeFilter ? 'true' : 'false');
+    const count = tag === 'All' ? MY_TOOLS.length : (tagCounts[tag] || 0);
+    chip.innerHTML = tag + `<span class="n">${count}</span>`;
+    chip.addEventListener('click', () => {
+      activeFilter = key;
+      buildFilters();
+      render(input.value);
+    });
+    filtersEl.appendChild(chip);
+  });
+}
+
+function render(q) {
+  q = (q || '').toLowerCase().trim();
+  const list = MY_TOOLS.filter(t => {
+    const matchTag = activeFilter === 'all' || t.tag === activeFilter;
+    const matchQ   = !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tag.toLowerCase().includes(q);
+    return matchTag && matchQ;
+  });
+
+  cnt.textContent = list.length + ' tool' + (list.length !== 1 ? 's' : '');
+  grid.innerHTML  = '';
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      No tools found for "<strong>${q || activeFilter}</strong>" — try a different keyword.
+    </div>`;
+    return;
+  }
+
+  /* group by tag, in the order tags first appear in the data */
+  const order = [...new Set(MY_TOOLS.map(t => t.tag))].filter(tag => list.some(t => t.tag === tag));
+  order.forEach((tag) => {
+    const g = GROUPS[tag] || { label: tag, icon: 'fa-solid fa-toolbox' };
+    const items = list.filter(t => t.tag === tag);
+    const sec = document.createElement('section');
+    sec.innerHTML = `
+      <div class="group-head">
+        <span class="tile"><i class="${g.icon}" aria-hidden="true"></i></span>
+        <h2>${g.label}</h2>
+        <span class="badge">${items.length}</span>
+      </div>
+      <div class="util-list"></div>
+    `;
+    const ul = sec.querySelector('.util-list');
+    items.forEach((t) => {
+      const a = document.createElement('a');
+      a.className = 'util tool-row';
+      a.href = t.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', t.name + ' (opens in a new tab)');
+      a.innerHTML = `
+        <span class="tile"><i class="${t.icon}" aria-hidden="true"></i></span>
+        <span class="row-body"><span class="row-title">${t.name}</span><span class="row-desc">${t.desc}</span></span>
+        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+      `;
+      ul.appendChild(a);
+    });
+    grid.appendChild(sec);
+  });
+}
+
+input.addEventListener('input', e => render(e.target.value));
+buildFilters();
+render();
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

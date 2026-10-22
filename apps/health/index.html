@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" class="ui-splash-lock">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Health Tracker | Munan.hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A6F48">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Health Tracker">
+<link rel="manifest" href="/apps/health/manifest.json">
+<link rel="apple-touch-icon" href="/apps/health/icon-touch.png">
+<link rel="icon" type="image/png" href="/apps/health/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/theme.js"></script>
+<script src="/owner.js"></script>
+<link rel="stylesheet" href="/site.css?v=3">
+<link rel="stylesheet" href="/apps/shared/ui.css">
+<link rel="stylesheet" href="/apps/health/app.css">
+</head>
+<body class="v2">
+<div id="splash" class="ui-splash" role="progressbar" aria-label="Loading Health Tracker" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
+  <div class="ui-splash__inner">
+    <div class="ui-splash__title"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 00-7.1 0L12 7.3l-1.7-1.7a5 5 0 00-7.1 7.1L12 21.5l8.8-8.8a5 5 0 000-7.1z"/></svg> Health Tracker</div>
+    <div class="ui-splash__track"><div class="ui-splash__bar"></div></div>
+    <div class="ui-splash__label" aria-live="polite">Opening…</div>
+  </div>
+</div>
+<noscript><p style="padding:24px">Health Tracker needs JavaScript.</p></noscript>
+<div id="app">
+  <header class="appbar"><h1>Health Tracker</h1><span id="syncState" class="sync" role="status">Starting…</span></header>
+  <main id="main" tabindex="-1" aria-label="Health Tracker"></main>
+  <nav id="tabbar"></nav>
+</div>
+<script type="module" src="/apps/health/main.js"></script>
+</body>
+</html>

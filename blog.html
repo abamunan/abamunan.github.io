@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Blog | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/blog.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/blog.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Blog | Munan.hub">
+    <meta property="og:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Blog | Munan.hub">
+    <meta name="twitter:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .post { position:relative; }
+        .post:hover { transform:translateY(-3px); transition:border-color .2s, transform .2s; }
+        .post h3 a { color:inherit; }
+        .post-grid.listing-grid { margin-top:24px; }
+        .result-count { margin-top:4px; color:var(--soft); font-size:.88rem; font-weight:600; min-height:1.3em; }
+
+        .article-card { max-width:680px; padding:0; position:relative; }
+        .article-bar { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); border-radius:18px 18px 0 0; }
+        .article-in { padding:30px 34px 10px; }
+        .article-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; font-size:.86rem; color:var(--soft); margin-bottom:14px; }
+        .article-meta .post-tag { font-weight:700; color:var(--lagoon); background:var(--lagoon-tint); border-radius:999px; padding:2px 12px; }
+        .article-in h2 { font-size:clamp(1.6rem,4.4vw,2.2rem); letter-spacing:-.03em; line-height:1.12; margin-bottom:10px; padding-right:36px; }
+        .article-by { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--soft); font-size:.9rem; margin-bottom:22px; padding-bottom:20px; border-bottom:1.5px solid var(--line); }
+        .article-by i { color:var(--lagoon); margin-right:6px; }
+        .article-body { max-width:none; font-size:1.06rem; line-height:1.75; }
+        .article-body h2 { font-size:1.5rem; padding-right:0; margin-bottom:.6em; }
+        .article-body blockquote { margin:1.4em 0; padding:14px 20px; border-left:6px solid var(--marker); background:var(--lagoon-tint); border-radius:0 14px 14px 0; color:var(--ink); font-weight:500; }
+        .article-body blockquote p { margin:0; color:inherit; }
+        .article-foot { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; padding:18px 34px 26px; border-top:1.5px solid var(--line); margin-top:18px; }
+        .share { display:flex; align-items:center; gap:8px; font-size:.88rem; color:var(--soft); font-weight:600; }
+        .share-btn { width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); background:var(--paper); transition:border-color .2s, background .2s; }
+        .share-btn:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        .modal-x { position:absolute; right:14px; top:22px; width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); background:var(--paper); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); z-index:2; }
+        .modal-x:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        @media (max-width:560px) { .article-in { padding:24px 20px 6px; } .article-foot { padding:16px 20px 22px; } .modal { padding:10px; } }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Blog</li></ol>
+                <span class="kicker">Writing &amp; thoughts</span>
+                <h1 class="page-title">The blog</h1>
+                <p class="page-lead">Ideas, learnings, and stories from my journey in code, science, and life.</p>
+            </div>
+        </header>
+
+        <section class="wrap listing" aria-label="Posts">
+            <div class="list-tools">
+                <div class="searchbar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" id="searchInput" placeholder="Search posts…" autocomplete="off" aria-label="Search posts">
+                </div>
+                <div class="fchips" id="filterRow" role="group" aria-label="Filter posts by tag"></div>
+            </div>
+            <div class="result-count" id="postCount" aria-live="polite"></div>
+            <div class="post-grid listing-grid" id="blogGrid"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>Posts need JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
+
+    <!-- Full post -->
+    <div class="modal" id="modalOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="handleOverlayClick(event)">
+        <article class="modal-card article-card" id="modal">
+            <div class="article-bar" id="modalStrip"></div>
+            <button type="button" class="modal-x" id="modalClose" onclick="closeModal()" aria-label="Close post"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            <div class="article-in">
+                <div class="article-meta" id="modalMeta"></div>
+                <h2 id="modalTitle"></h2>
+                <div class="article-by" id="modalByline"></div>
+                <div class="prose article-body" id="modalBody"></div>
+            </div>
+            <div class="article-foot">
+                <div class="share">
+                    <span>Share</span>
+                    <button type="button" class="share-btn" id="copyBtn" title="Copy link" aria-label="Copy link" onclick="copyLink()"><i class="fas fa-link" aria-hidden="true"></i></button>
+                    <a class="share-btn" id="shareFb" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+                    <a class="share-btn" id="shareX" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><i class="fab fa-x-twitter" aria-hidden="true"></i></a>
+                </div>
+                <button type="button" class="btn-line btn-sm" onclick="closeModal()"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to blog</button>
+            </div>
+        </article>
+    </div>
+
+    <!-- Load shared posts FIRST -->
+    <script src="posts.js"></script>
+    <script>
+        let activeFilter = 'All';
+        let lastFocus = null;
+
+        function buildFilters() {
+            const row = document.getElementById('filterRow');
+            const tags = ['All', ...new Set(BLOG_POSTS.map(p => p.tag))];
+            row.innerHTML = '';
+            tags.forEach((tag) => {
+                const count = tag === 'All' ? BLOG_POSTS.length : BLOG_POSTS.filter(p => p.tag === tag).length;
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'fchip';
+                chip.setAttribute('aria-pressed', tag === activeFilter ? 'true' : 'false');
+                chip.innerHTML = `${tag}<span class="n">${count}</span>`;
+                chip.onclick = () => { activeFilter = tag; buildFilters(); render(document.getElementById('searchInput').value); };
+                row.appendChild(chip);
+            });
+        }
+
+        function render(q) {
+            q = (q || '').toLowerCase().trim();
+            const grid = document.getElementById('blogGrid');
+            const countEl = document.getElementById('postCount');
+            const filtered = BLOG_POSTS.filter(p => {
+                const matchTag = activeFilter === 'All' || p.tag === activeFilter;
+                const matchQ   = !q || p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q);
+                return matchTag && matchQ;
+            });
+            countEl.textContent = filtered.length ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}` : '';
+            if (!filtered.length) {
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${q || activeFilter}</b>"`}</div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map((p) => `
+                <article class="post stretch" id="post-${p.id}" style="--a:${p.stripA};--b:${p.stripB}">
+                    <span class="post-bar" aria-hidden="true"></span>
+                    <div class="post-body">
+                        <div class="post-meta">
+                            <span class="post-tag">${p.tag}</span>
+                            <span><i class="far fa-calendar" aria-hidden="true"></i> ${p.date}</span>
+                            <span><i class="far fa-clock" aria-hidden="true"></i> ${p.readTime}</span>
+                        </div>
+                        <h3><a class="stretch-link" href="#post-${p.id}" onclick="event.preventDefault();openPost('${p.id}')">${p.title}</a></h3>
+                        <p>${p.excerpt}</p>
+                        <span class="post-read">Read post <i class="fas fa-arrow-right" style="font-size:.75rem;" aria-hidden="true"></i></span>
+                    </div>
+                </article>`).join('');
+        }
+
+        function openPost(id) {
+            const p = BLOG_POSTS.find(x => x.id === id);
+            if (!p) return;
+            lastFocus = document.activeElement;
+            document.getElementById('modalStrip').style.background = `linear-gradient(90deg,${p.stripA},${p.stripB})`;
+            document.getElementById('modalMeta').innerHTML = `<span class="post-tag">${p.tag}</span><span><i class="far fa-calendar" aria-hidden="true"></i> ${p.date}</span>`;
+            document.getElementById('modalTitle').textContent = p.title;
+            document.getElementById('modalByline').innerHTML = `<span><i class="fas fa-user" aria-hidden="true"></i>Abdullah All Munan</span><span><i class="far fa-clock" aria-hidden="true"></i>${p.readTime}</span>`;
+            document.getElementById('modalBody').innerHTML = p.content || '<p>Content coming soon.</p>';
+            const url = encodeURIComponent(window.location.href.split('#')[0] + '#post-' + p.id);
+            const title = encodeURIComponent(p.title);
+            document.getElementById('shareFb').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            document.getElementById('shareX').href  = `https://x.com/intent/tweet?text=${title}&url=${url}`;
+            document.getElementById('modalOverlay').hidden = false;
+            document.getElementById('modal').scrollTop = 0;
+            document.getElementById('modalClose').focus();
+            document.body.style.overflow = 'hidden';
+            history.pushState(null, '', `#post-${id}`);
+        }
+
+        function closeModal() {
+            const ov = document.getElementById('modalOverlay');
+            if (ov.hidden) return;
+            ov.hidden = true;
+            document.body.style.overflow = '';
+            history.pushState(null, '', window.location.pathname);
+            if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+        }
+
+        function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
+                btn.style.cssText = 'background:var(--marker);color:#11221D;border-color:var(--marker);';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-link" aria-hidden="true"></i>'; btn.style.cssText = ''; }, 1800);
+            });
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        window.addEventListener('load', () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#post-')) setTimeout(() => openPost(hash.replace('#post-', '')), 400);
+        });
+
+        document.getElementById('searchInput').addEventListener('input', e => render(e.target.value));
+
+        buildFilters();
+        render();
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

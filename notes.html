@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <meta name="author" content="Abdullah All Munan">
+    <meta name="theme-color" content="#0B7A50">
+    <title>Study Notes | Munan.hub</title>
+    <link rel="canonical" href="https://abamunan.github.io/notes.html">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abamunan.github.io/notes.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Study Notes | Munan.hub">
+    <meta property="og:description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Study Notes | Munan.hub">
+    <meta name="twitter:description" content="Munan's study notes — PDF notes by subject, read online with bookmarks and a focus timer.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="owner.js"></script>
+    <link rel="stylesheet" href="site.css?v=3">
+    <style>
+        .subject-head { display:flex; align-items:center; gap:12px; margin:36px 0 14px; }
+        .subject-head:first-child { margin-top:8px; }
+        .subject-head h2 { font-size:1.35rem; }
+        .subject-head .tile { width:40px; height:40px; border-radius:12px; font-size:.95rem; }
+        .subject-head .badge { margin-left:auto; }
+        .note-row .row-body { min-width:0; flex:1; }
+        .note-row .row-desc { display:block; margin-top:2px; }
+        .notes-wrap { margin-top:20px; }
+    </style>
+</head>
+<body class="v2">
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+        <header class="page-head">
+            <div class="wrap">
+                <ol class="crumbs"><li><a href="index.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Notes</li></ol>
+                <span class="kicker">Academic</span>
+                <h1 class="page-title">Study notes</h1>
+                <p class="page-lead">PDF notes by subject — read online with bookmarks and a focus timer.</p>
+            </div>
+        </header>
+
+        <section class="wrap listing" aria-label="Notes">
+            <div class="list-tools">
+                <div class="searchbar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="q" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+                    <span class="count" id="cnt" aria-live="polite"></span>
+                </div>
+            </div>
+            <div class="notes-wrap" id="subjects"></div>
+            <noscript><div class="empty"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i>Notes need JavaScript to load. Please turn it on and refresh.</div></noscript>
+        </section>
+    </main>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  ✏️  YOUR NOTES LIST — ONLY EDIT THIS SECTION        ║ -->
+<!-- ║  ADD    → copy one line inside its subject group, or ║ -->
+<!-- ║           start a new subject group                  ║ -->
+<!-- ║  REMOVE → delete the whole { ... } line               ║ -->
+<!-- ║  src can be a full Google Drive link or just the      ║ -->
+<!-- ║  file ID — both work.                                 ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<script>
+const NOTE_SUBJECTS = [
+
+  {
+    subject: "ICT",
+    level: "Intermediate",
+    icon: "fa-solid fa-microchip",
+    color: "#16a34a",
+    notes: [
+      {
+        title: "ICT পূর্ণ সিলাবাস নোট",
+        desc: "HSC/Intermediate ICT এর সম্পূর্ণ সিলাবাস কভার করা নোট — সব অধ্যায়ের গুরুত্বপূর্ণ টপিক, সংজ্ঞা ও উদাহরণসহ।",
+        src: "https://drive.google.com/file/d/1Qod88YiLFRdS-52HhsRWVIuu-kdSgwoy/view",
+      },
+    ],
+  },
+
+  /*
+  ┌──────────────────────────────────────────────────────┐
+  │  ADD A NEW SUBJECT GROUP → copy this block:           │
+  │  {                                                     │
+  │    subject: "", level: "", icon: "fa-solid fa-book",  │
+  │    color: "#0284c7",                                   │
+  │    notes: [                                            │
+  │      { title: "", desc: "", src: "" },                │
+  │    ],                                                  │
+  │  },                                                    │
+  └──────────────────────────────────────────────────────┘
+  */
+
+]; // ← do not delete
+</script>
+<!-- ══════════════════════════════════════════════════════ -->
+
+    <script>
+/* ── RENDER ENGINE — no need to edit ─────────────── */
+const subjectsEl = document.getElementById('subjects');
+const input      = document.getElementById('q');
+const cnt        = document.getElementById('cnt');
+
+const totalNotes = NOTE_SUBJECTS.reduce((sum, s) => sum + s.notes.length, 0);
+
+function buildReaderUrl(note) {
+  const params = new URLSearchParams();
+  params.set('src', note.src);
+  params.set('title', note.title);
+  if (note.desc) params.set('caption', note.desc);
+  return 'reader.html?' + params.toString();
+}
+
+function render(q) {
+  q = (q || '').toLowerCase().trim();
+  subjectsEl.innerHTML = '';
+
+  let shown = 0;
+
+  NOTE_SUBJECTS.forEach((group) => {
+    const matches = group.notes.filter(n =>
+      !q ||
+      n.title.toLowerCase().includes(q) ||
+      (n.desc || '').toLowerCase().includes(q) ||
+      group.subject.toLowerCase().includes(q)
+    );
+    if (!matches.length) return;
+
+    shown += matches.length;
+
+    const section = document.createElement('section');
+    section.className = 'subject-group';
+
+    section.innerHTML = `
+      <div class="subject-head">
+        <span class="tile"><i class="${group.icon || 'fa-solid fa-book'}" aria-hidden="true"></i></span>
+        <h2>${group.subject}</h2>
+        ${group.level ? `<span class="badge">${group.level}</span>` : ''}
+      </div>
+      <div class="util-list"></div>
+    `;
+
+    const list = section.querySelector('.util-list');
+    matches.forEach((n) => {
+      const a = document.createElement('a');
+      a.className = 'util note-row';
+      a.href = buildReaderUrl(n);
+      a.title = 'Read ' + n.title;
+      a.innerHTML = `
+        <span class="tile"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i></span>
+        <span class="row-body"><span class="row-title">${n.title}</span><span class="row-desc">${n.desc || ''}</span></span>
+        <span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+      `;
+      list.appendChild(a);
+    });
+
+    subjectsEl.appendChild(section);
+  });
+
+  cnt.textContent = shown + ' note' + (shown !== 1 ? 's' : '');
+
+  if (!shown) {
+    subjectsEl.innerHTML = `<div class="empty">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      No notes found for "<strong>${q}</strong>" — try a different keyword.
+    </div>`;
+  }
+}
+
+input.addEventListener('input', e => render(e.target.value));
+render();
+    </script>
+    <script src="nav.js"></script>
+    <script src="footer.js"></script>
+</body>
+</html>

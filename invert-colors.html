@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invert Colors | Munan.hub</title>
+<meta name="description" content="Invert PDF colours losslessly in your browser. Nothing is uploaded.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B7A50">
+<!-- Blocking, must run before first paint so [data-theme] is set before any
+     CSS below reads it — same theme.js used across the rest of the site,
+     and since this page is embedded same-origin, it reads the same
+     localStorage key the parent toolkit page uses, so light/dark always
+     stays in sync automatically. -->
+<script src="theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+  /* Tokens mapped from the site's own site.css so this page (loaded via
+     iframe) reads as part of the same product rather than a separate app.
+     Variable NAMES are kept the same as before (--ink, --stone, --amber,
+     --hairline) to avoid touching 40+ usages below — only their VALUES
+     change, plus a couple of new tokens for the panel fill and button text
+     colour, which the toolkit itself flips between light/dark. */
+  :root {
+    --ink:      #11221D;   /* = site --ink     */
+    --stone:    #44564E;   /* = site --muted   */
+    --amber:    #0A6F48;   /* = site --lagoon  */
+    --hairline: #D3DBD0;   /* = site --line    */
+    --panel-bg: #FAFBF7;   /* = site --paper   */
+    --btn-text: #FFFFFF;   /* text on lagoon buttons */
+    --ok:#17794A; --err:#B3382C;
+  }
+  [data-theme="dark"] {
+    --ink:      #E7EFEA;
+    --stone:    #B3C1B9;
+    --amber:    #3FD39A;
+    --hairline: #243229;
+    --panel-bg: #131E19;
+    --btn-text: #11221D;
+    --ok:#5FD596; --err:#FF8E80;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: transparent; /* the toolkit's own card wrapper supplies the fill behind this iframe */
+    color: var(--ink);
+    font-family: 'Figtree', 'Hind Siliguri', system-ui, sans-serif;
+  }
+  .workspace { max-width: 900px; margin: 0 auto; padding: 12px 4px 28px; }
+  .dropzone {
+    border: 1.5px dashed var(--hairline);
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--stone);
+    font-size: 14px;
+    cursor: pointer;
+    background: var(--panel-bg);
+    
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--amber); color: var(--ink);  }
+    .dropzone input { display: none; }
+  .file-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--stone);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .file-info .fname { color: var(--ink); }
+  .strip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 24px 0 12px 0;
+  }
+  .page-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .page-thumb {
+    position: relative;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    cursor: pointer;
+    overflow: hidden;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .page-thumb.selected { border-color: var(--amber); border-width: 2px; }
+  .page-thumb canvas { display: block; width: 100%; height: auto; }
+  .page-thumb .pnum {
+    position: absolute; bottom: 4px; right: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--stone);
+    background: var(--panel-bg);
+    padding: 1px 4px; border-radius: 2px;
+  }
+  .page-thumb.selected .pnum { color: var(--amber); }
+  .controls { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--amber);
+    color: var(--btn-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  button:disabled { background: var(--hairline); color: var(--stone); cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--stone);
+    border: 1px solid var(--hairline);
+  }
+  .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--stone);
+    margin-top: 16px;
+    white-space: pre-line;
+  }
+  .status.done { color: var(--amber); }
+  a.download-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--amber);
+    text-decoration: none;
+    border-bottom: 1px solid var(--amber);
+  }
+</style>
+</head>
+
+<body>
+
+<div class="workspace">
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept="application/pdf" aria-label="Choose a file">
+    Drop a PDF here, or click to choose a file
+  </div>
+
+  <div id="afterLoad" style="display:none;">
+    <div class="file-info">
+      <span class="fname" id="fname"></span>
+      <span id="pageCount"></span>
+    </div>
+
+    <div class="strip-label">Pages — click to include / exclude from inversion</div>
+    <div class="page-strip" id="pageStrip"></div>
+
+    <div class="controls">
+      <button id="invertBtn">Invert Selected Pages</button>
+      <button class="secondary" id="selectAllBtn">Select All</button>
+      <button class="secondary" id="selectNoneBtn">Select None</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script type="module">
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.min.mjs';
+
+// pdf.js (as of this build) uses Map.prototype.getOrInsertComputed, a very
+// new JS method not yet supported in all browsers — verified by testing in
+// real Chromium, where it threw "getOrInsertComputed is not a function" on
+// both the main thread AND inside the PDF worker (separate global scope).
+// Polyfill both so the tool doesn't silently break for users whose browser
+// hasn't shipped this method yet.
+const GET_OR_INSERT_COMPUTED_POLYFILL = `
+if (!Map.prototype.getOrInsertComputed) {
+  Map.prototype.getOrInsertComputed = function (key, callbackFn) {
+    if (this.has(key)) return this.get(key);
+    const value = callbackFn(key);
+    this.set(key, value);
+    return value;
+  };
+}
+`;
+// eslint-disable-next-line no-new-func
+new Function(GET_OR_INSERT_COMPUTED_POLYFILL)(); // apply on main thread too
+
+async function loadPatchedWorkerSrc(workerUrl) {
+  const code = await (await fetch(workerUrl)).text();
+  const blob = new Blob([GET_OR_INSERT_COMPUTED_POLYFILL, code], { type: 'application/javascript' });
+  return URL.createObjectURL(blob);
+}
+pdfjsLib.GlobalWorkerOptions.workerSrc = await loadPatchedWorkerSrc('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs');
+
+// ============================================================
+// colorInvert.js — verified core (content-stream + sample invert)
+// ============================================================
+const COLOR_OPS = new Set(['g', 'G', 'rg', 'RG', 'k', 'K', 'sc', 'SC', 'scn', 'SCN']);
+const EXPECTED_ARITY = { g: 1, G: 1, rg: 3, RG: 3, k: 4, K: 4 };
+const WHITESPACE = new Set([0x00, 0x09, 0x0a, 0x0c, 0x0d, 0x20]);
+const DELIMS = new Set(['(', ')', '<', '>', '[', ']', '{', '}', '/', '%']);
+function isWhitespace(b) { return WHITESPACE.has(b); }
+function isDelim(ch) { return DELIMS.has(ch); }
+
+function tokenize(bytes) {
+  const tokens = [];
+  const n = bytes.length;
+  let i = 0;
+  while (i < n) {
+    const b = bytes[i];
+    const ch = String.fromCharCode(b);
+    if (isWhitespace(b)) { i++; continue; }
+    if (ch === '%') { while (i < n && bytes[i] !== 0x0a && bytes[i] !== 0x0d) i++; continue; }
+    if (ch === '(') {
+      const start = i; let depth = 0;
+      do {
+        if (bytes[i] === 0x5c) { i += 2; continue; }
+        if (bytes[i] === 0x28) depth++;
+        if (bytes[i] === 0x29) depth--;
+        i++;
+      } while (i < n && depth > 0);
+      tokens.push({ type: 'other', start, end: i });
+      continue;
+    }
+    if (ch === '<') {
+      if (bytes[i + 1] === 0x3c) {
+        const start = i; i += 2; let depth = 1;
+        while (i < n && depth > 0) {
+          if (bytes[i] === 0x3c && bytes[i + 1] === 0x3c) { depth++; i += 2; continue; }
+          if (bytes[i] === 0x3e && bytes[i + 1] === 0x3e) { depth--; i += 2; continue; }
+          i++;
+        }
+        tokens.push({ type: 'other', start, end: i });
+        continue;
+      } else {
+        const start = i; i++;
+        while (i < n && bytes[i] !== 0x3e) i++;
+        i++;
+        tokens.push({ type: 'other', start, end: i });
+        continue;
+      }
+    }
+    if (ch === '[') {
+      const start = i; let depth = 1; i++;
+      while (i < n && depth > 0) {
+        if (bytes[i] === 0x5b) depth++;
+        if (bytes[i] === 0x5d) depth--;
+        i++;
+      }
+      tokens.push({ type: 'other', start, end: i });
+      continue;
+    }
+    if (ch === '/') {
+      const start = i; i++;
+      while (i < n && !isWhitespace(bytes[i]) && !isDelim(String.fromCharCode(bytes[i]))) i++;
+      tokens.push({ type: 'name', start, end: i });
+      continue;
+    }
+    if (ch === '-' || ch === '+' || ch === '.' || (ch >= '0' && ch <= '9')) {
+      const start = i; i++;
+      while (i < n) {
+        const c = String.fromCharCode(bytes[i]);
+        if ((c >= '0' && c <= '9') || c === '.') { i++; continue; }
+        break;
+      }
+      tokens.push({ type: 'number', start, end: i });
+      continue;
+    }
+    {
+      const start = i;
+      while (i < n && !isWhitespace(bytes[i]) && !isDelim(String.fromCharCode(bytes[i]))) i++;
+      if (i === start) { i++; continue; }
+      tokens.push({ type: 'operator', start, end: i });
+      const opText = bytesToLatin1(bytes, start, i);
+      if (opText === 'ID') {
+        let dataStart = i;
+        if (dataStart < n && isWhitespace(bytes[dataStart])) dataStart++;
+        let j = dataStart;
+        while (j < n - 1) {
+          if (isWhitespace(bytes[j - 1]) && bytes[j] === 0x45 && bytes[j + 1] === 0x49 &&
+              (j + 2 >= n || isWhitespace(bytes[j + 2]) || isDelim(String.fromCharCode(bytes[j + 2])))) break;
+          j++;
+        }
+        tokens.push({ type: 'other', start: dataStart, end: j });
+        i = j;
+      }
+      continue;
+    }
+  }
+  return tokens;
+}
+function bytesToLatin1(bytes, start, end) {
+  let s = '';
+  for (let k = start; k < end; k++) s += String.fromCharCode(bytes[k]);
+  return s;
+}
+function formatNumber(x) {
+  if (x < 0) x = 0;
+  if (x > 1) x = 1;
+  let s = x.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
+  if (s === '' || s === '-0') s = '0';
+  return s;
+}
+// Looks up a content-stream color space name (as set by a preceding
+// `/name cs` or `/name CS` operator) against the current resources'
+// /ColorSpace dict. Used to detect Separation/DeviceN so scn/SCN tint
+// values can be handled correctly instead of blindly flipped.
+function resolveNamedColorSpace(doc, resources, name) {
+  if (!doc || !resources || !resources.lookup) return null;
+  try {
+    const csDict = resources.lookup(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFDict);
+    if (!csDict) return null;
+    const obj = csDict.get(PDFLib.PDFName.of(name));
+    if (!obj) return null;
+    return resolveColorSpace(doc, obj);
+  } catch (e) { return null; }
+}
+async function invertContentStreamColors(bytes, doc, resources) {
+  const tokens = tokenize(bytes);
+  const out = [];
+  // `pending` holds number/name tokens seen since the last operator, in
+  // original order, so they can be re-emitted (inverted or verbatim) once we
+  // know which operator consumes them. A name token is deferred rather than
+  // flushed immediately so a trailing pattern name (see the `scn`/`SCN`
+  // handling below) can be told apart from the color operands that precede
+  // it — `c1 c2 c3 /P1 scn` needs c1..c3 inverted and /P1 left alone.
+  let pending = [];
+  let inlineInverted = 0;
+  let patternColorsInverted = 0;
+  const inlineSkipped = [];
+  const colorOpsSkipped = [];
+  // Tracks the color space most recently set by `/name cs` (fill) or
+  // `/name CS` (stroke) — kept as two separate variables since fill and
+  // stroke color spaces are independent graphics-state parameters. A stack
+  // mirrors the content stream's q/Q save/restore pairs so a color space set
+  // inside a q...Q block doesn't leak out (or get lost) across the restore.
+  let currentFillColorSpaceName = null;
+  let currentStrokeColorSpaceName = null;
+  const gsStack = [];
+  let t = 0;
+  function flushPendingVerbatim() {
+    for (const p of pending) { out.push(bytesToLatin1(bytes, p.start, p.end)); out.push(' '); }
+    pending = [];
+  }
+  // Looks up `/name cs`'s resource-dict entry directly (rather than via
+  // resolveNamedColorSpace, which only returns the *base* type) so we can
+  // detect the `[/Pattern baseSpace]` array form used by uncolored tiling
+  // patterns and recover that underlying color space.
+  function resolvePatternBaseColorSpace(spaceName) {
+    if (!spaceName || !doc || !resources || !resources.lookup) return null;
+    try {
+      const csDict = resources.lookup(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFDict);
+      const csEntry = csDict ? csDict.get(PDFLib.PDFName.of(spaceName)) : null;
+      if (!csEntry) return null;
+      const resolvedEntry = csEntry instanceof PDFLib.PDFRef ? doc.context.lookup(csEntry) : csEntry;
+      if (resolvedEntry instanceof PDFLib.PDFArray && resolvedEntry.size() > 1) {
+        const fam = doc.context.lookup(resolvedEntry.get(0)).toString();
+        if (fam === '/Pattern') return resolveColorSpace(doc, resolvedEntry.get(1));
+      }
+    } catch (e) { /* fall through */ }
+    return null;
+  }
+  while (t < tokens.length) {
+    const tok = tokens[t];
+    if (tok.type === 'number' || tok.type === 'name') { pending.push(tok); t++; continue; }
+    if (tok.type === 'operator') {
+      const opText = bytesToLatin1(bytes, tok.start, tok.end);
+
+      if (opText === 'q') {
+        gsStack.push({ fill: currentFillColorSpaceName, stroke: currentStrokeColorSpaceName });
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
+      }
+      if (opText === 'Q') {
+        if (gsStack.length) {
+          const restored = gsStack.pop();
+          currentFillColorSpaceName = restored.fill;
+          currentStrokeColorSpaceName = restored.stroke;
+        }
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
+      }
+
+      if (opText === 'cs' || opText === 'CS') {
+        const nameTok = pending.length && pending[pending.length - 1].type === 'name' ? pending[pending.length - 1] : null;
+        if (nameTok) {
+          const nm = bytesToLatin1(bytes, nameTok.start + 1, nameTok.end);
+          if (opText === 'cs') currentFillColorSpaceName = nm; else currentStrokeColorSpaceName = nm;
+        }
+        flushPendingVerbatim();
+        out.push(opText); out.push('\n');
+        t++;
+        continue;
+      }
+
+      if (opText === 'BI') {
+        flushPendingVerbatim();
+
+        let j = t + 1;
+        const dictTokens = [];
+        while (j < tokens.length) {
+          const dt = tokens[j];
+          if (dt.type === 'operator' && bytesToLatin1(bytes, dt.start, dt.end) === 'ID') break;
+          dictTokens.push(dt);
+          j++;
+        }
+        const idTok = tokens[j];
+        const dataTok = tokens[j + 1];
+        const eiTok = tokens[j + 2];
+        const eiOk = eiTok && eiTok.type === 'operator' && bytesToLatin1(bytes, eiTok.start, eiTok.end) === 'EI';
+
+        if (!idTok || !dataTok) {
+          // Malformed / unrecognized inline image structure — pass through untouched.
+          out.push('BI\n');
+          t++;
+          continue;
+        }
+
+        const dict = parseInlineDictTokens(bytes, dictTokens);
+        const rawData = bytes.slice(dataTok.start, dataTok.end);
+        const result = await processInlineImage(dict, rawData, doc, resources);
+
+        if (result.error) {
+          inlineSkipped.push(result.error);
+          const passthroughEnd = eiOk ? eiTok.end : dataTok.end;
+          out.push(bytesToLatin1(bytes, tok.start, passthroughEnd));
+          out.push('\n');
+        } else {
+          inlineInverted++;
+          out.push(result.chunkText);
+        }
+
+        t = eiOk ? j + 3 : j + 2;
+        continue;
+      }
+
+      if (COLOR_OPS.has(opText)) {
+        const isFillOp = (opText === 'scn' || opText === 'sc' || opText === 'g' || opText === 'rg' || opText === 'k');
+        const currentSpaceName = isFillOp ? currentFillColorSpaceName : currentStrokeColorSpaceName;
+        // Only scn/SCN can carry a trailing pattern name (`c1 c2 c3 /P1 scn`
+        // for an uncolored pattern, or bare `/P1 scn` for a colored one).
+        const patternNameTok = (opText === 'scn' || opText === 'SCN') && pending.length && pending[pending.length - 1].type === 'name'
+          ? pending[pending.length - 1] : null;
+        const colorNumToks = (patternNameTok ? pending.slice(0, -1) : pending).filter(p => p.type === 'number');
+
+        if (patternNameTok) {
+          // Pattern invocation. Colored patterns (PaintType 1) carry no
+          // preceding numbers — nothing to invert. Uncolored patterns
+          // (PaintType 2) get their color from these operands, resolved
+          // against the Pattern color space's underlying base space.
+          const patternName = bytesToLatin1(bytes, patternNameTok.start + 1, patternNameTok.end);
+          const baseCs = colorNumToks.length ? resolvePatternBaseColorSpace(currentSpaceName) : null;
+          let handledPatternColor = false;
+          if (baseCs) {
+            if (baseCs.type === 'Separation' || baseCs.type === 'DeviceN') {
+              if (colorNumToks.length === (baseCs.numComponents || 1)) {
+                let monotonic = false;
+                try { monotonic = isTintTransformMonotonic(doc, baseCs); } catch (e) { monotonic = false; }
+                if (monotonic) {
+                  for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+                  patternColorsInverted++;
+                } else {
+                  colorOpsSkipped.push(`Uncolored tiling pattern (/${patternName}) underlying Separation/DeviceN tint via ${opText}: tint-transform function is non-monotonic or could not be evaluated — left uninverted to avoid an incorrect color`);
+                  for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+                }
+                handledPatternColor = true;
+              }
+            } else {
+              const n = getLinearComponentCount(baseCs.type);
+              if (n !== null && colorNumToks.length === n) {
+                for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+                patternColorsInverted++;
+                handledPatternColor = true;
+              }
+            }
+          }
+          if (!handledPatternColor) {
+            for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+          }
+          out.push('/' + patternName); out.push(' ');
+        } else {
+          // Separation/DeviceN tint values (scn/SCN or sc/SC while a named
+          // Separation/DeviceN color space is active) need special handling:
+          // blindly doing `1 - t` is only correct when the tint-transform
+          // function is monotonic. We check that with evaluatePdfFunction
+          // before deciding; if it isn't (or can't be verified), we leave the
+          // operator untouched and report it rather than guess wrong.
+          let handledAsTint = false;
+          // Non-linear named color spaces (currently just Lab: L is in
+          // [0,100] and a/b are in a signed range, usually [-100,100], not
+          // the [0,1] that formatNumber's `1 - x` assumes) need to be
+          // detected here too, or `1 - x` silently clamps them into garbage
+          // (e.g. L=75 -> 1-75 = -74 -> clamped to 0 by formatNumber).
+          // CalRGB/CalGray are still safe to fall through to the generic
+          // linear-arity branch below: like their Device counterparts
+          // they're defined on [0,1] per component.
+          let nonLinearNamedCs = null;
+          if ((opText === 'scn' || opText === 'SCN' || opText === 'sc' || opText === 'SC') && currentSpaceName && doc && resources) {
+            const namedCs = resolveNamedColorSpace(doc, resources, currentSpaceName);
+            if (namedCs && (namedCs.type === 'Separation' || namedCs.type === 'DeviceN') && colorNumToks.length === namedCs.numComponents) {
+              handledAsTint = true;
+              let monotonic = false;
+              try { monotonic = isTintTransformMonotonic(doc, namedCs); } catch (e) { monotonic = false; }
+              if (monotonic) {
+                for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+              } else {
+                colorOpsSkipped.push(`Separation/DeviceN tint (/${currentSpaceName}) via ${opText}: tint-transform function is non-monotonic or could not be evaluated — left uninverted to avoid an incorrect color`);
+                for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+              }
+            } else if (namedCs && namedCs.type === 'Lab' && colorNumToks.length === 3) {
+              nonLinearNamedCs = namedCs;
+            }
+          }
+          if (nonLinearNamedCs) {
+            colorOpsSkipped.push(`Lab color (/${currentSpaceName}) via ${opText}: component ranges are not [0,1] (L in [0,100], a/b typically [-100,100]) so a direct 1-x inversion would be wrong — left uninverted`);
+            for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+          } else if (!handledAsTint) {
+            const arity = EXPECTED_ARITY[opText];
+            const matches = arity === undefined ? true : colorNumToks.length === arity;
+            const variableOk = arity === undefined && (colorNumToks.length === 1 || colorNumToks.length === 3 || colorNumToks.length === 4);
+            if ((arity !== undefined && matches) || variableOk) {
+              for (const nt of colorNumToks) { out.push(formatNumber(1 - parseFloat(bytesToLatin1(bytes, nt.start, nt.end)))); out.push(' '); }
+            } else {
+              for (const nt of colorNumToks) { out.push(bytesToLatin1(bytes, nt.start, nt.end)); out.push(' '); }
+            }
+          }
+        }
+        pending = [];
+      } else {
+        flushPendingVerbatim();
+      }
+      out.push(opText); out.push('\n');
+      t++;
+      continue;
+    }
+    // 'other' token (string/array/dict literal) — flush anything buffered
+    // first so ordering is preserved, then pass this token through untouched.
+    flushPendingVerbatim();
+    out.push(bytesToLatin1(bytes, tok.start, tok.end)); out.push(' ');
+    t++;
+  }
+  flushPendingVerbatim();
+  const outStr = out.join('');
+  const outBytes = new Uint8Array(outStr.length);
+  for (let k = 0; k < outStr.length; k++) outBytes[k] = outStr.charCodeAt(k) & 0xff;
+  return { bytes: outBytes, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted };
+}
+function invertRGBASamples(rgba) {
+  const out = new Uint8Array(rgba.length);
+  for (let i = 0; i < rgba.length; i += 4) {
+    out[i] = 255 - rgba[i]; out[i + 1] = 255 - rgba[i + 1]; out[i + 2] = 255 - rgba[i + 2]; out[i + 3] = rgba[i + 3];
+  }
+  return out;
+}
+function latin1FromBytes(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return s;
+}
+
+// ============================================================
+// Bit-depth unpacking — shared by 1/2/4/8-bit Gray/RGB and Indexed images
+// ============================================================
+function unpackComponents(rawBytes, width, height, channels, bpc) {
+  const maxVal = (1 << bpc) - 1;
+  const rowBits = width * channels * bpc;
+  const rowBytes = Math.ceil(rowBits / 8);
+  const out = new Uint16Array(width * height * channels);
+  let idx = 0;
+  for (let y = 0; y < height; y++) {
+    const rowStart = y * rowBytes;
+    let bitPos = 0;
+    for (let x = 0; x < width * channels; x++) {
+      let value = 0, bitsNeeded = bpc, bitOffset = bitPos & 7, byteIndex = rowStart + (bitPos >> 3);
+      while (bitsNeeded > 0) {
+        const byte = rawBytes[byteIndex] || 0;
+        const bitsAvailable = 8 - bitOffset;
+        const bitsToTake = Math.min(bitsAvailable, bitsNeeded);
+        const shift = bitsAvailable - bitsToTake;
+        const mask = (1 << bitsToTake) - 1;
+        value = (value << bitsToTake) | ((byte >> shift) & mask);
+        bitsNeeded -= bitsToTake;
+        bitOffset += bitsToTake;
+        if (bitOffset >= 8) { bitOffset = 0; byteIndex++; }
+      }
+      out[idx++] = value;
+      bitPos += bpc;
+    }
+  }
+  return { samples: out, maxVal };
+}
+function rgbaFromRawBpc(width, height, rawBytes, channels, bpc) {
+  const { samples, maxVal } = unpackComponents(rawBytes, width, height, channels, bpc);
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  const scale = 255 / maxVal;
+  let s = 0;
+  for (let p = 0; p < width * height; p++) {
+    if (channels === 1) {
+      const v = Math.round(samples[s++] * scale);
+      rgba[p * 4] = v; rgba[p * 4 + 1] = v; rgba[p * 4 + 2] = v; rgba[p * 4 + 3] = 255;
+    } else {
+      const r = Math.round(samples[s++] * scale), g = Math.round(samples[s++] * scale), b = Math.round(samples[s++] * scale);
+      rgba[p * 4] = r; rgba[p * 4 + 1] = g; rgba[p * 4 + 2] = b; rgba[p * 4 + 3] = 255;
+    }
+  }
+  return { data: rgba, width, height };
+}
+
+// ============================================================
+// Colorspace / palette resolution — for Indexed images (XObject + inline)
+// ============================================================
+function bytesFromPdfLiteral(resolved) {
+  const s = resolved.toString();
+  if (s.startsWith('<') && s.endsWith('>')) {
+    const hex = s.slice(1, -1).replace(/\s+/g, '');
+    const bytes = new Uint8Array(Math.floor(hex.length / 2));
+    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16) || 0;
+    return bytes;
+  }
+  if (s.startsWith('(') && s.endsWith(')')) {
+    const inner = s.slice(1, -1);
+    const bytes = [];
+    for (let i = 0; i < inner.length; i++) {
+      if (inner[i] === '\\' && i + 1 < inner.length) {
+        i++;
+        const c = inner[i];
+        if (c === 'n') bytes.push(10);
+        else if (c === 'r') bytes.push(13);
+        else if (c === 't') bytes.push(9);
+        else if (c === 'b') bytes.push(8);
+        else if (c === 'f') bytes.push(12);
+        else bytes.push(c.charCodeAt(0) & 0xff);
+      } else {
+        bytes.push(inner.charCodeAt(i) & 0xff);
+      }
+    }
+    return new Uint8Array(bytes);
+  }
+  return null;
+}
+function getLookupBytes(doc, obj) {
+  const resolved = obj instanceof PDFLib.PDFRef ? doc.context.lookup(obj) : obj;
+  if (resolved && resolved.dict) {
+    try { return PDFLib.decodePDFRawStream(resolved).decode(); } catch (e) { /* fall through */ }
+  }
+  return bytesFromPdfLiteral(resolved);
+}
+function resolveColorSpace(doc, csObj) {
+  if (!csObj) return null;
+  const resolved = csObj instanceof PDFLib.PDFRef ? doc.context.lookup(csObj) : csObj;
+  if (resolved instanceof PDFLib.PDFArray) {
+    const family = doc.context.lookup(resolved.get(0)).toString();
+    if (family === '/Indexed' || family === '/I') {
+      const base = resolveColorSpace(doc, resolved.get(1));
+      const hival = parseInt(doc.context.lookup(resolved.get(2)).toString(), 10);
+      const lookupBytes = getLookupBytes(doc, resolved.get(3));
+      return { type: 'Indexed', base, hival, lookupBytes };
+    }
+    if (family === '/ICCBased') {
+      // [/ICCBased streamRef] — the stream's /N gives component count (1/3/4) and an
+      // optional /Alternate gives a concrete fallback space. Neither carries the actual
+      // ICC profile transform, so — same spirit as the CMYK→RGB approximation already
+      // used elsewhere — we treat it as the nearest Device space by component count.
+      try {
+        const streamRef = resolved.get(1);
+        const streamObj = streamRef instanceof PDFLib.PDFRef ? doc.context.lookup(streamRef) : streamRef;
+        if (streamObj && streamObj.dict) {
+          const altObj = streamObj.dict.get(PDFLib.PDFName.of('Alternate'));
+          if (altObj) {
+            const alt = resolveColorSpace(doc, altObj);
+            if (alt) return alt;
+          }
+          const nObj = streamObj.dict.get(PDFLib.PDFName.of('N'));
+          const n = nObj ? parseInt(doc.context.lookup(nObj).toString(), 10) : null;
+          if (n === 1) return { type: 'DeviceGray' };
+          if (n === 3) return { type: 'DeviceRGB' };
+          if (n === 4) return { type: 'DeviceCMYK' };
+        }
+      } catch (e) { /* fall through to unresolved */ }
+      // Neither /N nor /Alternate available. RGB is by far the most common ICC
+      // profile in practice (sRGB, Adobe RGB, etc.), so guess RGB rather than
+      // skip outright — flagged so callers can note it's an assumption, not a
+      // certainty (a 1- or 4-component profile guessed as RGB would invert
+      // incorrectly).
+      return { type: 'DeviceRGB', assumedFromUnresolvedICC: true };
+    }
+    if (family === '/Lab') {
+      // [/Lab dict] — component count is always 3 (L, a, b). The default
+      // /Decode range for CCITTFax/JBIG2/JPX Lab images (used when the image
+      // itself carries no /Decode) is NOT [0,1] per component like Gray/RGB/
+      // CMYK: L defaults to [0 100], and a/b default to the color space
+      // dict's own /Range (falling back to [-100 100], the PDF spec's
+      // default) if the dict doesn't specify one.
+      let aRange = [-100, 100], bRange = [-100, 100];
+      try {
+        const labDict = doc.context.lookup(resolved.get(1));
+        const rangeObj = labDict.get(PDFLib.PDFName.of('Range'));
+        if (rangeObj) {
+          const resolvedRange = rangeObj instanceof PDFLib.PDFRef ? doc.context.lookup(rangeObj) : rangeObj;
+          const flat = [];
+          for (let i = 0; i < resolvedRange.size(); i++) flat.push(parseFloat(doc.context.lookup(resolvedRange.get(i)).toString()));
+          if (flat.length === 4) { aRange = [flat[0], flat[1]]; bRange = [flat[2], flat[3]]; }
+        }
+      } catch (e) { /* keep spec defaults */ }
+      return { type: 'Lab', defaultDecodeRanges: [[0, 100], aRange, bRange] };
+    }
+    if (family === '/Separation' || family === '/DeviceN') {
+      // [/Separation name altSpace tintTransform] or
+      // [/DeviceN [names...] altSpace tintTransform] — component count is 1
+      // for Separation, or the number of names for DeviceN. altSpace and the
+      // tint-transform function reference are kept (not evaluated here) so
+      // callers can run the tint through evaluatePdfFunction on demand.
+      try {
+        const namesObj = doc.context.lookup(resolved.get(1));
+        const numComponents = namesObj instanceof PDFLib.PDFArray ? namesObj.size() : 1;
+        const altSpace = resolveColorSpace(doc, resolved.get(2));
+        const tintTransformRef = resolved.get(3);
+        return { type: family === '/Separation' ? 'Separation' : 'DeviceN', numComponents, altSpace, tintTransformRef };
+      } catch (e) {
+        return { type: family.replace('/', ''), numComponents: 1 };
+      }
+    }
+    return { type: family };
+  }
+  return { type: resolved.toString() };
+}
+// ============================================================
+// PDF Function evaluation (Types 0, 2, and 3) — used to resolve a
+// Separation/DeviceN tint value into its alternate color space so we can
+// check whether the tint-transform is monotonic before deciding it's safe
+// to invert the tint value directly (see invertContentStreamColors' scn/SCN
+// handling). Type 4 (PostScript calculator functions) is out of scope and
+// reported rather than silently mis-evaluated.
+// ============================================================
+function fnGet(fnObj, keyName) {
+  const key = PDFLib.PDFName.of(keyName);
+  return fnObj.dict ? fnObj.dict.get(key) : fnObj.get(key);
+}
+function readNumArray(doc, arrObj) {
+  const resolved = arrObj instanceof PDFLib.PDFRef ? doc.context.lookup(arrObj) : arrObj;
+  const out = [];
+  for (let i = 0; i < resolved.size(); i++) out.push(parseFloat(doc.context.lookup(resolved.get(i)).toString()));
+  return out;
+}
+function lerp(x, xmin, xmax, ymin, ymax) {
+  if (xmax === xmin) return ymin;
+  return ymin + (x - xmin) * (ymax - ymin) / (xmax - xmin);
+}
+function readBitsAt(bytes, bitOffset, bitLength) {
+  let value = 0, bitsRead = 0;
+  while (bitsRead < bitLength) {
+    const byteIndex = (bitOffset + bitsRead) >> 3;
+    const bitInByte = (bitOffset + bitsRead) & 7;
+    const bitsAvailable = 8 - bitInByte;
+    const bitsToTake = Math.min(bitsAvailable, bitLength - bitsRead);
+    const byte = bytes[byteIndex] || 0;
+    const shift = bitsAvailable - bitsToTake;
+    const mask = (1 << bitsToTake) - 1;
+    value = (value << bitsToTake) | ((byte >> shift) & mask);
+    bitsRead += bitsToTake;
+  }
+  return value;
+}
+function evaluateSampledFunction(doc, fnObj, input) {
+  const domain = readNumArray(doc, fnGet(fnObj, 'Domain'));
+  const range = readNumArray(doc, fnGet(fnObj, 'Range'));
+  const size = readNumArray(doc, fnGet(fnObj, 'Size')).map(v => Math.round(v));
+  const bps = parseInt(doc.context.lookup(fnGet(fnObj, 'BitsPerSample')).toString(), 10);
+  const m = size.length;
+  const n = range.length / 2;
+  const encodeObj = fnGet(fnObj, 'Encode');
+  const encode = encodeObj ? readNumArray(doc, encodeObj) : Array.from({ length: m }, (_, i) => [0, size[i] - 1]).flat();
+  const decodeObj = fnGet(fnObj, 'Decode');
+  const decode = decodeObj ? readNumArray(doc, decodeObj) : range.slice();
+
+  const clamped = input.map((x, i) => Math.min(domain[i * 2 + 1], Math.max(domain[i * 2], x)));
+  const e = clamped.map((x, i) => {
+    const enc = lerp(x, domain[i * 2], domain[i * 2 + 1], encode[i * 2], encode[i * 2 + 1]);
+    return Math.min(size[i] - 1, Math.max(0, enc));
+  });
+
+  const filterObj = fnGet(fnObj, 'Filter');
+  const samples = filterObj ? PDFLib.decodePDFRawStream(fnObj).decode() : fnObj.contents;
+
+  function sampleAt(coords) {
+    let index = 0, mult = 1;
+    for (let i = 0; i < m; i++) { index += coords[i] * mult; mult *= size[i]; }
+    const out = [];
+    for (let j = 0; j < n; j++) out.push(readBitsAt(samples, (index * n + j) * bps, bps));
+    return out;
+  }
+
+  // Multilinear interpolation across all m input dimensions.
+  const floorCoords = e.map(v => Math.floor(v));
+  const fracs = e.map((v, i) => v - floorCoords[i]);
+  const outSum = new Array(n).fill(0);
+  const corners = 1 << m;
+  for (let c = 0; c < corners; c++) {
+    let weight = 1;
+    const coords = [];
+    for (let i = 0; i < m; i++) {
+      const bit = (c >> i) & 1;
+      let coord = floorCoords[i] + bit;
+      if (coord > size[i] - 1) coord = size[i] - 1;
+      coords.push(coord);
+      weight *= bit ? fracs[i] : (1 - fracs[i]);
+    }
+    if (weight === 0) continue;
+    const s = sampleAt(coords);
+    for (let j = 0; j < n; j++) outSum[j] += weight * s[j];
+  }
+  const maxSample = Math.pow(2, bps) - 1;
+  const result = [];
+  for (let j = 0; j < n; j++) {
+    const decoded = lerp(outSum[j], 0, maxSample, decode[j * 2], decode[j * 2 + 1]);
+    result.push(Math.min(range[j * 2 + 1], Math.max(range[j * 2], decoded)));
+  }
+  return result;
+}
+function evaluateExponentialFunction(doc, fnObj, input) {
+  const domain = readNumArray(doc, fnGet(fnObj, 'Domain'));
+  const c0Obj = fnGet(fnObj, 'C0');
+  const c1Obj = fnGet(fnObj, 'C1');
+  const c0 = c0Obj ? readNumArray(doc, c0Obj) : [0];
+  const c1 = c1Obj ? readNumArray(doc, c1Obj) : [1];
+  const nObj = fnGet(fnObj, 'N');
+  const N = nObj ? parseFloat(doc.context.lookup(nObj).toString()) : 1;
+  const x = Math.min(domain[1], Math.max(domain[0], input[0]));
+  const xn = Math.pow(x, N);
+  const out = [];
+  for (let j = 0; j < c0.length; j++) out.push(c0[j] + xn * (c1[j] - c0[j]));
+  return out;
+}
+function evaluateStitchingFunction(doc, fnObj, input) {
+  const domain = readNumArray(doc, fnGet(fnObj, 'Domain'));
+  const functionsObj = fnGet(fnObj, 'Functions');
+  const resolvedFns = functionsObj instanceof PDFLib.PDFRef ? doc.context.lookup(functionsObj) : functionsObj;
+  const boundsObj = fnGet(fnObj, 'Bounds');
+  const bounds = boundsObj ? readNumArray(doc, boundsObj) : [];
+  const encode = readNumArray(doc, fnGet(fnObj, 'Encode'));
+  const k = resolvedFns.size();
+  const x = Math.min(domain[1], Math.max(domain[0], input[0]));
+  let lo = domain[0], idx = 0;
+  for (; idx < k; idx++) {
+    const hi = idx < bounds.length ? bounds[idx] : domain[1];
+    if (x < hi || idx === k - 1) break;
+    lo = hi;
+  }
+  const hi = idx < bounds.length ? bounds[idx] : domain[1];
+  const encoded = lerp(x, lo, hi, encode[idx * 2], encode[idx * 2 + 1]);
+  return evaluatePdfFunction(doc, resolvedFns.get(idx), [encoded]);
+}
+function evaluatePdfFunction(doc, functionObj, input) {
+  const fnObj = functionObj instanceof PDFLib.PDFRef ? doc.context.lookup(functionObj) : functionObj;
+  if (!fnObj) throw new Error('unresolvable PDF function');
+  const typeObj = fnGet(fnObj, 'FunctionType');
+  const fnType = typeObj ? parseInt(doc.context.lookup(typeObj).toString(), 10) : null;
+  if (fnType === 0) return evaluateSampledFunction(doc, fnObj, input);
+  if (fnType === 2) return evaluateExponentialFunction(doc, fnObj, input);
+  if (fnType === 3) return evaluateStitchingFunction(doc, fnObj, input);
+  if (fnType === 4) throw new Error('Type 4 (PostScript calculator) functions are not supported');
+  throw new Error(`unsupported function type (${fnType})`);
+}
+// Decides whether a Separation/DeviceN tint-transform is safe to invert by
+// just flipping the tint value (1 - t) rather than round-tripping through
+// the alternate color space. Type 2 (exponential) is always monotonic by
+// construction. For a single-input Type 0 (sampled) function — the common
+// Separation case — we sample several points across the domain and check
+// the alternate-space outputs never reverse direction. Multi-input DeviceN
+// and any function we fail to evaluate are treated conservatively as
+// "unverifiable" so the caller can skip inverting rather than guess wrong.
+function isTintTransformMonotonic(doc, cs) {
+  try {
+    const fnObj = cs.tintTransformRef instanceof PDFLib.PDFRef ? doc.context.lookup(cs.tintTransformRef) : cs.tintTransformRef;
+    const typeObj = fnGet(fnObj, 'FunctionType');
+    const fnType = typeObj ? parseInt(doc.context.lookup(typeObj).toString(), 10) : null;
+    if (fnType === 2) return true;
+    if (fnType === 0 && cs.numComponents === 1) {
+      const domain = readNumArray(doc, fnGet(fnObj, 'Domain'));
+      const steps = 8;
+      let prevOut = null, increasing = null;
+      for (let i = 0; i <= steps; i++) {
+        const t = domain[0] + (domain[1] - domain[0]) * (i / steps);
+        const out = evaluatePdfFunction(doc, cs.tintTransformRef, [t]);
+        if (prevOut) {
+          for (let j = 0; j < out.length; j++) {
+            const diff = out[j] - prevOut[j];
+            if (Math.abs(diff) < 1e-6) continue;
+            const dir = diff > 0;
+            if (increasing === null) increasing = dir;
+            else if (increasing !== dir) return false;
+          }
+        }
+        prevOut = out;
+      }
+      return true;
+    }
+    return false; // DeviceN (multi-input) or an exotic function type
+  } catch (e) {
+    return false;
+  }
+}
+function cmykToRgb01(c, m, y, k) {
+  return [255 * (1 - Math.min(1, c + k)), 255 * (1 - Math.min(1, m + k)), 255 * (1 - Math.min(1, y + k))];
+}
+// Decodes a raw CMYK image AND inverts it in one step, by flipping each
+// C/M/Y/K component (1-x) before converting to RGB for the PNG re-embed —
+// this matches the "invert" convention used everywhere else CMYK appears in
+// this file (the k/K vector operator, and the /Decode-array flip used for
+// CCITTFax/JBIG2/JPX DeviceCMYK images, both of which flip C/M/Y/K directly).
+// Converting to RGB first and then inverting the RGB (255-r/g/b) is NOT the
+// same operation — CMYK->RGB is not a simple 1:1 channel mapping, so RGB-
+// space inversion of a CMYK image gives a different, inconsistent result
+// from a CCITTFax-encoded version of the exact same image would.
+function rgbaFromCMYKBpc(width, height, rawBytes, bpc) {
+  const { samples, maxVal } = unpackComponents(rawBytes, width, height, 4, bpc);
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  let s = 0;
+  for (let p = 0; p < width * height; p++) {
+    const c = 1 - samples[s++] / maxVal, m = 1 - samples[s++] / maxVal, y = 1 - samples[s++] / maxVal, k = 1 - samples[s++] / maxVal;
+    const [r, g, b] = cmykToRgb01(c, m, y, k);
+    rgba[p * 4] = r; rgba[p * 4 + 1] = g; rgba[p * 4 + 2] = b; rgba[p * 4 + 3] = 255;
+  }
+  // preInverted: this data is already the inverted result (CMYK components
+  // were flipped before the CMYK->RGB conversion above), so callers must
+  // embed/emit it as-is rather than running it through invertRGBASamples
+  // again, or the second invert would cancel the first out.
+  return { data: rgba, width, height, preInverted: true };
+}
+function rgbaFromIndexed(width, height, indexSamples, colorSpace) {
+  const base = colorSpace.base;
+  if (!base || !colorSpace.lookupBytes) return null;
+  let baseChannels;
+  if (base.type.includes('RGB')) baseChannels = 3;
+  else if (base.type.includes('Gray')) baseChannels = 1;
+  else if (base.type.includes('CMYK')) baseChannels = 4;
+  else return null;
+  const lookup = colorSpace.lookupBytes;
+  const paletteSize = colorSpace.hival + 1;
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  for (let p = 0; p < indexSamples.length; p++) {
+    let idx = indexSamples[p];
+    if (idx >= paletteSize) idx = paletteSize - 1;
+    let r, g, b;
+    if (baseChannels === 3) { r = lookup[idx * 3] || 0; g = lookup[idx * 3 + 1] || 0; b = lookup[idx * 3 + 2] || 0; }
+    else if (baseChannels === 1) { r = g = b = lookup[idx] || 0; }
+    else {
+      const c = (lookup[idx * 4] || 0) / 255, m = (lookup[idx * 4 + 1] || 0) / 255, y = (lookup[idx * 4 + 2] || 0) / 255, k = (lookup[idx * 4 + 3] || 0) / 255;
+      [r, g, b] = cmykToRgb01(c, m, y, k);
+    }
+    rgba[p * 4] = r; rgba[p * 4 + 1] = g; rgba[p * 4 + 2] = b; rgba[p * 4 + 3] = 255;
+  }
+  return rgba;
+}
+
+// ============================================================
+// Inline images (BI...ID...EI inside content streams)
+// ============================================================
+const INLINE_FILTER_ABBR = { AHx: 'ASCIIHexDecode', A85: 'ASCII85Decode', LZW: 'LZWDecode', Fl: 'FlateDecode', RL: 'RunLengthDecode', CCF: 'CCITTFaxDecode', DCT: 'DCTDecode' };
+const INLINE_CS_ABBR = { G: 'DeviceGray', RGB: 'DeviceRGB', CMYK: 'DeviceCMYK', I: 'Indexed' };
+async function inflateBytes(bytes) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream unsupported in this browser');
+  const ds = new DecompressionStream('deflate');
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  const buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+// PDF RunLengthDecode (spec 7.4.5): a length byte L followed by data.
+// 0 <= L <= 127: copy the next (L+1) bytes literally.
+// 129 <= L <= 255: copy the single following byte (257-L) times.
+// L == 128: EOD, stop.
+function runLengthDecode(bytes) {
+  const out = [];
+  let i = 0;
+  while (i < bytes.length) {
+    const L = bytes[i++];
+    if (L === 128) break;
+    if (L < 128) {
+      const count = L + 1;
+      for (let k = 0; k < count && i < bytes.length; k++) out.push(bytes[i++]);
+    } else {
+      const count = 257 - L;
+      const b = bytes[i++];
+      for (let k = 0; k < count; k++) out.push(b);
+    }
+  }
+  return new Uint8Array(out);
+}
+// PDF/TIFF-style LZW decode (PDF spec 7.4.4). Variable-width codes starting
+// at 9 bits, growing to 10/11/12 bits as the table fills; code 256 is Clear,
+// code 257 is EOD. PDF's default EarlyChange=1 means the code width bumps up
+// one code index earlier than "pure" LZW (i.e. as soon as the *next* code to
+// be assigned would need the wider width, not once the table already needs
+// it) — most encoders rely on this, so we default to it but honor an
+// explicit /EarlyChange 0 in DecodeParms.
+function lzwDecode(bytes, earlyChange) {
+  if (earlyChange === undefined || earlyChange === null) earlyChange = 1;
+  const CLEAR = 256, EOD = 257;
+  let bitBuffer = 0, bitCount = 0, bytePos = 0;
+  function readCode(codeWidth) {
+    while (bitCount < codeWidth) {
+      if (bytePos >= bytes.length) return -1;
+      bitBuffer = (bitBuffer << 8) | bytes[bytePos++];
+      bitCount += 8;
+    }
+    const code = (bitBuffer >> (bitCount - codeWidth)) & ((1 << codeWidth) - 1);
+    bitCount -= codeWidth;
+    return code;
+  }
+  let table, codeWidth, prevEntry;
+  function resetTable() {
+    table = new Array(258);
+    for (let i = 0; i < 256; i++) table[i] = [i];
+    table[256] = null; // Clear
+    table[257] = null; // EOD
+    codeWidth = 9;
+    prevEntry = null;
+  }
+  resetTable();
+  const out = [];
+  while (true) {
+    const code = readCode(codeWidth);
+    if (code === -1 || code === EOD) break;
+    if (code === CLEAR) { resetTable(); continue; }
+    let entry;
+    if (code < table.length && table[code]) {
+      entry = table[code];
+    } else if (code === table.length && prevEntry) {
+      entry = prevEntry.concat([prevEntry[0]]);
+    } else {
+      throw new Error(`invalid LZW code (${code}) at table size ${table.length}`);
+    }
+    for (let k = 0; k < entry.length; k++) out.push(entry[k]);
+    if (prevEntry) table.push(prevEntry.concat([entry[0]]));
+    prevEntry = entry;
+    const nextTableSize = table.length + (earlyChange ? 1 : 0);
+    if (codeWidth === 9 && nextTableSize > 511) codeWidth = 10;
+    else if (codeWidth === 10 && nextTableSize > 1023) codeWidth = 11;
+    else if (codeWidth === 11 && nextTableSize > 2047) codeWidth = 12;
+  }
+  return new Uint8Array(out);
+}
+// Extracts /EarlyChange from an inline DecodeParms dict's raw text (e.g.
+// "<< /EarlyChange 0 >>"); defaults to 1 (PDF's standard default) when the
+// key or the DecodeParms dict itself is absent.
+function parseInlineEarlyChange(raw) {
+  if (!raw) return 1;
+  const m = raw.match(/\/EarlyChange\s+(\d+)/);
+  return m ? parseInt(m[1], 10) : 1;
+}
+function parseInlineDictTokens(bytes, dictTokens) {
+  const dict = {};
+  let i = 0;
+  while (i < dictTokens.length) {
+    const keyTok = dictTokens[i];
+    if (keyTok.type !== 'name') { i++; continue; }
+    const key = bytesToLatin1(bytes, keyTok.start + 1, keyTok.end);
+    const valTok = dictTokens[i + 1];
+    if (!valTok) { i++; continue; }
+    dict[key] = { raw: bytesToLatin1(bytes, valTok.start, valTok.end) };
+    i += 2;
+  }
+  return dict;
+}
+function parseInlineIndexedArray(raw) {
+  const inner = raw.replace(/^\[/, '').replace(/\]$/, '');
+  const baseMatch = inner.match(/\/(Indexed|I)\s*\/?(\w+)/);
+  if (!baseMatch) return null;
+  let base = baseMatch[2];
+  base = INLINE_CS_ABBR[base] || base;
+  const hivalMatch = inner.match(/(\d+)\s*[<(]/);
+  if (!hivalMatch) return null;
+  const hival = parseInt(hivalMatch[1], 10);
+  const hexMatch = inner.match(/<([0-9a-fA-F\s]*)>/);
+  let lookup;
+  if (hexMatch) {
+    const hex = hexMatch[1].replace(/\s+/g, '');
+    lookup = new Uint8Array(Math.floor(hex.length / 2));
+    for (let i = 0; i < lookup.length; i++) lookup[i] = parseInt(hex.substr(i * 2, 2), 16) || 0;
+  } else {
+    const litMatch = inner.match(/\(([\s\S]*)\)/);
+    if (!litMatch) return null;
+    lookup = new Uint8Array(Array.from(litMatch[1]).map(c => c.charCodeAt(0) & 0xff));
+  }
+  return { base, hival, lookup };
+}
+function parseDecodeArrayText(raw) {
+  const inner = raw.replace(/^\[/, '').replace(/\]$/, '').trim();
+  if (!inner) return null;
+  const nums = inner.split(/\s+/).map(Number);
+  return nums.some(Number.isNaN) ? null : nums;
+}
+function formatDecodeArrayText(nums) {
+  return '[' + nums.map(n => formatNumber(n)).join(' ') + ']';
+}
+// Same idea as resolveColorSpace's named-resource lookup, but for inline
+// images. Returns { numComponents, defaultRanges } — defaultRanges mirrors
+// getDefaultDecodeRanges so Lab (whose default /Decode is NOT [0,1] per
+// component) and Separation/DeviceN (variable component count) come out
+// with the same correct defaults the XObject CCITTFax/JBIG2/JPX path uses,
+// not just a bare Gray/RGB/CMYK component count.
+function resolveInlineNumComponents(csRaw, doc, resources) {
+  if (csRaw === 'G' || csRaw === 'DeviceGray' || csRaw === 'CalGray') return { numComponents: 1, defaultRanges: [[0, 1]] };
+  if (csRaw === 'RGB' || csRaw === 'DeviceRGB' || csRaw === 'CalRGB') return { numComponents: 3, defaultRanges: [[0, 1], [0, 1], [0, 1]] };
+  if (csRaw === 'CMYK' || csRaw === 'DeviceCMYK') return { numComponents: 4, defaultRanges: [[0, 1], [0, 1], [0, 1], [0, 1]] };
+  if (csRaw.startsWith('[')) return null;
+  if (doc && resources) {
+    try {
+      const csDict = resources.lookup ? resources.lookup(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFDict) : null;
+      if (csDict) {
+        const namedObj = csDict.get(PDFLib.PDFName.of(csRaw));
+        if (namedObj) {
+          const namedCs = resolveColorSpace(doc, namedObj);
+          if (namedCs) {
+            if (namedCs.type === 'Lab') return { numComponents: 3, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type === 'Separation' || namedCs.type === 'DeviceN') {
+              return { numComponents: namedCs.numComponents || 1, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            }
+            if (namedCs.type.includes('RGB')) return { numComponents: 3, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type.includes('Gray')) return { numComponents: 1, defaultRanges: getDefaultDecodeRanges(namedCs) };
+            if (namedCs.type.includes('CMYK')) return { numComponents: 4, defaultRanges: getDefaultDecodeRanges(namedCs) };
+          }
+        }
+      }
+    } catch (e) { /* fall through */ }
+  }
+  return null;
+}
+async function processInlineImage(dict, rawData, doc, resources) {
+  const wEntry = dict.W || dict.Width;
+  const hEntry = dict.H || dict.Height;
+  if (!wEntry || !hEntry) return { error: 'inline image missing /W or /H' };
+  const width = parseInt(wEntry.raw, 10);
+  const height = parseInt(hEntry.raw, 10);
+  const imEntry = dict.IM || dict.ImageMask;
+  if (imEntry && imEntry.raw === 'true') return { error: 'inline image mask (stencil) not supported' };
+
+  let bpc = 8;
+  const bpcEntry = dict.BPC || dict.BitsPerComponent;
+  if (bpcEntry) bpc = parseInt(bpcEntry.raw, 10);
+
+  let filterName = null;
+  const fEntry = dict.F || dict.Filter;
+  if (fEntry) {
+    const first = fEntry.raw.replace(/[\[\]\/]/g, ' ').trim().split(/\s+/)[0];
+    filterName = INLINE_FILTER_ABBR[first] || first;
+  }
+
+  const csEntry = dict.CS || dict.ColorSpace;
+  if (!csEntry) return { error: 'inline image missing /CS' };
+  const csRaw = csEntry.raw.replace(/^\//, '');
+
+  if (filterName === 'CCITTFaxDecode') {
+    // Same trick as XObject CCITTFax/JBIG2/JPX images: flip /Decode instead of
+    // decoding the fax-compressed bits. The compressed data, /F, and /DP are
+    // passed through byte-for-byte; only /D changes.
+    const csInfo = resolveInlineNumComponents(csRaw, doc, resources);
+    if (csInfo === null) {
+      return { error: `inline CCITTFax image with unsupported/unresolvable color space (/${csRaw})` };
+    }
+    const { numComponents, defaultRanges } = csInfo;
+    const dEntry = dict.D || dict.Decode;
+    let pairs;
+    if (dEntry) {
+      const flat = parseDecodeArrayText(dEntry.raw);
+      if (!flat || flat.length !== numComponents * 2) {
+        return { error: 'inline CCITTFax image has an unparseable /D (Decode) array' };
+      }
+      pairs = [];
+      for (let i = 0; i < flat.length; i += 2) pairs.push([flat[i], flat[i + 1]]);
+    } else if (defaultRanges) {
+      pairs = defaultRanges.map(([lo, hi]) => [lo, hi]);
+    } else {
+      pairs = Array.from({ length: numComponents }, () => [0, 1]);
+    }
+    const flipped = [];
+    for (const [lo, hi] of pairs) { flipped.push(hi, lo); }
+    const decodeText = formatDecodeArrayText(flipped);
+
+    const dpEntry = dict.DP || dict.DecodeParms;
+    const parts = [`/W ${width}`, `/H ${height}`, `/CS ${csEntry.raw}`, `/BPC ${bpc}`, `/F ${fEntry.raw}`];
+    if (dpEntry) parts.push(`/DP ${dpEntry.raw}`);
+    parts.push(`/D ${decodeText}`);
+    const chunk = `BI ${parts.join(' ')} ID ` + latin1FromBytes(rawData) + ` EI\n`;
+    return { chunkText: chunk };
+  }
+
+  let imgData = null;
+
+  if (filterName === 'DCTDecode') {
+    try {
+      const bitmap = await createImageBitmap(new Blob([rawData], { type: 'image/jpeg' }));
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, 0, 0, width, height);
+      imgData = ctx.getImageData(0, 0, width, height);
+    } catch (e) { return { error: `inline JPEG decode failed (${e.message})` }; }
+  } else {
+    let decoded = rawData;
+    if (filterName === 'FlateDecode') {
+      try { decoded = await inflateBytes(rawData); } catch (e) { return { error: `inline flate decode failed (${e.message})` }; }
+    } else if (filterName === 'RunLengthDecode') {
+      try { decoded = runLengthDecode(rawData); } catch (e) { return { error: `inline run-length decode failed (${e.message})` }; }
+    } else if (filterName === 'LZWDecode') {
+      const dpEntry = dict.DP || dict.DecodeParms;
+      const earlyChange = parseInlineEarlyChange(dpEntry ? dpEntry.raw : null);
+      try { decoded = lzwDecode(rawData, earlyChange); } catch (e) { return { error: `inline LZW decode failed (${e.message})` }; }
+    } else if (filterName) {
+      return { error: `unsupported inline filter (${filterName})` };
+    }
+    if (![1, 2, 4, 8, 16].includes(bpc)) return { error: `unsupported inline bits-per-component (${bpc})` };
+
+    if (csRaw === 'G' || csRaw === 'DeviceGray' || csRaw === 'CalGray') {
+      imgData = rgbaFromRawBpc(width, height, decoded, 1, bpc);
+    } else if (csRaw === 'RGB' || csRaw === 'DeviceRGB' || csRaw === 'CalRGB') {
+      imgData = rgbaFromRawBpc(width, height, decoded, 3, bpc);
+    } else if (csRaw.startsWith('[')) {
+      const parsed = parseInlineIndexedArray(csRaw);
+      if (!parsed) return { error: 'could not parse inline indexed color space' };
+      const baseChannels = parsed.base.includes('RGB') ? 3 : (parsed.base.includes('Gray') ? 1 : (parsed.base.includes('CMYK') ? 4 : null));
+      if (baseChannels === null) return { error: `unsupported inline indexed base color space (${parsed.base})` };
+      const { samples } = unpackComponents(decoded, width, height, 1, bpc);
+      const rgba = new Uint8ClampedArray(width * height * 4);
+      for (let p = 0; p < samples.length; p++) {
+        let idx = samples[p];
+        if (idx > parsed.hival) idx = parsed.hival;
+        let r, g, b;
+        if (baseChannels === 3) { r = parsed.lookup[idx * 3] || 0; g = parsed.lookup[idx * 3 + 1] || 0; b = parsed.lookup[idx * 3 + 2] || 0; }
+        else if (baseChannels === 1) { r = g = b = parsed.lookup[idx] || 0; }
+        else {
+          const c = (parsed.lookup[idx * 4] || 0) / 255, m = (parsed.lookup[idx * 4 + 1] || 0) / 255, y = (parsed.lookup[idx * 4 + 2] || 0) / 255, k = (parsed.lookup[idx * 4 + 3] || 0) / 255;
+          [r, g, b] = cmykToRgb01(c, m, y, k);
+        }
+        rgba[p * 4] = r; rgba[p * 4 + 1] = g; rgba[p * 4 + 2] = b; rgba[p * 4 + 3] = 255;
+      }
+      imgData = { data: rgba, width, height };
+    } else if (csRaw === 'CMYK' || csRaw === 'DeviceCMYK') {
+      imgData = rgbaFromCMYKBpc(width, height, decoded, bpc);
+    } else {
+      // Not a direct/abbreviated colorspace — /CS may be a name referencing an
+      // entry in the page/form's Resources/ColorSpace dict (e.g. /CS /CS0).
+      // Resolve it the same way regular XObject images do.
+      let namedCs = null;
+      if (doc && resources) {
+        try {
+          const csDict = resources.lookup ? resources.lookup(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFDict) : null;
+          if (csDict) {
+            const namedObj = csDict.get(PDFLib.PDFName.of(csRaw));
+            if (namedObj) namedCs = resolveColorSpace(doc, namedObj);
+          }
+        } catch (e) { /* fall through to error below */ }
+      }
+      if (!namedCs) {
+        return { error: `unresolvable inline color space (/${csRaw}) — not found in page resources` };
+      } else if (namedCs.type === 'Indexed') {
+        if (!namedCs.base) return { error: `unsupported indexed base color space (unknown) for named inline colorspace /${csRaw}` };
+        const { samples } = unpackComponents(decoded, width, height, 1, bpc);
+        const rgba = rgbaFromIndexed(width, height, samples, namedCs);
+        if (!rgba) return { error: `unsupported indexed base color space (${namedCs.base.type}) for named inline colorspace /${csRaw}` };
+        imgData = { data: rgba, width, height };
+      } else if (namedCs.type.includes('DeviceRGB') || namedCs.type.includes('CalRGB')) {
+        imgData = rgbaFromRawBpc(width, height, decoded, 3, bpc);
+      } else if (namedCs.type.includes('DeviceGray') || namedCs.type.includes('CalGray')) {
+        imgData = rgbaFromRawBpc(width, height, decoded, 1, bpc);
+      } else if (namedCs.type.includes('DeviceCMYK')) {
+        imgData = rgbaFromCMYKBpc(width, height, decoded, bpc);
+      } else {
+        return { error: `unsupported named inline color space (${namedCs.type}) for /${csRaw}` };
+      }
+    }
+  }
+
+  const inverted = imgData.preInverted ? imgData.data : invertRGBASamples(imgData.data);
+  const rgbBytes = new Uint8Array(width * height * 3);
+  for (let p = 0; p < width * height; p++) {
+    rgbBytes[p * 3] = inverted[p * 4]; rgbBytes[p * 3 + 1] = inverted[p * 4 + 1]; rgbBytes[p * 3 + 2] = inverted[p * 4 + 2];
+  }
+  // Re-emitted uncompressed as 8-bit DeviceRGB; the surrounding content
+  // stream gets flate-compressed as a whole afterward, so this is fine.
+  const chunk = `BI /W ${width} /H ${height} /CS /RGB /BPC 8 ID ` + latin1FromBytes(rgbBytes) + ` EI\n`;
+  return { chunkText: chunk };
+}
+
+// ============================================================
+// Integration: wire the verified primitives into a real pdf-lib doc
+// ============================================================
+async function decodeContentBytes(doc, contentsRef) {
+  const contentsObj = doc.context.lookup(contentsRef);
+  const chunks = [];
+  if (contentsObj instanceof PDFLib.PDFArray) {
+    const n = contentsObj.size();
+    for (let i = 0; i < n; i++) chunks.push(PDFLib.decodePDFRawStream(doc.context.lookup(contentsObj.get(i))).decode());
+  } else {
+    chunks.push(PDFLib.decodePDFRawStream(contentsObj).decode());
+  }
+  let total = chunks.reduce((a, c) => a + c.length + 1, 0);
+  const merged = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { merged.set(c, off); off += c.length; merged[off] = 0x0a; off++; }
+  return merged;
+}
+async function rgbaFromRaw(width, height, rawBytes, channels) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.createImageData(width, height);
+  const out = imgData.data;
+  const count = width * height;
+  for (let p = 0; p < count; p++) {
+    if (channels === 1) { const v = rawBytes[p]; out[p*4]=v; out[p*4+1]=v; out[p*4+2]=v; out[p*4+3]=255; }
+    else if (channels === 3) { out[p*4]=rawBytes[p*3]; out[p*4+1]=rawBytes[p*3+1]; out[p*4+2]=rawBytes[p*3+2]; out[p*4+3]=255; }
+  }
+  return imgData;
+}
+async function rgbaFromJpegBlob(blob, width, height) {
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  return ctx.getImageData(0, 0, width, height);
+}
+function canvasToPngBytes(imgData) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = imgData.width; canvas.height = imgData.height;
+    canvas.getContext('2d').putImageData(imgData, 0, 0);
+    canvas.toBlob((blob) => blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf))), 'image/png');
+  });
+}
+// ============================================================
+// Decode-array invert trick — for images whose compressed samples we can't
+// decode ourselves (CCITTFax/JBIG2/JPX). For linear color spaces (Gray/RGB/
+// CMYK), flipping the /Decode array inverts every sample without touching a
+// single byte of compressed data, regardless of what filter produced them.
+// Indexed images need the palette itself inverted instead, since flipping
+// /Decode on an Indexed image would remap which palette entry an index
+// points to, not invert a color.
+// ============================================================
+function getLinearComponentCount(csType) {
+  if (csType.includes('RGB')) return 3;
+  if (csType.includes('Gray')) return 1;
+  if (csType.includes('CMYK')) return 4;
+  return null;
+}
+// Returns the [lo, hi] default-Decode-range pairs for a resolved color
+// space, used when the image carries no explicit /Decode of its own.
+// Gray/RGB/CMYK (and Separation/DeviceN tints) default to [0,1] per
+// component; Lab does NOT — L defaults to [0,100] and a/b default to the
+// color space's own /Range (see resolveColorSpace's Lab case).
+function getDefaultDecodeRanges(cs) {
+  if (cs.type === 'Lab') return cs.defaultDecodeRanges;
+  if (cs.type === 'Separation' || cs.type === 'DeviceN') {
+    return Array.from({ length: cs.numComponents || 1 }, () => [0, 1]);
+  }
+  const n = getLinearComponentCount(cs.type);
+  if (n === null) return null;
+  return Array.from({ length: n }, () => [0, 1]);
+}
+function invertDecodeArrayInPlace(doc, obj, numComponents, defaultRanges) {
+  const decodeKey = PDFLib.PDFName.of('Decode');
+  const existing = obj.dict.get(decodeKey);
+  const pairs = [];
+  if (existing) {
+    const resolved = existing instanceof PDFLib.PDFRef ? doc.context.lookup(existing) : existing;
+    const flat = [];
+    for (let i = 0; i < resolved.size(); i++) flat.push(parseFloat(doc.context.lookup(resolved.get(i)).toString()));
+    for (let i = 0; i < flat.length; i += 2) pairs.push([flat[i], flat[i + 1]]);
+  } else if (defaultRanges) {
+    for (const [lo, hi] of defaultRanges) pairs.push([lo, hi]);
+  } else {
+    for (let i = 0; i < numComponents; i++) pairs.push([0, 1]);
+  }
+  const newArr = PDFLib.PDFArray.withContext(doc.context);
+  for (const [lo, hi] of pairs) { newArr.push(PDFLib.PDFNumber.of(hi)); newArr.push(PDFLib.PDFNumber.of(lo)); }
+  obj.dict.set(decodeKey, newArr);
+}
+function invertIndexedPaletteInPlace(doc, csObj) {
+  const resolved = csObj instanceof PDFLib.PDFRef ? doc.context.lookup(csObj) : csObj;
+  if (!(resolved instanceof PDFLib.PDFArray) || resolved.size() < 4) return false;
+  const lookupRef = resolved.get(3);
+  const lookupObj = lookupRef instanceof PDFLib.PDFRef ? doc.context.lookup(lookupRef) : lookupRef;
+  if (lookupObj && lookupObj.dict) {
+    let bytes;
+    try { bytes = PDFLib.decodePDFRawStream(lookupObj).decode(); } catch (e) { bytes = lookupObj.contents; }
+    if (!bytes) return false;
+    const inverted = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) inverted[i] = 255 - bytes[i];
+    lookupObj.contents = inverted;
+    lookupObj.dict.delete(PDFLib.PDFName.of('Filter'));
+    lookupObj.dict.delete(PDFLib.PDFName.of('DecodeParms'));
+    try { lookupObj.dict.set(PDFLib.PDFName.of('Length'), PDFLib.PDFNumber.of(inverted.length)); } catch (e) { /* recomputed on save */ }
+    return true;
+  }
+  const bytes = bytesFromPdfLiteral(lookupObj);
+  if (!bytes) return false;
+  const inverted = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) inverted[i] = 255 - bytes[i];
+  let hex = '';
+  for (let i = 0; i < inverted.length; i++) hex += inverted[i].toString(16).padStart(2, '0');
+  resolved.set(3, PDFLib.PDFHexString.of(hex));
+  return true;
+}
+
+async function invertImageXObjectsInResources(doc, resources, report, pIdx, state) {
+  if (!resources) return;
+  let xobjDict;
+  try { xobjDict = resources.lookup ? resources.lookup(PDFLib.PDFName.of('XObject'), PDFLib.PDFDict) : null; } catch (e) { return; }
+  if (!xobjDict) return;
+
+  for (const key of xobjDict.keys()) {
+    const ref = xobjDict.get(key);
+    const refId = ref.toString();
+
+    let obj;
+    try { obj = doc.context.lookup(ref); } catch (e) { continue; }
+    if (!obj || !obj.dict) continue;
+    const subtypeObj = obj.dict.get(PDFLib.PDFName.of('Subtype'));
+    const subtype = subtypeObj ? subtypeObj.toString() : null;
+
+    if (subtype === '/Form') {
+      // Recurse: forms are the biggest source of "untouched" content — headers,
+      // footers, watermarks, transparency groups, and annotation appearance
+      // streams are almost always implemented as Form XObjects, each with its
+      // own content stream and (optionally) its own Resources dict.
+      await invertFormXObject(doc, ref, obj, report, pIdx, state, resources);
+      continue;
+    }
+    if (subtype !== '/Image') continue;
+
+    if (state.alreadyInverted.has(refId)) { xobjDict.set(key, state.alreadyInverted.get(refId)); continue; }
+
+    try {
+      const filterObj = obj.dict.get(PDFLib.PDFName.of('Filter'));
+      const filter = filterObj ? filterObj.toString() : null;
+      const csObj = obj.dict.get(PDFLib.PDFName.of('ColorSpace'));
+      const bpcObj = obj.dict.get(PDFLib.PDFName.of('BitsPerComponent'));
+      const bpc = bpcObj ? parseInt(bpcObj.toString(), 10) : null;
+      const width = parseInt(obj.dict.get(PDFLib.PDFName.of('Width')).toString(), 10);
+      const height = parseInt(obj.dict.get(PDFLib.PDFName.of('Height')).toString(), 10);
+
+      let imgData = null, skipReason = null;
+      if (filter && filter.includes('DCTDecode')) {
+        imgData = await rgbaFromJpegBlob(new Blob([obj.contents], { type: 'image/jpeg' }), width, height);
+      } else if (!filter || filter.includes('FlateDecode')) {
+        // Stencil masks (/ImageMask true) carry no /ColorSpace at all — each
+        // sample is just 0 or 1 selecting "paint" vs "transparent" per
+        // /Decode (default [0 1]). Checking for this has to happen before
+        // resolveColorSpace(csObj) runs, or csObj is undefined, cs comes
+        // back null, and the mask is reported as "missing color space"
+        // instead of being inverted. Same /Decode-flip trick already used
+        // for CCITTFax/JBIG2/JPX stencil masks below applies here too — we
+        // never need to touch the decompressed bits themselves.
+        const imageMaskObj = obj.dict.get(PDFLib.PDFName.of('ImageMask'));
+        const isImageMask = imageMaskObj && imageMaskObj.toString() === 'true';
+        if (isImageMask) {
+          invertDecodeArrayInPlace(doc, obj, 1, [[0, 1]]);
+          report.stencilMasksInverted = (report.stencilMasksInverted || 0) + 1;
+          continue;
+        }
+        const decodedSamples = filter ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
+        let cs = null;
+        try { cs = resolveColorSpace(doc, csObj); } catch (e) { skipReason = `could not resolve color space (${e.message})`; }
+        if (cs && cs.assumedFromUnresolvedICC) {
+          report.assumptions.push({ page: pIdx, name: key.toString(), note: 'ICC profile had no /N or /Alternate — assumed RGB' });
+        }
+        if (skipReason) {
+          // fall through to skip below
+        } else if (!cs) {
+          skipReason = 'missing color space';
+        } else if (cs.type === 'Indexed') {
+          if (!cs.base) {
+            skipReason = 'unsupported indexed base color space (unknown)';
+          } else if (!bpc || ![1, 2, 4, 8, 16].includes(bpc)) {
+            skipReason = `unsupported bits-per-component for indexed image (${bpc})`;
+          } else {
+            const { samples } = unpackComponents(decodedSamples, width, height, 1, bpc);
+            const rgba = rgbaFromIndexed(width, height, samples, cs);
+            if (!rgba) skipReason = `unsupported indexed base color space (${cs.base.type})`;
+            else imgData = { data: rgba, width, height };
+          }
+        } else if (cs.type.includes('DeviceRGB') || cs.type.includes('CalRGB')) {
+          if (![1, 2, 4, 8, 16].includes(bpc)) skipReason = `unsupported bits-per-component (${bpc})`;
+          else imgData = rgbaFromRawBpc(width, height, decodedSamples, 3, bpc);
+        } else if (cs.type.includes('DeviceGray') || cs.type.includes('CalGray')) {
+          if (![1, 2, 4, 8, 16].includes(bpc)) skipReason = `unsupported bits-per-component (${bpc})`;
+          else imgData = rgbaFromRawBpc(width, height, decodedSamples, 1, bpc);
+        } else if (cs.type.includes('DeviceCMYK')) {
+          if (![1, 2, 4, 8, 16].includes(bpc)) skipReason = `unsupported bits-per-component (${bpc})`;
+          else imgData = rgbaFromCMYKBpc(width, height, decodedSamples, bpc);
+        } else {
+          skipReason = `unsupported color space (${cs.type})`;
+        }
+      } else {
+        // CCITTFax/JBIG2/JPX (or any other filter we can't pixel-decode):
+        // try the Decode-array / palette-invert trick instead of skipping.
+        const imageMaskObj = obj.dict.get(PDFLib.PDFName.of('ImageMask'));
+        const isImageMask = imageMaskObj && imageMaskObj.toString() === 'true';
+        if (isImageMask) {
+          // A stencil mask has no color space of its own — each sample is
+          // just 0 or 1, and /Decode (default [0 1]) says which of the two
+          // means "paint with the current fill color" vs "leave
+          // transparent". We never touch the compressed bits themselves;
+          // flipping [0 1] <-> [1 0] inverts which pixels are masked in
+          // exactly the same way a Gray/RGB/CMYK image's /Decode flip does,
+          // without needing to understand CCITTFax/JBIG2/JPX at all.
+          invertDecodeArrayInPlace(doc, obj, 1, [[0, 1]]);
+          report.stencilMasksInverted = (report.stencilMasksInverted || 0) + 1;
+          continue;
+        } else {
+          let cs = null;
+          try { cs = resolveColorSpace(doc, csObj); } catch (e) { /* fall through to skip */ }
+          if (cs && cs.assumedFromUnresolvedICC) {
+            report.assumptions.push({ page: pIdx, name: key.toString(), note: 'ICC profile had no /N or /Alternate — assumed RGB' });
+          }
+          if (!cs) {
+            skipReason = `unsupported filter (filter=${filter}); could not resolve color space to invert via /Decode`;
+          } else if (cs.type === 'Indexed') {
+            if (invertIndexedPaletteInPlace(doc, csObj)) { report.imagesInverted++; continue; }
+            skipReason = `unsupported filter (filter=${filter}) with indexed color space whose palette could not be located`;
+          } else if (cs.type === 'Lab') {
+            // Lab's default /Decode range is [0 100] for L and the color
+            // space's own /Range (or [-100 100]) for a/b — not [0,1] like
+            // Gray/RGB/CMYK — so we must pass the correct default ranges
+            // through, not just a component count.
+            invertDecodeArrayInPlace(doc, obj, 3, getDefaultDecodeRanges(cs));
+            report.imagesInverted++;
+            continue;
+          } else if (cs.type === 'Separation' || cs.type === 'DeviceN') {
+            // Rare combination (spot-color CCITTFax/JBIG2/JPX image). The
+            // tint-transform machinery from the Separation/DeviceN scn/SCN
+            // handling isn't needed here since /Decode just needs the tint
+            // component's own [0,1] default range flipped — same trick as
+            // Gray/RGB/CMYK, just with a variable component count.
+            invertDecodeArrayInPlace(doc, obj, cs.numComponents || 1, getDefaultDecodeRanges(cs));
+            report.imagesInverted++;
+            continue;
+          } else {
+            const numComponents = getLinearComponentCount(cs.type);
+            if (numComponents === null) {
+              skipReason = `unsupported filter (filter=${filter}) with color space (${cs.type})`;
+            } else {
+              invertDecodeArrayInPlace(doc, obj, numComponents, getDefaultDecodeRanges(cs));
+              report.imagesInverted++;
+              continue;
+            }
+          }
+        }
+      }
+
+      if (skipReason) { report.imagesSkipped.push({ page: pIdx, name: key.toString(), reason: skipReason }); continue; }
+
+      const invertedRGBA = imgData.preInverted ? imgData.data : invertRGBASamples(imgData.data);
+      const invertedImgData = new ImageData(new Uint8ClampedArray(invertedRGBA), imgData.width, imgData.height);
+      const pngBytes = await canvasToPngBytes(invertedImgData);
+      const embedded = await doc.embedPng(pngBytes);
+      xobjDict.set(key, embedded.ref);
+      state.alreadyInverted.set(refId, embedded.ref);
+      report.imagesInverted++;
+    } catch (e) {
+      report.imagesSkipped.push({ page: pIdx, name: key.toString(), reason: `failed to process image (${e.message})` });
+    }
+  }
+}
+
+async function invertColoredTilingPatterns(doc, resources, report, pIdx, state) {
+  if (!resources) return;
+  let patternDict;
+  try { patternDict = resources.lookup ? resources.lookup(PDFLib.PDFName.of('Pattern'), PDFLib.PDFDict) : null; } catch (e) { return; }
+  if (!patternDict) return;
+
+  for (const key of patternDict.keys()) {
+    const ref = patternDict.get(key);
+    const refId = ref.toString();
+    if (state.processedPatterns.has(refId)) continue;
+    state.processedPatterns.add(refId);
+
+    let obj;
+    try { obj = doc.context.lookup(ref); } catch (e) { continue; }
+    if (!obj || !obj.dict) continue;
+
+    const patternTypeObj = obj.dict.get(PDFLib.PDFName.of('PatternType'));
+    const patternType = patternTypeObj ? parseInt(patternTypeObj.toString(), 10) : null;
+    if (patternType !== 1) continue; // 2 = shading pattern — not a tiling pattern, skip silently
+
+    const paintTypeObj = obj.dict.get(PDFLib.PDFName.of('PaintType'));
+    const paintType = paintTypeObj ? parseInt(paintTypeObj.toString(), 10) : null;
+    if (paintType !== 1) continue; // uncolored (PaintType 2) patterns carry no embedded color — out of scope
+
+    try {
+      let patternResources = null;
+      try { patternResources = obj.dict.lookup ? obj.dict.lookup(PDFLib.PDFName.of('Resources'), PDFLib.PDFDict) : null; } catch (e) { /* no resources */ }
+      const inlineResources = patternResources || resources || null;
+
+      const filterObj = obj.dict.get(PDFLib.PDFName.of('Filter'));
+      const decoded = filterObj ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
+      const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, inlineResources);
+
+      obj.contents = inverted;
+      obj.dict.delete(PDFLib.PDFName.of('Filter'));
+      obj.dict.delete(PDFLib.PDFName.of('DecodeParms'));
+      try { obj.dict.set(PDFLib.PDFName.of('Length'), PDFLib.PDFNumber.of(inverted.length)); } catch (e) { /* pdf-lib recomputes Length on save regardless */ }
+
+      report.patternsInverted = (report.patternsInverted || 0) + 1;
+      report.imagesInverted += inlineInverted;
+      report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
+      for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: `pattern ${key.toString()} (inline image)`, reason });
+      report.colorOpsSkipped = report.colorOpsSkipped || [];
+      for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: `pattern ${key.toString()}`, reason });
+
+      if (patternResources) await invertImageXObjectsInResources(doc, patternResources, report, pIdx, state);
+    } catch (e) {
+      report.imagesSkipped.push({ page: pIdx, name: `pattern ${key.toString()}`, reason: `failed to invert pattern (${e.message})` });
+    }
+  }
+}
+
+// Form XObjects wrap their own content stream and (optionally) their own
+// Resources dict — exactly like a page does. We invert the stream the same
+// way we invert a page's content stream, then recurse into whatever
+// images/patterns/nested forms live in its Resources. processedForms avoids
+// reprocessing a form shared across many pages (e.g. a watermark) and guards
+// against cyclic references.
+async function invertFormXObject(doc, ref, obj, report, pIdx, state, parentResources) {
+  const refId = ref.toString();
+  if (state.processedForms.has(refId)) return;
+  state.processedForms.add(refId);
+
+  try {
+    let formResources = null;
+    try { formResources = obj.dict.lookup ? obj.dict.lookup(PDFLib.PDFName.of('Resources'), PDFLib.PDFDict) : null; } catch (e) { /* forms may inherit page resources instead */ }
+    // Named inline-image colorspaces (/CS /CS0) resolve against the form's own
+    // Resources if it has one, otherwise fall back to the parent page/form's
+    // Resources, since forms without their own dict inherit the caller's.
+    const inlineResources = formResources || parentResources || null;
+
+    const filterObj = obj.dict.get(PDFLib.PDFName.of('Filter'));
+    const decoded = filterObj ? PDFLib.decodePDFRawStream(obj).decode() : obj.contents;
+    const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, inlineResources);
+
+    obj.contents = inverted;
+    obj.dict.delete(PDFLib.PDFName.of('Filter'));
+    obj.dict.delete(PDFLib.PDFName.of('DecodeParms'));
+    try { obj.dict.set(PDFLib.PDFName.of('Length'), PDFLib.PDFNumber.of(inverted.length)); } catch (e) { /* pdf-lib recomputes Length on save regardless */ }
+
+    report.formsInverted = (report.formsInverted || 0) + 1;
+    report.imagesInverted += inlineInverted;
+    report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
+    for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: `form ${refId} (inline image)`, reason });
+    report.colorOpsSkipped = report.colorOpsSkipped || [];
+    for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: `form ${refId}`, reason });
+
+    if (formResources) {
+      await invertImageXObjectsInResources(doc, formResources, report, pIdx, state);
+      await invertColoredTilingPatterns(doc, formResources, report, pIdx, state);
+    }
+  } catch (e) {
+    report.imagesSkipped.push({ page: pIdx, name: `form ${refId}`, reason: `failed to invert form (${e.message})` });
+  }
+}
+
+async function invertPdfDocument(pdfBytes, pageIndices, password) {
+  let doc;
+  try {
+    doc = await PDFLib.PDFDocument.load(pdfBytes, {
+      throwOnInvalidObject: false,
+      ignoreEncryption: true,
+      updateMetadata: false,
+      // NOTE on password-protected PDFs: pdf-lib (the version loaded here,
+      // 1.17.1, and every mainline release to date) does not implement PDF
+      // decryption at all — `ignoreEncryption` only suppresses its "this
+      // file is encrypted" error, it does not decrypt content streams for
+      // editing. Passing `password` here is defensive in case a future
+      // pdf-lib build adds real decryption support; on the current build it
+      // is simply ignored. pdf.js (used above for the on-screen preview)
+      // *does* support decrypting for rendering, which is why the password
+      // prompt can successfully show thumbnails even though the save step
+      // below may still fail on a genuinely encrypted file.
+      password: password || undefined,
+    });
+  } catch (e) {
+    if (password) {
+      throw new Error(`Could not load this password-protected PDF for editing (${e.message}). Even with the correct password, pdf-lib — the library this tool uses to rewrite the PDF — has no built-in support for decrypting PDF content for editing; this is a known upstream limitation, not something a version bump alone fixes. The password only unlocked the on-screen page preview above. To invert colors in this file, remove its password protection first with a dedicated tool (e.g. Acrobat's "Remove Security", macOS Preview's Export without password, or the command-line "qpdf --decrypt"), then re-upload the unprotected PDF here.`);
+    }
+    throw new Error(`Failed to load the PDF (${e.message}). This file's internal structure may use something pdf-lib can't parse.`);
+  }
+  const pageCount = doc.getPageCount();
+  const targetPages = pageIndices && pageIndices.length ? pageIndices : Array.from({ length: pageCount }, (_, i) => i);
+  const report = { pagesInverted: 0, imagesInverted: 0, patternsInverted: 0, formsInverted: 0, imagesSkipped: [], assumptions: [], colorOpsSkipped: [] };
+  if (password) {
+    report.assumptions.push({ page: 0, name: '(entire document)', note: 'This PDF was password-protected. pdf-lib cannot decrypt PDF content for editing (an upstream limitation), so if pages below show as failed/skipped, that is why — try removing the password with another tool first and re-uploading.' });
+  }
+  const state = {
+    alreadyInverted: new Map(),    // image ref (string) -> newly-embedded inverted image ref
+    processedPatterns: new Set(),  // tiling-pattern refs already handled (shared across pages)
+    processedForms: new Set(),     // form XObject refs already handled (shared across pages)
+  };
+
+  for (const pIdx of targetPages) {
+    try {
+      const page = doc.getPage(pIdx);
+      const node = page.node;
+
+      let resources;
+      try { resources = node.Resources(); } catch (e) { resources = null; }
+
+      const contentsRef = node.Contents();
+      if (contentsRef) {
+        const decoded = await decodeContentBytes(doc, contentsRef);
+        const { bytes: inverted, inlineInverted, inlineSkipped, colorOpsSkipped, patternColorsInverted } = await invertContentStreamColors(decoded, doc, resources);
+        const newStream = doc.context.flateStream(inverted, {});
+        const newRef = doc.context.register(newStream);
+        node.set(PDFLib.PDFName.Contents, newRef);
+        report.pagesInverted++;
+        report.imagesInverted += inlineInverted;
+        report.uncoloredPatternColorsInverted = (report.uncoloredPatternColorsInverted || 0) + patternColorsInverted;
+        for (const reason of inlineSkipped) report.imagesSkipped.push({ page: pIdx, name: '(inline image)', reason });
+        report.colorOpsSkipped = report.colorOpsSkipped || [];
+        for (const reason of colorOpsSkipped) report.colorOpsSkipped.push({ page: pIdx, name: '(page content)', reason });
+      }
+
+      if (!resources) continue;
+
+      await invertImageXObjectsInResources(doc, resources, report, pIdx, state);
+      await invertColoredTilingPatterns(doc, resources, report, pIdx, state);
+    } catch (e) {
+      report.imagesSkipped.push({ page: pIdx, name: '(entire page)', reason: `failed to process page (${e.message})` });
+    }
+  }
+  let outBytes;
+  try {
+    outBytes = await doc.save({ useObjectStreams: false });
+  } catch (e) {
+    throw new Error(`Failed while finalizing the PDF (${e.message}). ${report.imagesSkipped.length} item(s) had already been skipped: ` +
+      report.imagesSkipped.slice(0, 5).map(s => `page ${s.page + 1} ${s.name}: ${s.reason}`).join('; '));
+  }
+  return { bytes: outBytes, report };
+}
+
+// ============================================================
+// UI wiring
+// ============================================================
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const afterLoad = document.getElementById('afterLoad');
+const fnameEl = document.getElementById('fname');
+const pageCountEl = document.getElementById('pageCount');
+const pageStrip = document.getElementById('pageStrip');
+const invertBtn = document.getElementById('invertBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const selectNoneBtn = document.getElementById('selectNoneBtn');
+const statusEl = document.getElementById('status');
+
+let currentFile = null;
+let currentBytes = null;
+let currentPassword = null;
+let selectedPages = new Set();
+let numPages = 0;
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault(); dropzone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => { if (e.target.files.length) loadFile(e.target.files[0]); });
+
+// Password prompt — injected dynamically right after the dropzone the first
+// time a password-protected PDF is encountered, then just shown/hidden and
+// re-labelled after that.
+let passwordPromptEl = null;
+function showPasswordPrompt(message) {
+  if (!passwordPromptEl) {
+    passwordPromptEl = document.createElement('div');
+    passwordPromptEl.style.marginTop = '16px';
+    passwordPromptEl.innerHTML =
+      '<div id="pwMsg" style="font-family:\'JetBrains Mono\',monospace;font-size:13px;color:var(--stone);margin-bottom:8px;"></div>' +
+      '<input type="password" id="pwInput" placeholder="PDF password" style="font-family:\'JetBrains Mono\',monospace;font-size:13px;padding:9px 10px;border:1px solid var(--hairline);border-radius:3px;margin-right:8px;width:200px;">' +
+      '<button id="pwUnlockBtn">Unlock</button>';
+    dropzone.parentElement.insertBefore(passwordPromptEl, dropzone.nextSibling);
+    passwordPromptEl.querySelector('#pwUnlockBtn').addEventListener('click', () => {
+      const pw = passwordPromptEl.querySelector('#pwInput').value;
+      if (!pw || !currentFile) return;
+      loadFile(currentFile, pw);
+    });
+    passwordPromptEl.querySelector('#pwInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') passwordPromptEl.querySelector('#pwUnlockBtn').click();
+    });
+  }
+  passwordPromptEl.querySelector('#pwMsg').textContent = message;
+  passwordPromptEl.style.display = 'block';
+  const input = passwordPromptEl.querySelector('#pwInput');
+  input.value = '';
+  input.focus();
+}
+function hidePasswordPrompt() {
+  if (passwordPromptEl) passwordPromptEl.style.display = 'none';
+}
+
+async function loadFile(file, password) {
+  currentFile = file;
+  currentBytes = new Uint8Array(await file.arrayBuffer());
+  fnameEl.textContent = file.name;
+  statusEl.textContent = '';
+  statusEl.classList.remove('done');
+
+  let pdf;
+  try {
+    const loadingTask = pdfjsLib.getDocument({ data: currentBytes.slice(), password: password || undefined });
+    pdf = await loadingTask.promise;
+  } catch (e) {
+    if (e && e.name === 'PasswordException') {
+      const incorrect = pdfjsLib.PasswordResponses && e.code === pdfjsLib.PasswordResponses.INCORRECT_PASSWORD;
+      showPasswordPrompt(incorrect
+        ? 'Incorrect password — try again.'
+        : 'This PDF is password-protected. Enter the password to continue.');
+      return;
+    }
+    statusEl.textContent = 'Error: ' + e.message;
+    return;
+  }
+  currentPassword = password || null;
+  hidePasswordPrompt();
+  numPages = pdf.numPages;
+  pageCountEl.textContent = numPages + (numPages === 1 ? ' page' : ' pages');
+  selectedPages = new Set(Array.from({ length: numPages }, (_, i) => i));
+
+  pageStrip.innerHTML = '';
+  for (let i = 1; i <= numPages; i++) {
+    const pg = await pdf.getPage(i);
+    const viewport = pg.getViewport({ scale: 0.3 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    await pg.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'page-thumb selected';
+    thumb.dataset.index = i - 1;
+    thumb.appendChild(canvas);
+    const label = document.createElement('span');
+    label.className = 'pnum';
+    label.textContent = i;
+    thumb.appendChild(label);
+    thumb.addEventListener('click', () => {
+      const idx = parseInt(thumb.dataset.index, 10);
+      if (selectedPages.has(idx)) { selectedPages.delete(idx); thumb.classList.remove('selected'); }
+      else { selectedPages.add(idx); thumb.classList.add('selected'); }
+    });
+    pageStrip.appendChild(thumb);
+  }
+
+  afterLoad.style.display = 'block';
+}
+
+selectAllBtn.addEventListener('click', () => {
+  selectedPages = new Set(Array.from({ length: numPages }, (_, i) => i));
+  document.querySelectorAll('.page-thumb').forEach(el => el.classList.add('selected'));
+});
+selectNoneBtn.addEventListener('click', () => {
+  selectedPages.clear();
+  document.querySelectorAll('.page-thumb').forEach(el => el.classList.remove('selected'));
+});
+
+invertBtn.addEventListener('click', async () => {
+  if (!selectedPages.size) { statusEl.textContent = 'Select at least one page first.'; return; }
+  invertBtn.disabled = true;
+  statusEl.classList.remove('done');
+  statusEl.textContent = 'Inverting colors…';
+  try {
+    const { bytes, report } = await invertPdfDocument(currentBytes, Array.from(selectedPages).sort((a,b)=>a-b), currentPassword);
+    let msg = `Done. ${report.pagesInverted} page(s) processed, ${report.imagesInverted} image(s) inverted${report.stencilMasksInverted ? `, ${report.stencilMasksInverted} stencil mask(s) inverted` : ''}${report.patternsInverted ? `, ${report.patternsInverted} tiling pattern(s) inverted` : ''}${report.uncoloredPatternColorsInverted ? `, ${report.uncoloredPatternColorsInverted} uncolored pattern color(s) inverted` : ''}${report.formsInverted ? `, ${report.formsInverted} form XObject(s) inverted (headers/footers/watermarks etc.)` : ''}.`;
+    if (report.assumptions && report.assumptions.length) {
+      msg += `\n${report.assumptions.length} item(s) inverted using a best-guess / limited assumption:\n`;
+      msg += report.assumptions.map(a => `  page ${a.page + 1}, ${a.name}: ${a.note}`).join('\n');
+    }
+    if (report.imagesSkipped.length) {
+      msg += `\n${report.imagesSkipped.length} image(s) left untouched (unsupported type):\n`;
+      msg += report.imagesSkipped.map(s => `  page ${s.page + 1}, ${s.name}: ${s.reason}`).join('\n');
+    }
+    if (report.colorOpsSkipped && report.colorOpsSkipped.length) {
+      msg += `\n${report.colorOpsSkipped.length} spot-color operation(s) left untouched (non-monotonic/unverifiable tint transform):\n`;
+      msg += report.colorOpsSkipped.map(s => `  page ${s.page + 1}, ${s.name}: ${s.reason}`).join('\n');
+    }
+    statusEl.textContent = msg;
+    statusEl.classList.add('done');
+
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.className = 'download-link';
+    link.download = currentFile.name.replace(/\.pdf$/i, '') + '-inverted.pdf';
+    link.textContent = '↓ Download ' + link.download;
+    statusEl.parentElement.appendChild(link);
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    console.error(err);
+  } finally {
+    invertBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
