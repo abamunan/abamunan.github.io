@@ -82,8 +82,8 @@ initPWA(app);   // service worker + install-prompt tracking; never blocks first 
 (async () => {                                              // cloud is optional: the app is already usable from local data
   try {
     const fsMod = await import('../shared/firestore.js').catch(() => null); splash.step('Signing in');
-    const user = fsMod && await fsMod.requireUser({ redirect: '../../login.html?redirect=apps/money/index.html' });
-    if (!user) { say('Offline', 'sync--wait', 'Offline \u2014 changes are saved on this device and sync when you are back online'); return; }
+    const user = fsMod && await fsMod.optionalUser();
+    if (!user) { say('Local only', 'sync--wait', 'Not signed in \u2014 changes are saved on this device only'); return; }
     app.remote = fsMod.firestoreRemote(); await store.setRemote(app.remote); say('Syncing\u2026');
     const rep = await Promise.race([initialSync(repo, store, name => splash.step(name)), new Promise(r => setTimeout(() => r(null), 6000))]);
     render(); say(store.pendingCount() ? `${store.pendingCount()} unsynced` : 'Synced', store.pendingCount() ? 'sync--wait' : '');

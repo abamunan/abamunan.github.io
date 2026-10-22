@@ -7,12 +7,20 @@ let fsP, auP;
 const fs = () => fsP || (fsP = import(BASE + 'firebase-firestore.js'));
 const au = () => auP || (auP = import(BASE + 'firebase-auth.js'));
 
-// Same behaviour as today: signed-out → login.html. Returns null if the SDK can't load (offline).
+// Required auth flow for pages that must be signed in.
 export async function requireUser({ redirect = '../../login.html' } = {}) {
   try {
     const { onAuthStateChanged } = await au();
     return await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); if (!u) { location.href = redirect; return; } res(u); }); });
   } catch (e) { console.warn('Auth unavailable (offline?)', e); return null; }
+}
+
+// Optional auth flow for local-first apps. Never redirects: null means local-only mode.
+export async function optionalUser() {
+  try {
+    const { onAuthStateChanged } = await au();
+    return await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); res(u || null); }); });
+  } catch (e) { console.warn('Optional auth unavailable (offline?)', e); return null; }
 }
 
 // Paths are relative to users/{uid}/, e.g. 'moneytracker/2026_10_7' or 'moneytracker_meta/debts'.
