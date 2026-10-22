@@ -21,9 +21,11 @@ const splash = initSplash(document.getElementById('splash'), { total: 6 });
 const chip = document.getElementById('syncState');
 const sideSyncLbl = document.getElementById('sidebarSyncLabel');
 const say = (t, cls = '', title = '') => {
-  chip.textContent = t;
-  chip.className = 'sync ' + cls;
-  chip.title = title || t;
+  if (chip) {
+    chip.textContent = t;
+    chip.className = 'sync ' + cls;
+    chip.title = title || t;
+  }
   if (sideSyncLbl) {
     sideSyncLbl.textContent = t;
     const parent = sideSyncLbl.closest('.sidebar-sync-pill');
