@@ -30,8 +30,8 @@ body.app {
 }
 :root[data-theme="dark"] body.app { --on-accent: #11221D; }
 
-/* No glass, no glow on app pages */
-body.app *, body.app *::before, body.app *::after {
+/* Legacy private apps remain opaque; English Tracker opts into its documented glass surfaces. */
+body.app:not(.app-et) *, body.app:not(.app-et) *::before, body.app:not(.app-et) *::after {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
 }
@@ -44,18 +44,46 @@ body.app-diary {
 
 /* ---------- English Fluency Tracker (english-tracker.html) ---------- */
 body.app-et {
+    --bg: #F3F8F5;
+    --paper: rgba(255, 255, 255, 0.75);
+    --ink: #07251A;
+    --muted: #3D6253;
+    --soft: #5C8274;
+    --line: rgba(16, 185, 129, 0.16);
+    --lagoon: #0D8255;
+    --lagoon-tint: rgba(13, 130, 85, 0.10);
+    --marker: #10B981;
+    --on-accent: #fff;
+    --ok: #0D8255;
+    --warn: #D97706;
+    --err: #E11D48;
+    --info: #0284C7;
     --card: var(--paper);
     --mut: var(--muted);
     --ac: var(--lagoon);
     --ac2: var(--lagoon-tint);
     --onac: var(--on-accent);
-    --h1: #0A6F48;            /* hero gradient start (text on it is white) */
-    --h2: #084F34;            /* hero gradient end */
-    --sh: none;               /* style guide: almost no shadows */
+    --h1: #064E3B;
+    --h2: #0D9488;
+    --sh: none;
 }
 :root[data-theme="dark"] body.app-et {
-    --h1: #0F5A3E;            /* keep white hero text readable on dark */
-    --h2: #0A3E2B;
+    --bg: #060913;
+    --paper: rgba(13, 21, 40, 0.70);
+    --ink: #F8FAFC;
+    --muted: #94A3B8;
+    --soft: #64748B;
+    --line: rgba(56, 189, 248, 0.15);
+    --lagoon: #38BDF8;
+    --lagoon-tint: rgba(56, 189, 248, 0.12);
+    --marker: #22D3EE;
+    --on-accent: #fff;
+    --ok: #34D399;
+    --warn: #FBBF24;
+    --err: #FB7185;
+    --info: #60A5FA;
+    --h1: #0B132B;
+    --h2: #0A1C38;
 }
 
 /* ---------- Garments Accounts (garments-accounts.html) ---------- */

@@ -62,7 +62,7 @@ body {
 
 /* Accessibility */
 :focus-visible {
-  outline: 3px solid var(--ac) !important;
+  outline: 2px solid var(--ac) !important;
   outline-offset: 2px !important;
 }
 
@@ -788,33 +788,35 @@ input:focus, textarea:focus, select:focus {
 
 /* Glass dashboard refresh */
 :root {
-  --et-glass: rgba(255, 255, 255, .64);
-  --et-glass-strong: rgba(255, 255, 255, .82);
-  --et-glass-line: rgba(255, 255, 255, .76);
-  --et-glass-shadow: 0 20px 60px rgba(29, 64, 48, .10), 0 2px 8px rgba(29, 64, 48, .04);
+  --et-glass: rgba(255, 255, 255, .70);
+  --et-glass-strong: rgba(255, 255, 255, .76);
+  --et-glass-line: rgba(16, 185, 129, .18);
+  --et-glass-shadow: 0 14px 34px -8px rgba(10, 80, 50, .08), 0 2px 8px rgba(10, 80, 50, .03);
 }
 :root[data-theme="dark"] {
-  --et-glass: rgba(23, 37, 31, .72);
-  --et-glass-strong: rgba(26, 43, 35, .88);
-  --et-glass-line: rgba(231, 239, 234, .10);
-  --et-glass-shadow: 0 20px 60px rgba(0, 0, 0, .25), 0 2px 8px rgba(0, 0, 0, .16);
+  --et-glass: rgba(11, 20, 39, .65);
+  --et-glass-strong: rgba(14, 25, 49, .72);
+  --et-glass-line: rgba(56, 189, 248, .16);
+  --et-glass-shadow: 0 20px 48px -10px rgba(0, 0, 0, .75), 0 0 25px -5px rgba(56, 189, 248, .12);
 }
 
 html { background: var(--bg); }
 body.app-et {
-  --et-radius: 22px;
+  --et-radius: 24px;
   --et-radius-sm: 15px;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse at 84% 4%, rgba(107, 210, 167, .20), transparent 34rem),
-    radial-gradient(ellipse at 8% 40%, rgba(124, 178, 226, .15), transparent 34rem),
-    var(--bg);
+    radial-gradient(circle at 10% 10%, rgba(16, 185, 129, .14), transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(5, 150, 105, .10), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .7), transparent 70%),
+    #F3F8F5;
 }
 :root[data-theme="dark"] body.app-et {
   background:
-    radial-gradient(ellipse at 84% 4%, rgba(35, 144, 99, .18), transparent 34rem),
-    radial-gradient(ellipse at 8% 40%, rgba(47, 91, 127, .16), transparent 34rem),
-    var(--bg);
+    radial-gradient(circle at 12% 15%, rgba(30, 58, 138, .32), transparent 45%),
+    radial-gradient(circle at 88% 82%, rgba(6, 182, 212, .18), transparent 45%),
+    radial-gradient(circle at 50% 30%, rgba(15, 23, 42, .55), transparent 70%),
+    #060913;
 }
 body.app-et .shell { transition: margin .25s ease; }
 body.app-et > .navbar,
@@ -929,8 +931,26 @@ body.app-et .card.hero {
   border: 1px solid rgba(255, 255, 255, .27);
   background:
     radial-gradient(circle at 88% 14%, rgba(255, 255, 255, .25), transparent 14rem),
-    linear-gradient(120deg, color-mix(in srgb, var(--h1) 92%, #3fd39a), var(--h2));
+    linear-gradient(135deg, #064E3B 0%, #047857 55%, #0D9488 100%);
   box-shadow: 0 24px 64px rgba(10, 111, 72, .22);
+}
+body.app-et button:not(.ghost):not(.nav button) {
+  background: linear-gradient(135deg, var(--lagoon), var(--marker));
+  color: var(--ink);
+}
+body.app-et .card.hero { border-radius: 26px; }
+body.app-et .card.hero button { color: #064E3B; }
+body.app-et .card.hero button.ghost { color: #fff; }
+:root[data-theme="dark"] body.app-et .card.hero {
+  background: linear-gradient(135deg, #0B132B 0%, #111E3F 50%, #0A1C38 100%);
+}
+body.app-et button:focus-visible,
+body.app-et input:focus-visible,
+body.app-et textarea:focus-visible,
+body.app-et select:focus-visible,
+body.app-et a:focus-visible {
+  outline: 2px solid var(--lagoon) !important;
+  outline-offset: 3px !important;
 }
 body.app-et .card.hero::after {
   content: "";
