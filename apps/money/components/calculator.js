@@ -17,7 +17,7 @@ const KEYS = [['C', 'Clear'], ['(', 'Open bracket'], [')', 'Close bracket'], ['\
 
 export function mountCalculator({ now = () => Date.now() } = {}) {
   let st = initial(), hist = (Array.isArray(ls.json(K.hist)) ? ls.json(K.hist) : []).filter(x => x && typeof x.e === 'string' && typeof x.r === 'string').slice(0, MAX_HISTORY);
-  let iconFrac = frac(ls.json(K.icon)) || { fx: 1, fy: 0.45 }, winFrac = frac(ls.json(K.win)) || { fx: 0.5, fy: 0.12 }, hideTimer = null, suppressClick = false, histOpen = false;
+  let iconFrac = frac(ls.json(K.icon)) || { fx: 1, fy: 0.45 }, winFrac = frac(ls.json(K.win)) || { fx: 0.5, fy: 0.12 }, hideTimer = null, suppressClick = false, histOpen = false, enabled = false;
 
   const exprEl = h('div', { class: 'calc__expr num', 'aria-label': 'Expression' }), resEl = h('div', { class: 'calc__res num', 'aria-live': 'polite' });
   const histEl = h('div', { class: 'calc__hist', hidden: true });
@@ -97,11 +97,12 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
 
   // ── hide for 10 minutes / bring back ──
   function schedule() { clearTimeout(hideTimer); const left = (Number(ls.get(K.hide)) || 0) - now();
-    if (left > 0) { fab.hidden = true; hideTimer = setTimeout(schedule, Math.min(left, 2147483000)); } else { fab.hidden = false; layout(); } }
-  function hideIcon() { close(); ls.set(K.hide, String(now() + HIDE_MS)); schedule(); toast('Calculator hidden for 10 minutes. Bring it back from More.'); }
+    fab.hidden = !enabled || left > 0;
+    if (left > 0) hideTimer = setTimeout(schedule, Math.min(left, 2147483000)); else if (!fab.hidden) layout(); }
+  function hideIcon() { close(); enabled = false; ls.set(K.hide, String(now() + HIDE_MS)); schedule(); toast('Calculator hidden for 10 minutes. Bring it back from More.'); }
   hideBtn.addEventListener('click', hideIcon);
   dropX.addEventListener('click', hideIcon);
-  function restore() { ls.set(K.hide, '0'); schedule(); layout(); openWin(); }
+  function restore() { enabled = true; ls.set(K.hide, '0'); schedule(); layout(); openWin(); }
   schedule(); layout(); render();
   return { open: openWin, close, restore, isHidden: () => fab.hidden, destroy: () => { clearTimeout(hideTimer); window.removeEventListener('resize', layout); root.remove(); } };
 }

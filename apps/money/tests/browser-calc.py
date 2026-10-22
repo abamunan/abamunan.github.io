@@ -21,7 +21,10 @@ with sync_playwright() as p:
     fab = pg.get_by_label("Open calculator"); win = pg.locator(".calc")
     key = lambda k: pg.locator(f'.calc [data-key="{k}"]').click()
     box = lambda sel: pg.locator(sel).bounding_box()
-    ok(fab.is_visible() and not win.is_visible(), "icon shows, window closed")
+    ok(fab.is_hidden() and not win.is_visible(), "calculator is hidden on the landing view")
+    pg.goto(URL + "#more"); pg.get_by_role("button", name="Show calculator").click()
+    ok(fab.is_visible() and win.is_visible(), "More → Show calculator restores and opens it")
+    pg.get_by_label("Close calculator").click()
     fb = box(".calc-fab"); ok(0 <= fb["x"] and fb["x"] + fb["width"] <= 360 and 0 <= fb["y"] and fb["y"] + fb["height"] <= 740, "icon is inside the screen")
     fab.click(); ok(win.is_visible() and fab.get_attribute("aria-expanded") == "true", "tap opens the window")
     for k in "12+30": key(k)
@@ -66,8 +69,8 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.querySelector('.calc-drop').classList.contains('calc-drop--hot')"), "target lights up when the icon is over it")
     pg.mouse.up(); ok(pg.locator(".calc-fab").is_hidden() and pg.locator(".calc-drop").is_hidden(), "icon hidden after dropping on ✕")
     pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000); ok(pg.locator(".calc-fab").is_hidden(), "still hidden after a reload")
-    pg.clock.fast_forward("11:00"); pg.wait_for_timeout(200); ok(pg.locator(".calc-fab").is_visible(), "icon comes back after 10 minutes")
-    # hide again, bring back from More
+    pg.clock.fast_forward("11:00"); pg.wait_for_timeout(200); ok(pg.locator(".calc-fab").is_hidden(), "calculator stays hidden until More restores it")
+    # bring back from More
     pg.evaluate("localStorage.setItem('mt2_calc_hidden_until_v1', String(Date.now()+600000))"); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
     pg.goto(URL + "#more"); pg.get_by_role("button", name="Show calculator").click(); ok(pg.locator(".calc-fab").is_visible() and win.is_visible(), "More → Show calculator brings it back and opens it")
     ok(pg.evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth"), "no horizontal scroll at 360px")

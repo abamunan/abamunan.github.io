@@ -2048,34 +2048,6 @@ body.money-app-body {
     transform: scale(0.98);
   }
 
-  .sidebar-calc-btn {
-    width: 100%;
-    min-height: 44px;
-    border-radius: 14px;
-    font-weight: 800;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: var(--glass-surface);
-    color: var(--ink);
-    border: 1px solid var(--glass-border);
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .sidebar-calc-btn:hover {
-    transform: translateY(-2px);
-    background: var(--lagoon-tint);
-    border-color: var(--lagoon);
-    color: var(--lagoon);
-  }
-
-  .sidebar-calc-btn:active {
-    transform: scale(0.98);
-  }
-
   .sidebar-footer {
     display: flex;
     align-items: center;
@@ -2227,15 +2199,30 @@ body.money-app-body {
   #app {
     padding-left: 14px;
     padding-right: 14px;
+    min-width: 0;
+  }
+
+  .main-viewport,
+  #main {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .appbar {
     position: sticky;
     top: 0;
     z-index: 20;
-    margin: 0 -2px;
+    margin: 0;
     padding: 8px 2px 18px;
     background: linear-gradient(var(--bg) 70%, transparent);
+  }
+
+  .appbar .brand-lockup {
+    min-width: 0;
+  }
+
+  .appbar .brand-lockup > div {
+    min-width: 0;
   }
 
   .appbar h1 {
