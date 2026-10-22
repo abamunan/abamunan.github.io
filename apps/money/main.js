@@ -19,7 +19,17 @@ import { initPWA } from './data/pwa.js';
 
 const splash = initSplash(document.getElementById('splash'), { total: 6 });
 const chip = document.getElementById('syncState');
-const say = (t, cls = '', title = '') => { chip.textContent = t; chip.className = 'sync ' + cls; chip.title = title || t; };
+const sideSyncLbl = document.getElementById('sidebarSyncLabel');
+const say = (t, cls = '', title = '') => {
+  chip.textContent = t;
+  chip.className = 'sync ' + cls;
+  chip.title = title || t;
+  if (sideSyncLbl) {
+    sideSyncLbl.textContent = t;
+    const parent = sideSyncLbl.closest('.sidebar-sync-pill');
+    if (parent) parent.className = 'sidebar-sync-pill ' + (cls ? 'sidebar-sync-pill--wait' : '');
+  }
+};
 const store = createStore({ outboxKey: NEW_KEYS.outbox, onState: s => say(s.pending ? `${s.pending} unsynced` : 'Synced', s.pending ? 'sync--wait' : '') });
 const repo = createRepo({ store, backupGuard });
 const app = { repo, store, state: {}, refresh: () => render() };
@@ -33,6 +43,28 @@ const tabs = mountTabbar(document.getElementById('tabbar'), TABS, { active: 'tod
 const go = () => { const id = location.hash.slice(1); current = views[id] ? id : 'today'; tabs.select(current); render(); main.focus({ preventScroll: true }); window.scrollTo(0, 0); };
 window.addEventListener('hashchange', go);
 document.getElementById('fab').addEventListener('click', () => openAddSheet(repo, { date: new Date(), onDone: render }));
+document.getElementById('sidebarAddBtn')?.addEventListener('click', () => document.getElementById('fab')?.click());
+
+const bindTheme = () => {
+  const syncIcons = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('.theme-icon-btn, .mobile-theme-btn').forEach(btn => {
+      btn.classList.toggle('is-dark', isDark);
+      btn.setAttribute('aria-pressed', String(isDark));
+      btn.title = isDark ? 'Switch to Day (Green-White) Mode' : 'Switch to Dark (Blue-Black) Mode';
+    });
+  };
+  const toggle = () => {
+    window.MunanTheme?.toggle();
+    syncIcons();
+  };
+  document.getElementById('sidebarThemeBtn')?.addEventListener('click', toggle);
+  document.getElementById('mobileThemeBtn')?.addEventListener('click', toggle);
+  window.addEventListener('storage', e => { if (e.key === 'theme') syncIcons(); });
+  syncIcons();
+};
+bindTheme();
+
 go(); splash.step('Local data ready');
 initPWA(app);   // service worker + install-prompt tracking; never blocks first paint, never touches app data
 
