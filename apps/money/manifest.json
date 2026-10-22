@@ -8,8 +8,8 @@
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
-  "background_color": "#EEF1EA",
-  "theme_color": "#0A6F48",
+  "background_color": "#F3F8F5",
+  "theme_color": "#0D8255",
   "icons": [
     {
       "src": "/apps/money/icon-192.png",

@@ -37,7 +37,15 @@ app.installChanged = () => { if (current === 'more') render(); };
 app.calc = mountCalculator();
 const views = { today: todayView, history: historyView, insights: insightsView, plan: planView, more: moreView };
 const main = document.getElementById('main'); let current = 'today';
-function render() { try { views[current](main, app); } catch (e) { console.error(e); main.replaceChildren(h('p', { class: 'empty' }, 'Something went wrong showing this screen. Your data is safe.')); } }
+function render() {
+  main.dataset.view = current;
+  try {
+    views[current](main, app);
+  } catch (e) {
+    console.error(e);
+    main.replaceChildren(h('p', { class: 'empty' }, 'Something went wrong showing this screen. Your data is safe.'));
+  }
+}
 const TABS = [['today', 'Today'], ['history', 'History'], ['insights', 'Insights'], ['plan', 'Plan'], ['more', 'More']].map(([id, label]) => ({ id, label, icon: icon(id) }));
 const tabs = mountTabbar(document.getElementById('tabbar'), TABS, { active: 'today', onSelect: id => { location.hash = id; } });
 const go = () => { const id = location.hash.slice(1); current = views[id] ? id : 'today'; tabs.select(current); render(); main.focus({ preventScroll: true }); window.scrollTo(0, 0); };

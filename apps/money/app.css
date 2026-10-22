@@ -1752,3 +1752,172 @@ body.money-app-body {
     max-width: 980px;
   }
 }
+
+/* ── FINAL LAYOUT POLISH ─────────────────────────────────────
+   The overview gets a dashboard rhythm on wide screens while all
+   secondary views keep their comfortable single-column reading width. */
+@media (min-width: 900px) {
+  #app.money-app-shell {
+    max-width: 1440px;
+  }
+
+  .sidebar-panel {
+    left: max(28px, calc((100vw - 1440px) / 2 + 28px));
+    width: 286px;
+    padding: 28px 20px 20px;
+    border-radius: 30px;
+  }
+
+  .sidebar-top {
+    padding: 6px 8px 20px;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .brand-name {
+    font-size: 1.58rem;
+  }
+
+  .main-viewport {
+    margin-left: 342px;
+    padding: 34px 42px 96px;
+    max-width: 1100px;
+  }
+
+  .appbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 4px 0 24px;
+    background: linear-gradient(var(--bg) 70%, transparent);
+  }
+
+  #main[data-view="today"] {
+    grid-template-columns: minmax(0, 1.28fr) minmax(280px, .72fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  #main[data-view="today"] > .today-intro,
+  #main[data-view="today"] > section[aria-labelledby="td-h"] {
+    grid-column: 1 / -1;
+  }
+
+  #main[data-view="today"] > .card--hero {
+    min-height: 286px;
+  }
+
+  #main[data-view="today"] > .card--row {
+    grid-column: 1;
+  }
+
+  #main[data-view="today"] > .card:not(.card--hero):not(.card--row) {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: stretch;
+  }
+
+  #main[data-view="today"] > section[aria-labelledby="td-h"] {
+    margin-top: 8px;
+  }
+
+  .today-intro {
+    padding: 6px 6px 2px;
+  }
+
+  .today-intro .eyebrow {
+    font-size: .78rem;
+  }
+
+  .today-date {
+    font-size: .98rem;
+  }
+
+  .card {
+    border-radius: 26px;
+    padding: 24px 26px;
+  }
+
+  .card--hero {
+    padding: 30px 30px 26px;
+  }
+}
+
+@media (max-width: 899px) {
+  body.money-app-body {
+    background-attachment: scroll;
+  }
+
+  #app {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .appbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 0 -2px;
+    padding: 8px 2px 18px;
+    background: linear-gradient(var(--bg) 70%, transparent);
+  }
+
+  .appbar h1 {
+    font-size: 1.2rem;
+  }
+
+  .sync {
+    max-width: 126px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ui-tabbar {
+    bottom: max(12px, var(--sab));
+    left: 10px;
+    right: 10px;
+    min-height: 68px;
+    height: auto;
+    padding: 4px 5px;
+    border-radius: 24px;
+  }
+
+  .ui-tab {
+    min-height: 58px;
+    font-size: .68rem;
+  }
+
+  .ui-tab__icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .fab {
+    right: 18px;
+    bottom: calc(84px + var(--sab) + 10px);
+  }
+
+  .card {
+    border-radius: 22px;
+    padding: 20px;
+  }
+
+  .card--hero {
+    padding: 24px 20px 20px;
+  }
+
+  .big {
+    font-size: clamp(2.45rem, 12vw, 3.4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-orb,
+  .card--hero::after {
+    animation: none;
+  }
+}
