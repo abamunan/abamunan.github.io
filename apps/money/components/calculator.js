@@ -22,8 +22,9 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   const exprEl = h('div', { class: 'calc__expr num', 'aria-label': 'Expression' }), resEl = h('div', { class: 'calc__res num', 'aria-live': 'polite' });
   const histEl = h('div', { class: 'calc__hist', hidden: true });
   const closeBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__x', 'aria-label': 'Close calculator' }, '\u2715');
+  const hideBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__hide', 'aria-label': 'Hide calculator for 10 minutes', title: 'Hide for 10 minutes', html: icon('close', 18) });
   const histBtn = h('button', { type: 'button', class: 'ui-icon-btn calc__x', 'aria-label': 'History', 'aria-pressed': 'false' }, '\u29D6');
-  const head = h('div', { class: 'calc__head' }, h('span', { class: 'calc__title' }, 'Calculator'), histBtn, closeBtn);
+  const head = h('div', { class: 'calc__head' }, h('span', { class: 'calc__title' }, 'Calculator'), hideBtn, histBtn, closeBtn);
   const keys = h('div', { class: 'calc__keys' }, KEYS.map(([k, label]) => h('button', { type: 'button', class: 'calc__key' + (k === '=' ? ' calc__key--eq' : /[C()\u232B\u00F7\u00D7\u2212+]/.test(k) ? ' calc__key--op' : ''), 'data-key': k, 'aria-label': label || k }, k)));
   const win = h('section', { class: 'calc', role: 'dialog', 'aria-label': 'Calculator', tabindex: '-1', hidden: true }, head, exprEl, resEl, histEl, keys);
   const fab = h('button', { type: 'button', class: 'calc-fab', 'aria-label': 'Open calculator', 'aria-expanded': 'false', html: icon('calc', 26), hidden: true });
@@ -98,6 +99,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   function schedule() { clearTimeout(hideTimer); const left = (Number(ls.get(K.hide)) || 0) - now();
     if (left > 0) { fab.hidden = true; hideTimer = setTimeout(schedule, Math.min(left, 2147483000)); } else { fab.hidden = false; layout(); } }
   function hideIcon() { close(); ls.set(K.hide, String(now() + HIDE_MS)); schedule(); toast('Calculator hidden for 10 minutes. Bring it back from More.'); }
+  hideBtn.addEventListener('click', hideIcon);
   dropX.addEventListener('click', hideIcon);
   function restore() { ls.set(K.hide, '0'); schedule(); layout(); openWin(); }
   schedule(); layout(); render();

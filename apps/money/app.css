@@ -1375,6 +1375,11 @@ body.money-app-body {
   pointer-events: auto;
 }
 
+.calc[hidden],
+.calc-fab[hidden] {
+  display: none !important;
+}
+
 .calc-drop {
   position: fixed;
   top: 18px;
@@ -1479,6 +1484,20 @@ body.money-app-body {
   user-select: none;
   padding-bottom: 4px;
   border-bottom: 1px solid var(--line);
+}
+
+.calc__title {
+  flex: 1;
+}
+
+.calc__hide {
+  color: var(--warn);
+}
+
+.calc__hide:hover {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--warn-bg);
 }
 
 .calc__res {
