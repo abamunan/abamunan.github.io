@@ -1425,9 +1425,33 @@ body.money-app-body {
   font: 800 1.7rem var(--display);
   color: var(--lagoon);
   text-align: right;
+  min-height: 1.8em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc__expr {
+  min-height: 2.2em;
+  padding: 8px 6px 4px;
+  color: var(--ink);
+  font: 700 1.2rem var(--mono);
+  text-align: right;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.calc__keys {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .calc__key {
+  width: 100%;
   min-height: 44px;
   border-radius: 12px;
   border: 1px solid var(--glass-border);
@@ -1440,6 +1464,48 @@ body.money-app-body {
 .calc__key:hover {
   border-color: var(--lagoon);
   transform: translateY(-1px);
+}
+
+.calc__key--op {
+  color: var(--lagoon);
+  background: var(--lagoon-tint);
+}
+
+.calc__key--eq {
+  background: linear-gradient(135deg, var(--lagoon), var(--marker));
+  border-color: transparent;
+  color: #FFFFFF;
+}
+
+.calc__hist {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.calc__hist[hidden] {
+  display: none;
+}
+
+.calc__h {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.calc__h:hover {
+  border-color: var(--lagoon);
+  background: var(--lagoon-tint);
 }
 
 /* ================================================================
