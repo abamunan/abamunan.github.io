@@ -32,7 +32,13 @@
 </div>
 <noscript><p style="padding:24px">Money Tracker needs JavaScript.</p></noscript>
 <div id="app">
-  <header class="appbar"><h1>Money Tracker</h1><span id="syncState" class="sync" role="status">Starting…</span></header>
+  <header class="appbar">
+    <div class="brand-lockup">
+      <span class="brand-mark" aria-hidden="true">$</span>
+      <div><p class="brand-kicker">Personal finance</p><h1>Money tracker</h1></div>
+    </div>
+    <span id="syncState" class="sync" role="status">Starting…</span>
+  </header>
   <main id="main" tabindex="-1" aria-label="Money Tracker"></main>
   <button id="fab" class="fab" type="button" aria-label="Add entry"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   <nav id="tabbar"></nav>

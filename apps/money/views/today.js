@@ -70,11 +70,17 @@ export function todayView(el, app) {
     ? h('div', { class: 'elist' }, m.today.entries.map(e => entryRow(e, { onEdit: () => openAddSheet(app.repo, { entry: { ...e, ...where }, onDone: app.refresh }), onDelete: () => deleteWithUndo(app.repo, { ...e, ...where }, app.refresh) })))
     : h('p', { class: 'empty' }, 'Nothing recorded today. Tap + to add an expense or income.');
   el.replaceChildren(
-    h('section', { class: 'card card--hero', 'aria-labelledby': 'net-h' }, h('h2', { id: 'net-h', class: 'card__h' }, 'Net balance'),
+    h('div', { class: 'today-intro' },
+      h('div', { class: 'eyebrow' }, 'Overview'),
+      h('p', { class: 'today-date' }, now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }))
+    ),
+    h('section', { class: 'card card--hero', 'aria-labelledby': 'net-h' },
+      h('div', { class: 'hero-head' }, h('h2', { id: 'net-h', class: 'card__h' }, 'Total balance'), h('span', { class: 'live-dot' }, 'Up to date')),
       h('p', { class: 'big num' }, fmt(m.net)),
-      h('ul', { class: 'accts' }, m.accounts.map(a => h('li', {}, h('span', { 'aria-hidden': 'true' }, a.icon || ''), ` ${a.label} `, h('span', { class: 'num' }, fmt(a.balance)))))),
-    h('section', { class: 'card card--row', 'aria-label': 'This month' }, h('div', {}, h('div', { class: 'card__sub' }, 'Income this month'), h('div', { class: 'num money-in' }, fmt(m.month.totalInc, { sign: true }))),
-      h('div', {}, h('div', { class: 'card__sub' }, 'Expense this month'), h('div', { class: 'num money-out' }, fmt(-m.month.totalExp, { sign: true })))),
+      h('ul', { class: 'accts' }, m.accounts.map(a => h('li', {}, h('span', { class: 'account-icon', 'aria-hidden': 'true' }, a.icon || '•'), h('span', {}, a.label), h('span', { class: 'num account-balance' }, fmt(a.balance)))))),
+    h('section', { class: 'card card--row', 'aria-label': 'This month' },
+      h('div', { class: 'stat-cell stat-cell--income' }, h('div', { class: 'stat-label' }, 'Income this month'), h('div', { class: 'num money-in' }, fmt(m.month.totalInc, { sign: true }))),
+      h('div', { class: 'stat-cell stat-cell--expense' }, h('div', { class: 'stat-label' }, 'Spent this month'), h('div', { class: 'num money-out' }, fmt(-m.month.totalExp, { sign: true })))),
     budgetSection,
     h('section', { 'aria-labelledby': 'td-h' }, h('div', { class: 'sechead' }, h('h2', { id: 'td-h' }, 'Today', m.today.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) })),
       h('span', { class: 'num sechead__t' }, m.today.exp ? h('span', { class: 'money-out' }, fmt(-m.today.exp, { sign: true })) : '', ' ', m.today.inc ? h('span', { class: 'money-in' }, fmt(m.today.inc, { sign: true })) : '')), list));
