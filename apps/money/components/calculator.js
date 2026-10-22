@@ -27,11 +27,15 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   const keys = h('div', { class: 'calc__keys' }, KEYS.map(([k, label]) => h('button', { type: 'button', class: 'calc__key' + (k === '=' ? ' calc__key--eq' : /[C()\u232B\u00F7\u00D7\u2212+]/.test(k) ? ' calc__key--op' : ''), 'data-key': k, 'aria-label': label || k }, k)));
   const win = h('section', { class: 'calc', role: 'dialog', 'aria-label': 'Calculator', tabindex: '-1', hidden: true }, head, exprEl, resEl, histEl, keys);
   const fab = h('button', { type: 'button', class: 'calc-fab', 'aria-label': 'Open calculator', 'aria-expanded': 'false', html: icon('calc', 26), hidden: true });
-  const dropX = h('div', { class: 'calc-drop__x', html: icon('close', 24) }), drop = h('div', { class: 'calc-drop', 'aria-hidden': 'true' }, h('div', { class: 'calc-drop__l' }, 'Drop here to hide for 10 min'), dropX);
+  const dropX = h('button', { type: 'button', class: 'calc-drop__x', 'aria-label': 'Hide calculator for 10 minutes', html: icon('close', 24) }), drop = h('div', { class: 'calc-drop', 'aria-hidden': 'true' }, h('div', { class: 'calc-drop__l' }, 'Drop here to hide for 10 min'), dropX);
   const root = h('div', { class: 'calc-root' }, drop, win, fab); document.body.append(root);
 
   // ── positions: a fraction (0..1) of the free space, so it survives rotation and resizing ──
   const vw = () => document.documentElement.clientWidth, vh = () => window.innerHeight;
+  const setDropVisible = visible => {
+    drop.classList.toggle('calc-drop--on', visible);
+    drop.setAttribute('aria-hidden', String(!visible));
+  };
   function put(el, f) { const w = el.offsetWidth || FAB, hh = el.offsetHeight || FAB, mx = Math.max(EDGE, vw() - w - EDGE), my = Math.max(EDGE, vh() - hh - EDGE);
     el.style.left = Math.round(EDGE + f.fx * (mx - EDGE)) + 'px'; el.style.top = Math.round(EDGE + f.fy * (my - EDGE)) + 'px'; }
   function dragTo(el, left, top) { const w = el.offsetWidth, hh = el.offsetHeight, mx = Math.max(EDGE, vw() - w - EDGE), my = Math.max(EDGE, vh() - hh - EDGE);
@@ -77,11 +81,11 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   function drag(el, e, { onMove, onEnd, hold = false }) {
     if (e.button > 0) return; const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, sx = e.clientX, sy = e.clientY; let moved = false, held = false, timer = null;
     try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-    if (hold) timer = setTimeout(() => { held = true; drop.classList.add('calc-drop--on'); try { navigator.vibrate?.(12); } catch { /* ignore */ } }, HOLD_MS);
-    const move = ev => { if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > MOVE_PX) { moved = true; clearTimeout(timer); if (hold) drop.classList.add('calc-drop--on'); } if (moved) onMove(ev.clientX - dx, ev.clientY - dy, ev); };
+    if (hold) timer = setTimeout(() => { held = true; setDropVisible(true); try { navigator.vibrate?.(12); } catch { /* ignore */ } }, HOLD_MS);
+    const move = ev => { if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > MOVE_PX) { moved = true; clearTimeout(timer); if (hold) setDropVisible(true); } if (moved) onMove(ev.clientX - dx, ev.clientY - dy, ev); };
     const up = ev => { clearTimeout(timer); const over = hot(ev);                                  // measured before the ✕ target is hidden again
       el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
-      drop.classList.remove('calc-drop--on', 'calc-drop--hot'); if (moved || held) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 0); } onEnd(over, moved); };
+      setDropVisible(false); drop.classList.remove('calc-drop--hot'); if (moved || held) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 0); } onEnd(over, moved); };
     el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   }
   fab.addEventListener('pointerdown', e => drag(fab, e, { hold: true,
@@ -94,6 +98,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   function schedule() { clearTimeout(hideTimer); const left = (Number(ls.get(K.hide)) || 0) - now();
     if (left > 0) { fab.hidden = true; hideTimer = setTimeout(schedule, Math.min(left, 2147483000)); } else { fab.hidden = false; layout(); } }
   function hideIcon() { close(); ls.set(K.hide, String(now() + HIDE_MS)); schedule(); toast('Calculator hidden for 10 minutes. Bring it back from More.'); }
+  dropX.addEventListener('click', hideIcon);
   function restore() { ls.set(K.hide, '0'); schedule(); layout(); openWin(); }
   schedule(); layout(); render();
   return { open: openWin, close, restore, isHidden: () => fab.hidden, destroy: () => { clearTimeout(hideTimer); window.removeEventListener('resize', layout); root.remove(); } };

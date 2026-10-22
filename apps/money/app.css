@@ -1375,6 +1375,66 @@ body.money-app-body {
   pointer-events: auto;
 }
 
+.calc-drop {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-card);
+  color: var(--muted);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -10px);
+  transition: opacity .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.calc-drop--on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.calc-drop--hot {
+  border-color: var(--err);
+  color: var(--err);
+}
+
+.calc-drop__l {
+  font: 700 .78rem var(--body);
+  white-space: nowrap;
+}
+
+.calc-drop__x {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--glass-surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.calc-drop__x:hover,
+.calc-drop--hot .calc-drop__x {
+  border-color: var(--err);
+  background: var(--err);
+  color: #FFFFFF;
+}
+
 .calc-fab {
   position: fixed;
   width: 54px;
