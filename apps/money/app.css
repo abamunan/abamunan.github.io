@@ -1284,6 +1284,11 @@ body.money-app-body {
   scrollbar-width: thin;
 }
 
+.add-category-list {
+  margin-top: 5px;
+  padding-top: 6px !important;
+}
+
 .add-field > .chips .chip {
   min-height: 40px;
 }

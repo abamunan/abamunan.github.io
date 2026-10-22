@@ -24,7 +24,7 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   const amount = h('input', { class: 'ui-input add-amount num', type: 'text', inputmode: 'none', autocomplete: 'off', 'aria-label': 'Amount in taka', placeholder: '0', 'data-autofocus': true, value: entry ? String(entry.amt) : '' });
   const preview = h('div', { class: 'add-preview num', 'aria-live': 'polite' });
   const saveBtn = h('button', { type: 'button', class: 'ui-btn ui-btn--primary add-save' }, 'Save');
-  const chips = h('div', { class: 'chips chips--scroll', role: 'group', 'aria-label': 'Category' }), accts = h('div', { class: 'chips chips--scroll', role: 'group', 'aria-label': 'Account' });
+  const chips = h('div', { class: 'chips chips--scroll add-category-list', role: 'group', 'aria-label': 'Category' }), accts = h('div', { class: 'chips chips--scroll', role: 'group', 'aria-label': 'Account' });
   const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Type' });
   const banner = h('div', { class: 'add-lock', hidden: true });
 
