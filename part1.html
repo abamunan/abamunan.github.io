@@ -42,12 +42,12 @@
         @media (prefers-reduced-motion:reduce) { .spinner { animation-duration:2.4s; } }
 
         .drive-btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:12px 26px; border-radius:999px; font-weight:700; font-size:.98rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
-        .drive-btn:hover { background:var(--lagoon); color:#fff; }
-        :root[data-theme="dark"] .drive-btn { background:var(--marker); color:#11221D; }
-        :root[data-theme="dark"] .drive-btn:hover { background:#fff; }
+        .drive-btn:hover { background:var(--lagoon); color:var(--on-ink); }
+        :root[data-theme="dark"] .drive-btn { background:var(--marker); color:var(--on-marker); }
+        :root[data-theme="dark"] .drive-btn:hover { background:var(--on-ink); color:var(--ink); }
         .drive-btn.cancel, :root[data-theme="dark"] .drive-btn.cancel { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
         .drive-btn.cancel:hover, :root[data-theme="dark"] .drive-btn.cancel:hover { background:var(--ink); color:var(--bg); }
-        .drive-btn.success, :root[data-theme="dark"] .drive-btn.success { background:var(--ok); color:#fff; }
+        .drive-btn.success, :root[data-theme="dark"] .drive-btn.success { background:var(--ok); color:var(--on-ink); }
         .drive-btn.success:hover { background:var(--lagoon); }
 
         #overlay { align-items:center; justify-content:center; }

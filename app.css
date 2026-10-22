@@ -23,12 +23,12 @@
 
 /* ---------- Shared by every private app ---------- */
 body.app {
-    --on-accent: #fff;
+    --on-accent: var(--on-ink);
     --tint-weak: color-mix(in srgb, var(--lagoon) 8%, transparent);
     --tint: color-mix(in srgb, var(--lagoon) 14%, transparent);
     font-family: var(--body);
 }
-:root[data-theme="dark"] body.app { --on-accent: #11221D; }
+:root[data-theme="dark"] body.app { --on-accent: var(--on-ink); }
 
 /* Legacy private apps remain opaque; English Tracker opts into its documented glass surfaces. */
 body.app:not(.app-et) *, body.app:not(.app-et) *::before, body.app:not(.app-et) *::after {
@@ -53,7 +53,7 @@ body.app-et {
     --lagoon: #0D8255;
     --lagoon-tint: rgba(13, 130, 85, 0.10);
     --marker: #10B981;
-    --on-accent: #fff;
+    --on-accent: var(--on-ink);
     --ok: #0D8255;
     --warn: #D97706;
     --err: #E11D48;
@@ -77,7 +77,7 @@ body.app-et {
     --lagoon: #38BDF8;
     --lagoon-tint: rgba(56, 189, 248, 0.12);
     --marker: #22D3EE;
-    --on-accent: #fff;
+    --on-accent: var(--on-ink);
     --ok: #34D399;
     --warn: #FBBF24;
     --err: #FB7185;

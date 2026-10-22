@@ -49,9 +49,9 @@
         .article-foot { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; padding:18px 34px 26px; border-top:1.5px solid var(--line); margin-top:18px; }
         .share { display:flex; align-items:center; gap:8px; font-size:.88rem; color:var(--soft); font-weight:600; }
         .share-btn { width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); background:var(--paper); transition:border-color .2s, background .2s; }
-        .share-btn:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        .share-btn:hover { border-color:var(--ink); background:var(--marker); color:var(--on-marker); }
         .modal-x { position:absolute; right:14px; top:22px; width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line); background:var(--paper); display:inline-flex; align-items:center; justify-content:center; color:var(--ink); z-index:2; }
-        .modal-x:hover { border-color:var(--ink); background:var(--marker); color:#11221D; }
+        .modal-x:hover { border-color:var(--ink); background:var(--marker); color:var(--on-marker); }
         @media (max-width:560px) { .article-in { padding:24px 20px 6px; } .article-foot { padding:16px 20px 22px; } .modal { padding:10px; } }
     </style>
 </head>
@@ -191,7 +191,7 @@
             navigator.clipboard.writeText(window.location.href).then(() => {
                 const btn = document.getElementById('copyBtn');
                 btn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
-                btn.style.cssText = 'background:var(--marker);color:#11221D;border-color:var(--marker);';
+                btn.style.cssText = 'background:var(--marker);color:var(--on-marker);border-color:var(--marker);';
                 setTimeout(() => { btn.innerHTML = '<i class="fas fa-link" aria-hidden="true"></i>'; btn.style.cssText = ''; }, 1800);
             });
         }
