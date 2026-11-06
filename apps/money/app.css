@@ -1287,10 +1287,21 @@ body.money-app-body {
 .add-category-list {
   margin-top: 5px;
   padding-top: 6px !important;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(40px, auto));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(116px, max-content);
+  align-content: start;
+  justify-content: start;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-height: 142px !important;
+  scroll-snap-type: x proximity;
 }
 
-.add-field > .chips .chip {
+.add-category-list .chip {
   min-height: 40px;
+  scroll-snap-align: start;
 }
 
 .add-two {
