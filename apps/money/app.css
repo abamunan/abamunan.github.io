@@ -2293,6 +2293,82 @@ body.money-app-body {
   }
 }
 
+/* Keep the phone viewport responsive: large blur surfaces and animated
+   background layers otherwise compete with scrolling on low-power devices. */
+@media (max-width: 699px) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body.money-app-body {
+    min-height: 100svh;
+    overscroll-behavior-x: none;
+  }
+
+  .ambient-glow {
+    display: none;
+  }
+
+  #app {
+    padding-top: calc(var(--sat) + 10px);
+    padding-bottom: calc(86px + var(--tabbar-h) + var(--sab));
+  }
+
+  .appbar {
+    position: relative;
+    background: transparent;
+  }
+
+  #main {
+    gap: 14px;
+    contain: layout style;
+  }
+
+  .card,
+  .erow,
+  .mrow,
+  .mrow2,
+  .drow,
+  .empty,
+  .seg,
+  .chip,
+  .ui-tabbar,
+  .mobile-theme-btn {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .card,
+  .erow,
+  .mrow,
+  .mrow2,
+  .drow,
+  .empty {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.045);
+  }
+
+  .card--hero::after {
+    display: none;
+  }
+
+  .dgroup {
+    content-visibility: auto;
+    contain-intrinsic-size: 120px;
+  }
+
+  .erow,
+  .mrow,
+  .mrow2 {
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+
+  .erow:hover,
+  .mrow:hover,
+  .mrow2:hover {
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-orb,
   .card--hero::after {
