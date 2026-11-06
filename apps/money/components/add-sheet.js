@@ -17,7 +17,12 @@ const KEY_LABEL = { '\u232B': 'Backspace', '\u00F7': 'Divide', '\u00D7': 'Multip
 export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = null, onDone } = {}) {
   const S = { kind: entry ? (repo.settings.income.some(f => f.id === entry.cat) ? 'in' : 'out') : kind, cat: entry?.cat, acct: entry?.acct, acctTouched: !!entry,
     date: entry ? new Date(entry.y, entry.m0, entry.d) : new Date(date), unlocked: false, note: entry?.note || '' };
-  const list = () => { const l = S.kind === 'out' ? repo.settings.expense : repo.settings.income; return [...l.filter(f => f.pinned), ...l.filter(f => !f.pinned)]; };
+  const list = () => {
+    const l = S.kind === 'out' ? repo.settings.expense : repo.settings.income;
+    return l.map((f, index) => ({ f, index, uses: repo.categoryUseCount(f.id) }))
+      .sort((a, b) => b.uses - a.uses || Number(b.f.pinned) - Number(a.f.pinned) || a.index - b.index)
+      .map(({ f }) => f);
+  };
   if (!S.cat || !list().some(f => f.id === S.cat)) S.cat = list()[0]?.id;
   if (!S.acct) S.acct = repo.resolveAccount(S.cat);
 

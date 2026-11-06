@@ -122,7 +122,8 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     updateCategory(type, id, patch) { saveSettings({ [type]: C.updateCategory(s[lists[type]], id, patch, s.accounts.map(a => a.id)) }); },
     moveCategory(type, id, dir) { saveSettings({ [type]: C.moveCategory(s[lists[type]], id, dir) }); },
     deleteCategory(type, id) { saveSettings({ [type]: C.deleteCategory(s[lists[type]], type, id) }); },
-    categoryUsage: id => C.categoryUsage(listDays(), id)
+    categoryUsage: id => C.categoryUsage(listDays(), id),
+    categoryUseCount: id => C.categoryUseCount(listDays(), id)
   };
 
   function applyImport(plan, payload) {

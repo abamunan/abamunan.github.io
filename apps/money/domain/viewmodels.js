@@ -110,10 +110,11 @@ export function accountModel(repo, accountId, sort = 'newest') {
         : b.y - a.y || b.m0 - a.m0 || b.d - a.d || b.ts - a.ts);
   return {
     account,
-    accounts: repo.settings.accounts,
+    accounts: repo.settings.accounts.map(a => ({ ...a, balance: balances[a.id] || 0 })),
     entries,
     income: round2(entries.filter(e => e.kind === 'in').reduce((sum, e) => sum + e.amt, 0)),
     expense: round2(entries.filter(e => e.kind === 'out').reduce((sum, e) => sum + e.amt, 0)),
-    balance: balances[account.id] || 0
+    balance: balances[account.id] || 0,
+    total: round2(repo.settings.accounts.reduce((sum, a) => sum + (balances[a.id] || 0), 0))
   };
 }

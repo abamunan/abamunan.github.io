@@ -32,7 +32,24 @@ export function deleteCategory(list, type, id) {
 }
 // How much saved data sits under this id: used to warn before deleting. Counts days with an amount (flat field) or an entry.
 export function categoryUsage(days, id) {
-  let n = 0, total = 0;
-  for (const { doc } of days) { const flat = Number(doc?.[id]) || 0, has = (doc?.entries || []).some(e => e.cat === id); if (flat || has) { n++; total += flat; } }
+  const { days: n, total } = categoryUsageStats(days, id);
   return { days: n, total: Math.round(total * 100) / 100 };
+}
+
+export function categoryUseCount(days, id) {
+  return categoryUsageStats(days, id).uses;
+}
+
+function categoryUsageStats(days, id) {
+  let n = 0, uses = 0, total = 0;
+  for (const { doc } of days) {
+    const flat = Number(doc?.[id]) || 0;
+    const entries = (doc?.entries || []).filter(e => e.cat === id);
+    if (flat || entries.length) {
+      n++;
+      uses += entries.length || 1;
+      total += flat;
+    }
+  }
+  return { days: n, uses, total };
 }
