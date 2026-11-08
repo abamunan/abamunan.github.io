@@ -25,7 +25,8 @@ abamunan.github.io-main/
 │   ├── terms.html            — Terms of service
 │   ├── notes.html            — Subject notes listing
 │   ├── tools.html            — Tool directory page
-│   └── webcomic.html         — Webcomic listing + viewer
+│   ├── webcomic.html         — Webcomic listing + viewer
+│   └── contactRep.html       — Contact form success response (site.css)
 │
 ├── PRIVATE APPS (use app.css → maps to site.css tokens)
 │   ├── diary.html            — Personal diary (site.css + app.css)
@@ -43,8 +44,8 @@ abamunan.github.io-main/
 │   ├── drive-folder-fetch.html— Google Drive folder browser
 │   └── TypeMaster.html       — Typing speed test
 │
-├── STANDALONE PAGES (OWN theme — NOT on site.css)
-│   ├── contactRep.html       — Pink-themed contact reply (Dancing Script + Poppins)
+├── STANDALONE PAGES
+│   ├── birthdaywish.html     — Birthday wishes page (independent pink theme, preserved)
 │   ├── reader.html           — Fullscreen document reader (site.css, no nav/footer)
 │   ├── bot1.html             — AI chatbot docs (site.css)
 │   └── styleguide.html       — Living style guide demo
@@ -115,7 +116,7 @@ abamunan.github.io-main/
 | Private apps (diary, english-tracker, garments) | site.css → app.css → inline `<style>` | ✅ Matches reference |
 | Money Tracker PWA | site.css → ui.css → money/app.css | ★ IS the reference |
 | Health Tracker PWA | site.css → ui.css → health/app.css | ✅ Matches reference |
-| **contactRep.html** | **NONE — fully inline** | ❌ **Completely different** |
+| **contactRep.html** | site.css → inline `<style>` | ✅ Matches reference |
 | **TypeMaster.html (dark mode)** | site.css + tool.css + **style.css dark overrides** | ⚠️ **Legacy tokens** |
 | **Any page loading style.css** | style.css | ❌ **Completely different theme** |
 
@@ -143,7 +144,7 @@ See [`audit/theme-tokens.css`](file:///d:/Portfolio/abamunan.github.io-main/audi
 | 2 | 🔴 Critical | **XSS via `innerHTML` with user data** — `dashboard.html:251` injects `user.displayName` via innerHTML without escaping | Account compromise via crafted display name |
 | 3 | 🟠 High | **Firebase API key in plaintext** in `firebase-config.js:12` — plus client-side password check in `part1.html:190` | Key is accessible in source; password comparison is bypassable |
 | 4 | 🟠 High | **156+ `innerHTML` assignments** across 22 files, many with template literals rendering user/dynamic data | Broad XSS attack surface |
-| 5 | 🟠 High | **`contactRep.html` is a completely standalone page** — no `site.css`, no `theme.js`, no nav/footer, pink color scheme, Dancing Script font, no dark mode | Feels like a different website entirely |
+| 5 | 🟠 High | **`style.css` legacy remnants** — old Poppins/blue design system on disk (retired to `_trash/` in Phase 1) | Risk of theme leakage and token confusion |
 | 6 | 🟡 Medium | **Massive inline `<style>` blocks** — diary.html has 455 lines, english-tracker.html has 1154 lines, garments-accounts.html has ~140 lines of inline CSS | Unmaintainable; duplicates patterns already in site.css |
 | 7 | 🟡 Medium | **Hardcoded colors in JS** — login.html (`#ef4444`, `#f97316`, `#eab308`, `#22c55e`), tools.html (80+ hex colors for icons), style.css dark overrides (`#f1f5f9`, `#020617`, etc.) | Colors don't respect theme tokens; won't adapt to future theme changes |
 | 8 | 🟡 Medium | **Inconsistent responsive breakpoints** — 8 different breakpoints used across pages (480, 560, 600, 700, 760, 768, 900, 960px) | Layouts break at different screen widths |
@@ -207,7 +208,7 @@ These two files define **entirely different design systems**:
 | **invert-colors.html** | 7/10 | Large (~2100 LOC), embedded in pdf-toolkit iframe, own token system |
 | **drive-folder-fetch.html** | 7/10 | Generates iframe with hardcoded font `Consolas, "Courier New"` (L889), 2 `innerHTML` |
 | **TypeMaster.html** | 5/10 | **Uses `style.css` dark-mode overrides** with 14× `!important`, hardcoded colors (`#f1f5f9`, `#020617`, `#020617`, `#64748b`, etc.), `--surface` variable conflicts with site.css tokens |
-| **contactRep.html** | 1/10 | **ZERO theme alignment** — own pink palette (`--pink-50` through `--pink-700`), Dancing Script + Poppins fonts, no site.css, no theme.js, no dark mode, no nav, no footer, no skip link, missing OG meta |
+| **contactRep.html** | 9/10 | Committed version is fully on `site.css?v=3` and tokens. Missing full OG/Twitter meta and had brutalist tile shadow; fixed in Phase 2. *(Prior 1/10 was from an uncommitted working copy experiment now preserved in `birthdaywish.html`)* |
 | **apps/money/** | 10/10 | ★ IS the reference theme |
 | **apps/health/** | 10/10 | Perfect token match with reference |
 
@@ -228,8 +229,6 @@ These two files define **entirely different design systems**:
 | `style.css:370` | `color: #f1f5f9 !important` | `var(--ink)` | Text color |
 | `style.css:384-386` | All inputs: `!important` override on bg/color/border | Should use `var(--paper)`, `var(--ink)`, `var(--line)` | Form inputs |
 | `login.html:378` | `['#ef4444','#f97316','#eab308','#22c55e']` | `[var(--err), var(--warn), var(--warn), var(--ok)]` | Strength colors |
-| `contactRep.html:17` | `--pink-50:#fff0f7` (entire palette) | Site token system | Entire page |
-| `contactRep.html:20` | `font-family: 'Poppins', ...` | `var(--body)` | Font |
 | `diary.html:338` | `rgba(13,21,18,.55)` (overlay) | `rgba(17,34,29,.55)` (site.css modal) | Overlay color |
 | `english-tracker.html:65` | `outline: 2px solid var(--ac) !important` | `outline: 2px solid var(--lagoon)` (no !important) | Focus |
 | `tools.html:71-123` | 80+ hardcoded hex colors | Should use CSS variables or inline `style` bound to data | Icon colors |
@@ -278,7 +277,7 @@ These two files define **entirely different design systems**:
 | A1 | No focus trap in modals | `blog.html`, `webcomic.html`, `styleguide.html`, `part1.html` | Tab can escape modal dialogs |
 | A2 | Missing `aria-hidden` on decorative icons | `index.html:535-551`, `diary.html` (15+ icons) | Screen reader announces icon Unicode |
 | A3 | Missing `required` attribute on form inputs | `login.html:149,157,243,251,267,288` | JS-only validation, no native form validation |
-| A4 | **No skip link, no dark mode** | `contactRep.html` | Only page without accessibility basics |
+| A4 | Standalone page accessibility | `birthdaywish.html` | Preserved keepsake page lacks skip link and dark mode |
 | A5 | Emoji icons not marked `aria-hidden` | `reader.html` dock buttons (📖🔖📝⏱🔗⌨) | Screen reader reads emoji names |
 | A6 | Missing `alt` text on dynamically loaded images | `dashboard.html:101` (avatar has no initial `src`) | Broken image flash |
 
