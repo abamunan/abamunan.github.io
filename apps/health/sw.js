@@ -15,7 +15,7 @@
 // instead of lingering. Editing a file's CONTENTS does not need a bump: the stale-while-revalidate fetch handler
 // refreshes it in the background on the next load anyway. tests/run.mjs checks that PRECACHE matches the real
 // import graph of main.js, so a forgotten file fails the test instead of failing offline on someone's phone.
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `health-shell-${CACHE_VERSION}`;
 const SHELL_FALLBACK = '/apps/health/index.html';
 

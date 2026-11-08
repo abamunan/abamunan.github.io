@@ -44,20 +44,6 @@ body.app-diary {
 
 /* ---------- English Fluency Tracker (english-tracker.html) ---------- */
 body.app-et {
-    --bg: #F3F8F5;
-    --paper: rgba(255, 255, 255, 0.75);
-    --ink: #07251A;
-    --muted: #3D6253;
-    --soft: #5C8274;
-    --line: rgba(16, 185, 129, 0.16);
-    --lagoon: #0D8255;
-    --lagoon-tint: rgba(13, 130, 85, 0.10);
-    --marker: #10B981;
-    --on-accent: var(--on-ink);
-    --ok: #0D8255;
-    --warn: #D97706;
-    --err: #E11D48;
-    --info: #0284C7;
     --card: var(--paper);
     --mut: var(--muted);
     --ac: var(--lagoon);
@@ -68,20 +54,6 @@ body.app-et {
     --sh: none;
 }
 :root[data-theme="dark"] body.app-et {
-    --bg: #060913;
-    --paper: rgba(13, 21, 40, 0.70);
-    --ink: #F8FAFC;
-    --muted: #94A3B8;
-    --soft: #64748B;
-    --line: rgba(56, 189, 248, 0.15);
-    --lagoon: #38BDF8;
-    --lagoon-tint: rgba(56, 189, 248, 0.12);
-    --marker: #22D3EE;
-    --on-accent: var(--on-ink);
-    --ok: #34D399;
-    --warn: #FBBF24;
-    --err: #FB7185;
-    --info: #60A5FA;
     --h1: #0B132B;
     --h2: #0A1C38;
 }
