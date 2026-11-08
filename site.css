@@ -29,6 +29,7 @@
     --marker:#10B981;
     --on-ink:#FFFFFF;
     --on-marker:#11221D;
+    --on-accent:var(--on-ink);
 
     /* semantic */
     --ok:#0D8255;   --ok-bg:rgba(13,130,85,.12);
@@ -82,6 +83,7 @@
     --marker:#22D3EE;
     --on-ink:#060913;
     --on-marker:#11221D;
+    --on-accent:var(--on-ink);
     --ok:#34D399;   --ok-bg:rgba(52,211,153,.12);
     --warn:#FBBF24; --warn-bg:rgba(251,191,36,.12);
     --err:#FB7185;  --err-bg:rgba(251,113,133,.12);
