@@ -170,9 +170,10 @@ function render(q) {
   cnt.textContent = shown + ' note' + (shown !== 1 ? 's' : '');
 
   if (!shown) {
+    const safeQ = String(q).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     subjectsEl.innerHTML = `<div class="empty">
       <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-      No notes found for "<strong>${q}</strong>" — try a different keyword.
+      No notes found for "<strong>${safeQ}</strong>" — try a different keyword.
     </div>`;
   }
 }

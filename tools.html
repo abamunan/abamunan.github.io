@@ -173,6 +173,10 @@ function buildFilters() {
   });
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function render(q) {
   q = (q || '').toLowerCase().trim();
   const list = MY_TOOLS.filter(t => {
@@ -185,9 +189,10 @@ function render(q) {
   grid.innerHTML  = '';
 
   if (!list.length) {
+    const safeQ = escapeHtml(q || activeFilter);
     grid.innerHTML = `<div class="empty">
       <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-      No tools found for "<strong>${q || activeFilter}</strong>" — try a different keyword.
+      No tools found for "<strong>${safeQ}</strong>" — try a different keyword.
     </div>`;
     return;
   }

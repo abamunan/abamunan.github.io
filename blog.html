@@ -126,6 +126,10 @@
             });
         }
 
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
         function render(q) {
             q = (q || '').toLowerCase().trim();
             const grid = document.getElementById('blogGrid');
@@ -137,7 +141,8 @@
             });
             countEl.textContent = filtered.length ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}` : '';
             if (!filtered.length) {
-                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${q || activeFilter}</b>"`}</div>`;
+                const safeQ = escapeHtml(q || activeFilter);
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${safeQ}</b>"`}</div>`;
                 return;
             }
             grid.innerHTML = filtered.map((p) => `

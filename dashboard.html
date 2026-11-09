@@ -248,7 +248,13 @@ function populateDashboard(user) {
     // Greeting
     const hr = new Date().getHours();
     const gt = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greetMsg').innerHTML  = `${gt}, <span style="color:var(--accent)">${name.split(' ')[0]}</span> 👋`;
+    const greetEl = document.getElementById('greetMsg');
+    greetEl.textContent = `${gt}, `;
+    const nameSpan = document.createElement('span');
+    nameSpan.style.color = 'var(--lagoon)';
+    nameSpan.textContent = name.split(' ')[0];
+    greetEl.appendChild(nameSpan);
+    greetEl.appendChild(document.createTextNode(' 👋'));
 
     // Name & email
     document.getElementById('displayName').textContent  = user.displayName || name;
@@ -291,6 +297,7 @@ function populateDashboard(user) {
     document.getElementById('memberSince').textContent = fmt(user.metadata?.creationTime ? new Date(user.metadata.creationTime).getTime() : null);
     document.getElementById('lastSignIn').textContent  = fmt(user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : null);
 }
+window.populateDashboard = populateDashboard;
 
 // ── LOGOUT ───────────────────────────────────────────────────
 window.handleLogout = async () => {
