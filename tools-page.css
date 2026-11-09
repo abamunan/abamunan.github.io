@@ -1,0 +1,22 @@
+/* ============================================================
+   tools-page.css — Tools & Extensions page styles
+   Tokens map directly to site.css single source of truth.
+   ============================================================ */
+
+.tool-row .row-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.tool-row .row-desc {
+    display: block;
+    margin-top: 2px;
+}
+
+.tools-wrap {
+    margin-top: 8px;
+}
+
+:root[data-theme="dark"] .fchip[aria-pressed="true"] {
+    color: var(--on-marker);
+}
