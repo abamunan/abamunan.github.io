@@ -1,0 +1,126 @@
+/* ============================================================
+   legal-page.css — Privacy Policy & Terms of Service styles
+   Tokens map directly to site.css single source of truth.
+   ============================================================ */
+
+.legal {
+    counter-reset: sec;
+}
+.legal-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--soft);
+    font-size: .9rem;
+    font-weight: 600;
+    margin-top: 6px;
+}
+.legal-meta i {
+    color: var(--lagoon);
+}
+.toc {
+    max-width: 720px;
+    margin-bottom: 40px;
+}
+.toc h2 {
+    font-size: 1rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--soft);
+    font-family: var(--body);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.toc ol {
+    padding-left: 1.4em;
+    display: grid;
+    gap: 2px 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.toc li {
+    padding-left: 4px;
+}
+.toc li::marker {
+    color: var(--soft);
+    font-weight: 700;
+}
+.toc a {
+    display: inline-block;
+    padding: 6px 0;
+    font-weight: 600;
+    color: var(--lagoon);
+    min-height: 32px;
+}
+.toc a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--marker);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
+}
+.legal .prose h2 {
+    counter-increment: sec;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    scroll-margin-top: calc(var(--nav-h) + 20px);
+    position: relative;
+    border-top: 1.5px solid var(--line);
+    padding-top: 1.1em;
+    margin-top: 1.8em;
+}
+.legal .prose h2:first-of-type {
+    margin-top: 0;
+}
+.legal .prose h2::before {
+    content: counter(sec, decimal-leading-zero);
+    font-family: var(--body);
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--on-marker);
+    background: var(--marker);
+    border-radius: 999px;
+    padding: 3px 10px;
+    flex-shrink: 0;
+    transform: translateY(-3px);
+}
+.legal .prose h2 .anchor {
+    border: 0;
+    font-weight: 600;
+    color: var(--soft);
+    opacity: 0;
+    margin-left: 2px;
+    padding: 0 6px;
+    font-family: var(--body);
+}
+.legal .prose h2:hover .anchor,
+.legal .prose h2 .anchor:focus {
+    opacity: 1;
+}
+@media (hover: none) {
+    .legal .prose h2 .anchor {
+        opacity: .5;
+    }
+}
+.legal .prose .lede {
+    font-size: 1.12rem;
+    color: var(--ink);
+}
+.legal .prose .contact-block {
+    padding: 18px 20px;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    background: var(--paper);
+}
+.legal .prose .contact-block a {
+    overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+    .toc ol {
+        grid-template-columns: 1fr;
+    }
+    .legal .prose h2 {
+        font-size: 1.35rem;
+    }
+}
