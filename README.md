@@ -2,7 +2,7 @@
 
 Personal link-hub, portfolio and project showcase for **Abdullah All Munan** — built with plain HTML, CSS and JavaScript, hosted on GitHub Pages.
 
-🔗 Live: [abamunan.github.io](https://abamunan.github.io/) *(update if you use a custom domain)*
+🔗 Live: [munan.me](https://munan.me/)
 
 ---
 
@@ -48,10 +48,10 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 ├── icon.png, Image.jpeg      # Favicon, profile photo
 ├── sitemap.xml, robots.txt   # Crawler files
 ├── firestore.rules           # Firestore security rules (publish from Firebase console)
-└── STYLE-GUIDE.md, STYLE-MIGRATION-PLAN.md, ROADMAP.md   # Docs (the migration plan is history; ROADMAP has current decisions)
+└── NEW-PAGE-GUIDE.md, STYLE-GUIDE.md, STYLE-MIGRATION-PLAN.md, ROADMAP.md   # Docs (the migration plan is history; ROADMAP has current decisions)
 ```
 
-Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.md)**.
+Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.md)**. For a concise, copy-ready workflow for new pages, see **[NEW-PAGE-GUIDE.md](NEW-PAGE-GUIDE.md)**.
 
 ## 🚀 Deploying (GitHub Pages)
 
@@ -59,7 +59,7 @@ Design rules, tokens and per-page recipes are in **[STYLE-GUIDE.md](STYLE-GUIDE.
 2. Go to **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to `Deploy from a branch`, pick the branch and `/ (root)`.
 4. Save — your site will be live at `https://<username>.github.io/<repo>/` (or `https://<username>.github.io/` if the repo is named `<username>.github.io`).
-5. If you use a **custom domain**, update the URLs in `index.html`, `projects.html`, `sitemap.xml` (currently set to `https://abamunan.github.io/`) to match.
+5. The canonical production domain is `https://munan.me/`; keep page metadata, sitemap, robots, CNAME, and Firebase authorized domains aligned with it.
 
 ## ➕ Adding a new project
 

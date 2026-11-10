@@ -133,7 +133,8 @@ Hover pattern for anything clickable: border turns ink, lifts 3px, arrow circle 
 - Reader (`reader.html`) is a full-viewport app: `<body class="v2 reader">`, `site.css` only (no `tool.css`, no `nav.js`). Its own bar has the logo, title, reading-mode buttons, and a theme toggle. Paper / Sepia / Dark only filter the document frame; they are a reader feature, not a site palette.
 
 ## 10. Personal apps (Round 6)
-- Apps (`diary`, `english-tracker`, `garments-accounts`) use `<body class="v2 app app-xx" data-nav-hide="off">`, `theme.js` -> `owner.js` -> `site.css?v=3` -> `app.css?v=3`, then `nav.js` (and `footer.js` only on pages that scroll normally, not on fixed-sidebar apps).
+- Apps (`diary`, `english-tracker`, `garments-accounts`) use `<body class="v2 app app-xx">`, `theme.js` -> `owner.js` -> `site.css?v=3` -> `app.css?v=3`, then `nav.js` (and `footer.js` only on pages that scroll normally, not on fixed-sidebar apps).
+- The shared navbar hides while scrolling down and reappears while scrolling up on every page, including apps. Do not add an opt-out attribute.
 - `app.css` maps each page's old variable names to the site tokens under `body.app-diary`, `body.app-et`, `body.app-ga`. Add a new block there for a new app instead of defining colours in the page.
 - Text on a brand-coloured background: `color: var(--on-accent)` (white in light, dark ink in dark). Never plain `#fff`.
 - Danger / success / warning use `--err`, `--ok`, `--warn`. Page-level `:root` colour blocks are not allowed.

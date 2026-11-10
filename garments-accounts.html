@@ -8,15 +8,15 @@
 <meta name="description" content="Private accounts for the garments business: sales, expenses, stock and partner capital.">
 <meta name="theme-color" content="#0A6F48">
 <link rel="icon" type="image/png" href="icon.png">
-<link rel="canonical" href="https://abamunan.github.io/garments-accounts.html">
+<link rel="canonical" href="https://munan.me/garments-accounts.html">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://abamunan.github.io/garments-accounts.html">
+<meta property="og:url" content="https://munan.me/garments-accounts.html">
 <meta property="og:site_name" content="Munan.hub">
 <meta property="og:title" content="Garments Accounts | Munan.hub">
 <meta property="og:description" content="Private accounts for the garments business.">
-<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta property="og:image" content="https://munan.me/Image.jpeg">
 <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="garments-calc.css?v=3">
 <link rel="stylesheet" href="garments-accounts-page.css?v=3">
 </head>
-<body class="v2 app app-ga" data-nav-hide="off">
+<body class="v2 app app-ga">
 <!-- Nothing below is shown until the login check passes -->
 <div class="gate" id="gate">
  <div class="gatebox" id="gateBox">
@@ -175,9 +175,9 @@ function setStatus(kind){
 function saveFailed(e){
  setStatus('error');
  const c=e&&e.code;
- const why=c==='invalid_argument'?'You may have view-only access to this page.'
-  :c==='quota_exceeded'?'The shared database is full. Delete old entries first.'
-  :c==='resource_exhausted'?'Too many requests — wait a moment and try again.'
+ const why=c==='invalid-argument'?'You may have view-only access to this page.'
+  :c==='quota-exceeded'?'The shared database is full. Delete old entries first.'
+  :c==='resource-exhausted'?'Too many requests — wait a moment and try again.'
   :'Check your internet connection and try again.';
  alert('Could not save to the shared database.\n'+why+'\nNothing was changed.');
 }
@@ -655,9 +655,13 @@ async function delRecord(key,id){
  if(key==='capital'&&!guardCapital(state.capital.filter(r=>r.id!==id)))return;
  if(!confirm('Delete this entry?\nIt moves to the Bin (History tab), where it can be restored.'))return;
  if(db&&!isLocalId(id)){try{
-  await db.collection('bin').add({key,entryId:id,deletedBy:me.name,deletedEmail:me.email,deletedAt:Date.now(),data:JSON.stringify(rec||{})});
-  if(!(await logEvent('delete',key,id,rec,null))){alert('The History log could not be written, so nothing was deleted.');return;}
-  await db.collection(key).doc(id).delete();setStatus('synced');}catch(e){saveFailed(e);return;}}
+  const batch=db.batch(),now=Date.now();
+  const binRef=db.collection('bin').doc(),logRef=db.collection('log').doc();
+  batch.set(binRef,{key,entryId:id,deletedBy:me.name,deletedEmail:me.email,deletedAt:now,data:JSON.stringify(rec||{})});
+  batch.set(logRef,{at:now,by:me.name,email:me.email,action:'delete',tab:key,entryId:id,
+   summary:briefOf(key,rec),before:rec?JSON.stringify(rec):'',after:''});
+  batch.delete(db.collection(key).doc(id));
+  await batch.commit();setStatus('synced');}catch(e){saveFailed(e);return;}}
  else{state[key]=state[key].filter(r=>r.id!==id);saveLocal();}
  if(editing[key]===id){editing[key]=null;clearForm(key,false);updateFormMode(key);}
  refreshActive();
@@ -1582,8 +1586,8 @@ function xlBanner(ws,title,cols){
  const c=ws.getCell(1,1);c.value=title;c.font={bold:true,size:13,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0A6F48'}};
  ws.getRow(1).height=22;
 }
-function addSummarySheet(wb){
- const s=computeSummary(),ws=wb.addWorksheet('Summary');
+function addSummarySheet(wb,from,to){
+ const s=computeSummary(null,from||to?{from:from||'',to:to||''}:undefined),ws=wb.addWorksheet('Summary');
  xlBanner(ws,'Garments Accounts — Summary',3);ws.addRow([]);
  const put=(label,val)=>{const r=ws.addRow([label,val]);r.getCell(2).numFmt='"৳"#,##0.00';};
  ws.addRow(['Profit & Loss']).getCell(1).font={bold:true};
@@ -1645,7 +1649,7 @@ async function exportExcel(){
  const {from,to}=exportRange();
  try{
   const wb=new ExcelJS.Workbook();wb.creator='Garments Accounts';wb.created=new Date();
-  addSummarySheet(wb);
+  addSummarySheet(wb,from,to);
   addListSheet(wb,'sales','Sales',from,to);addListSheet(wb,'expenses','Expenses',from,to);
   addListSheet(wb,'stock','Stock',from,to);addListSheet(wb,'capital','Accounts',from,to);
   addInventorySheet(wb);addPartnersSheet(wb);
@@ -1662,7 +1666,7 @@ function pdfListTable(key,from,to){
   rows.length?rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(c.get(r))}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}">No entries</td></tr>`}</tbody></table>`;
 }
 function buildPdfHtml(from,to){
- const s=computeSummary();
+ const s=computeSummary(null,from||to?{from:from||'',to:to||''}:undefined);
  const kv=(label,val)=>`<tr><td>${esc(label)}</td><td>${money(val)}</td></tr>`;
  const partnersRows=S.partners.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(s.capitalByPartner[p.id])}</td><td>${money(s.paidPersonally[p.id])}</td><td>${money(s.owed[p.id])}</td><td>${esc(num(p.share))}%</td><td>${money(s.netProfit*num(p.share)/100)}</td></tr>`).join('');
  const catRows=Object.entries(s.expByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${money(v)}</td></tr>`).join('')||'<tr><td colspan="2">No expenses yet</td></tr>';

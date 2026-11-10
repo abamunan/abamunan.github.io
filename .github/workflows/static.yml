@@ -39,11 +39,24 @@ jobs:
         run: npm test
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Prepare public site
+        run: |
+          mkdir dist
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='audit' \
+            --exclude='_trash' \
+            --exclude='test-output' \
+            --exclude='*.md' \
+            --exclude='*.pptx' \
+            --exclude='apps/*/tests' \
+            --exclude='apps/*/tools' \
+            ./ dist/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

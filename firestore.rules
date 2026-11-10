@@ -26,14 +26,19 @@ service cloud.firestore {
     // Sales / Expenses / Stock / Accounts  (garments/{col}/items/{id})
     match /garments/{col}/items/{id} {
       allow read:   if isGarmentsPartner() && isLedger(col);
-      allow create: if isGarmentsPartner() && isLedger(col);
+      allow create: if isGarmentsPartner() && isLedger(col)
+                    && request.resource.data.get('enteredEmail', '').lower()
+                       == request.auth.token.email.lower();
       allow update: if isGarmentsPartner() && isLedger(col) && (
         isOwnerOrLegacy()
+        && request.resource.data.get('enteredEmail', '')
+           == resource.data.get('enteredEmail', '')
         || (col == 'sales'
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['received', 'receivedDate', 'editedBy']))
       );
-      allow delete: if isGarmentsPartner() && isLedger(col) && isOwnerOrLegacy();
+      allow delete: if isGarmentsPartner() && isLedger(col) && isOwnerOrLegacy()
+                    && resource.data.get('enteredEmail', '') != '';
     }
 
     // History log — append-only
@@ -152,11 +157,11 @@ service cloud.firestore {
     }
 
     // An entry is editable/deletable by the partner who entered it.
-    // Entries saved before logins existed have no owner e-mail (missing or
-    // empty) and stay open to every partner.
+    // Legacy entries without an owner are not editable or deletable through
+    // the client; they must be migrated by an administrative process.
     function isOwnerOrLegacy() {
-      return resource.data.get('enteredEmail', '') == ''
-          || resource.data.get('enteredEmail', '').lower() == request.auth.token.email.lower();
+      return resource.data.get('enteredEmail', '').lower()
+          == request.auth.token.email.lower();
     }
 
     function hasValidDiaryShape(data) {

@@ -8,15 +8,15 @@
 <meta name="description" content="A private, dated diary with sections — write, revisit, and export your entries.">
 <meta name="theme-color" content="#0A6F48">
 <link rel="icon" type="image/png" href="icon.png">
-<link rel="canonical" href="https://abamunan.github.io/diary.html">
+<link rel="canonical" href="https://munan.me/diary.html">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://abamunan.github.io/diary.html">
+<meta property="og:url" content="https://munan.me/diary.html">
 <meta property="og:site_name" content="Munan.hub">
 <meta property="og:title" content="Diary | Munan.hub">
 <meta property="og:description" content="A private, dated diary with sections — write, revisit, and export your entries.">
-<meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+<meta property="og:image" content="https://munan.me/Image.jpeg">
 <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
 
 <!-- Fonts: Bricolage Grotesque (headings) / Figtree (body) / Hind Siliguri (Bangla) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +37,7 @@
 
 <link rel="stylesheet" href="diary-page.css?v=3">
 </head>
-<body class="v2 app app-diary" data-nav-hide="off">
+<body class="v2 app app-diary">
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="page-content" id="main" role="main">
@@ -148,6 +148,13 @@
                 <button class="diary-pdf-btn diary-pdf-btn-ghost" id="export-all-pdf-btn" title="Fetches your entire diary first, then builds one PDF">
                     <i class="fas fa-cloud-arrow-down"></i> Export All
                 </button>
+                <button class="diary-pdf-btn diary-pdf-btn-ghost" id="export-json-btn" type="button">
+                    <i class="fas fa-download"></i> Backup JSON
+                </button>
+                <label class="diary-pdf-btn diary-pdf-btn-ghost" for="import-json-input">
+                    <i class="fas fa-upload"></i> Restore JSON
+                </label>
+                <input id="import-json-input" type="file" accept="application/json,.json" hidden>
             </div>
             <div class="diary-history-summary" id="history-summary" role="status"></div>
         </div>

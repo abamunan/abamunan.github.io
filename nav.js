@@ -15,7 +15,6 @@
      </body>
 
    Optional body attributes
-     data-nav-hide="off"   do not hide the bar when scrolling down
      data-nav-active="blog.html"   force which link is highlighted
    ================================================================ */
 (function () {
@@ -98,17 +97,15 @@
         });
         window.addEventListener('resize', function () { if (window.innerWidth > 900 && !sheet.hidden) setMenu(false); });
 
-        /* hide on scroll down, show on scroll up */
-        if (body.getAttribute('data-nav-hide') !== 'off') {
-            var last = window.scrollY;
-            window.addEventListener('scroll', function () {
-                var y = window.scrollY;
-                if (!sheet.hidden) { last = y; return; }
-                if (y > last && y > 90) nav.classList.add('navbar-hidden');
-                else nav.classList.remove('navbar-hidden');
-                last = y;
-            }, { passive: true });
-        }
+        /* Hide on scroll down and reveal on scroll up on every page. */
+        var last = window.scrollY;
+        window.addEventListener('scroll', function () {
+            var y = window.scrollY;
+            if (!sheet.hidden) { last = y; return; }
+            if (y > last && y > 90) nav.classList.add('navbar-hidden');
+            else if (y < last || y <= 90) nav.classList.remove('navbar-hidden');
+            last = y;
+        }, { passive: true });
 
         /* owner-only links: cached flag first, verified in the background */
         verifyOwner();

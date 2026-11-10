@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0A6F48">
     <title id="page-title">Reader | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/reader.html">
+    <link rel="canonical" href="https://munan.me/reader.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/reader.html">
+    <meta property="og:url" content="https://munan.me/reader.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="Reader | Munan.hub">
     <meta property="og:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Reader | Munan.hub">
     <meta name="twitter:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
-    <meta name="twitter:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -178,19 +179,22 @@
   // Accept either a bare Google Drive file ID, or a full Drive URL
   // (/file/d/ID/view, /open?id=ID, etc.) and normalize to the
   // embeddable /preview form.
-  function resolveDriveEmbedUrl(input) {
+  function resolveDriveId(input) {
     if (!input) return '';
-    let id = input;
+    let id = input.trim();
     const fileMatch = input.match(/\/file\/d\/([^/]+)/);
     const openMatch = input.match(/[?&]id=([^&]+)/);
     if (fileMatch) id = fileMatch[1];
     else if (openMatch) id = openMatch[1];
-    if (/^https?:\/\//.test(id)) return id; // already a full non-Drive embeddable URL
-    return `https://drive.google.com/file/d/${id}/preview`;
+    return /^[A-Za-z0-9_-]{20,}$/.test(id) ? id : '';
+  }
+  function resolveDriveEmbedUrl(input) {
+    const id = resolveDriveId(input);
+    return id ? `https://drive.google.com/file/d/${id}/preview` : '';
   }
   function resolveDriveViewUrl(input) {
-    const embed = resolveDriveEmbedUrl(input);
-    return embed.replace('/preview', '/view');
+    const id = resolveDriveId(input);
+    return id ? `https://drive.google.com/file/d/${id}/view` : '#';
   }
 
   const resolvedSrc = resolveDriveEmbedUrl(rawSrc);
@@ -200,7 +204,7 @@
   const captionEl = document.getElementById('doc-caption');
   if (pageCaption) { captionEl.textContent = pageCaption; }
   else { captionEl.style.display = 'none'; }
-  document.getElementById('open-drive-btn').href = rawSrc ? resolveDriveViewUrl(rawSrc) : '#';
+  document.getElementById('open-drive-btn').href = resolveDriveViewUrl(rawSrc);
 
   const frame = document.getElementById('pdf-frame');
   const loading = document.getElementById('loading');

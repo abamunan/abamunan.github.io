@@ -1,7 +1,7 @@
 # 🔍 Full-Stack UI/UX Audit Report — Munan.hub
 
 **Auditor:** Antigravity AI (Senior Front-End Auditor)
-**Date:** 2026-11-08
+**Date:** 2026-11-10
 **Reference Theme:** MoneyTracker (`apps/money/app.css` + `site.css`)
 **Scope:** All 28+ HTML pages, 10 CSS files, 15+ JS files, PWA configs
 
@@ -72,7 +72,7 @@ abamunan.github.io-main/
 │
 ├── CSS FILES
 │   ├── site.css              — 610 lines, "Field Notebook" design system v3 ★ MAIN SITE CSS
-│   ├── style.css             — 419 lines, ⚠️ LEGACY ("Poppins" era) — COMPLETELY DIFFERENT THEME
+│   ├── _trash/style.css      — retired legacy ("Poppins" era) stylesheet
 │   ├── app.css               — 110 lines, private app token bridge
 │   ├── tool.css              — 153 lines, tool page layer
 │   └── garments-calc.css     — 14979 bytes, garments app styles
@@ -117,8 +117,8 @@ abamunan.github.io-main/
 | Money Tracker PWA | site.css → ui.css → money/app.css | ★ IS the reference |
 | Health Tracker PWA | site.css → ui.css → health/app.css | ✅ Matches reference |
 | **contactRep.html** | site.css → inline `<style>` | ✅ Matches reference |
-| **TypeMaster.html (dark mode)** | site.css + tool.css + **style.css dark overrides** | ⚠️ **Legacy tokens** |
-| **Any page loading style.css** | style.css | ❌ **Completely different theme** |
+| **TypeMaster.html (dark mode)** | site.css + tool.css | ✅ Uses current tokens |
+| **Any page loading legacy style.css** | _trash/style.css | ✅ Retired; no active page loads it |
 
 ---
 
@@ -140,11 +140,11 @@ See [`audit/theme-tokens.css`](file:///d:/Portfolio/abamunan.github.io-main/audi
 
 | # | Severity | Problem | Impact |
 |---|----------|---------|--------|
-| 1 | 🔴 Critical | **`style.css` is a completely different design system** — different font (Poppins at 14px), different color tokens (`--accent: #0284c7` vs `--lagoon: #0D8255`), different card/navbar/footer styles, different z-index scale, different animations | Every page using it gets a mismatched theme. Also, `style.css` dark-mode overrides use 14× `!important` which leak into pages that also load `site.css` |
-| 2 | 🔴 Critical | **XSS via `innerHTML` with user data** — `dashboard.html:251` injects `user.displayName` via innerHTML without escaping | Account compromise via crafted display name |
+| 1 | ✅ Completed | **Legacy `style.css` split-brain theme** — retired to `_trash/` and removed from active pages | No active theme leakage; retain only as historical evidence |
+| 2 | ✅ Completed | **Dashboard greeting XSS** — replaced unsafe greeting HTML with safe DOM construction | User display names are inserted with `textContent` |
 | 3 | 🟠 High | **Firebase API key in plaintext** in `firebase-config.js:12` — plus client-side password check in `part1.html:190` | Key is accessible in source; password comparison is bypassable |
 | 4 | 🟠 High | **156+ `innerHTML` assignments** across 22 files, many with template literals rendering user/dynamic data | Broad XSS attack surface |
-| 5 | 🟠 High | **`style.css` legacy remnants** — old Poppins/blue design system on disk (retired to `_trash/` in Phase 1) | Risk of theme leakage and token confusion |
+| 5 | 🟠 High | **Legacy stylesheet retained in `_trash/`** — old Poppins/blue design system is no longer active | Low runtime risk; delete only after archive-policy confirmation |
 | 6 | 🟡 Medium | **Massive inline `<style>` blocks** — diary.html has 455 lines, english-tracker.html has 1154 lines, garments-accounts.html has ~140 lines of inline CSS | Unmaintainable; duplicates patterns already in site.css |
 | 7 | 🟡 Medium | **Hardcoded colors in JS** — login.html (`#ef4444`, `#f97316`, `#eab308`, `#22c55e`), tools.html (80+ hex colors for icons), style.css dark overrides (`#f1f5f9`, `#020617`, etc.) | Colors don't respect theme tokens; won't adapt to future theme changes |
 | 8 | 🟡 Medium | **Inconsistent responsive breakpoints** — 8 different breakpoints used across pages (480, 560, 600, 700, 760, 768, 900, 960px) | Layouts break at different screen widths |
@@ -155,7 +155,7 @@ See [`audit/theme-tokens.css`](file:///d:/Portfolio/abamunan.github.io-main/audi
 
 ## 4. Theme Inconsistency Table
 
-### 4.1 The `style.css` vs `site.css` Conflict (the #1 problem)
+### 4.1 Historical `style.css` vs `site.css` conflict
 
 These two files define **entirely different design systems**:
 
@@ -175,7 +175,9 @@ These two files define **entirely different design systems**:
 | Footer socials size | `40px` circles | `22px` circles |
 | Scrollbar thumb | `var(--line)` | `rgba(2,132,199,.25)` |
 
-**Files still loading `style.css`:** TypeMaster.html's dark-mode overrides at `style.css:336-419` are specifically targeting TypeMaster elements. This means `style.css` is actively used.
+**Current status:** The legacy stylesheet was moved to `_trash/style.css`;
+TypeMaster now uses `site.css` and `tool.css`. The token comparison below is
+kept as historical audit evidence.
 
 ### 4.2 Per-Page Theme Deviation Matrix
 
@@ -195,7 +197,7 @@ These two files define **entirely different design systems**:
 | **diary.html** | 10/10 | Extracted 455 lines to `diary-page.css`, tokenized colors/radii/shadows, removed `!important` via specificity (Phase 4.1) |
 | **reader.html** | 10/10 | Extracted 184 lines to `reader-page.css`, tokenized active/dark buttons with `var(--on-marker)`/`var(--on-ink)` (Phase 4.4) |
 | **bot1.html** | 9/10 | Minor: `[hidden]{display:none !important}`, hardcoded dark-mode pre colors |
-| **webcomic.html** | 8/10 | Missing focus trap in modal, `style="font-size:.4rem"` inline |
+| **webcomic.html** | 9/10 | `style="font-size:.4rem"` inline |
 | **booklet-maker.html** | 9/10 | 1 inline `style=""`, clean otherwise |
 | **styleguide.html** | 9/10 | 4 inline `style=""` for demo components (acceptable), missing meta tags |
 | **part1.html** | 8/10 | 3 inline `style=""`, `console.error`, Firebase secrets stored on `window` |
@@ -242,7 +244,6 @@ These two files define **entirely different design systems**:
 
 | # | Issue | File:Line | Detail |
 |---|-------|-----------|--------|
-| S1 | XSS — user displayName rendered via `innerHTML` | `dashboard.html:251` | `greetMsg.innerHTML = \`Hello, <span>$\{name\}</span>\`` where name comes from `user.displayName`. A display name containing `<img onerror=...>` would execute. |
 | S2 | Firebase API key in source | `firebase-config.js:12` | `apiKey: "AIzaSyDl0Cqhjj-X9SjwMrrTWi_lW4ADsI8Gnq0"` — while Firebase API keys are designed to be public, this should have domain restrictions in Firebase Console. |
 | S3 | Client-side password gate | `part1.html:190` | `el.input.value === window.__drivePass` — password fetched from Firestore and compared client-side. Bypassable via devtools. |
 | S4 | Secrets stored on `window` | `part1.html:158-159` | `window.__driveURL` and `window.__drivePass` — accessible from console. |
@@ -274,7 +275,7 @@ These two files define **entirely different design systems**:
 
 | # | Issue | File:Line | Detail |
 |---|-------|-----------|--------|
-| A1 | No focus trap in modals | `blog.html`, `webcomic.html`, `styleguide.html`, `part1.html` | Tab can escape modal dialogs |
+| A1 | No focus trap in modals | Resolved in `blog.html`, `webcomic.html`, `styleguide.html`, `part1.html` | Dialogs now cycle keyboard focus |
 | A2 | Missing `aria-hidden` on decorative icons | `index.html:535-551`, `diary.html` (15+ icons) | Screen reader announces icon Unicode |
 | A3 | Missing `required` attribute on form inputs | `login.html:149,157,243,251,267,288` | JS-only validation, no native form validation |
 | A4 | Standalone page accessibility | `birthdaywish.html` | Preserved keepsake page lacks skip link and dark mode |
@@ -364,7 +365,7 @@ These two files define **entirely different design systems**:
 
 | Item | Files | Status |
 |------|-------|--------|
-| **`style.css` vs `site.css`** | Both at root | `style.css` is the OLD design system. `site.css` is the NEW one. Both are loaded by different pages and contain conflicting rules. |
+| **`_trash/style.css` vs `site.css`** | Archived legacy vs active system | Legacy stylesheet is retained only for history; active pages use `site.css`. |
 | **Legal page styles** | `privacy.html:30-51`, `terms.html:30-51` | Byte-identical blocks |
 | **Token declarations** | `site.css`, `money/app.css`, `health/app.css`, `app.css` | Same values declared independently 4× |
 | **Root-level manifest files** | `manifest-moneytracker.json`, `manifest-healthtracker.json` | Likely superseded by `apps/money/manifest.json`, `apps/health/manifest.json` |
@@ -372,7 +373,86 @@ These two files define **entirely different design systems**:
 
 ---
 
-## 7. Proposed Refactor Plan
+## 7. Unified findings from Audit Report 2
+
+The downloaded `REPORT-2.md` was reviewed and merged here. Its scope was
+data, Firebase, public exposure, logic, PWA, security, performance,
+accessibility, SEO, testing, and maintainability; the earlier sections cover
+the theme and page migration audit.
+
+### Highest-priority confirmed findings
+
+| ID | Severity | Finding | Source |
+|---|---|---|---|
+| F3 | High | Garments ledger ownership can be forged because `enteredEmail` is not bound to the authenticated user and is mutable on update. | `firestore.rules` |
+| D6 | High | Garments restore can hard-delete records without Bin/History and can partially fail for non-owner partners. | `garments-accounts.html` |
+| P1 | High | The Pages workflow publishes audit files, tests, roadmap, and archive content from the whole repository. | `.github/workflows/static.yml` |
+| P5 | High | Full git-history secret scanning was not possible in the second audit and remains a manual check. | Audit Report 2 |
+| D1/D4 | High | Whole-document writes can lose concurrent Money/Health entries and Garments edits. | `apps/shared/store.js`, `garments-accounts.html` |
+| F2 | High | Reset cooldown collection still permits unauthenticated reads/writes and needs App Check or a redesigned pre-auth flow. The client/rule field mismatch (F1) is fixed. | `auth.js`, `firestore.rules` |
+| D7/D8 | Medium | Garments/Diary offline writes can hang and private local caches/drafts need an explicit logout policy. | `garments-accounts.html`, `diary.js` |
+| L1/L2 | Medium | Garments export summaries ignore the selected date range and Firestore error-code matching uses incorrect underscores. | `garments-accounts.html` |
+| W1 | Medium | Legacy root manifests remain invalid and should be removed or archived after owner confirmation. | Root manifests |
+| W2-W3 | Completed | PWA precache now fails on missing files and cache refreshes are attached to the fetch event. | `apps/*/sw.js` |
+| S1-S3 | Medium | CDN assets lack SRI, no CSP baseline exists, and `reader.html` accepts arbitrary iframe URLs. | HTML pages, `reader.html` |
+
+### Owner/manual checks
+
+- Restrict the Firebase API key, compare deployed rules with repository rules,
+  lock Storage, verify authorized domains/App Check, and enable budget alerts.
+- Canonical host is now `munan.me`; Firebase authorized domains still need a
+  manual Console check.
+- Run full-history secret scanning with `gitleaks` or `trufflehog`.
+- Decide whether orphaned assets, legacy manifests/icons, and `_trash/` should
+  be archived or removed.
+
+## 8. Unified small-task backlog
+
+Each open item is intentionally small and can be completed independently unless
+the dependency column says otherwise. When a task is completed, remove it from
+this active table and add it to the completed/deleted section below.
+
+| ID | Priority | Small task | Dependency |
+|---|---|---|---|
+| U2 | High | Add a regression rules test for forged/legacy ledger ownership. | U1 |
+| U3 | High | Make Garments restore owner-only, schema-validated, batched, and fail-fast. | None |
+| U4 | High | Add conflict-focused tests for the new merge-by-id remote write behavior. | U4 implementation |
+| U5 | High | Add App Check or replace the pre-auth cooldown collection so unauthenticated reset-cooldown writes cannot be spammed. | Firebase Console/design decision |
+| U15 | Low | Add SRI to compatible CDN assets and a minimal CSP meta policy. | Audit inline handlers |
+| U17 | Low | Run full git-history secret scan and record the result. | Repository history access |
+| U18 | Low | Decide/archive orphan files and legacy manifests/icons. | Owner confirmation |
+
+## 9. Completed/deleted tasks
+
+Completed tasks are intentionally not kept in the active backlog:
+
+- Theme migration phases 1–6 are complete.
+- Dashboard greeting XSS fix is complete.
+- Project inline-style cleanup is complete.
+- `twitter:image`, login `required`, legal CSS extraction, skip links, and
+  reported robots metadata quick wins are complete.
+- Legacy `style.css` was retired to `_trash/` and TypeMaster uses current tokens.
+- Navbar scroll-hide behavior now applies to all pages, including apps.
+- Ledger creates/updates now bind ownership to the authenticated email.
+- Garments export summaries now respect the selected date range.
+- Garments Firestore error-code matching now uses SDK hyphenated codes.
+- Garments delete now commits Bin, History, and source deletion atomically.
+- Reader is `noindex` and accepts only validated Google Drive file IDs.
+- Money and Health precache lists now fail on missing files and await cache refreshes.
+- Canonical URLs, sitemap, robots, CNAME, and public documentation now use `munan.me`.
+- Money/Health remote writes now merge ID-based arrays with newer cloud data.
+- Pages deployment now uploads an allow-listed `dist` artifact.
+- Diary now supports validated JSON backup/restore.
+- Blog, Webcomic, Part1, and Diary overlays keep keyboard focus inside dialogs.
+- Invalid root-level legacy manifests were removed.
+
+These entries are the audit trail for deleted task rows; they should not be
+reopened unless a new regression is found.
+
+### Completed refactor phases
+
+The historical implementation phases below are retained as an audit trail.
+They are not open tasks.
 
 ### Phase 1: Eliminate the Split-Brain CSS (Effort: 2-3 hours)
 
@@ -429,7 +509,11 @@ For each page, in order of severity:
 
 ---
 
-## 8. Quick Wins (Under 10 Minutes Each)
+## 10. Historical quick wins (completed/deleted)
+
+The quick-win table below is historical. These items were checked against the
+current files and are no longer active tasks. Orphaned-file deletion remains
+pending owner confirmation.
 
 | # | What | Where | Fix |
 |---|------|-------|-----|
@@ -446,9 +530,9 @@ For each page, in order of severity:
 
 ---
 
-## Questions for Owner
+## 11. Questions for Owner
 
-1. **Is `style.css` still intentionally loaded by any page?** Or is it purely a legacy file that TypeMaster's dark mode accidentally depends on? If it's legacy, we can safely delete it after migrating TypeMaster's overrides.
+1. **Should `_trash/style.css` be retained as an archive?** It is no longer loaded by TypeMaster or any active page.
 
 2. **Are the root-level Lottie files (`loading1.json`, `loading2.json`, `loading3.json`) still used?** They're 396KB total and I couldn't find references to them in any HTML file.
 
@@ -470,7 +554,7 @@ For each page, in order of severity:
 
 ---
 
-## 9. Design System Migration & Execution Summary
+## 12. Design System Migration & Execution Summary
 
 | Phase | Description | Commit | Status |
 |-------|-------------|--------|--------|
