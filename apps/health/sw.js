@@ -15,7 +15,7 @@
 // instead of lingering. Editing a file's CONTENTS does not need a bump: the stale-while-revalidate fetch handler
 // refreshes it in the background on the next load anyway. tests/run.mjs checks that PRECACHE matches the real
 // import graph of main.js, so a forgotten file fails the test instead of failing offline on someone's phone.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `health-shell-${CACHE_VERSION}`;
 const SHELL_FALLBACK = '/apps/health/index.html';
 
@@ -68,6 +68,7 @@ const PRECACHE = [
   '/apps/shared/ui.css',
   '/apps/shared/xlsx.js',
   '/owner.js',
+  '/scroll-nav.js',
   '/site.css?v=3',     // exact URL as index.html links it: the Cache API treats a different query string as a different file
   '/theme.js'
   // apps/shared/firestore.js is deliberately left out: it only loads once someone signs in, and caching the

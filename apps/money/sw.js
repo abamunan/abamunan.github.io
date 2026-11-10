@@ -15,7 +15,7 @@
 // Bump CACHE_VERSION whenever a file in PRECACHE is added, removed or renamed, so old caches are
 // dropped on activate instead of lingering. Editing a file's CONTENTS does not need a bump: the
 // stale-while-revalidate fetch handler refreshes it in the background on the next load anyway.
-const CACHE_VERSION = 'v12';
+const CACHE_VERSION = 'v13';
 const CACHE_NAME = `money-shell-${CACHE_VERSION}`;
 const SHELL_FALLBACK = '/apps/money/index.html';
 
@@ -78,7 +78,8 @@ const PRECACHE = [
   '/apps/shared/ui.css',
   '/site.css?v=3',
   '/theme.js',
-  '/owner.js'
+  '/owner.js',
+  '/scroll-nav.js'
   // apps/shared/firestore.js is deliberately left out: it only loads once someone signs in, and
   // caching the Firebase SDK wrapper risks serving a stale copy after a login or rules change.
 ];

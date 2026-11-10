@@ -445,6 +445,7 @@ Completed tasks are intentionally not kept in the active backlog:
 - Diary now supports validated JSON backup/restore.
 - Blog, Webcomic, Part1, and Diary overlays keep keyboard focus inside dialogs.
 - Invalid root-level legacy manifests were removed.
+- Shared and app-specific top navigation now hides while scrolling down and reveals while scrolling up on every page.
 
 These entries are the audit trail for deleted task rows; they should not be
 reopened unless a new regression is found.

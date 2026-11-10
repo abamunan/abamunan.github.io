@@ -14,6 +14,7 @@ import { moreView } from './views/more.js';
 import { openSettingsSheet } from './components/settings-sheet.js';
 import { initPWA } from './data/pwa.js';
 import { icon } from './icons.js';
+import '../../scroll-nav.js';
 
 const splash = initSplash(document.getElementById('splash'), { total: 4 });
 const chip = document.getElementById('syncState');

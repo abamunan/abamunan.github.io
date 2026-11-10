@@ -97,14 +97,26 @@
         });
         window.addEventListener('resize', function () { if (window.innerWidth > 900 && !sheet.hidden) setMenu(false); });
 
-        /* Hide on scroll down and reveal on scroll up on every page. */
+        /* Hide while moving down; reveal as soon as the user moves up. */
         var last = window.scrollY;
-        window.addEventListener('scroll', function () {
+        var ticking = false;
+        function updateNavVisibility() {
             var y = window.scrollY;
-            if (!sheet.hidden) { last = y; return; }
-            if (y > last && y > 90) nav.classList.add('navbar-hidden');
-            else if (y < last || y <= 90) nav.classList.remove('navbar-hidden');
+            if (!sheet.hidden || y <= 8) {
+                nav.classList.remove('navbar-hidden');
+            } else if (y > last + 2) {
+                nav.classList.add('navbar-hidden');
+            } else if (y < last - 2) {
+                nav.classList.remove('navbar-hidden');
+            }
             last = y;
+            ticking = false;
+        }
+        window.addEventListener('scroll', function () {
+            if (!ticking) {
+                window.requestAnimationFrame(updateNavVisibility);
+                ticking = true;
+            }
         }, { passive: true });
 
         /* owner-only links: cached flag first, verified in the background */
