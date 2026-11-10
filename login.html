@@ -8,17 +8,18 @@
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>Login | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/login.html">
+    <link rel="canonical" href="https://munan.me/login.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/login.html">
+    <meta property="og:url" content="https://munan.me/login.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="Login | Munan.hub">
     <meta property="og:description" content="Log in or create your Munan.hub account.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Login | Munan.hub">
     <meta name="twitter:description" content="Log in or create your Munan.hub account.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -27,92 +28,7 @@
     <script src="theme.js"></script>
     <script src="owner.js"></script>
     <link rel="stylesheet" href="site.css?v=3">
-    <style>
-        .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 36px) 18px 20px; }
-        .auth-card { width:100%; max-width:480px; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-panel); overflow:hidden; }
-        .auth-strip { height:8px; background:linear-gradient(90deg,var(--lagoon),var(--marker)); }
-        .auth-inner { padding:30px 30px 24px; }
-        .auth-head { text-align:center; margin-bottom:22px; }
-        .auth-head .tile-lg { margin-bottom:14px; }
-        .auth-title { font-family:var(--display); font-weight:800; font-size:clamp(1.6rem,5vw,2rem); letter-spacing:-.03em; line-height:1.1; margin-bottom:6px; }
-        .auth-sub { color:var(--muted); font-size:.98rem; }
-
-        .auth-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:5px; margin-bottom:22px; border:1.5px solid var(--line); border-radius:999px; background:var(--bg); }
-        .tab-btn { min-height:44px; padding:8px 12px; border-radius:999px; font-weight:700; font-size:.95rem; color:var(--muted); background:transparent; border:1.5px solid transparent; transition:background var(--trans), color var(--trans); }
-        .tab-btn i { margin-right:6px; }
-        .tab-btn:hover { color:var(--ink); }
-        .tab-btn.active { background:var(--ink); color:var(--bg); }
-        :root[data-theme="dark"] .tab-btn.active { background:var(--marker); color:var(--on-marker); }
-
-        .auth-form { display:none; }
-        .auth-form.active { display:block; animation:authIn .25s ease; }
-        @keyframes authIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-        @media (prefers-reduced-motion:reduce) { .auth-form.active { animation:none; } }
-
-        .auth-card .field > label .req { color:var(--err); font-weight:700; }
-        .auth-card .field > label .opt { font-weight:400; color:var(--soft); font-size:.82rem; }
-        .input-wrap { position:relative; }
-        .input-wrap > i { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--soft); font-size:.9rem; pointer-events:none; }
-        .input-wrap input { width:100%; min-height:48px; padding:11px 46px 11px 42px; background:var(--paper); color:var(--ink); border:1.5px solid var(--line); border-radius:var(--r-input); transition:border-color var(--trans), box-shadow var(--trans); }
-        .input-wrap input::placeholder { color:var(--soft); opacity:.8; }
-        .input-wrap input:hover { border-color:var(--soft); }
-        .input-wrap input:focus { outline:none; border-color:var(--lagoon); box-shadow:0 0 0 4px var(--lagoon-tint); }
-        .eye-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; color:var(--soft); display:flex; align-items:center; justify-content:center; transition:color var(--trans), background var(--trans); }
-        .eye-btn i { pointer-events:none; }
-        .eye-btn:hover { color:var(--ink); background:var(--lagoon-tint); }
-        .forgot-link { display:inline-block; margin-top:6px; font-size:.88rem; font-weight:700; color:var(--lagoon); padding:4px 0; }
-        .forgot-link:hover { color:var(--ink); text-decoration:underline; text-decoration-color:var(--marker); text-decoration-thickness:3px; text-underline-offset:4px; }
-        .right { text-align:right; }
-
-        .submit-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:8px; border-radius:999px; font-weight:700; font-size:1rem; background:var(--ink); color:var(--bg); transition:background var(--trans), color var(--trans); }
-        .submit-btn:hover { background:var(--lagoon); color:var(--on-ink); }
-        :root[data-theme="dark"] .submit-btn { background:var(--marker); color:var(--on-marker); }
-        :root[data-theme="dark"] .submit-btn:hover { background:var(--on-ink); color:var(--ink); }
-        .google-btn { width:100%; min-height:50px; display:flex; align-items:center; justify-content:center; gap:10px; border-radius:999px; font-weight:700; border:1.5px solid var(--ink); color:var(--ink); background:transparent; transition:background var(--trans), color var(--trans); }
-        .google-btn:hover { background:var(--ink); color:var(--bg); }
-        :root[data-theme="dark"] .google-btn { border-color:var(--line); }
-        :root[data-theme="dark"] .google-btn:hover { border-color:var(--ink); }
-        .google-btn img { width:18px; height:18px; background:#fff; border-radius:50%; padding:1px; }
-        .divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--soft); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
-        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--line); }
-
-        .msg-bar { display:none; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:14px; font-size:.92rem; font-weight:600; line-height:1.45; margin-top:14px; border:1.5px solid transparent; }
-        .msg-bar.show { display:flex; }
-        .msg-bar i { flex-shrink:0; margin-top:3px; }
-        .msg-bar.success { background:var(--ok-bg); color:var(--ok); border-color:var(--ok); }
-        .msg-bar.error { background:var(--err-bg); color:var(--err); border-color:var(--err); }
-        .msg-bar.loading { background:var(--info-bg); color:var(--info); border-color:var(--info); }
-        .spin { display:inline-block; animation:spin .8s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        @media (prefers-reduced-motion:reduce) { .spin { animation-duration:2.4s; } }
-
-        .pwd-strength { margin-top:8px; }
-        .pwd-bars { display:flex; gap:5px; margin-bottom:5px; }
-        .pwd-bar { flex:1; height:5px; border-radius:5px; background:var(--line); transition:background .3s; }
-        .pwd-label { font-size:.8rem; color:var(--soft); font-weight:700; }
-
-        .back-link { display:inline-flex; align-items:center; gap:8px; min-height:40px; margin-bottom:10px; font-weight:700; font-size:.92rem; color:var(--muted); padding:0; }
-        .back-link:hover { color:var(--ink); }
-        .forgot-text { color:var(--muted); font-size:.95rem; margin-bottom:12px; }
-        .forgot-note { margin-bottom:16px; font-size:.88rem; }
-        .timer-text { display:none; text-align:center; font-size:.86rem; color:var(--soft); margin-top:10px; font-weight:700; }
-
-        .verify-state { display:none; text-align:center; padding:6px 0 2px; }
-        .verify-state.show { display:block; animation:authIn .3s ease; }
-        .verify-icon { width:72px; height:72px; margin:0 auto 14px; border-radius:20px; background:var(--marker); color:var(--on-marker); display:flex; align-items:center; justify-content:center; font-size:1.7rem; box-shadow:4px 4px 0 var(--ink); }
-        .verify-title { font-family:var(--display); font-weight:800; font-size:1.5rem; letter-spacing:-.02em; margin-bottom:8px; }
-        .verify-sub { color:var(--muted); font-size:.96rem; margin-bottom:14px; }
-        .verify-sub strong { color:var(--ink); overflow-wrap:anywhere; }
-        .resend-btn { font-weight:700; font-size:.92rem; color:var(--lagoon); text-decoration:underline; text-underline-offset:4px; min-height:40px; padding:0 8px; }
-        .resend-btn:hover { color:var(--ink); }
-        .resend-btn:disabled { text-decoration:none; }
-        .verify-state .btn-solid { width:100%; margin-top:16px; }
-
-        .auth-footer { margin-top:22px; padding-top:16px; border-top:1px solid var(--line); text-align:center; font-size:.86rem; color:var(--soft); }
-        .auth-footer a { color:var(--lagoon); font-weight:700; }
-        .auth-footer a:hover { color:var(--ink); }
-        @media (max-width:480px) { .auth-inner { padding:24px 18px 20px; } }
-    </style>
+    <link rel="stylesheet" href="login-page.css?v=3">
 </head>
 <body class="v2">
     <a class="skip" href="#main">Skip to content</a>
@@ -125,7 +41,7 @@
 
                 <div class="auth-head">
                     <span class="tile-lg" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
-                    <h1 class="auth-title">Welcome to Munan<span style="color:var(--lagoon)">.hub</span></h1>
+                    <h1 class="auth-title">Welcome to Munan<span>.hub</span></h1>
                     <p class="auth-sub">Log in to your account or create a new one.</p>
                 </div>
 
@@ -146,7 +62,7 @@
                         <label for="loginEmail">Email <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
                             <i class="fas fa-envelope" aria-hidden="true"></i>
-                            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -154,7 +70,7 @@
                         <label for="loginPassword">Password <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
                             <i class="fas fa-lock" aria-hidden="true"></i>
-                            <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+                            <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" required>
                             <button class="eye-btn" type="button" onclick="toggleEye('loginPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -197,7 +113,7 @@
                         <label for="forgotEmail">Email <span class="req" aria-hidden="true">*</span></label>
                         <div class="input-wrap">
                             <i class="fas fa-envelope" aria-hidden="true"></i>
-                            <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
+                            <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -240,7 +156,7 @@
                             <label for="signupName">Full Name <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
                                 <i class="fas fa-user" aria-hidden="true"></i>
-                                <input type="text" id="signupName" placeholder="Your full name" autocomplete="name">
+                                <input type="text" id="signupName" placeholder="Your full name" autocomplete="name" required>
                             </div>
                         </div>
 
@@ -248,7 +164,7 @@
                             <label for="signupEmail">Email <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
                                 <i class="fas fa-envelope" aria-hidden="true"></i>
-                                <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+                                <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email" required>
                             </div>
                         </div>
 
@@ -264,7 +180,7 @@
                             <label for="signupPassword">Password <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
                                 <i class="fas fa-lock" aria-hidden="true"></i>
-                                <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+                                <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)" required>
                                 <button class="eye-btn" type="button" onclick="toggleEye('signupPassword',this,event)" tabindex="-1" aria-label="Show or hide password">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -285,7 +201,7 @@
                             <label for="signupConfirm">Re-enter Password <span class="req" aria-hidden="true">*</span></label>
                             <div class="input-wrap">
                                 <i class="fas fa-shield-halved" aria-hidden="true"></i>
-                                <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
+                                <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password" required>
                                 <button class="eye-btn" type="button" onclick="toggleEye('signupConfirm',this,event)" tabindex="-1" aria-label="Show or hide password">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -375,11 +291,11 @@
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
 
-        const colors  = ['#ef4444','#f97316','#eab308','#22c55e'];
+        const colors  = ['var(--err)', 'var(--pwd-fair, #f97316)', 'var(--warn)', 'var(--ok)'];
         const labels  = ['Weak','Fair','Good','Strong'];
         bars.forEach((b,i) => { b.style.background = i < score ? colors[score-1] : ''; });
         label.textContent = labels[score-1] || '';
-        label.style.color = colors[score-1] || 'var(--text-soft)';
+        label.style.color = colors[score-1] || 'var(--soft)';
     }
 
     // ── VALIDATE EMAIL ───────────────────────────────────────

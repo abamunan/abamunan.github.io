@@ -17,6 +17,7 @@ import { accountsView } from './views/accounts.js';
 import { icon } from './icons.js';
 import { mountCalculator } from './components/calculator.js';
 import { initPWA } from './data/pwa.js';
+import '../../scroll-nav.js';
 
 const splash = initSplash(document.getElementById('splash'), { total: 6 });
 const chip = document.getElementById('syncState');

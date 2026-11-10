@@ -3,4 +3,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://abamunan.github.io/sitemap.xml
+Sitemap: https://munan.me/sitemap.xml

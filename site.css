@@ -29,6 +29,7 @@
     --marker:#10B981;
     --on-ink:#FFFFFF;
     --on-marker:#11221D;
+    --on-accent:var(--on-ink);
 
     /* semantic */
     --ok:#0D8255;   --ok-bg:rgba(13,130,85,.12);
@@ -82,6 +83,7 @@
     --marker:#22D3EE;
     --on-ink:#060913;
     --on-marker:#11221D;
+    --on-accent:var(--on-ink);
     --ok:#34D399;   --ok-bg:rgba(52,211,153,.12);
     --warn:#FBBF24; --warn-bg:rgba(251,191,36,.12);
     --err:#FB7185;  --err-bg:rgba(251,113,133,.12);
@@ -126,6 +128,8 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible, summary:focus-v
 /* ── 3. NAVBAR + MOBILE MENU (markup injected by nav.js) ───── */
 .navbar { position:fixed; top:0; left:0; right:0; z-index:1000; height:var(--nav-h); display:flex; align-items:center; gap:8px; padding:0 max(24px, calc((100% - var(--wrap)) / 2 + 24px)); background:var(--nav-bg); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); transition:transform .3s ease; }
 .navbar.navbar-hidden { transform:translateY(-100%); }
+.rd-header, .appbar { transition:transform .3s ease; }
+.rd-header.scroll-nav-hidden, .appbar.scroll-nav-hidden { transform:translateY(-100%); }
 .nav-logo { font-family:var(--display); font-size:1.3rem; font-weight:800; letter-spacing:-.02em; color:var(--ink); white-space:nowrap; }
 .nav-logo span { color:var(--lagoon); }
 .nav-links { display:flex; gap:2px; margin-left:auto; margin-right:14px; }

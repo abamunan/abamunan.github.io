@@ -8,17 +8,18 @@
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>Blog | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/blog.html">
+    <link rel="canonical" href="https://munan.me/blog.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/blog.html">
+    <meta property="og:url" content="https://munan.me/blog.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="Blog | Munan.hub">
     <meta property="og:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Blog | Munan.hub">
     <meta name="twitter:description" content="Blog by Abdullah All Munan — ideas, learnings, and stories from a journey in code, science, and life.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -126,6 +127,10 @@
             });
         }
 
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
         function render(q) {
             q = (q || '').toLowerCase().trim();
             const grid = document.getElementById('blogGrid');
@@ -137,7 +142,8 @@
             });
             countEl.textContent = filtered.length ? `${filtered.length} post${filtered.length !== 1 ? 's' : ''}` : '';
             if (!filtered.length) {
-                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${q || activeFilter}</b>"`}</div>`;
+                const safeQ = escapeHtml(q || activeFilter);
+                grid.innerHTML = `<div class="empty"><i class="fas fa-feather-pointed" aria-hidden="true"></i><strong>${BLOG_POSTS.length === 0 ? 'No posts yet' : 'Nothing found'}</strong><br>${BLOG_POSTS.length === 0 ? 'The first post is coming soon. Check back shortly!' : `No posts match "<b>${safeQ}</b>"`}</div>`;
                 return;
             }
             grid.innerHTML = filtered.map((p) => `
@@ -187,6 +193,16 @@
 
         function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
+        function trapModalFocus(e) {
+            if (e.key !== 'Tab' || document.getElementById('modalOverlay').hidden) return;
+            const root = document.getElementById('modal');
+            const items = [...root.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+
         function copyLink() {
             navigator.clipboard.writeText(window.location.href).then(() => {
                 const btn = document.getElementById('copyBtn');
@@ -196,7 +212,7 @@
             });
         }
 
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); trapModalFocus(e); });
 
         window.addEventListener('load', () => {
             const hash = window.location.hash;

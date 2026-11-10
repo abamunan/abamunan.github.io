@@ -8,17 +8,18 @@
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>Webcomics | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/webcomic.html">
+    <link rel="canonical" href="https://munan.me/webcomic.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/webcomic.html">
+    <meta property="og:url" content="https://munan.me/webcomic.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="Webcomics | Munan.hub">
     <meta property="og:description" content="Webcomics by Abdullah All Munan — humor, drama, and relatable moments told through illustrated stories.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Webcomics | Munan.hub">
     <meta name="twitter:description" content="Webcomics by Abdullah All Munan — humor, drama, and relatable moments told through illustrated stories.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -176,10 +177,20 @@
         function handleOverlayClick(e) {
             if (e.target === document.getElementById('modalOverlay')) closeViewer();
         }
+        function trapViewerFocus(e) {
+            if (e.key !== 'Tab' || document.getElementById('modalOverlay').hidden) return;
+            const root = document.getElementById('modal');
+            const items = [...root.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
 
         document.addEventListener('keydown', e => {
             if (!document.getElementById('modalOverlay').hidden) {
                 if (e.key === 'Escape') closeViewer();
+                trapViewerFocus(e);
                 if (e.key === 'ArrowLeft') previousEpisode();
                 if (e.key === 'ArrowRight') nextEpisode();
             }

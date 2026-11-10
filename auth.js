@@ -117,7 +117,7 @@ async function checkResetCooldown(email) {
         const ref  = doc(db, "passwordResetCooldowns", key);
         const snap = await getDoc(ref);
         if (snap.exists()) {
-            const lastSent = snap.data().lastSent;
+            const lastSent = snap.data().lastRequestedAt;
             const lastMs   = lastSent?.toMillis ? lastSent.toMillis() : 0;
             const elapsed  = Date.now() - lastMs;
             if (elapsed < RESET_COOLDOWN_MS) {
@@ -163,7 +163,7 @@ async function resetPassword(email) {
     try {
         const key = emailToKey(email);
         await setDoc(doc(db, "passwordResetCooldowns", key), {
-            lastSent: serverTimestamp(),
+            lastRequestedAt: serverTimestamp(),
         });
     } catch (e) {
         console.error("Failed to record cooldown:", e);

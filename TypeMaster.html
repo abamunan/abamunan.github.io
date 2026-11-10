@@ -8,17 +8,18 @@
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>TypeMaster | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/TypeMaster.html">
+    <link rel="canonical" href="https://munan.me/TypeMaster.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/TypeMaster.html">
+    <meta property="og:url" content="https://munan.me/TypeMaster.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="TypeMaster | Munan.hub">
     <meta property="og:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="TypeMaster | Munan.hub">
     <meta name="twitter:description" content="Free typing practice with live speed and accuracy stats, an on-screen keyboard and optional sound. Sign-in required; scores are saved to your account.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -41,6 +42,14 @@
             --key-bg:     color-mix(in srgb, var(--paper) 75%, transparent);
             --key-shadow: color-mix(in srgb, var(--lagoon) 18%, transparent);
             --radius:     16px;
+        }
+
+        :root[data-theme="dark"] {
+            --surface:    var(--glass-card);
+            --border:     var(--glass-border);
+            --border-acc: color-mix(in srgb, var(--lagoon) 40%, transparent);
+            --key-bg:     color-mix(in srgb, var(--paper) 90%, transparent);
+            --key-shadow: rgba(0, 0, 0, 0.55);
         }
 
         /* ── BODY OVERRIDE ───────────────────────────── */
@@ -117,7 +126,7 @@
         /* ── CONFIG BOX ──────────────────────────────── */
         .config-box { transition: all .4s ease; overflow: hidden; }
         .config-box.hidden {
-            max-height: 0 !important; padding-top: 0; padding-bottom: 0;
+            max-height: 0; padding-top: 0; padding-bottom: 0;
             border-color: transparent; opacity: 0; pointer-events: none; margin-bottom: -20px;
         }
         .config-label {
@@ -157,13 +166,13 @@
         button#new-text-btn:hover { background: var(--accent); color: var(--on-accent); }
 
         /* ── STATS BAR ───────────────────────────────── */
-        .stats-bar {
-            display: flex !important;   /* override card block */
-            flex-direction: row;
-            justify-content: space-around;
-            align-items: center;
-            padding: 18px 26px;
-            gap: 16px;
+        .card.stats-bar, .card.stats-bar:hover {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            padding: 0;
+            background: transparent;
+            border: 0;
         }
         .stat-item { text-align: center; flex: 1; }
         .stat-label {
@@ -201,8 +210,8 @@
         #typing-input:disabled { opacity: .55; cursor: not-allowed; }
 
         /* ── KEYBOARD ────────────────────────────────── */
-        .keyboard {
-            display: block !important;
+        .card.keyboard {
+            display: block;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             padding: 16px 0;
@@ -296,7 +305,6 @@
     
 /* Round 4: workbench look */
 .logo-main{font-family:var(--display);margin:0;}
-.stats-bar,.stats-bar:hover{display:grid !important;grid-template-columns:repeat(3,1fr);gap:14px;padding:0;background:transparent;border:0;}
 .stats-bar .stat-item{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:16px 12px;}
 .stats-bar .stat-value{font-family:var(--display);}
 .text-display{font-family:var(--mono);}

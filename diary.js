@@ -63,6 +63,8 @@ const entryListEl     = $("#entry-list");
 const loadMoreBtn     = $("#history-load-more-btn");
 const downloadPdfBtn  = $("#download-pdf-btn");
 const exportAllBtn    = $("#export-all-pdf-btn");
+const exportJsonBtn   = $("#export-json-btn");
+const importJsonInput = $("#import-json-input");
 const filterBtns      = document.querySelectorAll(".diary-filter-btn");
 const historySearch   = $("#history-search");
 const historySearchWrap = $("#history-search-wrap");
@@ -1039,6 +1041,54 @@ exportAllBtn.addEventListener("click", async () => {
     } finally {
         exportAllBtn.disabled = false;
         exportAllBtn.innerHTML = originalHtml;
+    }
+});
+
+function downloadDiaryJson(entries) {
+    const blob = new Blob([JSON.stringify({
+        app: "munan-diary",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        entries
+    }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `munans-diary-${todayDateString()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+exportJsonBtn.addEventListener("click", () => {
+    if (!cachedEntries.length) { showToast("Load diary entries before creating a backup.", true); return; }
+    downloadDiaryJson(cachedEntries);
+    showToast(`JSON backup downloaded — ${cachedEntries.length} entries.`);
+});
+
+importJsonInput.addEventListener("change", async () => {
+    const file = importJsonInput.files?.[0];
+    importJsonInput.value = "";
+    if (!file || !currentUser) return;
+    try {
+        const data = JSON.parse(await file.text());
+        if (data?.app !== "munan-diary" || !Array.isArray(data.entries) ||
+            data.entries.some(e => !e || typeof e !== "object" ||
+                typeof e.datetime !== "string" || !Array.isArray(e.sections) ||
+                (e.userId && e.userId !== currentUser.uid))) {
+            throw new Error("invalid backup");
+        }
+        if (!window.confirm(`Restore ${data.entries.length} diary entries? Existing entries with the same IDs will be replaced.`)) return;
+        for (const entry of data.entries) {
+            const copy = { ...entry, userId: currentUser.uid };
+            const id = copy.id;
+            delete copy.id;
+            await setDoc(doc(db, COLLECTION, id || crypto.randomUUID()), copy);
+        }
+        showToast("Diary JSON backup restored.");
+        await loadHistory(true);
+    } catch (err) {
+        console.error("Diary JSON restore failed:", err);
+        showToast("Could not restore that JSON backup.", true);
     }
 });
 

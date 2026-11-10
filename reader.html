@@ -4,20 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0A6F48">
     <title id="page-title">Reader | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/reader.html">
+    <link rel="canonical" href="https://munan.me/reader.html">
     <link rel="icon" type="image/png" href="icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://abamunan.github.io/reader.html">
+    <meta property="og:url" content="https://munan.me/reader.html">
     <meta property="og:site_name" content="Munan.hub">
     <meta property="og:title" content="Reader | Munan.hub">
     <meta property="og:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
-    <meta property="og:image" content="https://abamunan.github.io/Image.jpeg">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Reader | Munan.hub">
     <meta name="twitter:description" content="A focused reader for study notes: PDF viewer with paper, sepia and dark reading modes, bookmarks, quick notes and a study timer.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -26,190 +28,7 @@
     <script src="theme.js"></script>
     <script src="owner.js"></script>
     <link rel="stylesheet" href="site.css?v=3">
-    <style>
-        /* ============================================================
-           Reader shell (Field Notebook tokens).
-           Chrome follows the site light/dark theme. The Paper / Sepia / Dark
-           buttons are a reader feature: they only filter the document frame.
-           ============================================================ */
-        :root { --header-h: 76px; }  /* script keeps this in sync with the real bar height */
-        html, body { height: 100%; }
-
-        .rd-crumbs { margin-bottom: 4px; font-size: .78rem; padding: 0; }
-        .rd-header {
-            position: sticky; top: 0; z-index: 20;
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
-            gap: 10px 16px; min-height: var(--header-h);
-            padding: 10px clamp(16px, 4vw, 40px);
-            background: var(--paper); border-bottom: 1.5px solid var(--line);
-        }
-        body.is-fullscreen .rd-header { display: none; }
-        .rd-logo { flex: none; }
-        .titleblock { min-width: 0; flex: 1 1 200px; }
-        .titleblock .kicker { margin-bottom: 2px; font-size: .7rem; }
-        .titleblock h1 {
-            font-size: clamp(1.1rem, 2.4vw, 1.5rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin: 0;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .caption { font-size: .84rem; color: var(--soft); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-        .mode-toggle { display: flex; gap: 4px; padding: 3px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--bg); }
-        .mode-toggle button { padding: 6px 14px; min-height: 32px; border-radius: 999px; font-size: .82rem; font-weight: 700; color: var(--muted); transition: background var(--trans), color var(--trans); }
-        .mode-toggle button:hover { color: var(--ink); }
-        .mode-toggle button.active { background: var(--ink); color: var(--bg); }
-        :root[data-theme="dark"] .mode-toggle button.active { background: var(--marker); color: #11221D; }
-
-        .icon-btn {
-            width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
-            border: 1.5px solid var(--line); border-radius: 50%; background: var(--paper);
-            color: var(--ink); font-size: 1rem; text-decoration: none;
-            transition: background var(--trans), border-color var(--trans);
-        }
-        .icon-btn:hover { border-color: var(--ink); background: var(--lagoon-tint); }
-
-        main { position: relative; height: calc(100vh - var(--header-h)); height: calc(100dvh - var(--header-h)); }
-        iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; transition: filter .2s ease; }
-        iframe.mode-dark { filter: invert(0.92) hue-rotate(180deg) contrast(0.92); }
-        iframe.mode-sepia { filter: sepia(0.4) saturate(1.1) brightness(0.98) contrast(0.96); }
-        .loading {
-            position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 12px; padding: 24px; text-align: center; background: var(--bg); color: var(--muted); font-size: .92rem;
-            transition: opacity .25s ease; z-index: 5;
-        }
-        .loading.hidden { opacity: 0; pointer-events: none; }
-        .loading .spinner { width: 28px; height: 28px; }
-
-        /* ---- study dock (draggable speed-dial) ---- */
-        .dock { position: fixed; right: 16px; bottom: 22px; z-index: 25; }
-        .dock button {
-            width: 44px; height: 44px; border-radius: 14px;
-            border: 1.5px solid var(--line); background: var(--paper);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--ink); font-size: 17px; gap: 1px;
-            box-shadow: 0 2px 8px rgba(17,34,29,.14);
-        }
-        .dock button .tag { font-size: 8.5px; font-weight: 700; color: var(--soft); letter-spacing: .02em; }
-        .dock button:hover { border-color: var(--ink); }
-        .dock button.active { border-color: var(--lagoon); background: var(--lagoon-tint); color: var(--lagoon); }
-        .dock button.active .tag { color: var(--lagoon); }
-        .dock button.has-content::after {
-            content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
-            background: var(--marker); border: 1.5px solid var(--ink); margin: -34px 0 0 26px;
-        }
-        #dock-handle {
-            position: relative; font-size: 19px; cursor: grab; touch-action: none; z-index: 2;
-            background: var(--ink); color: var(--bg); border-color: var(--ink);
-        }
-        #dock-handle:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
-        :root[data-theme="dark"] #dock-handle { background: var(--marker); color: #11221D; border-color: var(--marker); }
-        :root[data-theme="dark"] #dock-handle:hover { background: #fff; border-color: #fff; }
-        .dock-btn {
-            position: absolute; right: 0; bottom: 0;
-            transition: transform .22s cubic-bezier(.34,1.56,.64,1), opacity .18s ease, bottom .22s cubic-bezier(.34,1.56,.64,1);
-            transform: scale(0); opacity: 0; pointer-events: none;
-        }
-        .dock.expanded .dock-btn { transform: scale(1); opacity: 1; pointer-events: auto; }
-        .dock.expanded .dock-btn:nth-child(2) { bottom: 52px;  transition-delay: 0s;   }
-        .dock.expanded .dock-btn:nth-child(3) { bottom: 104px; transition-delay: .02s; }
-        .dock.expanded .dock-btn:nth-child(4) { bottom: 156px; transition-delay: .04s; }
-        .dock.expanded .dock-btn:nth-child(5) { bottom: 208px; transition-delay: .06s; }
-        .dock.expanded .dock-btn:nth-child(6) { bottom: 260px; transition-delay: .08s; }
-        .dock.expanded .dock-btn:nth-child(7) { bottom: 312px; transition-delay: .10s; }
-
-        .mini-timer {
-            position: fixed; top: calc(var(--header-h) + 10px); right: 14px; z-index: 24;
-            display: none; align-items: center; justify-content: center;
-            background: var(--ink); color: var(--bg); border-radius: 999px; padding: 9px 18px;
-            font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em;
-            box-shadow: 0 2px 8px rgba(17,34,29,.2); cursor: grab; border: none; touch-action: none; user-select: none;
-        }
-        .mini-timer.show { display: flex; }
-        .mini-timer.paused { opacity: .55; }
-        .mini-timer.break-mode { background: var(--lagoon); color: #fff; }
-        :root[data-theme="dark"] .mini-timer { background: var(--marker); color: #11221D; }
-        :root[data-theme="dark"] .mini-timer.break-mode { background: var(--lagoon); color: #11221D; }
-        #mini-timer-close {
-            position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; min-height: 0;
-            border-radius: 50%; border: 1.5px solid var(--ink); background: var(--paper);
-            color: var(--ink); font-size: 12px; line-height: 1; padding: 0;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-        }
-
-        .backdrop { position: fixed; inset: 0; background: rgba(17,34,29,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 29; }
-        .backdrop.show { opacity: 1; pointer-events: auto; }
-
-        .rd-panel {
-            position: fixed; top: var(--header-h); right: 0; bottom: 0; width: 340px;
-            background: var(--paper); border-left: 1.5px solid var(--line);
-            transform: translateX(100%); transition: transform .25s ease;
-            z-index: 30; padding: 22px 20px; overflow-y: auto;
-        }
-        .rd-panel.open { transform: translateX(0); }
-        .rd-panel h2 { font-size: 1.15rem; margin: 0 0 14px; padding-right: 36px; }
-        .rd-panel .close-x {
-            position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 15px; color: var(--muted);
-        }
-        .rd-panel .close-x:hover { background: var(--lagoon-tint); color: var(--ink); }
-        .field-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--soft); margin: 16px 0 6px; }
-        .field-label:first-of-type { margin-top: 0; }
-        .row { display: flex; gap: 8px; align-items: center; }
-        .rd-panel input[type="number"], .rd-panel input[type="text"], .rd-panel textarea {
-            width: 100%; min-height: 40px; padding: 8px 12px; background: var(--bg); color: var(--ink);
-            border: 1.5px solid var(--line); border-radius: var(--r-input); font-size: .92rem;
-        }
-        .rd-panel input:focus, .rd-panel textarea:focus { outline: none; border-color: var(--lagoon); box-shadow: 0 0 0 4px var(--lagoon-tint); }
-        .rd-panel textarea { min-height: 260px; resize: vertical; line-height: 1.55; }
-        .btn {
-            border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
-            border-radius: 999px; padding: 8px 16px; min-height: 40px; font-size: .88rem; font-weight: 700; white-space: nowrap;
-            transition: background var(--trans), border-color var(--trans), color var(--trans);
-        }
-        .btn:hover { border-color: var(--ink); }
-        .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-        .btn.primary:hover { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
-        :root[data-theme="dark"] .btn.primary { background: var(--marker); color: #11221D; border-color: var(--marker); }
-        :root[data-theme="dark"] .btn.primary:hover { background: #fff; border-color: #fff; }
-        .btn.small { padding: 5px 12px; min-height: 34px; font-size: .8rem; }
-        .progress-track { height: 10px; background: var(--lagoon-tint); border-radius: 99px; overflow: hidden; margin-top: 14px; }
-        .progress-fill { height: 100%; background: var(--lagoon); width: 1.6%; border-radius: inherit; transition: width .2s ease; }
-        .progress-label { font-size: .84rem; color: var(--muted); margin-top: 8px; }
-        .hint { font-size: .8rem; color: var(--soft); margin-top: 12px; line-height: 1.5; }
-
-        .timer-display { font-family: var(--display); font-weight: 800; font-size: 2.9rem; text-align: center; margin: 6px 0 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-        .timer-mode-label { text-align: center; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--lagoon); margin-bottom: 14px; }
-        .timer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
-        .timer-sessions { text-align: center; font-size: .84rem; color: var(--soft); margin-top: 12px; }
-
-        .shortcuts-list { font-size: .9rem; color: var(--muted); line-height: 2.1; }
-        .shortcuts-list kbd {
-            background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px;
-            padding: 1px 8px; font-family: var(--mono); font-size: .78rem; color: var(--ink);
-        }
-
-        @media (max-width: 760px) { .rd-logo { display: none; } }
-        @media (max-width: 560px) {
-            .rd-header { padding: 8px 16px; gap: 6px 12px; }
-            .caption { display: none; }
-            .titleblock { flex-basis: 100%; }
-            .controls { flex-wrap: wrap; gap: 5px; flex-shrink: 1; }
-            .mode-toggle { gap: 2px; }
-            .mode-toggle button { padding: 6px 9px; }
-            .icon-btn { width: 36px; height: 36px; font-size: .95rem; }
-            .dock { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
-            .dock button { width: 42px; height: 42px; font-size: 16px; }
-            .dock button .tag { display: none; }
-            .rd-panel {
-                top: auto; bottom: 0; width: 100%; height: 72vh;
-                border-left: none; border-top: 1.5px solid var(--line);
-                border-radius: 20px 20px 0 0;
-                transform: translateY(100%);
-            }
-            .rd-panel.open { transform: translateY(0); }
-        }
-    </style>
+    <link rel="stylesheet" href="reader-page.css?v=3">
 </head>
 <body class="v2 reader">
 <a class="skip" href="#main">Skip to content</a>
@@ -360,19 +179,22 @@
   // Accept either a bare Google Drive file ID, or a full Drive URL
   // (/file/d/ID/view, /open?id=ID, etc.) and normalize to the
   // embeddable /preview form.
-  function resolveDriveEmbedUrl(input) {
+  function resolveDriveId(input) {
     if (!input) return '';
-    let id = input;
+    let id = input.trim();
     const fileMatch = input.match(/\/file\/d\/([^/]+)/);
     const openMatch = input.match(/[?&]id=([^&]+)/);
     if (fileMatch) id = fileMatch[1];
     else if (openMatch) id = openMatch[1];
-    if (/^https?:\/\//.test(id)) return id; // already a full non-Drive embeddable URL
-    return `https://drive.google.com/file/d/${id}/preview`;
+    return /^[A-Za-z0-9_-]{20,}$/.test(id) ? id : '';
+  }
+  function resolveDriveEmbedUrl(input) {
+    const id = resolveDriveId(input);
+    return id ? `https://drive.google.com/file/d/${id}/preview` : '';
   }
   function resolveDriveViewUrl(input) {
-    const embed = resolveDriveEmbedUrl(input);
-    return embed.replace('/preview', '/view');
+    const id = resolveDriveId(input);
+    return id ? `https://drive.google.com/file/d/${id}/view` : '#';
   }
 
   const resolvedSrc = resolveDriveEmbedUrl(rawSrc);
@@ -382,7 +204,7 @@
   const captionEl = document.getElementById('doc-caption');
   if (pageCaption) { captionEl.textContent = pageCaption; }
   else { captionEl.style.display = 'none'; }
-  document.getElementById('open-drive-btn').href = rawSrc ? resolveDriveViewUrl(rawSrc) : '#';
+  document.getElementById('open-drive-btn').href = resolveDriveViewUrl(rawSrc);
 
   const frame = document.getElementById('pdf-frame');
   const loading = document.getElementById('loading');
@@ -723,5 +545,6 @@
   });
 </script>
 
+<script src="scroll-nav.js"></script>
 </body>
 </html>

@@ -26,8 +26,28 @@ export async function optionalUser() {
 // Paths are relative to users/{uid}/, e.g. 'moneytracker/2026_10_7' or 'moneytracker_meta/debts'.
 export function firestoreRemote() {
   const seg = p => { const u = auth.currentUser; if (!u) throw new Error('not signed in'); return ['users', u.uid, ...p.split('/')]; };
+  const merge = (local, remote) => {
+    if (!local || !remote || typeof local !== 'object' || typeof remote !== 'object') return local;
+    if (Array.isArray(local) && Array.isArray(remote)) {
+      if (!local.every(x => x && typeof x === 'object' && x.id != null)) return local;
+      const byId = new Map(remote.map(x => [x.id, x]));
+      for (const item of local) {
+        const old = byId.get(item.id);
+        byId.set(item.id, old && Number(old.updatedAt || 0) > Number(item.updatedAt || 0) ? old : item);
+      }
+      return [...byId.values()];
+    }
+    const out = { ...remote };
+    for (const [key, value] of Object.entries(local)) out[key] = key in remote ? merge(value, remote[key]) : value;
+    return out;
+  };
   return {
-    async set(p, data) { const { doc, setDoc } = await fs(); await setDoc(doc(db, ...seg(p)), data); },   // whole-doc write, as today
+    async set(p, data) {
+      const { doc, getDoc, setDoc } = await fs();
+      const ref = doc(db, ...seg(p));
+      const snap = await getDoc(ref);
+      await setDoc(ref, snap.exists() ? merge(data, snap.data()) : data);
+    },
     async del(p) { const { doc, deleteDoc } = await fs(); await deleteDoc(doc(db, ...seg(p))); },
     async get(p) { const { doc, getDoc } = await fs(); const s = await getDoc(doc(db, ...seg(p))); return s.exists() ? s.data() : null; },
     async list(c) { const { collection, getDocs } = await fs(); return (await getDocs(collection(db, ...seg(c)))).docs.map(d => ({ id: d.id, data: d.data() })); }

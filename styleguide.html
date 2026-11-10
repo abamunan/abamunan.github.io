@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>Style guide | Munan.hub</title>
+    <link rel="canonical" href="https://munan.me/styleguide.html">
 <meta name="description" content="Internal style guide for Munan.hub: tokens, components and page templates.">
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -162,7 +164,13 @@ document.querySelectorAll('.tabs').forEach(function (bar) {
     document.getElementById('mCancel').onclick = close;
     document.getElementById('mOk').onclick = close;
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) close(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !m.hidden) close();
+        if (e.key !== 'Tab' || m.hidden) return;
+        var items = [document.getElementById('mCancel'), document.getElementById('mOk')];
+        if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[1].focus(); }
+        else if (!e.shiftKey && document.activeElement === items[1]) { e.preventDefault(); items[0].focus(); }
+    });
 })();
 /* toast */
 document.getElementById('showToast').onclick = function () {

@@ -8,8 +8,18 @@
     <meta name="author" content="Abdullah All Munan">
     <meta name="theme-color" content="#0B7A50">
     <title>Message sent | Munan.hub</title>
-    <link rel="canonical" href="https://abamunan.github.io/contactRep.html">
+    <link rel="canonical" href="https://munan.me/contactRep.html">
     <link rel="icon" type="image/png" href="icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://munan.me/contactRep.html">
+    <meta property="og:site_name" content="Munan.hub">
+    <meta property="og:title" content="Message sent | Munan.hub">
+    <meta property="og:description" content="Your message has been delivered. Thanks for reaching out to Munan.hub.">
+    <meta property="og:image" content="https://munan.me/Image.jpeg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Message sent | Munan.hub">
+    <meta name="twitter:description" content="Your message has been delivered. Thanks for reaching out to Munan.hub.">
+    <meta name="twitter:image" content="https://munan.me/Image.jpeg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -21,7 +31,9 @@
     <style>
         .rep-wrap { min-height:calc(100vh - 160px); display:flex; align-items:center; justify-content:center; padding:calc(var(--nav-h) + 40px) 0 0; }
         .rep-card { max-width:560px; margin:0 auto; text-align:center; padding:44px 32px 36px; border-radius:var(--r-panel); }
-        .rep-card .tile-lg { display:flex; margin-left:auto; margin-right:auto; width:84px; height:84px; border-radius:24px; font-size:2.1rem; background:var(--marker); color:var(--on-marker); box-shadow:5px 5px 0 var(--ink); margin-bottom:26px; }
+        .rep-card .tile-lg { display:flex; margin-left:auto; margin-right:auto; width:84px; height:84px; border-radius:24px; font-size:2.1rem; background:linear-gradient(135deg,var(--lagoon),var(--marker)); color:var(--on-ink); box-shadow:0 8px 24px -4px var(--lagoon-glow), inset 0 1px 0 rgba(255,255,255,.35); margin-bottom:26px; transition:transform var(--trans), box-shadow var(--trans); }
+        .rep-card .tile-lg:hover { transform:scale(1.05) rotate(3deg); }
+        :root[data-theme="dark"] .rep-card .tile-lg { color:var(--on-marker); box-shadow:0 8px 24px -2px var(--lagoon-glow); }
         .rep-card .kicker { justify-content:center; }
         .rep-card h1 { font-family:var(--display); font-weight:800; font-size:clamp(1.9rem,5vw,2.6rem); letter-spacing:-.03em; line-height:1.08; margin-bottom:14px; }
         .rep-card p { color:var(--muted); max-width:30em; margin:0 auto; }
