@@ -2,22 +2,31 @@
 :root { --on-marker: #FFFFFF; --r-in: var(--r-input, 14px); --tabbar-h: 64px; }
 :root[data-theme="dark"] { --on-marker: #060913; }
 
-body.diary-app-body { margin: 0; background: var(--bg-gradient); background-attachment: fixed; color: var(--ink); min-height: 100vh; font-family: var(--body); letter-spacing: -0.01em; }
-#app { max-width: 760px; margin: 0 auto; padding: 0 16px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom, 0px)); }
+body.diary-app-body { margin: 0; background: var(--bg-gradient); background-attachment: fixed; color: var(--ink); min-height: 100vh; position: relative; overflow-x: hidden; font-family: 'Figtree', 'Plus Jakarta Sans', system-ui, sans-serif; letter-spacing: -0.01em; }
+.ambient-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ambient-orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .8; animation: floatOrb 18s ease-in-out infinite alternate; }
+.ambient-orb--1 { width: 460px; height: 460px; background: rgba(16, 185, 129, .18); top: -80px; left: -80px; }
+.ambient-orb--2 { width: 520px; height: 520px; background: rgba(5, 150, 105, .14); bottom: 5%; right: -100px; animation-duration: 22s; animation-delay: -5s; }
+.ambient-orb--3 { width: 380px; height: 380px; background: rgba(45, 212, 191, .12); top: 40%; left: 35%; animation-duration: 26s; animation-delay: -10s; }
+@keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, 40px) scale(1.08); } 100% { transform: translate(-25px, 20px) scale(.94); } }
+#app { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 16px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom, 0px)); }
 #main { outline: none; display: grid; gap: 16px; align-content: start; }
 
 /* ---- app bar ---- */
 /* Opaque on purpose: it is sticky, and a see-through bar lets the page scroll underneath it and overlap the title. */
-.appbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px; background-color: var(--bg); transition: transform .25s ease; }
+.appbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px; background-color: var(--bg); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); transition: transform .25s ease; }
 .appbar.scroll-nav-hidden { transform: translateY(-120%); }
 .brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; flex: none; background: linear-gradient(135deg, var(--lagoon), var(--marker)); color: var(--on-marker); box-shadow: 0 6px 18px -2px var(--lagoon-glow); }
 .brand-kicker { margin: 0; color: var(--lagoon); font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .appbar h1 { margin: 0; font: 800 1.45rem var(--display); letter-spacing: -0.03em; line-height: 1.1; }
 .appbar-actions { display: flex; align-items: center; gap: 10px; }
-.sync { font-size: .76rem; font-weight: 700; color: var(--ok); border: var(--bw, 1.5px) solid var(--line); border-radius: 999px; padding: 5px 11px; background: var(--paper); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sync { font-size: .8rem; font-weight: 600; color: var(--soft); background: var(--glass-surface, var(--paper)); border: 1px solid var(--glass-border, var(--line)); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); border-radius: 99px; padding: 5px 12px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.sync::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
 .sync--wait { color: var(--warn); }
-.theme-icon-btn { width: 40px; height: 40px; border-radius: 50%; border: var(--bw, 1.5px) solid var(--line); background: var(--paper); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.sync--wait::before { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.theme-icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--glass-border, var(--line)); background: var(--glass-surface, var(--paper)); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: var(--glass-shadow, none); transition: all .2s ease; }
+.theme-icon-btn:hover { background: var(--glass-card-hover, var(--paper)); border-color: var(--lagoon); transform: translateY(-2px); color: var(--lagoon); }
 .theme-icon-btn .icon-moon { display: none; } .theme-icon-btn.is-dark .icon-sun { display: none; } .theme-icon-btn.is-dark .icon-moon { display: block; }
 
 /* ---- tab bar (shared ui-tabbar): bottom bar on phones, left sidebar on PC (see the Layout block at the end) ---- */

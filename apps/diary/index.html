@@ -24,6 +24,12 @@
 </head>
 <body class="v2 diary-app-body">
 
+<div class="ambient-glow" aria-hidden="true">
+  <div class="ambient-orb ambient-orb--1"></div>
+  <div class="ambient-orb ambient-orb--2"></div>
+  <div class="ambient-orb ambient-orb--3"></div>
+</div>
+
 <div id="splash" class="ui-splash" role="progressbar" aria-label="Loading Diary" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
   <div class="ui-splash__inner">
     <div class="ui-splash__title"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h11a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 8h6M8 12h6"/></svg> Diary</div>
@@ -36,10 +42,6 @@
 
 <div id="app">
   <header class="appbar">
-    <div class="brand-lockup">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11a3 3 0 013 3v13H7a3 3 0 01-3-3V4z"/><path d="M8 8h6M8 12h6"/></svg></span>
-      <div><p class="brand-kicker">Private journal</p><h1>Diary</h1></div>
-    </div>
     <div class="appbar-actions">
       <span id="syncState" class="sync" role="status">…</span>
       <button id="mobileThemeBtn" class="theme-icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
