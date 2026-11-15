@@ -10,7 +10,7 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 
 - **Hero / intro** — profile photo, typing-animation tagline
 - **Quick Links** — About Me, My Toolbox, GitHub Profile, Files, Blog, WebComics, Get in Touch
-- **My Projects** — browser-based tools built from scratch (TypeMaster, Money Tracker, Photo Resizer, Diary, PDF Toolkit), plus a **View All Projects** card linking to the full collection
+- **My Projects** — browser-based tools built from scratch (TypeMaster, Money Tracker, Photo Resizer, Diary, PDF Toolkit and DU Zoology CG Planner), plus a **View All Projects** card linking to the full collection
 - **Academic** — study notes viewer
 - **Blog preview** — latest posts, pulled from `posts.js`
 - **WebComics preview** — latest strips, pulled from `webcomic.js`
@@ -26,7 +26,7 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 │
 ├── TypeMaster.html, photo-resizer.html, pdf-toolkit.html,              # Tools (use tool.css)
 │   booklet-maker.html, poster-splitter.html, resolution-changer.html,
-│   invert-colors.html, drive-folder-fetch.html,
+│   invert-colors.html, drive-folder-fetch.html, du-zoology-cg-planner.html,
 │   bot1.html (Messenger to Telegram guide: public, in sitemap, linked from projects.html)
 │   (TypeMaster.html is private: noindex, and redirects to login.html when signed out. It is still linked from the homepage and projects page.)
 ├── english-tracker.html, garments-accounts.html                        # Private apps (app.css)

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Plan your DU Zoology first-year grades and calculate GPA from course marks and credits.">
+<meta name="author" content="Abdullah All Munan">
+<meta name="theme-color" content="#0B7A50">
+<link rel="icon" type="image/png" href="icon.png">
+<title>DU Zoology CG Planner | Munan.hub</title>
+<link rel="canonical" href="https://munan.me/du-zoology-cg-planner.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+<script src="theme.js"></script>
+<script src="owner.js"></script>
+<link rel="stylesheet" href="site.css?v=3">
+<link rel="stylesheet" href="tool.css?v=3">
+<style>
+:root{--bg:#eef1f5;--card:#fff;--tx:#14181d;--mu:#4b5560;--bd:#c9d0d9;--hd:#e3e8ee;--ac:#0b6b63;--acx:#fff;--bad:#b3261e;--ok:#0b6b63;--in:#fbfcfd;--hl:#e6f4f1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1317;--card:#181e24;--tx:#f0f3f6;--mu:#b4bec8;--bd:#3a444f;--hd:#242c35;--ac:#2dd4bf;--acx:#06201c;--bad:#ff8a78;--ok:#2dd4bf;--in:#10151a;--hl:#16312e}}
+:root[data-theme="dark"]{--bg:#0f1317;--card:#181e24;--tx:#f0f3f6;--mu:#b4bec8;--bd:#3a444f;--hd:#242c35;--ac:#2dd4bf;--acx:#06201c;--bad:#ff8a78;--ok:#2dd4bf;--in:#10151a;--hl:#16312e}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 32px}
+.w{max-width:1500px;margin:0 auto}
+h1{font-size:28px;margin:0 0 6px}.sub{color:var(--mu);font-size:16px;margin:0 0 20px}
+.top{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+.card label{display:block;font-size:14px;font-weight:600;color:var(--mu);margin-bottom:6px}
+.card input{width:100%;padding:10px 12px;font-size:20px;font-weight:600;border:1px solid var(--bd);border-radius:8px;background:var(--in);color:var(--tx)}
+.kv{font-size:34px;font-weight:700;line-height:1.1}.ok{color:var(--ok)}.bad{color:var(--bad)}.hint{font-size:14px;color:var(--mu);margin-top:6px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+th{background:var(--hd);font-size:14px;font-weight:700;text-align:center;padding:10px 8px;border-bottom:1px solid var(--bd);border-left:1px solid var(--bd)}
+th:first-child{text-align:left;border-left:0}th.k{background:var(--hl)}
+td{padding:7px 8px;border-top:1px solid var(--bd);border-left:1px solid var(--bd);text-align:center;font-size:16px}
+td:first-child{border-left:0;text-align:left}td.k{background:var(--hl)}
+td input,td select{width:100%;padding:8px 6px;font-size:16px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--in);color:var(--tx)}
+td select{font-weight:700}td input.n{text-align:left;min-width:250px}td input.mx{opacity:.85}td input.fg{font-weight:700}
+.res{font-weight:700}.nt{font-size:14px;color:var(--bad);text-align:left}
+tfoot td{background:var(--hd);font-weight:700}
+.bar{display:flex;gap:12px;margin:16px 0}
+button{background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:600;cursor:pointer}
+button.g{background:transparent;color:var(--ac);border:1px solid var(--ac)}button.x{padding:4px 10px}
+.note{font-size:14px;color:var(--mu);line-height:1.6}
+.sec{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px 22px;margin:0 0 20px}
+.sec h2{font-size:21px;margin:0 0 10px}.sec h3{font-size:17px;margin:16px 0 6px}.sec p,.sec li{font-size:16px;line-height:1.6}.sec ul{margin:6px 0;padding-left:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.g4{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.sec table{font-size:15px;margin-bottom:6px}.sec td,.sec th{padding:6px 8px;font-size:15px}.sec td:first-child{text-align:left}
+.sec th.l{text-align:left}.mu{color:var(--mu);font-size:14px}.fm2{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--hd);padding:8px 12px;border-radius:8px;display:block;margin:6px 0;font-size:15px}
+
+:root{--zb:#f4f7fa;--sh:0 2px 10px rgba(20,30,45,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--zb:#1d252d;--sh:0 2px 12px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--zb:#1d252d;--sh:0 2px 12px rgba(0,0,0,.4)}
+body{background:radial-gradient(1200px 400px at 10% -10%,var(--hl),transparent 70%),var(--bg)}
+.hero{background:linear-gradient(120deg,var(--ac),#134e6f);color:#fff;border-radius:16px;padding:26px 30px;margin-bottom:22px;box-shadow:var(--sh)}
+.hero h1{font-size:32px;margin:10px 0 6px;color:#fff;letter-spacing:.2px}.hero .sub{color:#e7f3f2;margin:0;font-size:17px;max-width:900px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:600}
+.top .card{border-top:5px solid var(--ac);box-shadow:var(--sh)}
+.top .card:nth-child(2){border-top-color:#d97706}.top .card:nth-child(3){border-top-color:#2563eb}
+.kv{font-size:40px}
+#tb{box-shadow:var(--sh);border-radius:14px}
+#tb th{background:var(--ac);color:var(--acx);border-left:1px solid rgba(255,255,255,.25);border-bottom:0;padding:12px 8px}
+#tb th.k{background:#d97706;color:#fff}
+#tb tbody tr:nth-child(even) td{background:var(--zb)}#tb tbody tr:nth-child(even) td.k{background:var(--hl)}
+#tb tbody tr:hover td{outline:0;filter:brightness(.97)}
+#tb td input:focus,#tb td select:focus,.card input:focus{outline:3px solid var(--ac);outline-offset:0}
+#tb tfoot td{background:var(--hd);font-size:17px}
+.sec{box-shadow:var(--sh);border-radius:14px;border-left:6px solid var(--ac)}
+.sec:nth-of-type(5){border-left-color:#d97706}.sec:nth-of-type(6){border-left-color:#2563eb}.sec:nth-of-type(7){border-left-color:#7c3aed}
+.sec h2{font-size:23px;padding-bottom:8px;border-bottom:2px solid var(--bd);margin-bottom:14px}
+.sec h3{color:var(--ac);font-size:17px}
+.sec table th{background:var(--ac);color:var(--acx)}.sec table tbody tr:nth-child(even) td{background:var(--zb)}
+.sec table{border-radius:10px;box-shadow:none}
+.fm2{border-left:5px solid var(--ac);font-size:17px;padding:10px 14px}
+button{box-shadow:var(--sh)}button:hover{filter:brightness(1.08)}
+.bar{align-items:center}
+@media (max-width:1100px){.g2,.g4,.top{grid-template-columns:1fr}}
+
+:root{--bg:#f3f6f4;--card:#fff;--tx:#15211c;--mu:#44544d;--bd:#c6d2cb;--hd:#e6eeea;--ac:#1f6b4a;--acx:#fff;--hl:#e8f3ed;--tl:#e3eff6;--ti:#1b5f80;--in:#fbfdfc;--zb:#f5f8f6;--bad:#b3261e;--bh:64px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1512;--card:#16201b;--tx:#eef4f0;--mu:#aebdb5;--bd:#33433b;--hd:#1f2b25;--ac:#5ed39a;--acx:#04210f;--hl:#17332a;--tl:#12303d;--ti:#6cc4e8;--in:#0f1713;--zb:#1a251f;--bad:#ff8a78}}
+:root[data-theme="dark"]{--bg:#0e1512;--card:#16201b;--tx:#eef4f0;--mu:#aebdb5;--bd:#33433b;--hd:#1f2b25;--ac:#5ed39a;--acx:#04210f;--hl:#17332a;--tl:#12303d;--ti:#6cc4e8;--in:#0f1713;--zb:#1a251f;--bad:#ff8a78}
+html{scroll-behavior:smooth;scroll-padding-top:90px}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{padding:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.w{padding:24px 32px 56px}
+h1,h2,h3{font-family:var(--display)}
+.bar-top{position:sticky;top:0;z-index:30;height:var(--bh);display:flex;align-items:center;gap:28px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--bd)}
+.brand b{font-family:var(--display);font-size:20px;display:block;line-height:1.2}.brand small{color:var(--mu);font-size:13px}
+.bar-top nav{display:flex;gap:4px;flex:1}.bar-top nav a{color:var(--tx);text-decoration:none;font-size:15px;font-weight:600;padding:8px 12px;border-radius:8px}
+.bar-top nav a:hover{background:var(--hd)}
+.stats{display:flex;align-items:center;gap:22px}.stats div{text-align:right}.stats small{display:block;color:var(--mu);font-size:12px}.stats b{font-size:26px;line-height:1;color:var(--ac)}
+.sub{max-width:900px;margin:0 0 16px;font-size:17px;color:var(--mu)}
+.tools{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:14px;padding:14px 16px;background:var(--card);border:1px solid var(--bd);border-radius:10px}
+.tools label{font-size:13px;font-weight:600;color:var(--mu);display:flex;flex-direction:column;gap:4px}
+.tools input,.tools select{padding:8px 10px;font-size:16px;font-weight:600;border:1px solid var(--bd);border-radius:8px;background:var(--in);color:var(--tx);min-width:150px}
+.tools .sp{flex:1}
+#tb{border-collapse:separate;border-spacing:0;overflow:visible;box-shadow:none;border-radius:10px}
+#tb thead th{position:sticky;top:var(--bh);z-index:10;background:var(--hd);color:var(--tx);border-bottom:2px solid var(--bd);font-size:13px;padding:10px 6px}
+#tb thead th.k{background:var(--ti);color:#fff;border-bottom-color:var(--ti)}
+#tb td{border-top:1px solid var(--bd)}#tb tbody tr:nth-child(even) td{background:var(--zb)}
+#tb td.k{background:var(--tl)!important}#tb tbody tr:hover td{filter:none;box-shadow:inset 0 0 0 999px rgba(31,107,74,.06)}
+#tb tr.over td input{border-color:var(--bad);outline:2px solid var(--bad)}
+#tb td input.fg{border:2px solid var(--ti);font-size:17px}
+#tb td select{border:2px solid var(--c,var(--bd));background:color-mix(in srgb,var(--c,transparent) 16%,var(--in));font-size:16px}
+#tb td select[data-g="8"],#tb td select[data-g="7"]{--c:#1f9d63}#tb td select[data-g="6"],#tb td select[data-g="5"]{--c:#2a86b8}
+#tb td select[data-g="4"],#tb td select[data-g="3"]{--c:#c58a0a}#tb td select[data-g="2"],#tb td select[data-g="1"],#tb td select[data-g="0"]{--c:#d9622b}#tb td select[data-g="-1"]{--c:#c0392b}
+#tb td input:focus-visible,#tb td select:focus-visible,.tools :focus-visible,button:focus-visible,.bar-top a:focus-visible{outline:3px solid var(--ti);outline-offset:1px}
+#tb tfoot td{background:var(--hd);border-top:2px solid var(--bd)}
+button{background:var(--ac);color:var(--acx);box-shadow:none;border-radius:8px}button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}button.g:hover{background:var(--hd);filter:none}
+.sec{border-left:1px solid var(--bd);box-shadow:none;border-radius:10px}.sec h2{border-bottom:1px solid var(--bd);font-size:24px}
+.sec table th{background:var(--hd);color:var(--tx)}.sec h3{color:var(--tx)}.fm2{border-left-color:var(--ti)}
+.bar{margin:14px 0 22px}
+@media (max-width:1100px){.bar-top nav{display:none}.bar-top{padding:0 16px}.w{padding:16px}.tw{overflow-x:auto}#tb{min-width:1000px}}
+body.v2{font-family:var(--body)}
+main#main{padding-top:var(--nav-h)}
+.bar-top{top:var(--nav-h)}
+h1,h2,h3,.brand b{font-family:var(--display)}
+.brand h1{font-size:20px;margin:0;line-height:1.2}
+.lock-toggle{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.lock-toggle[aria-pressed="true"]{border-color:var(--ti);color:var(--ti)}
+#tb td input:not(.mx),#tb td select{border:2px solid var(--ti);background:var(--in);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ti) 10%,transparent)}
+#tb td input.mx{background:var(--hd);border:1px dashed var(--bd);color:var(--mu);cursor:not-allowed}
+#tb td input.mx:disabled{opacity:.72}
+</style></head><body class="v2 tool">
+<a class="skip" href="#main">Skip to content</a>
+<main id="main"><header class="bar-top"><div class="brand"><h1>DU Zoology CG planner</h1><small>1st year · 28 credits · 700 marks</small></div>
+<nav aria-label="Sections"><a href="#calc">Calculator</a><a href="#s-cgpa">CGPA rules</a><a href="#s-marks">Marks and grades</a><a href="#s-rules">Other rules</a><a href="#s-courses">Courses</a></nav>
+<div class="stats"><div><small>CGPA</small><b id="cg">–</b></div><div><small>Total marks</small><b id="tm">–</b></div><button class="g" id="theme" type="button">Dark mode</button></div></header>
+<div class="w"><section id="calc"><p class="sub">For each course, either type the final exam marks to see the grade, or select a grade to see the minimum final exam marks needed. The other field updates automatically.</p>
+<div class="tools"><label>Min final pass %<input id="mp" type="number" min="0" max="100" value="0"></label>
+<label>Set every course to<select id="all"></select></label><button id="apply" type="button">Apply to all</button><button class="g lock-toggle" id="marksLock" type="button" aria-pressed="false" title="Unlock full marks fields"><span id="marksLockIcon" aria-hidden="true">🔒</span><span id="marksLockText">Full marks locked</span></button>
+<span class="sp"></span><button class="g" id="clear" type="button">Clear marks</button><button class="g" id="reset" type="button">Reset table</button></div>
+<div class="tw"><table id="tb"><thead><tr>
+<th style="width:20%">Course title</th><th>Credit</th><th>Attendance<br>obtained</th><th>Attendance<br>max 🔒</th><th>In-course exam<br>obtained</th><th>In-course exam<br>max 🔒</th><th>Final exam<br>max 🔒</th><th class="k">Final exam marks<br>(type here)</th><th class="k">Grade<br>(or select here)</th><th>Total marks</th><th>Note</th><th></th>
+</tr></thead><tbody></tbody>
+<tfoot><tr><td>Total</td><td id="fc">0</td><td colspan="5"></td><td></td><td></td><td id="ft"></td><td></td><td></td></tr></tfoot></table></div>
+<div class="bar"><button class="g" id="add">+ Add course</button><span class="mu">Type final marks or pick a grade. The other updates automatically. Press Enter to move down a column.</span></div>
+</section><div class="sec" id="s-cgpa"><h2>How CGPA is calculated</h2>
+<ol style="padding-left:22px;margin:0">
+<li>For every course: <b>total marks = attendance + in-course + final exam</b>. Any fractional total is rounded up to the next whole mark.</li>
+<li>Convert the total to a percentage of the course marks (1 credit = 25 marks), then to a letter grade and grade point using the scale below.</li>
+<li><b>GPA (one year)</b> = sum of (grade point × credits) ÷ sum of credits attempted.</li>
+<li><b>CGPA (2nd, 3rd and 4th year)</b> = total grade points earned up to date ÷ total credits attempted. The 1st year result is a GPA, and it carries into every later CGPA.</li>
+</ol>
+<span class="fm2">GPA = Σ (Grade point × Credits) ÷ Σ Credits attempted</span>
+<p class="mu" style="margin:6px 0 0">Example: Zool 101 is 75 marks. A total of 60 marks is 80%, which is A+ (4.00). In this calculator the first-year CGPA shown above is the 1st-year GPA over the 28 credits listed in the table.</p></div>
+
+<div class="sec" id="s-marks"><h2>Marks distribution needed for a grade</h2>
+<div class="g2"><div>
+<h3>Marks split per course</h3>
+<table><thead><tr><th class="l">Course type</th><th>Attendance</th><th>In-course</th><th>Final exam</th></tr></thead><tbody>
+<tr><td>Theory course</td><td>5%</td><td>35%</td><td>60%</td></tr>
+<tr><td>Practical course</td><td>5%</td><td>35%</td><td>60%</td></tr>
+<tr><td>Extra-departmental (Botany, Biochemistry)</td><td>5%</td><td>15% + 20% practical exam</td><td>60%</td></tr>
+<tr><td>Field study and Viva-voce</td><td colspan="3">Assessed by the department committee</td></tr>
+</tbody></table>
+<h3>Attendance marks (out of 5%)</h3>
+<table><thead><tr><th class="l">Attendance</th><th>95%+</th><th>90 to &lt;95</th><th>85 to &lt;90</th><th>80 to &lt;85</th><th>75 to &lt;80</th><th>&lt;75</th></tr></thead><tbody><tr><td>Marks (%)</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td></tr></tbody></table>
+</div><div>
+<h3>Grade scale and minimum marks</h3>
+<table id="gt"><thead></thead><tbody></tbody></table>
+<p class="mu">Minimum marks are the lowest whole total that reaches the percentage. Below 40% is F (0.00).</p>
+</div></div></div>
+<div class="sec" id="s-rules"><h2>Other important details</h2><div class="g2"><div>
+<h3>Exams and in-course tests</h3><ul>
+<li>At least 2 in-course tests for a 4-credit course and at least 1 for a 2-credit course. Missing a test counts as zero.</li>
+<li>Final exam length: 3 hours (4 credits), 2.5 hours (3 credits), 2 hours (2 credits).</li>
+<li>Final exam scripts are marked by two examiners and the marks are averaged. A third examiner is used if the two differ by more than 20%.</li>
+<li>Minimum 75% attendance to sit the final exam without penalty. 60% to under 75% requires non-collegiate fees. Under 60% is not allowed to sit.</li></ul>
+<h3>Earned credits</h3><ul>
+<li>D or higher counts as earned credits. An F does not count.</li>
+<li>Total for the degree is 140 credits: 28 + 32 + 38 + 42 across the four years.</li></ul>
+</div><div>
+<h3>Promotion</h3><ul>
+<li><b>1st to 2nd year:</b> GPA of at least 2.00 and all courses passed. Up to 8 failed credits with GPA 2.00 or above means promotion on probation.</li>
+<li><b>2nd to 3rd year:</b> CGPA of at least 2.25. Probation is possible with CGPA from 2.00 to under 2.25 and no F, or with up to 8 failed credits.</li>
+<li><b>3rd to 4th year:</b> CGPA of at least 2.50. Probation is possible with CGPA from 2.25 to under 2.50 and no F, or with up to 8 failed credits.</li></ul>
+<h3>Retake, improvement and graduation</h3><ul>
+<li>Retake: final exam only, up to 8 credits, 4 to 6 weeks after results, and the transcript is marked.</li>
+<li>Improvement: once, with the next batch, up to 8 credits per year. The improved grade point is used.</li>
+<li>Graduation needs 140 credits, no F grade, and a CGPA of at least 2.50. Maximum time is six academic years.</li>
+<li>Dean's Award: CGPA of 3.75 or above after completing the four years.</li></ul>
+</div></div></div>
+<div class="sec" id="s-courses"><h2>Courses and credits by year</h2><div class="g4" id="yrs"></div>
+<p class="mu">Source: DU Zoology BS Syllabus 2024+. The syllabus states 38 credits for the 3rd year, while the courses it lists add up to 37. Check with the department if this matters for you. Marks per course = credits × 25.</p></div>
+
+</div>
+<script>
+var B=[[40,2,"D"],[45,2.25,"C"],[50,2.5,"C+"],[55,2.75,"B-"],[60,3,"B"],[65,3.25,"B+"],[70,3.5,"A-"],[75,3.75,"A"],[80,4,"A+"]];
+var D=[["Zool 101 Introductory Zoology",3,3.75,26.25,45],["Zool 102 Protozoology",2,2.5,17.5,30],["Zool 103 Porifera, Cnidaria & Ctenophora",2,2.5,17.5,30],["Zool 104 Platyhelminthes & Nematoda",2,2.5,17.5,30],["Zool 105 Mollusca & Annelida",2,2.5,17.5,30],["Zool 106 Arthropoda & Echinodermata",2,2.5,17.5,30],["Zool 109 Field Study",1,0,0,25],["Zool 110 Practical",4,5,35,60],["Zool 111 Viva-voce",2,0,0,50],["Bot 001 Botany-I",4,5,35,60],["BMB 11 Biochemistry & Mol. Biology",4,5,35,60]];
+var GO=B.map(function(b,i){return '<option value="'+i+'">'+b[2]+' ('+b[1].toFixed(2)+')</option>'}).reverse().join("")+'<option value="-1">F (0.00)</option>';
+var tb=document.querySelector("#tb tbody");
+var fullMarksUnlocked=false;
+function row(d){var tr=document.createElement("tr");tr.dataset.mode="grade";
+tr.innerHTML='<td><input class="n" value="'+d[0]+'"></td><td><input class="cr" type="number" step="1" value="'+d[1]+'"></td><td><input class="ag" type="number" step="0.25" value="0"></td><td><input class="mx am" type="number" step="0.25" value="'+d[2]+'" disabled></td><td><input class="ig" type="number" step="0.25" value="0"></td><td><input class="mx im" type="number" step="0.25" value="'+d[3]+'" disabled></td><td><input class="mx fm" type="number" step="0.25" value="'+d[4]+'" disabled></td><td class="k"><input class="fg" type="number" step="0.25" value="0"></td><td class="k"><select class="gs">'+GO+'</select></td><td class="res tt">–</td><td class="nt"></td><td><button class="g x">×</button></td>';
+tr.querySelector(".gs").value="8";
+if(fullMarksUnlocked)[].forEach.call(tr.querySelectorAll(".mx"),function(x){x.disabled=false});
+tr.querySelector("button").onclick=function(){tr.remove();calc()};tb.appendChild(tr)}
+D.forEach(row);
+document.getElementById("add").onclick=function(){row(["New course",2,2.5,17.5,30]);calc()};
+function updateMarksLock(){var button=document.getElementById("marksLock"),icon=document.getElementById("marksLockIcon"),text=document.getElementById("marksLockText");
+[].forEach.call(document.querySelectorAll("#tb .mx"),function(x){x.disabled=!fullMarksUnlocked});
+button.setAttribute("aria-pressed",String(fullMarksUnlocked));button.title=fullMarksUnlocked?"Lock full marks fields":"Unlock full marks fields";
+icon.textContent=fullMarksUnlocked?"🔓":"🔒";text.textContent=fullMarksUnlocked?"Full marks unlocked":"Full marks locked"}
+document.getElementById("marksLock").onclick=function(){fullMarksUnlocked=!fullMarksUnlocked;updateMarksLock()};
+function fmt(x){return (Math.round(x*100)/100).toString()}
+function gradeOf(total,max){if(max<=0)return -1;var p=Math.ceil(total-1e-9)/max*100,g=-1,q;for(q=0;q<9;q++)if(p>=B[q][0]-1e-9)g=q;return g}
+function minFinal(pre,tot,fm,g,mp){var T=Math.ceil(B[g][0]/100*tot-1e-9),m=Math.floor((T-1-pre)*4+1e-9)/4+0.25;
+m=Math.max(m,Math.ceil(mp/100*fm*4-1e-9)/4,0);return m}
+document.addEventListener("input",function(e){var tr=e.target.closest&&e.target.closest("tr");if(tr&&tr.dataset.mode!==undefined){
+if(e.target.classList.contains("fg"))tr.dataset.mode="marks";else if(e.target.classList.contains("gs"))tr.dataset.mode="grade"}calc()});
+document.addEventListener("change",function(e){if(e.target.classList&&e.target.classList.contains("gs")){e.target.closest("tr").dataset.mode="grade";calc()}});
+function calc(){
+var mp=+document.getElementById("mp").value||0,rows=[].slice.call(tb.rows),tc=0,pts=0,tm=0,tmx=0;
+rows.forEach(function(r){var q=function(c){return r.querySelector(c)},v=function(c){return +q(c).value||0};
+var cr=v(".cr"),pre=v(".ag")+v(".ig"),fm=v(".fm"),tot=v(".am")+v(".im")+fm,note="",g;
+if(r.dataset.mode==="grade"){g=+q(".gs").value;
+if(g<0){q(".fg").value=0}
+else{var m=minFinal(pre,tot,fm,g,mp);if(m>fm){q(".fg").value=fm;note="Not achievable. Best possible is shown.";}else q(".fg").value=fmt(m)}}
+var fg=v(".fg");if(fg>fm)note="Marks exceed the final exam max.";else if(v(".ag")>v(".am")||v(".ig")>v(".im"))note="Obtained marks exceed the maximum.";r.classList.toggle("over",!!note&&note.indexOf("Not")!==0);
+var total=pre+fg;g=gradeOf(total,tot);q(".gs").value=String(g);q(".gs").dataset.g=g;
+q(".tt").textContent=fmt(total)+" / "+fmt(tot);q(".nt").textContent=note;
+tc+=cr;pts+=(g<0?0:B[g][1])*cr;tm+=total;tmx+=tot});
+document.getElementById("fc").textContent=tc;
+document.getElementById("cg").textContent=tc?(pts/tc).toFixed(2):"–";
+document.getElementById("tm").textContent=fmt(tm)+" / "+fmt(tmx);
+document.getElementById("ft").textContent=fmt(tm)+" / "+fmt(tmx)}
+
+var Y=[["First year",28,[["Zool 101","Introductory Zoology",3],["Zool 102","Protozoology",2],["Zool 103","Porifera, Cnidaria and Ctenophora",2],["Zool 104","Platyhelminthes and Nematoda",2],["Zool 105","Mollusca and Annelida",2],["Zool 106","Arthropoda and Echinodermata",2],["Zool 109","Field Study (Invertebrate Diversity)",1],["Zool 110","Practical",4],["Zool 111","Viva-voce",2],["Bot 001","Botany-I (including practical)",4],["BMB 11","Biochemistry and Molecular Biology (including practical)",4]]],
+["Second year",32,[["Zool 201","Minor Phyla and Lower Chordates",2],["Zool 202","Chondrichthyes and Osteichthyes",2],["Zool 203","Amphibia and Reptilia",2],["Zool 204","Aves and Mammalia",2],["Zool 205","Cytology and Histology",2],["Zool 206","Developmental Biology",2],["Zool 207","Animal Systematics and Nomenclature",2],["Zool 208","Applied and Economic Zoology",3],["Zool 209","Field Study (Vertebrate Diversity)",1],["Zool 210","Practical",4],["Zool 211","Viva-voce",2],["Bot 002","Botany-II (including practical)",4],["Microbiol 200","Microbiology (including practical)",4]]],
+["Third year",38,[["Zool 301","Comparative Vertebrate Zoology",4],["Zool 302","Animal Genetics",2],["Zool 303","Animal Behavior, Welfare and Ethics",3],["Zool 304","Fundamental and Advanced Ecology",4],["Zool 305","Human Physiology, Reproduction and Family Planning and Population Studies",4],["Zool 306","Environmental Pollution and Human Ecology",3],["Zool 307","Evolution, Zoogeography and Paleontology",3],["Zool 308","Neurobiology and Endocrinology",2],["Zool 309","Ecological field studies in terrestrial and aquatic ecosystems",2],["Zool 310","Practical",8],["Zool 311","Viva-voce",2]]],
+["Fourth year",42,[["Zool 401","Biodiversity, Biodiversity Conservation and Bioresource Management",3],["Zool 402","Radiation Biology and Biosafety Regulation",3],["Zool 403","Biostatistics",2],["Zool 404","Research Methodology",2],["Zool 405","Entomology",4],["Zool 406","Fisheries and Aquaculture",4],["Zool 407","Wildlife and Wildlife Management",4],["Zool 408","General Parasitology",4],["Zool 409","Molecular Genetics",4],["Zool 410","Ecological field studies in Mangrove ecosystems",2],["Zool 411","Practical",8],["Zool 412","Viva-voce",2]]]];
+document.getElementById("yrs").innerHTML=Y.map(function(y){var sm=y[2].reduce(function(a,c){return a+c[2]},0);
+return '<div><h3>'+y[0]+' ('+y[1]+' credits stated)</h3><table><thead><tr><th class="l">Code</th><th class="l">Course</th><th>Credits</th></tr></thead><tbody>'+y[2].map(function(c){return '<tr><td>'+c[0]+'</td><td style="text-align:left">'+c[1]+'</td><td>'+c[2]+'</td></tr>'}).join("")+'</tbody><tfoot><tr><td colspan="2">Total of listed courses</td><td>'+sm+'</td></tr></tfoot></table></div>'}).join("");
+var T=[25,50,75,100];
+document.querySelector("#gt thead").innerHTML='<tr><th class="l">Grade</th><th>Point</th><th>Min %</th>'+T.map(function(t){return '<th>of '+t+'</th>'}).join("")+'</tr>';
+document.querySelector("#gt tbody").innerHTML=B.slice().reverse().map(function(b){return '<tr><td><b>'+b[2]+'</b></td><td>'+b[1].toFixed(2)+'</td><td>'+b[0]+'%</td>'+T.map(function(t){return '<td>'+Math.ceil(b[0]/100*t-1e-9)+'</td>'}).join("")+'</tr>'}).join("")+'<tr><td><b>F</b></td><td>0.00</td><td>below 40%</td><td colspan="4">below minimum</td></tr>';
+document.getElementById("all").innerHTML=GO;document.getElementById("all").value="8";
+function snap(){return [].map.call(tb.rows,function(r){return{v:[].map.call(r.querySelectorAll("input"),function(x){return x.value}),g:r.querySelector("select").value,m:r.dataset.mode}})}
+function save(){try{localStorage.setItem("duzoo1",JSON.stringify({rows:snap(),mp:document.getElementById("mp").value}))}catch(e){}}
+try{var sv=JSON.parse(localStorage.getItem("duzoo1")||"null");if(sv&&sv.rows&&sv.rows.length){tb.innerHTML="";sv.rows.forEach(function(o){row(["",0,0,0,0]);var r=tb.lastElementChild;[].forEach.call(r.querySelectorAll("input"),function(x,i){x.value=o.v[i]});r.querySelector("select").value=o.g;r.dataset.mode=o.m||"grade"});document.getElementById("mp").value=sv.mp||0}}catch(e){}
+document.addEventListener("input",save);document.addEventListener("change",save);
+document.getElementById("apply").onclick=function(){var g=document.getElementById("all").value;[].forEach.call(tb.rows,function(r){r.querySelector("select").value=g;r.dataset.mode="grade"});calc();save()};
+document.getElementById("clear").onclick=function(){[].forEach.call(tb.rows,function(r){r.querySelector(".ag").value=0;r.querySelector(".ig").value=0;r.querySelector(".fg").value=0;r.querySelector("select").value="8";r.dataset.mode="grade"});calc();save()};
+document.getElementById("reset").onclick=function(){tb.innerHTML="";D.forEach(row);document.getElementById("mp").value=0;calc();save()};
+var th=document.getElementById("theme");function setT(t){document.documentElement.setAttribute("data-theme",t);th.textContent=t==="dark"?"Light mode":"Dark mode"}
+setT(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+th.onclick=function(){setT(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark")};
+document.addEventListener("focusin",function(e){if(e.target.tagName==="INPUT"&&e.target.type==="number")e.target.select()});
+document.addEventListener("keydown",function(e){if(e.key!=="Enter"||e.target.tagName!=="INPUT")return;var td=e.target.closest("td"),tr=td&&td.parentNode;if(!tr||tr.parentNode!==tb)return;var i=[].indexOf.call(tr.children,td),n=tr.nextElementSibling;if(n){var t=n.children[i].querySelector("input");if(t){t.focus();t.select();e.preventDefault()}}});
+calc();
+</script>
+</main>
+<script src="nav.js"></script>
+<script src="footer.js"></script>
+</body></html>
