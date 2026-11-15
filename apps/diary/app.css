@@ -12,15 +12,12 @@ body.diary-app-body { margin: 0; background: var(--bg-gradient); background-atta
 #app { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 16px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom, 0px)); }
 #main { outline: none; display: grid; gap: 16px; align-content: start; }
 
-/* ---- app bar ---- */
-/* Opaque on purpose: it is sticky, and a see-through bar lets the page scroll underneath it and overlap the title. */
-.appbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px; background-color: var(--bg); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); transition: transform .25s ease; }
-.appbar.scroll-nav-hidden { transform: translateY(-120%); }
-.brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 0; }
+/* ---- sidebar identity and controls ---- */
+.diary-sidebar__head { display: none; align-items: center; gap: 12px; }
 .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; flex: none; background: linear-gradient(135deg, var(--lagoon), var(--marker)); color: var(--on-marker); box-shadow: 0 6px 18px -2px var(--lagoon-glow); }
 .brand-kicker { margin: 0; color: var(--lagoon); font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.appbar h1 { margin: 0; font: 800 1.45rem var(--display); letter-spacing: -0.03em; line-height: 1.1; }
-.appbar-actions { display: flex; align-items: center; gap: 10px; }
+.diary-sidebar h1 { margin: 0; font: 800 1.45rem var(--display); letter-spacing: -0.03em; line-height: 1.1; }
+.diary-sidebar__bottom { position: fixed; right: 16px; bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom, 0px)); z-index: 55; display: flex; align-items: center; gap: 10px; }
 .sync { font-size: .8rem; font-weight: 600; color: var(--soft); background: var(--glass-surface, var(--paper)); border: 1px solid var(--glass-border, var(--line)); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); border-radius: 99px; padding: 5px 12px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
 .sync::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
 .sync--wait { color: var(--warn); }
@@ -269,14 +266,14 @@ body.diary-locked > *:not(.dl) { visibility: hidden !important; }
 @media (min-width: 900px) {
   :root { --side-w: 232px; }
   #app { max-width: none; margin: 0; padding: 0 40px 56px calc(var(--side-w) + 40px); }
-  .appbar { max-width: 1080px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top, 0px)) 0 14px; justify-content: flex-end; }
-  .brand-lockup { display: none; }                     /* the sidebar carries the name */
+  .diary-sidebar__head { display: flex; position: fixed; top: 30px; left: 30px; z-index: 51; }
+  .diary-sidebar__bottom { left: 30px; right: auto; bottom: 28px; }
   #main { max-width: 1080px; margin: 0 auto; }
 
   /* the shared bottom tab bar becomes a vertical sidebar */
   .ui-tabbar { top: 0; bottom: 0; left: 0; right: auto; width: var(--side-w); grid-auto-flow: row; grid-auto-columns: auto; align-content: start; gap: 6px;
     padding: 96px 14px 24px; border-top: 0; border-right: var(--bw, 1.5px) solid var(--line); overflow-y: auto; }
-  .ui-tabbar::before { content: 'Diary'; position: absolute; top: 30px; left: 30px; font: 800 1.6rem var(--display); letter-spacing: -0.03em; color: var(--ink); }
+  .ui-tabbar::before { content: none; }
   .ui-tab { flex-direction: row; justify-content: flex-start; gap: 14px; min-height: 48px; padding: 0 16px; border-radius: 14px; font-size: .95rem; text-align: left; }
   .ui-tab__icon svg { width: 22px; height: 22px; }
   .ui-tab:hover { background: color-mix(in srgb, var(--lagoon) 8%, transparent); }

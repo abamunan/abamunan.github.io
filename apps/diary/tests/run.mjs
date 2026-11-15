@@ -411,7 +411,7 @@ const clock = { t: 1_000_000 };
 {
   const css = (await import('fs')).readFileSync(new URL('../app.css', import.meta.url), 'utf8');
   const rule = sel => { const m = css.match(new RegExp('(?:^|\\n)' + sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}')); return m ? m[1] : ''; };
-  ok(/background-color:\s*var\(--bg\)/.test(rule('.appbar')), 'sticky app bar is opaque (content must not show through it)');
+  ok(!/\.appbar\s*\{/.test(css), 'Diary has no top app bar');
   ok(/background-color:\s*var\(--bg\)/.test(rule('.ui-tabbar')), 'tab bar is opaque (the shared default is translucent glass)');
   const wide = css.slice(css.indexOf('@media (min-width: 900px) {\n  :root { --side-w'));
   const side = (wide.match(/\n\s*\.ui-tabbar\s*\{([^}]*)\}/) || [])[1] || '';
