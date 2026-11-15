@@ -1,6 +1,7 @@
 import { h } from '../../shared/dom.js';
 import { fmt } from '../../shared/fmt.js';
 import { toast } from '../../shared/toast.js';
+import { confirmDialog } from '../../shared/confirm.js';
 import { formSheet } from '../components/form-sheet.js';
 import { planModel } from '../domain/viewmodels.js';
 
@@ -9,6 +10,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 let debtTab = 'borrowed';                                   // remembered while the app is open
 
 const card = (title, ...kids) => h('section', { class: 'card' }, h('h2', { class: 'card__h' }, title), ...kids);
+const acctOptions = accts => accts.map(a => ({ value: a.id, label: `${a.icon || ''} ${a.label}`.trim() }));
 const btn = (label, onclick, cls = 'ui-btn ui-btn--ghost') => h('button', { type: 'button', class: cls, onclick }, label);
 
 // ── Savings goal ──

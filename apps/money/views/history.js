@@ -34,6 +34,11 @@ export function historyView(el, app) {
         h('div', {}, h('div', { class: 'card__sub' }, 'Income'), h('div', { class: 'num money-in' }, fmt(r.sumIn, { sign: true }))), h('div', {}, h('div', { class: 'card__sub' }, 'Expense'), h('div', { class: 'num money-out' }, fmt(-r.sumOut, { sign: true })))),
         ...groups, ...(r.shown < r.total ? [h('p', { class: 'card__sub' }, `Only the newest ${r.shown} are listed. Add another word to narrow it down.`)] : []));
     };
+    const input = h('input', {
+      class: 'ui-input', type: 'search', autocomplete: 'off', value: st.q,
+      'aria-label': 'Search entries', placeholder: 'Search note, category, amount or month',
+      oninput: ev => { st.q = ev.target.value; draw(); }
+    });
     const allTags = searchTagsModel(app.repo);
     const tagChips = allTags.length ? h('div', { class: 'chips chips--scroll', role: 'group', 'aria-label': 'Tags' },
       allTags.map(tag => h('button', {
