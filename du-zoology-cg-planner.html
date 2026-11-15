@@ -10,17 +10,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="theme.js"></script>
 <script src="owner.js"></script>
 <link rel="stylesheet" href="site.css?v=3">
 <link rel="stylesheet" href="tool.css?v=3">
 <style>
-:root{--bg:#eef1f5;--card:#fff;--tx:#14181d;--mu:#4b5560;--bd:#c9d0d9;--hd:#e3e8ee;--ac:#0b6b63;--acx:#fff;--bad:#b3261e;--ok:#0b6b63;--in:#fbfcfd;--hl:#e6f4f1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1317;--card:#181e24;--tx:#f0f3f6;--mu:#b4bec8;--bd:#3a444f;--hd:#242c35;--ac:#2dd4bf;--acx:#06201c;--bad:#ff8a78;--ok:#2dd4bf;--in:#10151a;--hl:#16312e}}
-:root[data-theme="dark"]{--bg:#0f1317;--card:#181e24;--tx:#f0f3f6;--mu:#b4bec8;--bd:#3a444f;--hd:#242c35;--ac:#2dd4bf;--acx:#06201c;--bad:#ff8a78;--ok:#2dd4bf;--in:#10151a;--hl:#16312e}
+:root{--card:var(--paper);--tx:var(--ink);--mu:var(--muted);--bd:var(--line);--hd:var(--lagoon-tint);--ac:var(--lagoon);--acx:var(--on-accent);--bad:var(--err);--in:var(--paper);--hl:var(--lagoon-tint);--tl:var(--info-bg);--ti:var(--info);--zb:var(--paper);--sh:none;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 32px}
-.w{max-width:1500px;margin:0 auto}
+body{margin:0;background:var(--bg-gradient);color:var(--ink);font:16px/1.5 var(--body);padding:0}
+.w{max-width:1600px;margin:0 auto;padding:40px 24px 56px}
 h1{font-size:28px;margin:0 0 6px}.sub{color:var(--mu);font-size:16px;margin:0 0 20px}
 .top{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
@@ -46,10 +45,8 @@ button.g{background:transparent;color:var(--ac);border:1px solid var(--ac)}butto
 .sec table{font-size:15px;margin-bottom:6px}.sec td,.sec th{padding:6px 8px;font-size:15px}.sec td:first-child{text-align:left}
 .sec th.l{text-align:left}.mu{color:var(--mu);font-size:14px}.fm2{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--hd);padding:8px 12px;border-radius:8px;display:block;margin:6px 0;font-size:15px}
 
-:root{--zb:#f4f7fa;--sh:0 2px 10px rgba(20,30,45,.08)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--zb:#1d252d;--sh:0 2px 12px rgba(0,0,0,.4)}}
-:root[data-theme="dark"]{--zb:#1d252d;--sh:0 2px 12px rgba(0,0,0,.4)}
-body{background:radial-gradient(1200px 400px at 10% -10%,var(--hl),transparent 70%),var(--bg)}
+:root{--sh:var(--glass-shadow)}
+body{background:var(--bg-gradient)}
 .hero{background:linear-gradient(120deg,var(--ac),#134e6f);color:#fff;border-radius:16px;padding:26px 30px;margin-bottom:22px;box-shadow:var(--sh)}
 .hero h1{font-size:32px;margin:10px 0 6px;color:#fff;letter-spacing:.2px}.hero .sub{color:#e7f3f2;margin:0;font-size:17px;max-width:900px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:600}
@@ -74,25 +71,16 @@ button{box-shadow:var(--sh)}button:hover{filter:brightness(1.08)}
 .bar{align-items:center}
 @media (max-width:1100px){.g2,.g4,.top{grid-template-columns:1fr}}
 
-:root{--bg:#f3f6f4;--card:#fff;--tx:#15211c;--mu:#44544d;--bd:#c6d2cb;--hd:#e6eeea;--ac:#1f6b4a;--acx:#fff;--hl:#e8f3ed;--tl:#e3eff6;--ti:#1b5f80;--in:#fbfdfc;--zb:#f5f8f6;--bad:#b3261e;--bh:64px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1512;--card:#16201b;--tx:#eef4f0;--mu:#aebdb5;--bd:#33433b;--hd:#1f2b25;--ac:#5ed39a;--acx:#04210f;--hl:#17332a;--tl:#12303d;--ti:#6cc4e8;--in:#0f1713;--zb:#1a251f;--bad:#ff8a78}}
-:root[data-theme="dark"]{--bg:#0e1512;--card:#16201b;--tx:#eef4f0;--mu:#aebdb5;--bd:#33433b;--hd:#1f2b25;--ac:#5ed39a;--acx:#04210f;--hl:#17332a;--tl:#12303d;--ti:#6cc4e8;--in:#0f1713;--zb:#1a251f;--bad:#ff8a78}
 html{scroll-behavior:smooth;scroll-padding-top:90px}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{padding:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
-.w{padding:24px 32px 56px}
+body{font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:var(--display)}
-.bar-top{position:sticky;top:0;z-index:30;height:var(--bh);display:flex;align-items:center;gap:28px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--bd)}
-.brand b{font-family:var(--display);font-size:20px;display:block;line-height:1.2}.brand small{color:var(--mu);font-size:13px}
-.bar-top nav{display:flex;gap:4px;flex:1}.bar-top nav a{color:var(--tx);text-decoration:none;font-size:15px;font-weight:600;padding:8px 12px;border-radius:8px}
-.bar-top nav a:hover{background:var(--hd)}
-.stats{display:flex;align-items:center;gap:22px}.stats div{text-align:right}.stats small{display:block;color:var(--mu);font-size:12px}.stats b{font-size:26px;line-height:1;color:var(--ac)}
 .sub{max-width:900px;margin:0 0 16px;font-size:17px;color:var(--mu)}
 .tools{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:14px;padding:14px 16px;background:var(--card);border:1px solid var(--bd);border-radius:10px}
 .tools label{font-size:13px;font-weight:600;color:var(--mu);display:flex;flex-direction:column;gap:4px}
 .tools input,.tools select{padding:8px 10px;font-size:16px;font-weight:600;border:1px solid var(--bd);border-radius:8px;background:var(--in);color:var(--tx);min-width:150px}
 .tools .sp{flex:1}
 #tb{border-collapse:separate;border-spacing:0;overflow:visible;box-shadow:none;border-radius:10px}
-#tb thead th{position:sticky;top:var(--bh);z-index:10;background:var(--hd);color:var(--tx);border-bottom:2px solid var(--bd);font-size:13px;padding:10px 6px}
+#tb thead th{background:var(--hd);color:var(--tx);border-bottom:2px solid var(--bd);font-size:13px;padding:10px 6px}
 #tb thead th.k{background:var(--ti);color:#fff;border-bottom-color:var(--ti)}
 #tb td{border-top:1px solid var(--bd)}#tb tbody tr:nth-child(even) td{background:var(--zb)}
 #tb td.k{background:var(--tl)!important}#tb tbody tr:hover td{filter:none;box-shadow:inset 0 0 0 999px rgba(31,107,74,.06)}
@@ -101,34 +89,37 @@ h1,h2,h3{font-family:var(--display)}
 #tb td select{border:2px solid var(--c,var(--bd));background:color-mix(in srgb,var(--c,transparent) 16%,var(--in));font-size:16px}
 #tb td select[data-g="8"],#tb td select[data-g="7"]{--c:#1f9d63}#tb td select[data-g="6"],#tb td select[data-g="5"]{--c:#2a86b8}
 #tb td select[data-g="4"],#tb td select[data-g="3"]{--c:#c58a0a}#tb td select[data-g="2"],#tb td select[data-g="1"],#tb td select[data-g="0"]{--c:#d9622b}#tb td select[data-g="-1"]{--c:#c0392b}
-#tb td input:focus-visible,#tb td select:focus-visible,.tools :focus-visible,button:focus-visible,.bar-top a:focus-visible{outline:3px solid var(--ti);outline-offset:1px}
+#tb td input:focus-visible,#tb td select:focus-visible,.tools :focus-visible,button:focus-visible{outline:3px solid var(--ti);outline-offset:1px}
 #tb tfoot td{background:var(--hd);border-top:2px solid var(--bd)}
 button{background:var(--ac);color:var(--acx);box-shadow:none;border-radius:8px}button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}button.g:hover{background:var(--hd);filter:none}
 .sec{border-left:1px solid var(--bd);box-shadow:none;border-radius:10px}.sec h2{border-bottom:1px solid var(--bd);font-size:24px}
 .sec table th{background:var(--hd);color:var(--tx)}.sec h3{color:var(--tx)}.fm2{border-left-color:var(--ti)}
 .bar{margin:14px 0 22px}
-@media (max-width:1100px){.bar-top nav{display:none}.bar-top{padding:0 16px}.w{padding:16px}.tw{overflow-x:auto}#tb{min-width:1000px}}
+@media (max-width:1100px){.w{padding:24px 16px 48px}.tw{overflow-x:auto}#tb{min-width:1380px}}
 body.v2{font-family:var(--body)}
 main#main{padding-top:var(--nav-h)}
-.bar-top{top:var(--nav-h)}
-h1,h2,h3,.brand b{font-family:var(--display)}
-.brand h1{font-size:20px;margin:0;line-height:1.2}
-.lock-toggle{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+h1,h2,h3{font-family:var(--display)}
+.lock-toggle,.save-toggle{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .lock-toggle[aria-pressed="true"]{border-color:var(--ti);color:var(--ti)}
-#tb td input:not(.mx),#tb td select{border:2px solid var(--ti);background:var(--in);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ti) 10%,transparent)}
-#tb td input.mx{background:var(--hd);border:1px dashed var(--bd);color:var(--mu);cursor:not-allowed}
-#tb td input.mx:disabled{opacity:.72}
+.save-toggle i{color:var(--lagoon)}
+.save-status{color:var(--muted);font-size:13px;min-height:1.4em}
+#tb td input:not(.mx),#tb td select{border:2px solid var(--lagoon);background:var(--paper);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--lagoon) 10%,transparent)}
+#tb td input:disabled{background:var(--hd);border:1px dashed var(--bd);box-shadow:none;color:var(--ink);cursor:not-allowed;opacity:1}
+#tb td input.mx:disabled{opacity:1}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 20px}
+.summary-card{background:var(--paper);border:1.5px solid var(--line);border-top:4px solid var(--lagoon);border-radius:var(--r-card);padding:16px 20px}
+.summary-card small{display:block;color:var(--muted);font-weight:600}
+.summary-card strong{display:block;color:var(--lagoon);font-size:2rem;line-height:1.15}
+.summary-card:nth-child(2){border-top-color:var(--info)}
+@media (max-width:600px){.summary{grid-template-columns:1fr}}
 </style></head><body class="v2 tool">
 <a class="skip" href="#main">Skip to content</a>
-<main id="main"><header class="bar-top"><div class="brand"><h1>DU Zoology CG planner</h1><small>1st year · 28 credits · 700 marks</small></div>
-<nav aria-label="Sections"><a href="#calc">Calculator</a><a href="#s-cgpa">CGPA rules</a><a href="#s-marks">Marks and grades</a><a href="#s-rules">Other rules</a><a href="#s-courses">Courses</a></nav>
-<div class="stats"><div><small>CGPA</small><b id="cg">–</b></div><div><small>Total marks</small><b id="tm">–</b></div><button class="g" id="theme" type="button">Dark mode</button></div></header>
-<div class="w"><section id="calc"><p class="sub">For each course, either type the final exam marks to see the grade, or select a grade to see the minimum final exam marks needed. The other field updates automatically.</p>
+<main id="main"><div class="w"><section id="calc"><div class="summary" aria-label="Current results"><div class="summary-card"><small>CGPA</small><strong id="cg">–</strong></div><div class="summary-card"><small>Total marks</small><strong id="tm">–</strong></div></div><p class="sub">For each course, either type the final exam marks to see the grade, or select a grade to see the minimum final exam marks needed. The other field updates automatically.</p>
 <div class="tools"><label>Min final pass %<input id="mp" type="number" min="0" max="100" value="0"></label>
-<label>Set every course to<select id="all"></select></label><button id="apply" type="button">Apply to all</button><button class="g lock-toggle" id="marksLock" type="button" aria-pressed="false" title="Unlock full marks fields"><span id="marksLockIcon" aria-hidden="true">🔒</span><span id="marksLockText">Full marks locked</span></button>
+<label>Set every course to<select id="all"></select></label><button id="apply" type="button">Apply to all</button><button class="g lock-toggle" id="marksLock" type="button" aria-pressed="false" title="Unlock protected fields"><span id="marksLockIcon" aria-hidden="true">🔒</span><span id="marksLockText">Protected fields locked</span></button><button class="g save-toggle" id="savePlanner" type="button" title="Save locally and to your account when signed in"><i class="fas fa-save" aria-hidden="true"></i><span>Save</span></button><span class="save-status" id="saveStatus" role="status" aria-live="polite"></span>
 <span class="sp"></span><button class="g" id="clear" type="button">Clear marks</button><button class="g" id="reset" type="button">Reset table</button></div>
 <div class="tw"><table id="tb"><thead><tr>
-<th style="width:20%">Course title</th><th>Credit</th><th>Attendance<br>obtained</th><th>Attendance<br>max 🔒</th><th>In-course exam<br>obtained</th><th>In-course exam<br>max 🔒</th><th>Final exam<br>max 🔒</th><th class="k">Final exam marks<br>(type here)</th><th class="k">Grade<br>(or select here)</th><th>Total marks</th><th>Note</th><th></th>
+<th style="width:20%">Course title</th><th>Credit 🔒</th><th>Attendance<br>obtained</th><th>Attendance<br>max 🔒</th><th>In-course exam<br>obtained</th><th>In-course exam<br>max 🔒</th><th>Final exam<br>max 🔒</th><th class="k">Final exam marks<br>(type here)</th><th class="k">Grade<br>(or select here)</th><th>Total marks</th><th>Note</th><th></th>
 </tr></thead><tbody></tbody>
 <tfoot><tr><td>Total</td><td id="fc">0</td><td colspan="5"></td><td></td><td></td><td id="ft"></td><td></td><td></td></tr></tfoot></table></div>
 <div class="bar"><button class="g" id="add">+ Add course</button><span class="mu">Type final marks or pick a grade. The other updates automatically. Press Enter to move down a column.</span></div>
@@ -189,23 +180,29 @@ var GO=B.map(function(b,i){return '<option value="'+i+'">'+b[2]+' ('+b[1].toFixe
 var tb=document.querySelector("#tb tbody");
 var fullMarksUnlocked=false;
 function row(d){var tr=document.createElement("tr");tr.dataset.mode="grade";
-tr.innerHTML='<td><input class="n" value="'+d[0]+'"></td><td><input class="cr" type="number" step="1" value="'+d[1]+'"></td><td><input class="ag" type="number" step="0.25" value="0"></td><td><input class="mx am" type="number" step="0.25" value="'+d[2]+'" disabled></td><td><input class="ig" type="number" step="0.25" value="0"></td><td><input class="mx im" type="number" step="0.25" value="'+d[3]+'" disabled></td><td><input class="mx fm" type="number" step="0.25" value="'+d[4]+'" disabled></td><td class="k"><input class="fg" type="number" step="0.25" value="0"></td><td class="k"><select class="gs">'+GO+'</select></td><td class="res tt">–</td><td class="nt"></td><td><button class="g x">×</button></td>';
+tr.innerHTML='<td><input class="n" value="'+d[0]+'" disabled></td><td><input class="cr" type="number" step="1" value="'+d[1]+'" disabled></td><td><input class="ag" type="number" step="0.25" value="0"></td><td><input class="mx am" type="number" step="0.25" value="'+d[2]+'" disabled></td><td><input class="ig" type="number" step="0.25" value="0"></td><td><input class="mx im" type="number" step="0.25" value="'+d[3]+'" disabled></td><td><input class="mx fm" type="number" step="0.25" value="'+d[4]+'" disabled></td><td class="k"><input class="fg" type="number" step="0.25" value="0"></td><td class="k"><select class="gs">'+GO+'</select></td><td class="res tt">–</td><td class="nt"></td><td><button class="g x" type="button" aria-label="Remove course" title="Remove course" hidden>×</button></td>';
 tr.querySelector(".gs").value="8";
-if(fullMarksUnlocked)[].forEach.call(tr.querySelectorAll(".mx"),function(x){x.disabled=false});
+syncRowLocks(tr);
 tr.querySelector("button").onclick=function(){tr.remove();calc()};tb.appendChild(tr)}
 D.forEach(row);
 document.getElementById("add").onclick=function(){row(["New course",2,2.5,17.5,30]);calc()};
+function syncRowLocks(tr){var attendanceMax=+tr.querySelector(".am").value||0;
+tr.querySelector(".n").disabled=!fullMarksUnlocked;
+tr.querySelector(".cr").disabled=!fullMarksUnlocked;
+tr.querySelector(".ag").disabled=attendanceMax<=0;
+tr.querySelector(".x").hidden=!fullMarksUnlocked;
+[].forEach.call(tr.querySelectorAll(".mx"),function(x){x.disabled=!fullMarksUnlocked})}
 function updateMarksLock(){var button=document.getElementById("marksLock"),icon=document.getElementById("marksLockIcon"),text=document.getElementById("marksLockText");
-[].forEach.call(document.querySelectorAll("#tb .mx"),function(x){x.disabled=!fullMarksUnlocked});
-button.setAttribute("aria-pressed",String(fullMarksUnlocked));button.title=fullMarksUnlocked?"Lock full marks fields":"Unlock full marks fields";
-icon.textContent=fullMarksUnlocked?"🔓":"🔒";text.textContent=fullMarksUnlocked?"Full marks unlocked":"Full marks locked"}
+[].forEach.call(tb.rows,syncRowLocks);
+button.setAttribute("aria-pressed",String(fullMarksUnlocked));button.title=fullMarksUnlocked?"Lock protected fields":"Unlock protected fields";
+icon.textContent=fullMarksUnlocked?"🔓":"🔒";text.textContent=fullMarksUnlocked?"Protected fields unlocked":"Protected fields locked"}
 document.getElementById("marksLock").onclick=function(){fullMarksUnlocked=!fullMarksUnlocked;updateMarksLock()};
 function fmt(x){return (Math.round(x*100)/100).toString()}
 function gradeOf(total,max){if(max<=0)return -1;var p=Math.ceil(total-1e-9)/max*100,g=-1,q;for(q=0;q<9;q++)if(p>=B[q][0]-1e-9)g=q;return g}
 function minFinal(pre,tot,fm,g,mp){var T=Math.ceil(B[g][0]/100*tot-1e-9),m=Math.floor((T-1-pre)*4+1e-9)/4+0.25;
 m=Math.max(m,Math.ceil(mp/100*fm*4-1e-9)/4,0);return m}
 document.addEventListener("input",function(e){var tr=e.target.closest&&e.target.closest("tr");if(tr&&tr.dataset.mode!==undefined){
-if(e.target.classList.contains("fg"))tr.dataset.mode="marks";else if(e.target.classList.contains("gs"))tr.dataset.mode="grade"}calc()});
+if(e.target.classList.contains("fg"))tr.dataset.mode="marks";else if(e.target.classList.contains("gs"))tr.dataset.mode="grade";if(e.target.classList.contains("am"))syncRowLocks(tr)}calc()});
 document.addEventListener("change",function(e){if(e.target.classList&&e.target.classList.contains("gs")){e.target.closest("tr").dataset.mode="grade";calc()}});
 function calc(){
 var mp=+document.getElementById("mp").value||0,rows=[].slice.call(tb.rows),tc=0,pts=0,tm=0,tmx=0;
@@ -235,14 +232,19 @@ document.querySelector("#gt tbody").innerHTML=B.slice().reverse().map(function(b
 document.getElementById("all").innerHTML=GO;document.getElementById("all").value="8";
 function snap(){return [].map.call(tb.rows,function(r){return{v:[].map.call(r.querySelectorAll("input"),function(x){return x.value}),g:r.querySelector("select").value,m:r.dataset.mode}})}
 function save(){try{localStorage.setItem("duzoo1",JSON.stringify({rows:snap(),mp:document.getElementById("mp").value}))}catch(e){}}
-try{var sv=JSON.parse(localStorage.getItem("duzoo1")||"null");if(sv&&sv.rows&&sv.rows.length){tb.innerHTML="";sv.rows.forEach(function(o){row(["",0,0,0,0]);var r=tb.lastElementChild;[].forEach.call(r.querySelectorAll("input"),function(x,i){x.value=o.v[i]});r.querySelector("select").value=o.g;r.dataset.mode=o.m||"grade"});document.getElementById("mp").value=sv.mp||0}}catch(e){}
+function setSaveStatus(text,isError){var status=document.getElementById("saveStatus");status.textContent=text;status.style.color=isError?"var(--err)":"var(--muted)"}
+function savePlanner(){save();setSaveStatus("Saved locally.",false);
+return Promise.all([import("./firebase-config.js"),import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")]).then(function(modules){
+var auth=modules[0].auth,db=modules[0].db,firestore=modules[1],user=auth.currentUser;
+if(!user){setSaveStatus("Saved locally. Sign in to save online.",false);return false}
+return firestore.setDoc(firestore.doc(db,"users",user.uid,"duzoology","planner"),{rows:snap(),mp:document.getElementById("mp").value,savedAt:firestore.serverTimestamp()}).then(function(){setSaveStatus("Saved locally and online.",false);return true});
+}).catch(function(error){console.error("DU Zoology planner online save failed:",error);setSaveStatus("Saved locally. Online save failed.",true);return false})}
+document.getElementById("savePlanner").onclick=function(){var button=this;button.disabled=true;savePlanner().finally(function(){button.disabled=false})};
+try{var sv=JSON.parse(localStorage.getItem("duzoo1")||"null");if(sv&&sv.rows&&sv.rows.length){tb.innerHTML="";sv.rows.forEach(function(o){row(["",0,0,0,0]);var r=tb.lastElementChild;[].forEach.call(r.querySelectorAll("input"),function(x,i){x.value=o.v[i]});r.querySelector("select").value=o.g;r.dataset.mode=o.m||"grade";syncRowLocks(r)});document.getElementById("mp").value=sv.mp||0}}catch(e){}
 document.addEventListener("input",save);document.addEventListener("change",save);
 document.getElementById("apply").onclick=function(){var g=document.getElementById("all").value;[].forEach.call(tb.rows,function(r){r.querySelector("select").value=g;r.dataset.mode="grade"});calc();save()};
 document.getElementById("clear").onclick=function(){[].forEach.call(tb.rows,function(r){r.querySelector(".ag").value=0;r.querySelector(".ig").value=0;r.querySelector(".fg").value=0;r.querySelector("select").value="8";r.dataset.mode="grade"});calc();save()};
 document.getElementById("reset").onclick=function(){tb.innerHTML="";D.forEach(row);document.getElementById("mp").value=0;calc();save()};
-var th=document.getElementById("theme");function setT(t){document.documentElement.setAttribute("data-theme",t);th.textContent=t==="dark"?"Light mode":"Dark mode"}
-setT(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
-th.onclick=function(){setT(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark")};
 document.addEventListener("focusin",function(e){if(e.target.tagName==="INPUT"&&e.target.type==="number")e.target.select()});
 document.addEventListener("keydown",function(e){if(e.key!=="Enter"||e.target.tagName!=="INPUT")return;var td=e.target.closest("td"),tr=td&&td.parentNode;if(!tr||tr.parentNode!==tb)return;var i=[].indexOf.call(tr.children,td),n=tr.nextElementSibling;if(n){var t=n.children[i].querySelector("input");if(t){t.focus();t.select();e.preventDefault()}}});
 calc();
