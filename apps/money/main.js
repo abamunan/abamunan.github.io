@@ -85,7 +85,7 @@ initPWA(app);   // service worker + install-prompt tracking; never blocks first 
     const fsMod = await import('../shared/firestore.js').catch(() => null); splash.step('Signing in');
     const user = fsMod && await fsMod.optionalUser();
     if (!user) { say('Local only', 'sync--wait', 'Not signed in \u2014 changes are saved on this device only'); return; }
-    app.remote = fsMod.firestoreRemote(); await store.setRemote(app.remote); say('Syncing\u2026');
+    app.remote = fsMod.firestoreRemote({ overwrite: true }); await store.setRemote(app.remote); say('Syncing\u2026');
     const rep = await Promise.race([initialSync(repo, store, name => splash.step(name)), new Promise(r => setTimeout(() => r(null), 6000))]);
     render(); say(store.pendingCount() ? `${store.pendingCount()} unsynced` : 'Synced', store.pendingCount() ? 'sync--wait' : '');
     if (rep?.errors?.length) toast('Some data could not be synced. Working from this device.', { error: true });

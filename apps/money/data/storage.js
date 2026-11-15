@@ -44,7 +44,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
   const listDays = () => store.keys(DAY_RE).map(k => { const doc = store.get(k); return doc && typeof doc === 'object' ? { key: k, ...parseDayKey(k), doc, data: doc } : null; })
     .filter(Boolean).sort((a, b) => a.y - b.y || a.m - b.m || a.d - b.d);
 
-  function settingsDoc() { return { ...s.extra, expense: s.expense, income: s.income, goal: s.goal, accounts: s.accounts, ...(Object.keys(s.lastAccounts).length ? { lastAccounts: s.lastAccounts } : {}), ...(s.templates.length ? { templates: s.templates } : {}) }; }
+  function settingsDoc() { return { ...s.extra, expense: s.expense, income: s.income, goal: s.goal, accounts: s.accounts, lastAccounts: s.lastAccounts, templates: s.templates }; }   // always written, even when empty: with overwrite sync an omitted key would let another device keep (and re-upload) stale data
   function saveSettings(patch = {}) {
     Object.assign(s, patch);
     store.set(K.categories, { expense: s.expense, income: s.income }); store.set(K.goal, s.goal); store.set(K.accounts, s.accounts);

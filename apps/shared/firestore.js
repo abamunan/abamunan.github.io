@@ -24,7 +24,10 @@ export async function optionalUser() {
 }
 
 // Paths are relative to users/{uid}/, e.g. 'moneytracker/2026_10_7' or 'moneytracker_meta/debts'.
-export function firestoreRemote() {
+// overwrite:false (default, Health) merges with the cloud copy before writing, so a delete never reaches the cloud.
+// overwrite:true (Money) writes the local document as-is: store.js already protects unsent local edits from a pull,
+// so local is the source of truth and deletions (entries, notes, debts, categories, templates) reach the cloud.
+export function firestoreRemote({ overwrite = false } = {}) {
   const seg = p => { const u = auth.currentUser; if (!u) throw new Error('not signed in'); return ['users', u.uid, ...p.split('/')]; };
   const merge = (local, remote) => {
     if (!local || !remote || typeof local !== 'object' || typeof remote !== 'object') return local;
@@ -45,6 +48,7 @@ export function firestoreRemote() {
     async set(p, data) {
       const { doc, getDoc, setDoc } = await fs();
       const ref = doc(db, ...seg(p));
+      if (overwrite) { await setDoc(ref, data); return; }
       const snap = await getDoc(ref);
       await setDoc(ref, snap.exists() ? merge(data, snap.data()) : data);
     },
