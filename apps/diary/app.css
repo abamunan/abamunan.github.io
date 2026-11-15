@@ -247,3 +247,9 @@ body.diary-locked > *:not(.dl) { visibility: hidden !important; }
 .mm-r-count { color: var(--muted); font-weight: 800; font-size: .88rem; }
 @media (max-width: 520px) { .mm-card { grid-template-columns: 50px 1fr; gap: 12px; padding: 16px 36px 14px 16px; } .mm-date b { font-size: 1.7rem; } .mm-year h3 { font-size: 1.7rem; } }
 @media (prefers-reduced-motion: reduce) { .mm-card { transition: none; } .mm-card:hover, .mm-card:focus-visible { transform: none; } }
+
+/* ---- Sheets and dialogs must be OPAQUE ----
+   --paper is translucent "glass". On a full-screen sheet (Memory reader, entry view) the page behind showed through
+   and the text became unreadable. --bg is a solid colour in both themes. */
+.ui-sheet, .ui-confirm { background-color: var(--bg); background-image: none; }
+.ui-sheet--full { background-image: var(--bg-gradient); }

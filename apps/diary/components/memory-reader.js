@@ -16,7 +16,6 @@ export function openMemoryReader(days, start = 0) {
 
   function paint() {
     const day = days[i], info = dayInfo(day.key);
-    sheet.setTitle(info.full);
     body.replaceChildren(
       h('header', { class: 'mm-r-head' },
         h('div', { class: 'mm-r-orn', 'aria-hidden': 'true' }, '✦ ✦ ✦'),

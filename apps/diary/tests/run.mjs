@@ -398,6 +398,15 @@ const clock = { t: 1_000_000 };
 }
 
 
+// ---------- sheets must be opaque (regression: translucent --paper let the page show through the reader) ----------
+{
+  const css = (await import('fs')).readFileSync(new URL('../app.css', import.meta.url), 'utf8');
+  ok(/\.ui-sheet,\s*\.ui-confirm\s*\{[^}]*background-color:\s*var\(--bg\)/.test(css), 'app.css makes .ui-sheet and .ui-confirm opaque (solid --bg)');
+  ok(/\.ui-sheet--full\s*\{[^}]*background-image:\s*var\(--bg-gradient\)/.test(css), 'full-screen sheets use the solid page gradient');
+  const reader = (await import('fs')).readFileSync(new URL('../components/memory-reader.js', import.meta.url), 'utf8');
+  ok(!/sheet\.setTitle/.test(reader), 'reader does not repeat the date in the sheet title');
+}
+
 // ---------- Memories (starred days) ----------
 {
   const Mem = await import('../domain/memories.js');
