@@ -24,10 +24,10 @@ export function monthTotals(getDoc, y, m0, expIds, incIds, upToDay = 99) {
 // opening + income entries − expense entries ± ledger ± unsettled debts. Uses entries (per-entry account).
 export function accountBalances({ accounts, days, ledger = [], debts = [], expIds, incIds, defaultAcct }) {
   const bal = {}; accounts.forEach(a => { bal[a.id] = a.opening || 0; });
-  const ids = [...expIds, ...incIds];
+  const ids = [...expIds, ...incIds], known = new Set(accounts.map(a => a.id));
   for (const src of days) {
     for (const e of reconcile(src, ids, { defaultAcct }).doc.entries || []) {
-      const a = e.acct || defaultAcct; if (a == null) continue;
+      const a = known.has(e.acct) ? e.acct : defaultAcct; if (a == null) continue;     // unknown account (deleted, bad import) counts in the default account, never vanishes
       bal[a] = (bal[a] || 0) + (incIds.includes(e.cat) ? e.amt : expIds.includes(e.cat) ? -e.amt : 0);
     }
   }

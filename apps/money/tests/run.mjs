@@ -135,6 +135,32 @@ await t('sync: cloud never overwrites an unsent local edit; offline sync reports
   assert.equal(store.get('mt_2026_10_7').lunch, 100); assert.equal(store.get('mt_2026_10_8').lunch, 2); assert.equal(repo.settings.debts.length, 1);
   await store.flush(); await settle(); assert.equal(cloud['moneytracker/2026_10_7'].lunch, 100);
 });
+await t('H1: an entry never keeps an account that does not exist (add, update, stored orphans, view rows, CSV)', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
+  const { accountModel } = await import('../domain/viewmodels.js'); const { entriesToCsv } = await import('../data/export.js');
+  const total = () => accountModel(repo, 'cash').total;
+  assert.equal(total(), 0);
+  // add: a ghost account (deleted account / stale template / bad import) falls back to the default account
+  const a = await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 100, acct: 'ghost' }); assert.equal(a.entry.acct, 'cash'); assert.equal(total(), -100, '100 spent is not lost');
+  // a real account is kept
+  const b = await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 40, acct: 'bkash' }); assert.equal(b.entry.acct, 'bkash');
+  // update: moving to a ghost account falls back, moving to a real one works
+  const u = await repo.updateEntry(2026, 9, 7, b.entry.id, { acct: 'ghost' }); assert.equal(u.entry.acct, 'cash'); assert.equal(total(), -140);
+  const u2 = await repo.updateEntry(2026, 9, 7, b.entry.id, { acct: 'bkash' }); assert.equal(u2.entry.acct, 'bkash'); assert.equal(total(), -140, 'total is the same wherever the money sits');
+  // undo (restore) of an entry whose account was deleted meanwhile
+  const del = await repo.deleteEntry(2026, 9, 7, b.entry.id); await repo.restoreEntry(2026, 9, 7, { ...del.removed, acct: 'gone' }); assert.equal(total(), -140);
+  // orphans ALREADY stored (old data, old import): entries[].acct and legacy flat acct_*
+  store.set('mt_2026_10_5', { entries: [{ id: 'o1', cat: 'lunch', amt: 60, acct: 'ghost', note: '', ts: 1 }], lunch: 60, acct_lunch: 'ghost', ts_lunch: 1 });
+  store.set('mt_2026_10_4', { lunch: 25, acct_lunch: 'ghost2', ts_lunch: 1 }); repo.load();
+  assert.equal(total(), -225, 'stored orphan entries count in the total');
+  const cashRows = accountModel(repo, 'cash').entries; assert.ok(cashRows.some(e => e.id === 'o1') && cashRows.every(e => e.acct === 'cash'), 'orphans are listed under the default account');
+  assert.deepEqual([accountModel(repo, 'cash').balance, accountModel(repo, 'bkash').balance], [-225, 0], 'every taka sits in exactly one account');
+  const csv = entriesToCsv({ days: repo.listDays(), expense: repo.settings.expense, income: repo.settings.income, accounts: repo.settings.accounts, catIds: repo.catIds(), defaultAcct: repo.defaultAcct(), now: 1 });
+  assert.ok(!/ghost/.test(csv), 'CSV shows the account name, not a raw missing id');
+  // a caller that passes no acctIds behaves exactly as before
+  const { addEntry: rawAdd } = await import('../domain/entries.js'); assert.equal(rawAdd({}, { cat: 'lunch', amt: 5, acct: 'anything' }, { catIds: ['lunch'], defaultAcct: 'cash', now: 1 }).entry.acct, 'anything');
+  assert.equal(rawAdd({}, { cat: 'lunch', amt: 5 }, { catIds: ['lunch'], acctIds: ['cash'], defaultAcct: 'cash', now: 1 }).entry.acct, 'cash');
+});
 await t('wipeAll: removes days + meta, resets to defaults, queues cloud deletes', async () => {
   reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 10 }); repo.saveDebts([{ id: 'q' }]); await settle();

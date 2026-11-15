@@ -34,7 +34,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
 
   const catIds = () => [...s.expense, ...s.income].map(f => f.id);
   const defaultAcct = () => s.accounts.some(a => a.id === 'cash') ? 'cash' : (s.accounts[0]?.id ?? null);
-  const ctx = () => ({ catIds: catIds(), defaultAcct: defaultAcct(), now: now() });
+  const ctx = () => ({ catIds: catIds(), acctIds: s.accounts.map(a => a.id), defaultAcct: defaultAcct(), now: now() });
   const acctOk = id => !!id && s.accounts.some(a => a.id === id);
   // Default account for the Add sheet: the category's own default → last used for it → Cash/first.
   const resolveAccount = cat => { const f = [...s.expense, ...s.income].find(x => x.id === cat);

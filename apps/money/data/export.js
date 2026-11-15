@@ -14,7 +14,7 @@ export function entriesToCsv({ days, expense, income, accounts, catIds, defaultA
     const date = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     for (const e of reconcile(doc, catIds, { catIds, defaultAcct, now }).doc.entries || []) {
       const [type, cat] = label.get(e.cat) || ['', e.cat];
-      rows.push([date, type, cat, e.amt, acct.get(e.acct) || e.acct || '', e.note || '']);
+      rows.push([date, type, cat, e.amt, acct.get(e.acct) ?? acct.get(defaultAcct) ?? (e.acct || ''), e.note || '']);
     }
   }
   return rows.map(r => r.map(q).join(',')).join('\r\n');

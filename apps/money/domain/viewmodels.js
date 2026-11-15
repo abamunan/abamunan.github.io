@@ -13,7 +13,7 @@ const acctMap = repo => new Map(repo.settings.accounts.map(a => [a.id, a]));
 export function entryRows(repo, doc, cats = catMap(repo), accts = acctMap(repo)) {
   const ctx = { defaultAcct: repo.defaultAcct(), now: 0 };
   return (reconcile(doc, repo.catIds(), ctx).doc.entries || []).filter(e => cats.has(e.cat)).map(e => {
-    const c = cats.get(e.cat), a = accts.get(e.acct || ctx.defaultAcct);
+    const c = cats.get(e.cat), a = accts.get(e.acct) || accts.get(ctx.defaultAcct);
     return { id: e.id, cat: e.cat, label: c.label, icon: c.icon, kind: c.kind, amt: e.amt, signed: c.kind === 'in' ? e.amt : -e.amt, acct: a?.id ?? null, acctLabel: a?.label ?? '', note: e.note || '', adj: !!e.adj, ts: e.ts || 0 };
   }).sort((x, y) => y.ts - x.ts);
 }

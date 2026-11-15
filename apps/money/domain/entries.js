@@ -2,13 +2,16 @@
 import { round2 } from '../../shared/fmt.js';
 import { newId } from '../../shared/dom.js';
 import { reconcile, regenFlat } from './reconcile.js';
-// ctx = { catIds, defaultAcct, now?, idGen? }
+// ctx = { catIds, acctIds?, defaultAcct, now?, idGen? }
+// An entry never keeps an account that does not exist (deleted account, stale template, bad import): it goes to the default account.
+// acctIds is optional so callers that do not pass it behave as before.
+const pickAcct = (ctx, a) => a && (!ctx.acctIds || ctx.acctIds.includes(a)) ? a : ctx.defaultAcct;
 const prep = (src, ctx) => reconcile(src, ctx.catIds, ctx).doc;
 const check = (amt, adj) => { if (!(adj ? amt !== 0 : amt > 0)) throw new Error('Amount must be greater than 0'); };
 
 export function addEntry(src, e, ctx) {
   const doc = prep(src, ctx);
-  const entry = { id: e.id || newId('e'), cat: e.cat, amt: round2(e.amt), acct: e.acct || ctx.defaultAcct, note: String(e.note || '').trim(), ts: e.ts || ctx.now || Date.now() };
+  const entry = { id: e.id || newId('e'), cat: e.cat, amt: round2(e.amt), acct: pickAcct(ctx, e.acct), note: String(e.note || '').trim(), ts: e.ts || ctx.now || Date.now() };
   if (e.adj) entry.adj = true;
   if (!ctx.catIds.includes(entry.cat)) throw new Error('Unknown category');
   check(entry.amt, entry.adj);
@@ -21,7 +24,7 @@ export function updateEntry(src, id, patch, ctx) {
   const before = { ...e }, oldCat = e.cat;
   if (patch.cat !== undefined) { if (!ctx.catIds.includes(patch.cat)) throw new Error('Unknown category'); e.cat = patch.cat; }
   if (patch.amt !== undefined) e.amt = round2(patch.amt);
-  if (patch.acct !== undefined) e.acct = patch.acct || ctx.defaultAcct;
+  if (patch.acct !== undefined) e.acct = pickAcct(ctx, patch.acct);
   if (patch.note !== undefined) e.note = String(patch.note).trim();
   check(e.amt, e.adj);
   regenFlat(doc, e.cat); if (oldCat !== e.cat) regenFlat(doc, oldCat);
