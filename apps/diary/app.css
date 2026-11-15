@@ -3,11 +3,12 @@
 :root[data-theme="dark"] { --on-marker: #060913; }
 
 body.diary-app-body { margin: 0; background: var(--bg-gradient); background-attachment: fixed; color: var(--ink); min-height: 100vh; font-family: var(--body); letter-spacing: -0.01em; }
-#app { max-width: 760px; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom, 0px)); }
+#app { max-width: 760px; margin: 0 auto; padding: 0 16px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom, 0px)); }
 #main { outline: none; display: grid; gap: 16px; align-content: start; }
 
 /* ---- app bar ---- */
-.appbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 14px; transition: transform .25s ease; }
+/* Opaque on purpose: it is sticky, and a see-through bar lets the page scroll underneath it and overlap the title. */
+.appbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -16px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 12px; background-color: var(--bg); transition: transform .25s ease; }
 .appbar.scroll-nav-hidden { transform: translateY(-120%); }
 .brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; flex: none; background: linear-gradient(135deg, var(--lagoon), var(--marker)); color: var(--on-marker); box-shadow: 0 6px 18px -2px var(--lagoon-glow); }
@@ -19,8 +20,8 @@ body.diary-app-body { margin: 0; background: var(--bg-gradient); background-atta
 .theme-icon-btn { width: 40px; height: 40px; border-radius: 50%; border: var(--bw, 1.5px) solid var(--line); background: var(--paper); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
 .theme-icon-btn .icon-moon { display: none; } .theme-icon-btn.is-dark .icon-sun { display: none; } .theme-icon-btn.is-dark .icon-moon { display: block; }
 
-/* ---- tab bar (shared ui-tabbar), floating pill on wide screens ---- */
-@media (min-width: 900px) { .ui-tabbar { left: 50%; right: auto; width: 440px; transform: translateX(-50%); bottom: 16px; border: var(--bw, 1.5px) solid var(--line); border-radius: 22px; overflow: hidden; } }
+/* ---- tab bar (shared ui-tabbar): bottom bar on phones, left sidebar on PC (see the Layout block at the end) ---- */
+.ui-tabbar { background-color: var(--bg); }   /* solid: the shared default is translucent glass, so content showed through it */
 
 /* ---- cards ---- */
 .dy-card { background: var(--paper); border: var(--bw, 1.5px) solid var(--line); border-radius: var(--r-card, 24px); padding: 20px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
@@ -54,7 +55,7 @@ body.diary-app-body { margin: 0; background: var(--bg-gradient); background-atta
 .dt-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--soft); display: grid; pointer-events: none; }
 .dt-summary { margin: 0 4px; color: var(--soft); font-size: .8rem; }
 .dt-list { display: grid; gap: 8px; }
-.dt-month { position: sticky; top: 62px; z-index: 5; margin: 10px 0 2px; padding: 6px 4px; font: 800 .78rem var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--lagoon); background: var(--bg); }
+.dt-month { position: sticky; top: 0; z-index: 5; margin: 10px 0 2px; padding: 6px 4px; font: 800 .78rem var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--lagoon); background: var(--bg); }
 .dt-row { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 12px 14px; background: var(--paper); border: var(--bw, 1.5px) solid var(--line); border-radius: 18px; color: var(--ink); font: inherit; cursor: pointer; }
 .dt-row:hover { border-color: var(--lagoon); }
 .dt-date { flex: none; width: 46px; text-align: center; display: grid; line-height: 1.1; }
@@ -65,7 +66,6 @@ body.diary-app-body { margin: 0; background: var(--bg-gradient); background-atta
 .dt-snip { color: var(--muted); font-size: .88rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .dt-meta { flex: none; color: var(--soft); font-size: .76rem; font-weight: 600; }
 .dy-fab { position: fixed; z-index: 60; right: 18px; bottom: calc(var(--tabbar-h) + 18px + env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 50%; border: 0; background: linear-gradient(135deg, var(--lagoon), var(--marker)); color: var(--on-marker); display: grid; place-items: center; cursor: pointer; box-shadow: 0 10px 26px -6px var(--lagoon-glow); }
-@media (min-width: 900px) { .dy-fab { right: calc(50% - 360px); bottom: 90px; } }
 
 /* ---- entry sheet ---- */
 .de { padding: 4px 18px 40px; max-width: 720px; margin: 0 auto; display: grid; gap: 18px; }
@@ -215,7 +215,7 @@ body.diary-locked > *:not(.dl) { visibility: hidden !important; }
 .mm-year::after { content: ''; order: 3; flex: 1; height: 2px; background: linear-gradient(90deg, var(--line), transparent); }
 .mm-year small { order: 2; }
 
-.mm-card { position: relative; display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding: 18px 40px 16px 20px; margin-bottom: 12px; border-radius: 22px; cursor: pointer; border: var(--bw, 1.5px) solid var(--line); background: var(--paper); transition: transform .15s, border-color .15s, box-shadow .15s; outline: none; }
+.mm-card { position: relative; display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding: 18px 40px 16px 20px; margin-bottom: 0; border-radius: 22px; cursor: pointer; border: var(--bw, 1.5px) solid var(--line); background: var(--paper); transition: transform .15s, border-color .15s, box-shadow .15s; outline: none; }
 .mm-card::before { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 4px; border-radius: 0 4px 4px 0; background: linear-gradient(var(--star), color-mix(in srgb, var(--star) 25%, transparent)); }
 .mm-card:hover, .mm-card:focus-visible { transform: translateY(-2px); border-color: var(--star); box-shadow: 0 14px 30px -16px var(--star); }
 .mm-star { position: absolute; top: 14px; right: 14px; color: var(--star); display: grid; filter: drop-shadow(0 0 6px var(--star-soft)); }
@@ -253,3 +253,43 @@ body.diary-locked > *:not(.dl) { visibility: hidden !important; }
    and the text became unreadable. --bg is a solid colour in both themes. */
 .ui-sheet, .ui-confirm { background-color: var(--bg); background-image: none; }
 .ui-sheet--full { background-image: var(--bg-gradient); }
+
+/* ================= Layout: phone = bottom tab bar, PC = left sidebar + wider content ================= */
+.mm-list { display: grid; gap: 12px; align-items: start; }
+
+@media (min-width: 900px) {
+  :root { --side-w: 232px; }
+  #app { max-width: none; margin: 0; padding: 0 40px 56px calc(var(--side-w) + 40px); }
+  .appbar { max-width: 1080px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top, 0px)) 0 14px; justify-content: flex-end; }
+  .brand-lockup { display: none; }                     /* the sidebar carries the name */
+  #main { max-width: 1080px; margin: 0 auto; }
+
+  /* the shared bottom tab bar becomes a vertical sidebar */
+  .ui-tabbar { top: 0; bottom: 0; left: 0; right: auto; width: var(--side-w); grid-auto-flow: row; grid-auto-columns: auto; align-content: start; gap: 6px;
+    padding: 96px 14px 24px; border-top: 0; border-right: var(--bw, 1.5px) solid var(--line); overflow-y: auto; }
+  .ui-tabbar::before { content: 'Diary'; position: absolute; top: 30px; left: 30px; font: 800 1.6rem var(--display); letter-spacing: -0.03em; color: var(--ink); }
+  .ui-tab { flex-direction: row; justify-content: flex-start; gap: 14px; min-height: 48px; padding: 0 16px; border-radius: 14px; font-size: .95rem; text-align: left; }
+  .ui-tab__icon svg { width: 22px; height: 22px; }
+  .ui-tab:hover { background: color-mix(in srgb, var(--lagoon) 8%, transparent); }
+  .ui-tab.is-active { background: color-mix(in srgb, var(--lagoon) 13%, transparent); }
+  .ui-tab.is-active::before { top: 12px; bottom: 12px; left: 0; right: auto; width: 4px; height: auto; border-radius: 0 4px 4px 0; }
+  .ui-toast-host { left: calc(var(--side-w) + 12px); bottom: 24px; }
+  .dy-fab { right: 40px; bottom: 36px; }
+
+  /* writing stays a comfortable line length; everything else uses the extra width */
+  #main[data-view="today"] > * { width: 100%; max-width: 900px; margin-inline: auto; }
+}
+
+@media (min-width: 1100px) {
+  #main[data-view="calendar"] { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; }
+  #main[data-view="calendar"] > .dc { grid-column: 1; grid-row: 1 / span 3; }
+  #main[data-view="calendar"] > :not(.dc) { grid-column: 2; }
+  #main[data-view="more"] { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+
+@media (min-width: 1320px) {
+  .dt > .dt-list { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .dt > .dt-list > .dt-month { grid-column: 1 / -1; }
+  .mm-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mm-list > .mm-year { grid-column: 1 / -1; }
+}

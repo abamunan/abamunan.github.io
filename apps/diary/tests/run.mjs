@@ -407,6 +407,20 @@ const clock = { t: 1_000_000 };
   ok(!/sheet\.setTitle/.test(reader), 'reader does not repeat the date in the sheet title');
 }
 
+// ---------- layout guards (no browser here, so lock the rules that fixed real bugs) ----------
+{
+  const css = (await import('fs')).readFileSync(new URL('../app.css', import.meta.url), 'utf8');
+  const rule = sel => { const m = css.match(new RegExp('(?:^|\\n)' + sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}')); return m ? m[1] : ''; };
+  ok(/background-color:\s*var\(--bg\)/.test(rule('.appbar')), 'sticky app bar is opaque (content must not show through it)');
+  ok(/background-color:\s*var\(--bg\)/.test(rule('.ui-tabbar')), 'tab bar is opaque (the shared default is translucent glass)');
+  const wide = css.slice(css.indexOf('@media (min-width: 900px) {\n  :root { --side-w'));
+  const side = (wide.match(/\n\s*\.ui-tabbar\s*\{([^}]*)\}/) || [])[1] || '';
+  ok(/grid-auto-flow:\s*row/.test(side) && /left:\s*0/.test(side) && /top:\s*0/.test(side) && /bottom:\s*0/.test(side) && /width:\s*var\(--side-w\)/.test(side), 'PC: tab bar becomes a vertical left sidebar');
+  ok(/#app\s*\{[^}]*padding:[^}]*calc\(var\(--side-w\)/.test(wide) && /#main\s*\{[^}]*max-width:\s*1080px/.test(wide), 'PC: content makes room for the sidebar and is wider (1080px, was 760px)');
+  ok(!/min-width:\s*900px\)\s*\{\s*\.ui-tabbar\s*\{\s*left:\s*50%/.test(css), 'old floating-pill tab bar is gone');
+  ok(/\.dt-month\s*\{[^}]*top:\s*0/.test(css), 'month headers stick to the very top (under the app bar)');
+}
+
 // ---------- Memories (starred days) ----------
 {
   const Mem = await import('../domain/memories.js');
