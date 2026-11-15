@@ -456,3 +456,36 @@ header { text-align: center; padding: 14px 0 6px; }
     .diary-read-card { padding: 28px 22px 32px; }
     .diary-read-card::before { left: 20px; }
 }
+
+/* ── PRINT / SAVE-AS-PDF EXPORT ───────────────────────────── */
+/* The export root is injected by diary.js (printEntries). It never shows on screen. */
+#diary-print-root { display: none; }
+
+@media print {
+    @page { margin: 14mm 12mm; }
+    html { background: #fff !important; }
+    body.diary-printing { background: #fff !important; }
+    /* hide everything else on the page (navbar, footer, overlay, toast…) */
+    body.diary-printing > *:not(#diary-print-root) { display: none !important; }
+
+    body.diary-printing #diary-print-root {
+        display: block;
+        color: #11221D; background: #fff;
+        font: 13.5px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, "Hind Siliguri", Helvetica, Arial, sans-serif;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    #diary-print-root .dp-head { text-align: center; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid #D3DBD0; }
+    #diary-print-root .dp-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    #diary-print-root .dp-title span { color: #0A6F48; font-weight: 800; }
+    #diary-print-root .dp-sub { font-size: 12px; color: #5B6C64; margin-top: 4px; }
+
+    /* Entries may break across pages (a long entry must not be clipped); only headings stay with their text. */
+    #diary-print-root .dp-entry { margin: 0 0 18px; padding: 0 0 14px; border-bottom: 1px solid #E4E9E1; }
+    #diary-print-root .dp-entry-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; break-after: avoid; }
+    #diary-print-root .dp-date { font-size: 14px; font-weight: 700; border-left: 4px solid #0A6F48; padding-left: 8px; }
+    #diary-print-root .dp-time { font-size: 12px; color: #5B6C64; }
+    #diary-print-root .dp-section { margin: 0 0 12px; }
+    #diary-print-root .dp-sec-title { margin: 0 0 3px; font-size: 11.5px; font-weight: 700; color: #0A6F48;
+        letter-spacing: 0.03em; text-transform: uppercase; break-after: avoid; }
+    #diary-print-root .dp-sec-body { white-space: pre-wrap; overflow-wrap: anywhere; orphans: 3; widows: 3; }
+}

@@ -1,0 +1,12 @@
+const pad = n => String(n).padStart(2, '0');
+export const todayStr = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const nowTimeStr = (d = new Date()) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+export const toDatetime = (date, time) => `${date}T${time}:00`;
+export const splitDatetime = dt => { const [date, t = '00:00:00'] = String(dt).split('T'); return { date, time: t.slice(0, 5) }; };
+const parse = dt => new Date(dt);
+export const dateLabel = dt => { const d = parse(dt); return isNaN(d) ? String(dt) : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); };
+export const timeLabel = dt => { const d = parse(dt); return isNaN(d) ? '' : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
+export const dayNum = dt => { const d = parse(dt); return isNaN(d) ? '--' : String(d.getDate()); };
+export const monthShort = dt => { const d = parse(dt); return isNaN(d) ? '' : d.toLocaleDateString('en-US', { month: 'short' }); };
+export const monthKey = dt => String(dt).slice(0, 7);
+export const monthLabel = key => { const d = new Date(`${key}-01T00:00:00`); return isNaN(d) ? key : d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); };

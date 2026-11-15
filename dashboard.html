@@ -153,10 +153,10 @@
                         <h3>English Fluency Tracker</h3>
                         <p>30 minutes a day: read, summarize, listen, speak.</p>
                     </a>
-                    <a href="diary.html" class="tracker">
+                    <a href="/apps/diary/index.html" class="tracker">
                         <div class="tracker-top"><span class="tile"><i class="fas fa-book" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
                         <h3>Diary</h3>
-                        <p>Write daily entries and export them as PDF.</p>
+                        <p>Private journal that works offline: mood, tags, calendar, PIN lock.</p>
                     </a>
                     <a href="garments-accounts.html" class="tracker">
                         <div class="tracker-top"><span class="tile"><i class="fas fa-shirt" aria-hidden="true"></i></span><span class="go"><i class="fas fa-arrow-right" aria-hidden="true"></i></span></div>
@@ -305,6 +305,7 @@ window.handleLogout = async () => {
     await signOut(auth);
     localStorage.removeItem('munan_auth');
     localStorage.removeItem('isLoggedIn');
+    try { Object.keys(localStorage).filter(function (k) { return k.indexOf('munan-diary-draft:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
     window.location.href = "login.html";
 };
 </script>

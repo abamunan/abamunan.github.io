@@ -93,6 +93,7 @@ async function logout() {
     localStorage.removeItem('munan_auth');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loggedInUser');
+    try { Object.keys(localStorage).filter(function (k) { return k.indexOf('munan-diary-draft:') === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
     window.location.href = "login.html";
 }
 

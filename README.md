@@ -29,7 +29,9 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 │   invert-colors.html, drive-folder-fetch.html,
 │   bot1.html (Messenger to Telegram guide: public, in sitemap, linked from projects.html)
 │   (TypeMaster.html is private: noindex, and redirects to login.html when signed out. It is still linked from the homepage and projects page.)
-├── diary.html, english-tracker.html, garments-accounts.html            # Private apps (app.css)
+├── english-tracker.html, garments-accounts.html                        # Private apps (app.css)
+├── diary.html                # Redirect to apps/diary/ (old links keep working)
+├── diary-classic.html, diary.js, diary-page.css   # Old diary, kept as a fallback (More > Classic diary). Delete these 3 files when you no longer need it
 │   (+ garments-calc.js/.css: Garments' own floating calculator, own `gat_calc_*` storage keys)
 │
 ├── site.css                  # Shared design system "Field Notebook" (tokens, navbar, components)
@@ -44,6 +46,7 @@ Personal link-hub, portfolio and project showcase for **Abdullah All Munan** —
 │
 ├── apps/money/               # Money Tracker (ES modules, own PWA: manifest.json, sw.js, tests/)
 ├── apps/health/              # Health Tracker (ES modules, own PWA: manifest.json, sw.js, icons, tests/): Today, History, Insights, Guide, More (settings, backup/restore, export). Open /apps/health/index.html (linked from index.html and projects.html)
+├── apps/diary/               # Diary (ES modules, own PWA, IndexedDB + cloud sync to the `diaryEntries` collection): Write, Timeline, Calendar, Memories (star-marked days, read-only), More (backup/restore, export, PIN lock); tests/ (unit) and tests/ui (jsdom)
 ├── apps/shared/              # Code shared by apps (store, firestore, sheet, toast, tabbar, xlsx, download, ui.css, ...)
 ├── icon.png, Image.jpeg      # Favicon, profile photo
 ├── sitemap.xml, robots.txt   # Crawler files

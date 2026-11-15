@@ -2,11 +2,13 @@
   "name": "abamunan.github.io",
   "version": "1.0.0",
   "private": true,
-  "description": "Personal site and offline-first PWAs: Money Tracker and Health Tracker",
+  "description": "Personal site and offline-first PWAs: Money Tracker, Health Tracker and Diary",
   "type": "module",
   "scripts": {
-    "test": "node apps/health/tests/run.mjs && node apps/money/tests/run.mjs",
+    "test": "node apps/health/tests/run.mjs && node apps/money/tests/run.mjs && node apps/diary/tests/run.mjs",
     "test:health": "node apps/health/tests/run.mjs",
-    "test:money": "node apps/money/tests/run.mjs"
+    "test:money": "node apps/money/tests/run.mjs",
+    "test:diary": "node apps/diary/tests/run.mjs",
+    "test:diary-ui": "npm --prefix apps/diary/tests/ui install --no-audit --no-fund && npm --prefix apps/diary/tests/ui test"
   }
 }

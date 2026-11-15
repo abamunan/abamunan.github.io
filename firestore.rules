@@ -108,15 +108,19 @@ service cloud.firestore {
     // ownership on both sides of the write, and validates the fields the
     // app depends on so malformed documents can't get written either.
     match /diaryEntries/{entryId} {
-      allow read: if isSignedIn() && isOwner(resource.data.userId);
+      // `resource == null` lets a read of a MISSING doc return "not found" instead of
+      // permission-denied (the app's "deleted elsewhere" check depends on this).
+      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.userId));
       allow create: if isSignedIn()
+                    && isVerifiedEmail()
                     && isOwner(request.resource.data.userId)
                     && hasValidDiaryShape(request.resource.data);
       allow update: if isSignedIn()
+                    && isVerifiedEmail()
                     && isOwner(resource.data.userId)
                     && isOwner(request.resource.data.userId)
                     && hasValidDiaryShape(request.resource.data);
-      allow delete: if isSignedIn() && isOwner(resource.data.userId);
+      allow delete: if isSignedIn() && (resource == null || isOwner(resource.data.userId));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
@@ -164,8 +168,18 @@ service cloud.firestore {
           == request.auth.token.email.lower();
     }
 
+    function isVerifiedEmail() {
+      return request.auth.token.email_verified == true;
+    }
+
+    // hasOnly() lists every field the diary writes. mood / tags / pinned / starred are OPTIONAL (written only when set).
     function hasValidDiaryShape(data) {
       return data.keys().hasAll(['userId', 'datetime', 'sections'])
+        && data.keys().hasOnly(['userId', 'datetime', 'sections', 'createdAt', 'updatedAt', 'mood', 'tags', 'pinned', 'starred'])
+        && (!('mood' in data) || (data.mood is int && data.mood >= 1 && data.mood <= 5))
+        && (!('pinned' in data) || data.pinned is bool)
+        && (!('starred' in data) || data.starred is bool)
+        && (!('tags' in data) || isValidDiaryTags(data.tags))
         && data.userId is string
         && data.datetime is string
         && data.datetime.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$')
@@ -175,17 +189,43 @@ service cloud.firestore {
         && isValidDiarySections(data.sections);
     }
 
-    function isValidDiarySections(sections) {
-      // Rules syntax can't cheaply validate every element of an
-      // arbitrary-length list, so this checks the first section's shape
-      // as a lightweight guard against obviously malformed payloads — not
-      // exhaustive per-element validation. The client already enforces
-      // per-section shape on every element.
+    // One section: exactly {title, content}, both strings, length-capped
+    // (30000 chars x 10 sections stays under Firestore's 1 MiB document limit even for Bangla text).
+    function isValidDiarySection(s) {
+      return s is map
+        && s.keys().hasAll(['title', 'content'])
+        && s.keys().hasOnly(['title', 'content'])
+        && s.title is string
+        && s.content is string
+        && s.title.size() <= 200
+        && s.content.size() <= 30000;
+    }
 
-      return sections[0] is map
-        && sections[0].keys().hasAll(['title', 'content'])
-        && sections[0].title is string
-        && sections[0].content is string;
+    // Up to 10 tags, each a 1..30 char string (explicit indexes: rules have no loops).
+    function isValidDiaryTag(tags, i) {
+      return tags.size() <= i || (tags[i] is string && tags[i].size() >= 1 && tags[i].size() <= 30);
+    }
+
+    function isValidDiaryTags(tags) {
+      return tags is list && tags.size() <= 10
+        && isValidDiaryTag(tags, 0) && isValidDiaryTag(tags, 1) && isValidDiaryTag(tags, 2)
+        && isValidDiaryTag(tags, 3) && isValidDiaryTag(tags, 4) && isValidDiaryTag(tags, 5)
+        && isValidDiaryTag(tags, 6) && isValidDiaryTag(tags, 7) && isValidDiaryTag(tags, 8)
+        && isValidDiaryTag(tags, 9);
+    }
+
+    // Rules have no loops, so every possible index (max 10 sections) is checked explicitly.
+    function isValidDiarySections(sections) {
+      return isValidDiarySection(sections[0])
+        && (sections.size() <= 1 || isValidDiarySection(sections[1]))
+        && (sections.size() <= 2 || isValidDiarySection(sections[2]))
+        && (sections.size() <= 3 || isValidDiarySection(sections[3]))
+        && (sections.size() <= 4 || isValidDiarySection(sections[4]))
+        && (sections.size() <= 5 || isValidDiarySection(sections[5]))
+        && (sections.size() <= 6 || isValidDiarySection(sections[6]))
+        && (sections.size() <= 7 || isValidDiarySection(sections[7]))
+        && (sections.size() <= 8 || isValidDiarySection(sections[8]))
+        && (sections.size() <= 9 || isValidDiarySection(sections[9]));
     }
 
   }

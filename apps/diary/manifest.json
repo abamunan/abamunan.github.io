@@ -1,0 +1,17 @@
+{
+  "name": "Munan's Diary",
+  "short_name": "Diary",
+  "description": "Private, offline-first diary",
+  "id": "/apps/diary/index.html",
+  "start_url": "/apps/diary/index.html",
+  "scope": "/apps/diary/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F8F5",
+  "theme_color": "#0D8255",
+  "icons": [
+    { "src": "/apps/diary/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/apps/diary/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/apps/diary/icon-touch.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

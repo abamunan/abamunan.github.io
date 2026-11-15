@@ -3,14 +3,13 @@
    Firebase 10.x CDN (ESM) — same project as auth.js / login.html
    ================================================================ */
 
-import { initializeApp, getApps, getApp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged }
+import { onAuthStateChanged, sendEmailVerification }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
     collection, doc, setDoc, updateDoc, deleteDoc, getDoc,
-    query, where, orderBy, limit, startAfter, getDocs, serverTimestamp
+    query, where, orderBy, limit, startAfter, getDocs, serverTimestamp,
+    writeBatch, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── FIREBASE ─────────────────────────────────────────────────
@@ -19,7 +18,6 @@ import {
 // ── CONSTANTS ────────────────────────────────────────────────
 const MAX_SECTIONS = 10;
 const COLLECTION   = "diaryEntries";
-const ACCENT_HEX   = "#0A6F48"; // fixed brand color for PDF (theme-independent)
 
 // ── STATE ────────────────────────────────────────────────────
 let currentUser   = null;
@@ -37,6 +35,14 @@ let readingEntry  = null;      // entry currently open in the read overlay (null
 let deleteInFlight = false;    // guards double-click / repeated delete submissions
 let lastFocusedBeforeOverlay = null; // element to restore focus to when the read overlay closes
 let draftSaveTimer = null;     // debounce handle for the local draft autosave
+let isDirty = false;           // true only while the Write form holds edits that are NOT saved to Firestore
+let historyReqId = 0;          // "latest request wins" token for History fetches (fixes the loadHistory race)
+let pendingNewRef = null;      // doc ref reserved for a NEW entry whose save timed out — retry reuses it (no duplicates)
+const SAVE_TIMEOUT_MS = 15000; // Firestore writes never reject while offline; give up waiting after this long
+const DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
+const SAFE_ID_RE  = /^[A-Za-z0-9_-]{1,100}$/;
+const MAX_TITLE   = 200;
+const MAX_CONTENT = 30000;
 
 // ── DOM REFS ─────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
@@ -70,6 +76,7 @@ const historySearch   = $("#history-search");
 const historySearchWrap = $("#history-search-wrap");
 const clearHistorySearch = $("#clear-history-search");
 const historySummary  = $("#history-summary");
+const searchAllBtn    = $("#search-all-btn");
 const toastEl         = $("#diary-toast");
 
 const readOverlay      = $("#diary-read-overlay");
@@ -120,6 +127,9 @@ function safeStringifyError(err) {
 
 /** Builds a guaranteed-non-blank, human-readable message from any error shape. */
 function buildErrorMessage(err, actionLabel) {
+    if (err && err.code === "diary/timeout") {
+        return `${actionLabel} is taking too long — your text is kept as a draft on this device. Check your connection, then press Save again.`;
+    }
     if (err && err.code === "permission-denied") {
         return `${actionLabel} blocked: you don't have permission (check Firestore rules or that you're logged in).`;
     }
@@ -145,6 +155,42 @@ function buildErrorMessage(err, actionLabel) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  SMALL SHARED HELPERS
+// ════════════════════════════════════════════════════════════
+/** Firestore Timestamp | {seconds,nanoseconds} (old JSON backups) | number -> milliseconds (or null). */
+function toMs(t) {
+    if (t == null) return null;
+    if (typeof t === "number") return t;
+    if (typeof t.toMillis === "function") return t.toMillis();
+    if (typeof t.seconds === "number") return t.seconds * 1000 + Math.floor((t.nanoseconds || 0) / 1e6);
+    return null;
+}
+
+/** Rejects with code "diary/timeout" if the promise hasn't settled in `ms`. The underlying write keeps going. */
+function withTimeout(promise, ms) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            const e = new Error("timeout");
+            e.code = "diary/timeout";
+            reject(e);
+        }, ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+/** Best-effort read of a doc's updatedAt. A failed read AFTER a successful write must not look like a failed save. */
+async function readUpdatedAt(ref) {
+    try {
+        const snap = await getDoc(ref);
+        return snap.exists() ? snap.data().updatedAt || null : null;
+    } catch (err) {
+        console.warn("Could not read back updatedAt:", err);
+        return null;
+    }
+}
+
+// ════════════════════════════════════════════════════════════
 //  AUTH GATE
 // ════════════════════════════════════════════════════════════
 function renderLoggedOutGate() {
@@ -153,12 +199,60 @@ function renderLoggedOutGate() {
             <i class="lock-icon fas fa-lock"></i>
             <h2>Login required</h2>
             <p>Your diary is private. Log in to write, view, and export your entries.</p>
-            <a href="login.html?redirect=diary.html" class="diary-btn diary-btn-primary">
+            <a href="login.html?redirect=diary-classic.html" class="diary-btn diary-btn-primary">
                 <i class="fas fa-right-to-bracket"></i> Go to Login
             </a>
         </div>`;
     gate.style.display = "flex";
     appRoot.style.display = "none";
+}
+
+function renderUnverifiedGate(user) {
+    gateContent.innerHTML = `
+        <div class="diary-gate-card">
+            <i class="lock-icon fas fa-envelope-circle-check"></i>
+            <h2>Verify your email</h2>
+            <p>${escapeHtml(user.email || "This account")} isn't verified yet. Open the verification email, then press “I've verified”.</p>
+            <button type="button" class="diary-btn diary-btn-primary" id="check-verify-btn">
+                <i class="fas fa-check"></i> I've verified
+            </button>
+            <button type="button" class="diary-btn diary-btn-ghost" id="resend-verify-btn" style="margin-top:10px;">
+                <i class="fas fa-paper-plane"></i> Resend email
+            </button>
+        </div>`;
+    gate.style.display = "flex";
+    appRoot.style.display = "none";
+
+    $("#check-verify-btn").addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        try {
+            await user.reload();
+            if (user.emailVerified) {
+                await user.getIdToken(true); // refresh the token so Firestore rules see email_verified = true
+                window.location.reload();
+            } else {
+                showToast("Still not verified — check your inbox (and spam).", true);
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error("Verification check failed:", err);
+            showToast(buildErrorMessage(err, "Checking"), true);
+            btn.disabled = false;
+        }
+    });
+    $("#resend-verify-btn").addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        try {
+            await sendEmailVerification(user);
+            showToast("Verification email sent.");
+        } catch (err) {
+            console.error("Resend verification failed:", err);
+            showToast(buildErrorMessage(err, "Sending the email"), true);
+            btn.disabled = false;
+        }
+    });
 }
 
 function unlockApp() {
@@ -175,6 +269,9 @@ onAuthStateChanged(auth, (user) => {
         lastVisibleDoc = null;
         hasMoreHistory = true;
         loadHistory();             // initial fetch for History tab
+    } else if (user) {
+        currentUser = null;
+        renderUnverifiedGate(user);
     } else {
         currentUser = null;
         renderLoggedOutGate();
@@ -221,19 +318,18 @@ function addSectionRow(title = "", content = "") {
 
     sectionIdSeq += 1;
     const rowId = `sec-${sectionIdSeq}`;
-    const placeholderNum = sectionCount() + 1;
 
     const row = document.createElement("div");
     row.className = "diary-section";
     row.dataset.rowId = rowId;
     row.innerHTML = `
         <div class="diary-section-head">
-            <input type="text" class="section-title-input" placeholder="Section ${placeholderNum}" value="${escapeAttr(title)}">
+            <input type="text" class="section-title-input" placeholder="Section title (optional)" maxlength="${MAX_TITLE}" value="${escapeAttr(title)}">
             <button type="button" class="diary-section-remove" aria-label="Remove section" title="Remove section">
                 <i class="fas fa-xmark"></i>
             </button>
         </div>
-        <textarea class="section-content-input" placeholder="Write here…">${escapeHtml(content)}</textarea>
+        <textarea class="section-content-input" placeholder="Write here…" maxlength="${MAX_CONTENT}">${escapeHtml(content)}</textarea>
     `;
     sectionsContainer.appendChild(row);
 
@@ -288,6 +384,8 @@ function nowTimeString() {
 function resetFormToNew() {
     editingDocId = null;
     editingUpdatedAt = null;
+    pendingNewRef = null;
+    isDirty = false;
     staleConflictBanner.classList.remove("active");
     draftBanner.classList.remove("active"); // visual only — does NOT delete the underlying
                                               // localStorage draft; only clearDraft() does that
@@ -324,7 +422,13 @@ function collectDraftSnapshot() {
         title: el.querySelector(".section-title-input").value,
         content: el.querySelector(".section-content-input").value,
     }));
-    return { date: entryDateInput.value, time: entryTimeInput.value, sections, savedAt: Date.now() };
+    return {
+        date: entryDateInput.value, time: entryTimeInput.value, sections, savedAt: Date.now(),
+        // B8: remember WHICH saved entry (if any) this draft belongs to, so a restore updates it instead of
+        // silently turning into a duplicate "new" entry.
+        editingDocId: editingDocId || null,
+        baseUpdatedAtMs: editingDocId ? toMs(editingUpdatedAt) : null,
+    };
 }
 
 function draftHasMeaningfulContent(snapshot) {
@@ -335,6 +439,7 @@ function draftHasMeaningfulContent(snapshot) {
  *  localStorage ~800ms after typing stops, so we're not hitting disk on
  *  every character. */
 function scheduleDraftSave() {
+    isDirty = true; // B6: any real edit makes the form "unsaved" until a save succeeds
     const key = draftStorageKey();
     if (!key) return;
     clearTimeout(draftSaveTimer);
@@ -352,6 +457,17 @@ function scheduleDraftSave() {
             console.warn("Draft autosave failed:", err);
         }
     }, 800);
+}
+
+/** Writes the draft immediately (used right before the page unloads and after a timed-out save). */
+function flushDraftNow() {
+    const key = draftStorageKey();
+    if (!key) return;
+    clearTimeout(draftSaveTimer);
+    try {
+        const snapshot = collectDraftSnapshot();
+        if (draftHasMeaningfulContent(snapshot)) localStorage.setItem(key, JSON.stringify(snapshot));
+    } catch (err) { console.warn("Draft flush failed:", err); }
 }
 
 function clearDraft() {
@@ -384,6 +500,15 @@ function tryRestoreDraft() {
     updateAddSectionVisibility();
     updateRemoveButtonsVisibility();
 
+    isDirty = true; // a restored draft is, by definition, not saved yet
+    if (typeof snapshot.editingDocId === "string" && SAFE_ID_RE.test(snapshot.editingDocId)) {
+        editingDocId = snapshot.editingDocId;
+        editingUpdatedAt = typeof snapshot.baseUpdatedAtMs === "number" ? Timestamp.fromMillis(snapshot.baseUpdatedAtMs) : null;
+        editingBanner.classList.add("active");
+        editingBannerText.textContent = `Editing an existing entry (draft restored) · ${formatDateLabel(`${entryDateInput.value}T00:00:00`)}`;
+        saveBtnLabel.textContent = "Update Entry";
+    }
+
     const when = snapshot.savedAt
         ? new Date(snapshot.savedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
         : "earlier";
@@ -415,8 +540,9 @@ sectionsContainer.addEventListener("click", (e) => {
 // Warn before leaving the tab/page only when there's real unsaved writing
 // in the form — never block navigation away from an empty form.
 window.addEventListener("beforeunload", (e) => {
-    if (!currentUser) return;
+    if (!currentUser || !isDirty) return;               // B6: nothing unsaved -> never nag
     if (!draftHasMeaningfulContent(collectDraftSnapshot())) return;
+    flushDraftNow();                                    // the 800ms debounce may not have fired yet
     e.preventDefault();
     e.returnValue = "";
 });
@@ -424,8 +550,9 @@ window.addEventListener("beforeunload", (e) => {
 /** Reads the current Write form into a plain object (no Firestore-specific fields). */
 function readFormData() {
     const dateVal = entryDateInput.value;
-    const timeVal = entryTimeInput.value || "00:00";
+    const timeVal = entryTimeInput.value;
     if (!dateVal) return { error: "Please pick a date for this entry." };
+    if (!timeVal) return { error: "Please pick a time for this entry." };
 
     // Combine date + time into one ISO-ish local string for clean sorting.
     // Stored as "YYYY-MM-DDTHH:MM:00" (local time, no offset) so that
@@ -439,7 +566,7 @@ function readFormData() {
     const sections = sectionEls.map((el, i) => {
         const titleInput = el.querySelector(".section-title-input");
         const contentInput = el.querySelector(".section-content-input");
-        const title = titleInput.value.trim() || titleInput.placeholder; // fall back to "Section N" placeholder
+        const title = titleInput.value.trim(); // B10: empty stays empty — the UI shows "Untitled"
         const content = contentInput.value; // intentionally not trimmed — preserves user's line breaks/spacing
         return { title, content };
     });
@@ -453,6 +580,8 @@ function readFormData() {
 /** Loads a Firestore entry doc into the Write form for editing. */
 function loadEntryIntoForm(entryDoc) {
     editingDocId = entryDoc.id;
+    pendingNewRef = null;
+    isDirty = false;
     // Snapshot the updatedAt we're editing FROM — Phase 4 compares this
     // against the server's current value right before writing, so we can
     // tell whether the document changed elsewhere while this was open.
@@ -485,11 +614,11 @@ saveEntryBtn.addEventListener("click", async () => {
 
     const data = readFormData();
     if (data.error) { showToast(data.error, true); return; }
+    if (new Date(data.datetime).getTime() > Date.now() + 60000 &&
+        !window.confirm("This entry is dated in the future. Save anyway?")) return;
 
     saveEntryBtn.disabled = true;
-    // Snapshot isEditing BEFORE any await — editingDocId gets mutated mid-flow
-    // for new entries (set to newRef.id after first save), so we can't re-read
-    // it safely inside the finally block.
+    // Snapshot BEFORE any await — editingDocId changes mid-flow for new entries.
     const wasEditing = !!editingDocId;
     saveBtnLabel.textContent = wasEditing ? "Updating…" : "Saving…";
 
@@ -497,25 +626,24 @@ saveEntryBtn.addEventListener("click", async () => {
         if (wasEditing) {
             const ref = doc(db, COLLECTION, editingDocId);
 
-            // Phase 4 — stale-edit protection. cachedEntries/the form hold a
-            // COPY of the doc taken whenever it was loaded, which can go
-            // stale if it was edited elsewhere (another tab, another device)
-            // in the meantime. Re-fetch the real current state right before
-            // writing rather than trusting that copy.
-            const latestSnap = await getDoc(ref);
+            // Stale-edit protection: re-fetch the real current state right before writing.
+            const latestSnap = await withTimeout(getDoc(ref), SAVE_TIMEOUT_MS);
             if (!latestSnap.exists()) {
                 showToast("This entry was deleted elsewhere — nothing to update.", true);
-                resetFormToNew(); // also resets saveBtnLabel back to "Save Entry"
+                resetFormToNew();
+                clearDraft();
                 lastVisibleDoc = null; hasMoreHistory = true;
                 await loadHistory(true);
                 return;
             }
             const latestData = latestSnap.data();
-            const isStale = editingUpdatedAt && latestData.updatedAt &&
-                typeof editingUpdatedAt.isEqual === "function" &&
-                !editingUpdatedAt.isEqual(latestData.updatedAt);
+            // Compare by milliseconds: works for real Timestamps AND for the plain {seconds,nanoseconds}
+            // maps that older JSON restores wrote (isEqual() silently disabled this check for those).
+            const baseMs = toMs(editingUpdatedAt);
+            const latestMs = toMs(latestData.updatedAt);
+            const isStale = baseMs != null && latestMs != null && baseMs !== latestMs;
             if (isStale) {
-                saveBtnLabel.textContent = "Update Entry"; // undo the "Updating…" label — we didn't write
+                saveBtnLabel.textContent = "Update Entry";
                 staleConflictText.textContent =
                     "This entry changed elsewhere since you started editing. Saving now would overwrite that change.";
                 staleConflictBanner.classList.add("active");
@@ -524,52 +652,43 @@ saveEntryBtn.addEventListener("click", async () => {
                     staleConflictBanner.classList.remove("active");
                     showToast("Loaded the latest version.");
                 };
-                return; // do NOT write — wait for the user to reload or edit further
+                return; // do NOT write
             }
 
-            // Update the SAME document — never creates a duplicate.
-            await updateDoc(ref, {
+            await withTimeout(updateDoc(ref, {
                 datetime: data.datetime,
                 sections: data.sections,
                 updatedAt: serverTimestamp(),
-            });
-            const freshSnap = await getDoc(ref);
-            editingUpdatedAt = freshSnap.exists() ? freshSnap.data().updatedAt : null;
+            }), SAVE_TIMEOUT_MS);
+            editingUpdatedAt = await readUpdatedAt(ref);
             showToast("Entry updated.");
         } else {
-            // doc() with no ID generates a new auto-ID client-side; we grab it
-            // immediately so subsequent saves in this session hit the same doc.
-            const newRef = doc(collection(db, COLLECTION));
-            await setDoc(newRef, {
+            // Reuse the reserved ref if a previous attempt timed out, so a retry can never create a duplicate.
+            const newRef = pendingNewRef || doc(collection(db, COLLECTION));
+            pendingNewRef = newRef;
+            await withTimeout(setDoc(newRef, {
                 userId: currentUser.uid,
                 datetime: data.datetime,
                 sections: data.sections,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-            });
+            }), SAVE_TIMEOUT_MS);
+            pendingNewRef = null;
             editingDocId = newRef.id;
-            const freshSnap = await getDoc(newRef);
-            editingUpdatedAt = freshSnap.exists() ? freshSnap.data().updatedAt : null;
+            editingUpdatedAt = await readUpdatedAt(newRef);
             editingBanner.classList.add("active");
             editingBannerText.textContent = `Editing entry from ${formatDateLabel(data.datetime)} · ${formatTimeLabel(data.datetime)}`;
             saveBtnLabel.textContent = "Update Entry";
             showToast("Entry saved.");
         }
-        clearDraft(); // Phase 3 — the local safety-net copy is now redundant
-        lastVisibleDoc = null; hasMoreHistory = true;
-        await loadHistory(true); // refresh History tab; silent=true so a refresh failure
-                                   // (e.g. missing composite index) can't overwrite/mask
-                                   // the "Entry saved." toast shown above
+        isDirty = false;   // B6: saved -> no more "Leave site?" prompt
+        clearDraft();
+        syncSavedEntryIntoHistory(editingDocId, data, editingUpdatedAt); // B17: no full reload
     } catch (err) {
-        // Full dump so we can see the real shape of the error in DevTools.
-        console.error("Diary save failed — raw error object:", err);
-        console.error("Diary save failed — code:", err && err.code);
-        console.error("Diary save failed — message:", err && err.message);
-        console.error("Diary save failed — stringified:", safeStringifyError(err));
-
-        const readableMsg = buildErrorMessage(err, "Save");
-        showToast(readableMsg, true);
-        // Restore label to pre-attempt state using the snapshot, not the live flag
+        console.error("Diary save failed:", err, safeStringifyError(err));
+        // Timed out / offline: keep the writing safe locally. The write itself may still land later.
+        if (err && err.code === "diary/timeout") flushDraftNow();
+        showToast(buildErrorMessage(err, "Save"), true);
         saveBtnLabel.textContent = wasEditing ? "Update Entry" : "Save Entry";
     } finally {
         saveEntryBtn.disabled = false;
@@ -645,6 +764,10 @@ readOverlay.addEventListener("keydown", (e) => {
 
 readEditBtn.addEventListener("click", () => {
     if (!readingEntry) return;
+    if (isDirty && draftHasMeaningfulContent(collectDraftSnapshot()) &&
+        !window.confirm("The Write form has unsaved text. Opening this entry will replace it. Continue?")) {
+        return; // B7: keep the form (and its draft) untouched
+    }
     const entry = readingEntry;
     closeEntryRead();
     loadEntryIntoForm(entry); // existing logic: fills Write form, shows editing banner, switches tab
@@ -712,7 +835,8 @@ filterBtns.forEach((btn) => {
 // First query on a fresh project will throw with a URL to auto-create it.
 // Click that URL once in the browser console and it's done.
 async function loadHistory(silent = false) {
-    if (!currentUser || historyLoading) return;
+    if (!currentUser) return;
+    const reqId = ++historyReqId; // B9: a newer call supersedes older ones instead of being ignored
     historyLoading = true;
     entryListEl.innerHTML = `<div class="diary-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading entries…</div>`;
     loadMoreBtn.style.display = "none";
@@ -725,12 +849,14 @@ async function loadHistory(silent = false) {
             limit(historyPageSize)
         );
         const snap = await getDocs(q);
+        if (reqId !== historyReqId) return; // superseded by a newer request
         cachedEntries = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         lastVisibleDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
         hasMoreHistory = snap.docs.length === historyPageSize; // a full page means there may be more
         renderEntryList(cachedEntries);
         updateLoadMoreVisibility();
     } catch (err) {
+        if (reqId !== historyReqId) return;
         console.error("Diary history fetch failed — raw error object:", err);
         console.error("Diary history fetch failed — code:", err && err.code);
         console.error("Diary history fetch failed — stringified:", safeStringifyError(err));
@@ -741,7 +867,7 @@ async function loadHistory(silent = false) {
         // and make it look like the SAVE failed, when only this refresh did.
         if (!silent) showToast(buildErrorMessage(err, "Loading entries"), true);
     } finally {
-        historyLoading = false;
+        if (reqId === historyReqId) historyLoading = false;
     }
 }
 
@@ -750,6 +876,7 @@ async function loadHistory(silent = false) {
  *  duplicating entries already in cachedEntries. */
 async function loadMoreHistory() {
     if (!currentUser || historyLoading || !hasMoreHistory || !lastVisibleDoc) return;
+    const myReq = historyReqId;
     historyLoading = true;
     loadMoreBtn.disabled = true;
     const originalHtml = loadMoreBtn.innerHTML;
@@ -764,9 +891,11 @@ async function loadMoreHistory() {
             limit(historyPageSize)
         );
         const snap = await getDocs(q);
+        if (myReq !== historyReqId) return; // a fresh History load started meanwhile
         const newEntries = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const seen = new Set(cachedEntries.map((e) => e.id));
-        cachedEntries = cachedEntries.concat(newEntries.filter((e) => !seen.has(e.id))); // dedupe defensively
+        cachedEntries = cachedEntries.concat(newEntries.filter((e) => !seen.has(e.id))) // dedupe defensively
+            .sort((a, b) => (a.datetime < b.datetime ? 1 : a.datetime > b.datetime ? -1 : 0));
         lastVisibleDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : lastVisibleDoc;
         hasMoreHistory = snap.docs.length === historyPageSize;
         renderEntryList(cachedEntries);
@@ -775,10 +904,34 @@ async function loadMoreHistory() {
         console.error("Diary load-more failed:", err);
         showToast(buildErrorMessage(err, "Loading more entries"), true);
     } finally {
-        historyLoading = false;
+        if (myReq === historyReqId) historyLoading = false;
         loadMoreBtn.disabled = false;
         loadMoreBtn.innerHTML = originalHtml;
     }
+}
+
+/** B17: after a save, patch the already-loaded list instead of refetching page 1 (keeps pagination, saves reads). */
+function syncSavedEntryIntoHistory(id, data, updatedAt) {
+    if (!updatedAt || (!cachedEntries.length && hasMoreHistory)) {
+        // Can't build a trustworthy local copy (or History never loaded) — fall back to a fresh fetch.
+        lastVisibleDoc = null; hasMoreHistory = true;
+        loadHistory(true);
+        return;
+    }
+    const prev = cachedEntries.find((e) => e.id === id);
+    const entry = {
+        ...(prev || {}),
+        id,
+        userId: currentUser.uid,
+        datetime: data.datetime,
+        sections: data.sections,
+        createdAt: (prev && prev.createdAt) || updatedAt,
+        updatedAt,
+    };
+    cachedEntries = [entry, ...cachedEntries.filter((e) => e.id !== id)]
+        .sort((a, b) => (a.datetime < b.datetime ? 1 : a.datetime > b.datetime ? -1 : 0));
+    renderEntryList(cachedEntries);
+    updateLoadMoreVisibility();
 }
 
 function updateLoadMoreVisibility() {
@@ -789,21 +942,33 @@ function updateLoadMoreVisibility() {
 
 loadMoreBtn.addEventListener("click", loadMoreHistory);
 
+/** Text a search term is matched against: ISO date + human date/time ("Oct 27", "Tuesday", "9:05 AM") + all section text. */
+function searchableText(entry) {
+    const d = new Date(entry.datetime);
+    const human = isNaN(d) ? "" : [
+        d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
+        d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+    ].join(" ");
+    return [entry.datetime, human, ...(entry.sections || []).flatMap((s) => [s.title, s.content])]
+        .join(" ").toLocaleLowerCase();
+}
+
+/** Multi-word search: every word must appear somewhere in the entry. */
+function filterEntries(entries) {
+    const terms = historySearchTerm.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) return entries;
+    return entries.filter((e) => { const t = searchableText(e); return terms.every((x) => t.includes(x)); });
+}
+
 function renderEntryList(entries) {
     const normalizedSearch = historySearchTerm.trim().toLocaleLowerCase();
-    const visibleEntries = normalizedSearch
-        ? entries.filter((entry) => {
-            const searchable = [
-                entry.datetime,
-                ...(entry.sections || []).flatMap((section) => [section.title, section.content]),
-            ].join(" ").toLocaleLowerCase();
-            return searchable.includes(normalizedSearch);
-        })
-        : entries;
+    const visibleEntries = filterEntries(entries);
 
     historySummary.textContent = normalizedSearch
-        ? `${visibleEntries.length} of ${entries.length} loaded ${entries.length === 1 ? "entry" : "entries"} match “${historySearchTerm.trim()}”. Load more to search older entries.`
+        ? `${visibleEntries.length} of ${entries.length} loaded ${entries.length === 1 ? "entry" : "entries"} match “${historySearchTerm.trim()}”. Tap “Search entire diary” to include older entries.`
         : `${entries.length} ${entries.length === 1 ? "entry" : "entries"} loaded`;
+    searchAllBtn.style.display = (normalizedSearch && hasMoreHistory) ? "inline-flex" : "none";
 
     if (!visibleEntries.length) {
         entryListEl.innerHTML = `
@@ -855,6 +1020,30 @@ historySearch.addEventListener("input", () => {
     renderEntryList(cachedEntries);
 });
 
+searchAllBtn.addEventListener("click", async () => {
+    if (!currentUser) return;
+    searchAllBtn.disabled = true;
+    const originalHtml = searchAllBtn.innerHTML;
+    searchAllBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading all…';
+    try {
+        const all = await fetchAllEntries();
+        historyReqId++;            // cancel any History fetch still in flight
+        historyLoading = false;
+        cachedEntries = all;
+        lastVisibleDoc = null;
+        hasMoreHistory = false;    // everything is loaded now
+        renderEntryList(cachedEntries);
+        updateLoadMoreVisibility();
+        showToast(`Searching all ${all.length} ${all.length === 1 ? "entry" : "entries"}.`);
+    } catch (err) {
+        console.error("Search-all failed:", err);
+        showToast(buildErrorMessage(err, "Loading all entries"), true);
+    } finally {
+        searchAllBtn.disabled = false;
+        searchAllBtn.innerHTML = originalHtml;
+    }
+});
+
 clearHistorySearch.addEventListener("click", () => {
     historySearch.value = "";
     historySearchTerm = "";
@@ -886,7 +1075,7 @@ function escapeAttr(str) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  PDF EXPORT (html2pdf.js)
+//  PDF EXPORT (browser print engine)
 // ════════════════════════════════════════════════════════════
 // Phase 5/6 — History is paginated, so PDF export now has two explicit,
 // clearly-labeled modes rather than one button that silently meant
@@ -899,142 +1088,72 @@ function escapeAttr(str) {
 // Neither ever fetches the whole diary as a side effect of just opening
 // the History tab or clicking "Last 10/50".
 
-/**
- * Builds and downloads a PDF for the given entries. Pure export logic only
- * — callers own their own button/loading state. Always cleans up its
- * temporary off-screen DOM node, even if html2pdf throws.
- */
-async function exportEntriesToPdf(entries, filenamePrefix) {
-    const printRoot = buildPrintableDocument(entries);
-
-    // Wrapper clips the printable doc from view WITHOUT touching the
-    // printable doc's own styles. Earlier failed approaches applied
-    // hiding styles directly to printRoot itself (offscreen left,
-    // negative z-index, near-zero opacity) — html2canvas renders
-    // exactly what it's told to render, so those tricks corrupted the
-    // capture instead of just hiding it from the user.
-    const hideWrapper = document.createElement("div");
-    hideWrapper.style.cssText = "position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: hidden;";
-    // Kept at (0,0) rather than a large negative offset — negative
-    // coordinates were the original cause of a totally blank PDF
-    // (html2canvas clamps/loses them when computing what to capture).
-    // width/height: 0 + overflow:hidden keeps it invisible to the user
-    // without moving it off-canvas. This no longer risks squashing
-    // printRoot's own width, because printRoot uses an explicit
-    // width: 190mm (not a percentage), which CSS defines as
-    // independent of the containing block's size — and separately,
-    // html2canvas's capture width is now pinned explicitly below from
-    // printRoot.scrollWidth, so even page-level scrollWidth quirks
-    // can't leak into what gets captured.
-    hideWrapper.appendChild(printRoot);
-    document.body.appendChild(hideWrapper);
-
-    try {
-        // Force layout to flush so scrollWidth below reflects the final
-        // rendered size before html2canvas measures anything.
-        // eslint-disable-next-line no-unused-expressions
-        printRoot.offsetHeight;
-        const captureWidthPx = printRoot.scrollWidth;
-
-        await window.html2pdf()
-            .set({
-                margin:       [12, 10, 12, 10], // mm: top, left, bottom, right — all equal
-                filename:     `${filenamePrefix}-${todayDateString()}.pdf`,
-                image:        { type: "jpeg", quality: 0.98 },
-                html2canvas:  {
-                    scale: 2, useCORS: true, backgroundColor: "#ffffff",
-                    // Pin BOTH width and windowWidth to printRoot's own
-                    // measured pixel width. Without this, html2canvas can
-                    // pick up extra invisible width from the page/ancestors
-                    // (e.g. the hidden app underneath, or the 1px clipping
-                    // wrapper still sitting in the layout tree), so the
-                    // captured canvas ends up wider than printRoot actually
-                    // is. jsPDF then scales that whole canvas down to fit
-                    // pageWidth - margins, which squeezes real content and
-                    // clips its true right edge — exactly the symptom seen
-                    // (cards cut off at the page edge, not overflowing past
-                    // it). Locking both to the same measured value forces
-                    // html2canvas to capture exactly printRoot, nothing more.
-                    width: captureWidthPx,
-                    windowWidth: captureWidthPx,
-                },
-                jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
-                pagebreak:    { mode: ["css", "legacy"] },
-            })
-            .from(printRoot)
-            .toPdf()
-            .get("pdf")
-            .then((pdf) => {
-                // Footer page numbers — added after layout so total page count is known
-                const totalPages = pdf.internal.getNumberOfPages();
-                for (let i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(8.5);
-                    pdf.setTextColor(120, 130, 145);
-                    const pageW = pdf.internal.pageSize.getWidth();
-                    const pageH = pdf.internal.pageSize.getHeight();
-                    pdf.text(`${i} / ${totalPages}`, pageW / 2, pageH - 8, { align: "center" });
-                }
-            })
-            .save();
-    } finally {
-        // Phase 6 fix: this cleanup previously sat AFTER the try block on
-        // the success path only, so a thrown/rejected html2pdf call skipped
-        // straight to `catch` and left hideWrapper (with printRoot inside
-        // it) permanently attached to <body>. Moving it into `finally`
-        // guarantees the temporary node is always removed, success or fail.
-        hideWrapper.remove();
-    }
+/** Print-only markup. Pure HTML strings; all styling lives in diary-page.css under @media print. */
+function buildPrintHtml(entries) {
+    const exported = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const cards = entries.map((entry) => {
+        const secs = (entry.sections || []).map((sec) => `
+            <section class="dp-section">
+                <h3 class="dp-sec-title">${escapeHtml(sec.title || "Untitled")}</h3>
+                <div class="dp-sec-body">${escapeHtml(sec.content || "")}</div>
+            </section>`).join("");
+        return `
+            <article class="dp-entry">
+                <header class="dp-entry-head">
+                    <span class="dp-date">${escapeHtml(formatDateLabel(entry.datetime))}</span>
+                    <span class="dp-time">${escapeHtml(formatTimeLabel(entry.datetime))}</span>
+                </header>${secs}
+            </article>`;
+    }).join("");
+    return `
+        <div class="dp-head">
+            <div class="dp-title">Munan's <span>Diary</span></div>
+            <div class="dp-sub">${entries.length} ${entries.length === 1 ? "entry" : "entries"} · exported ${exported}</div>
+        </div>${cards}`;
 }
 
-downloadPdfBtn.addEventListener("click", async () => {
-    if (!cachedEntries.length) { showToast("No entries to export yet.", true); return; }
+/**
+ * B5: export through the browser's own print engine ("Save as PDF").
+ * Real selectable text, no canvas size limit (the old html2pdf path rendered the whole diary into ONE
+ * canvas and failed on phones past ~8 pages), long entries flow across pages, Bangla uses the page font.
+ */
+function printEntries(entries, label) {
+    document.getElementById("diary-print-root")?.remove();
+    const root = document.createElement("div");
+    root.id = "diary-print-root";            // display:none on screen; shown only by @media print
+    root.innerHTML = buildPrintHtml(entries);
+    document.body.appendChild(root);
+    document.body.classList.add("diary-printing");
 
-    downloadPdfBtn.disabled = true;
-    const originalHtml = downloadPdfBtn.innerHTML;
-    downloadPdfBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Building PDF…';
+    const prevTitle = document.title;
+    document.title = `Munans-Diary-${label}-${todayDateString()}`; // becomes the suggested PDF file name
+    const restore = () => {
+        document.title = prevTitle;
+        document.body.classList.remove("diary-printing");
+        window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
+    setTimeout(() => window.print(), 100);   // let layout settle first
+}
 
-    try {
-        await exportEntriesToPdf(cachedEntries, "Munans-Diary-Loaded");
-        const n = cachedEntries.length;
-        showToast(`PDF downloaded — ${n} loaded ${n === 1 ? "entry" : "entries"}.`);
-    } catch (err) {
-        console.error("PDF export failed:", err);
-        showToast("PDF export failed — please try again.", true);
-    } finally {
-        downloadPdfBtn.disabled = false;
-        downloadPdfBtn.innerHTML = originalHtml;
-    }
+downloadPdfBtn.addEventListener("click", () => {
+    // Exports exactly what History is showing (respects the search filter).
+    const entries = filterEntries(cachedEntries);
+    if (!entries.length) { showToast("No entries to export yet.", true); return; }
+    printEntries(entries, "Shown");
+    showToast("In the print dialog, choose “Save as PDF”.");
 });
 
 exportAllBtn.addEventListener("click", async () => {
     if (!currentUser) return;
-
-    const confirmed = window.confirm(
-        "This fetches your ENTIRE diary before building the PDF — it may take a while if you have a large history. Continue?"
-    );
-    if (!confirmed) return;
-
     exportAllBtn.disabled = true;
     const originalHtml = exportAllBtn.innerHTML;
     exportAllBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Fetching all entries…';
-
     try {
-        // The one deliberate place this app fetches an unrestricted result
-        // set — gated behind an explicit click + confirmation, never
-        // triggered implicitly by browsing History or selecting a filter.
-        const q = query(
-            collection(db, COLLECTION),
-            where("userId", "==", currentUser.uid),
-            orderBy("datetime", "desc")
-        );
-        const snap = await getDocs(q);
-        const allEntries = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        if (!allEntries.length) { showToast("No entries to export yet.", true); return; }
-
-        exportAllBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Building PDF (${allEntries.length})…`;
-        await exportEntriesToPdf(allEntries, "Munans-Diary-All");
-        showToast(`PDF downloaded — all ${allEntries.length} entries.`);
+        const all = await fetchAllEntries();
+        if (!all.length) { showToast("No entries to export yet.", true); return; }
+        printEntries(all, "All");
+        showToast(`Opening print dialog — ${all.length} entries. Choose “Save as PDF”.`);
     } catch (err) {
         console.error("Export-all failed:", err);
         showToast(buildErrorMessage(err, "Export all"), true);
@@ -1044,146 +1163,138 @@ exportAllBtn.addEventListener("click", async () => {
     }
 });
 
+/** Every entry of the signed-in user (one explicit, user-initiated fetch — used by Backup JSON). */
+async function fetchAllEntries() {
+    const q = query(
+        collection(db, COLLECTION),
+        where("userId", "==", currentUser.uid),
+        orderBy("datetime", "desc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+/** Plain-JSON shape for backups: timestamps become milliseconds (a raw Timestamp serialises to a bare object). */
+function serializeEntry(e) {
+    return {
+        id: e.id,
+        userId: e.userId,
+        datetime: e.datetime,
+        sections: (e.sections || []).map((x) => ({ title: x.title ?? "", content: x.content ?? "" })),
+        createdAtMs: toMs(e.createdAt),
+        updatedAtMs: toMs(e.updatedAt),
+    };
+}
+
 function downloadDiaryJson(entries) {
     const blob = new Blob([JSON.stringify({
         app: "munan-diary",
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
-        entries
+        count: entries.length,
+        entries: entries.map(serializeEntry),
     }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `munans-diary-${todayDateString()}.json`;
+    document.body.appendChild(a);          // B12: Safari/iOS need the anchor in the DOM
     a.click();
-    URL.revokeObjectURL(url);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000); // B12: revoking immediately can cancel the download
 }
 
-exportJsonBtn.addEventListener("click", () => {
-    if (!cachedEntries.length) { showToast("Load diary entries before creating a backup.", true); return; }
-    downloadDiaryJson(cachedEntries);
-    showToast(`JSON backup downloaded — ${cachedEntries.length} entries.`);
+exportJsonBtn.addEventListener("click", async () => {
+    if (!currentUser) return;
+    exportJsonBtn.disabled = true;
+    const originalHtml = exportJsonBtn.innerHTML;
+    exportJsonBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Fetching all…';
+    try {
+        // B1: back up the WHOLE diary, not just the 10/50 entries currently loaded in History.
+        const all = await fetchAllEntries();
+        if (!all.length) { showToast("No entries to back up yet.", true); return; }
+        downloadDiaryJson(all);
+        showToast(`JSON backup downloaded — all ${all.length} ${all.length === 1 ? "entry" : "entries"}.`);
+    } catch (err) {
+        console.error("Diary JSON backup failed:", err);
+        showToast(buildErrorMessage(err, "Backup"), true);
+    } finally {
+        exportJsonBtn.disabled = false;
+        exportJsonBtn.innerHTML = originalHtml;
+    }
 });
+
+/** Timestamp from a v2 `…Ms` number or an old v1 {seconds,nanoseconds} object; null if neither is usable. */
+function restoreTimestamp(ms, legacy) {
+    if (typeof ms === "number" && isFinite(ms)) return Timestamp.fromMillis(ms);
+    if (legacy && typeof legacy.seconds === "number") return new Timestamp(legacy.seconds, legacy.nanoseconds || 0);
+    return null;
+}
+
+/** Validates one backup entry against what firestore.rules accepts. Returns {id, data} or null (skip). */
+function normalizeBackupEntry(e) {
+    if (!e || typeof e !== "object") return null;
+    if (typeof e.datetime !== "string" || !DATETIME_RE.test(e.datetime)) return null;
+    if (!Array.isArray(e.sections) || e.sections.length < 1 || e.sections.length > MAX_SECTIONS) return null;
+    const sections = [];
+    for (const sec of e.sections) {
+        if (!sec || typeof sec.title !== "string" || typeof sec.content !== "string") return null;
+        if (sec.title.length > MAX_TITLE || sec.content.length > MAX_CONTENT) return null;
+        sections.push({ title: sec.title, content: sec.content });
+    }
+    const id = typeof e.id === "string" && SAFE_ID_RE.test(e.id) ? e.id : doc(collection(db, COLLECTION)).id;
+    return {
+        id,
+        data: {
+            userId: currentUser.uid,
+            datetime: e.datetime,
+            sections,
+            createdAt: restoreTimestamp(e.createdAtMs, e.createdAt) || serverTimestamp(),
+            updatedAt: restoreTimestamp(e.updatedAtMs, e.updatedAt) || serverTimestamp(),
+        },
+    };
+}
 
 importJsonInput.addEventListener("change", async () => {
     const file = importJsonInput.files?.[0];
     importJsonInput.value = "";
     if (!file || !currentUser) return;
+    let restored = 0, total = 0;
     try {
-        const data = JSON.parse(await file.text());
-        if (data?.app !== "munan-diary" || !Array.isArray(data.entries) ||
-            data.entries.some(e => !e || typeof e !== "object" ||
-                typeof e.datetime !== "string" || !Array.isArray(e.sections) ||
-                (e.userId && e.userId !== currentUser.uid))) {
-            throw new Error("invalid backup");
+        const parsed = JSON.parse(await file.text());
+        if (parsed?.app !== "munan-diary" || !Array.isArray(parsed.entries)) throw new Error("invalid backup");
+        if (parsed.entries.some((e) => e && e.userId && e.userId !== currentUser.uid)) {
+            showToast("This backup belongs to a different account — nothing restored.", true);
+            return;
         }
-        if (!window.confirm(`Restore ${data.entries.length} diary entries? Existing entries with the same IDs will be replaced.`)) return;
-        for (const entry of data.entries) {
-            const copy = { ...entry, userId: currentUser.uid };
-            const id = copy.id;
-            delete copy.id;
-            await setDoc(doc(db, COLLECTION, id || crypto.randomUUID()), copy);
+        // Validate everything BEFORE writing anything.
+        const valid = [];
+        let skipped = 0;
+        parsed.entries.forEach((e) => { const n = normalizeBackupEntry(e); n ? valid.push(n) : skipped++; });
+        if (!valid.length) { showToast("No valid entries found in that backup.", true); return; }
+
+        const msg = `Restore ${valid.length} diary ${valid.length === 1 ? "entry" : "entries"}` +
+            `${skipped ? ` (${skipped} invalid skipped)` : ""}? Entries with the same ID will be replaced.`;
+        if (!window.confirm(msg)) return;
+
+        total = valid.length;
+        for (let i = 0; i < valid.length; i += 400) {           // Firestore batch limit is 500
+            const chunk = valid.slice(i, i + 400);
+            const batch = writeBatch(db);
+            chunk.forEach((n) => batch.set(doc(db, COLLECTION, n.id), n.data));
+            await withTimeout(batch.commit(), 30000);
+            restored += chunk.length;
         }
-        showToast("Diary JSON backup restored.");
+        showToast(`Restored ${restored} ${restored === 1 ? "entry" : "entries"}${skipped ? `, skipped ${skipped} invalid` : ""}.`);
         await loadHistory(true);
     } catch (err) {
         console.error("Diary JSON restore failed:", err);
-        showToast("Could not restore that JSON backup.", true);
+        showToast(
+            restored
+                ? `Restore stopped after ${restored} of ${total} entries — ${buildErrorMessage(err, "Restore")}`
+                : "Could not restore that JSON backup.",
+            true
+        );
+        if (restored) await loadHistory(true);
     }
 });
-
-/**
- * Builds an off-screen, print-styled DOM tree (light theme, fixed colors —
- * independent of the live page's data-theme) representing every entry in
- * `entries`, for html2pdf.js to rasterize. Returns the root element.
- */
-function buildPrintableDocument(entries) {
-    const root = document.createElement("div");
-    root.style.cssText = `
-        width: 190mm;
-        box-sizing: border-box;
-        background: #ffffff; color: #11221D;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-                     'Hind Siliguri', Helvetica, Arial, sans-serif;
-        padding: 4mm 0;
-        -webkit-font-smoothing: antialiased;
-    `;
-    // NOTE on width: html2pdf.js always rescales the captured canvas to fit
-    // exactly (pageWidth - marginLeft - marginRight) on the PDF page,
-    // proportionally — so this mm width does NOT need to be kept in manual
-    // sync with the margin values in the click handler. 190mm is simply a
-    // comfortable rendering width for crisp, non-blurry text at scale:2.
-    // The actual right-edge-cutoff bug was that html2canvas could capture
-    // MORE width than this element actually has (picking up invisible
-    // ancestor/page width), and then that whole wider canvas got squeezed
-    // into the page, clipping real content at the true right edge. Fixed by
-    // explicitly pinning html2canvas's width/windowWidth options to this
-    // element's own measured scrollWidth in the click handler below, so it
-    // can never capture more than printRoot itself.
-
-    // ── HEADER ──────────────────────────────────────────────────
-    const header = document.createElement("div");
-    header.style.cssText = `
-        text-align: center; padding-bottom: 16px; margin-bottom: 26px;
-        border-bottom: 1px solid #D3DBD0;
-    `;
-    header.innerHTML = `
-        <div style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#11221D;">
-            Munan's <span style="color:${ACCENT_HEX};font-weight:800;">Diary</span>
-        </div>
-        <div style="font-size:12px;color:#5B6C64;margin-top:6px;font-weight:500;">
-            ${entries.length} ${entries.length === 1 ? "entry" : "entries"} · exported ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-        </div>
-    `;
-    root.appendChild(header);
-
-    // ── ENTRY CARDS ─────────────────────────────────────────────
-    entries.forEach((entry, idx) => {
-        const entryCard = document.createElement("div");
-        entryCard.style.cssText = `
-            box-sizing: border-box;
-            background: #ffffff;
-            border: 1px solid #D3DBD0; border-radius: 10px;
-            padding: 18px 20px;
-            margin-bottom: 16px;
-            page-break-inside: avoid; break-inside: avoid;
-        `;
-        // Cards are capped at one diary entry's worth of sections, which in
-        // practice is short enough that "avoid" is safe here — unlike the
-        // old borderless flowing layout, each card is a small bounded unit
-        // so html2pdf's css pagebreak mode can always find a legal break
-        // point (between cards), instead of failing to place an oversized
-        // block and rendering blank.
-
-        const dateHeading = document.createElement("div");
-        dateHeading.style.cssText = `
-            display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px;
-            padding-bottom: 10px; border-bottom: 1px solid #EEF1EA;
-        `;
-        dateHeading.innerHTML = `
-            <div style="width:4px;height:16px;background:${ACCENT_HEX};border-radius:2px;flex-shrink:0;"></div>
-            <div style="font-size:14px;font-weight:700;color:#11221D;">${escapeHtml(formatDateLabel(entry.datetime))}</div>
-            <div style="font-size:12px;font-weight:500;color:#5B6C64;">${escapeHtml(formatTimeLabel(entry.datetime))}</div>
-        `;
-        entryCard.appendChild(dateHeading);
-
-        (entry.sections || []).forEach((sec, secIdx) => {
-            const secEl = document.createElement("div");
-            const isLast = secIdx === (entry.sections.length - 1);
-            secEl.style.cssText = `margin-bottom: ${isLast ? "0" : "14px"};`;
-            secEl.innerHTML = `
-                <div style="font-size:11.5px;font-weight:700;color:${ACCENT_HEX};margin-bottom:5px;letter-spacing:0.03em;text-transform:uppercase;">
-                    ${escapeHtml(sec.title || "Untitled")}
-                </div>
-                <div style="font-size:13.5px;line-height:1.6;color:#11221D;white-space:pre-wrap;">
-                    ${escapeHtml(sec.content || "")}
-                </div>
-            `;
-            entryCard.appendChild(secEl);
-        });
-
-        root.appendChild(entryCard);
-    });
-
-    return root;
-}
