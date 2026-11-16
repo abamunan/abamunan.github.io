@@ -33,7 +33,7 @@ td{padding:7px 8px;border-top:1px solid var(--bd);border-left:1px solid var(--bd
 td:first-child{border-left:0;text-align:left}td.k{background:var(--hl)}
 td input,td select{width:100%;padding:8px 6px;font-size:16px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--in);color:var(--tx)}
 td select{font-weight:700}td input.n{text-align:left;min-width:250px}td input.mx{opacity:.85}td input.fg{font-weight:700}
-.res{font-weight:700}.nt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:180px;font-size:13px;text-align:left}.note-item{display:block;width:100%;padding:6px 9px;border:1px solid color-mix(in srgb,var(--bad) 24%,transparent);border-radius:8px;background:color-mix(in srgb,var(--bad) 8%,transparent);color:var(--bad);line-height:1.35}.note-item.ok{border-color:color-mix(in srgb,var(--ok) 24%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent);color:var(--ok)}.note-item.warn{border-color:color-mix(in srgb,var(--warn) 28%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--warn)}
+.res{font-weight:700}.nt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:180px;font-size:13px;text-align:left}.note-item{display:block;width:100%;min-width:0;overflow:hidden;padding:6px 9px;border:1px solid color-mix(in srgb,var(--bad) 24%,transparent);border-radius:8px;background:color-mix(in srgb,var(--bad) 8%,transparent);color:var(--bad);line-height:1.35;overflow-wrap:normal;word-break:normal;white-space:nowrap;text-overflow:ellipsis}.note-item.ok{border-color:color-mix(in srgb,var(--ok) 24%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent);color:var(--ok)}.note-item.warn{border-color:color-mix(in srgb,var(--warn) 28%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--warn)}
 tfoot td{background:var(--hd);font-weight:700}
 .bar{display:flex;gap:12px;margin:16px 0}
 button{background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:600;cursor:pointer}
@@ -290,7 +290,7 @@ if(g<0){q(".fg").value=0}
 else{var m=minFinal(pre,tot,fm,g,mp);if(m>fm){q(".fg").value=fm;notes.push("Not achievable. Best possible is shown.");noteKind="warn";}else q(".fg").value=fmt(m)}}
 var fg=v(".fg"),hasOver=false;if(fg>fm){notes.push("Final marks exceed the maximum.");hasOver=true;noteKind="bad"}if(v(".ag")>v(".am")){notes.push("Attendance marks exceed the maximum.");hasOver=true;noteKind="bad"}if(v(".ig")>v(".im")){notes.push("In-course marks exceed the maximum.");hasOver=true;noteKind="bad"}if(!notes.length)notes.push(r.dataset.mode==="grade"?"Grade target calculated.":"Marks are within limits.");r.classList.toggle("over",hasOver);
 var total=pre+fg;g=gradeOf(total,tot);q(".gs").value=String(g);q(".gs").dataset.g=g;
-q(".tt").textContent=fmt(total)+" / "+fmt(tot);q(".nt").innerHTML=notes.map(function(message){return '<span class="note-item '+noteKind+'">'+message+"</span>"}).join("");
+q(".tt").textContent=fmt(total)+" / "+fmt(tot);q(".nt").innerHTML=notes.map(function(message){return '<span class="note-item '+noteKind+'" title="'+message+'">'+message+"</span>"}).join("");
 tc+=cr;pts+=(g<0?0:B[g][1])*cr;tm+=total;tmx+=tot});
 document.getElementById("fc").textContent=tc;
 document.getElementById("cg").textContent=tc?(pts/tc).toFixed(2):"–";
