@@ -126,6 +126,8 @@ html,body{max-width:100%;overflow-x:hidden}
 #tb td{height:70px;padding:13px 10px;vertical-align:middle;background:transparent}
 #tb tbody tr:nth-child(even) td,#tb tbody tr:nth-child(even) td.k{background:color-mix(in srgb,var(--lagoon-tint) 34%,transparent)}
 #tb td input,#tb td select{min-height:42px;padding:9px 8px;border-radius:var(--r-input)}
+#tb td input,#tb td select,.tools input,.tools select{transition:border-color var(--trans),box-shadow var(--trans),background var(--trans),transform var(--trans)}
+#tb td input:focus,#tb td select:focus,.tools input:focus,.tools select:focus{transform:translateY(-1px);box-shadow:0 6px 16px color-mix(in srgb,var(--lagoon) 18%,transparent)}
 #tb th:nth-child(1),#tb td:nth-child(1){min-width:280px}
 #tb th:nth-child(2),#tb td:nth-child(2){min-width:78px}
 #tb th:nth-child(3),#tb td:nth-child(3),#tb th:nth-child(4),#tb td:nth-child(4),
@@ -150,13 +152,16 @@ button:hover{transform:translateY(-1px);box-shadow:var(--glass-shadow-hover)}
 button:active{transform:translateY(0)}
 @keyframes plannerReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes plannerRowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes notePop{from{opacity:0;transform:scale(.96) translateY(3px)}to{opacity:1;transform:none}}
 .summary-card,.tools,.sec{animation:plannerReveal .45s ease both}
+.summary-card:nth-child(2){animation-delay:.08s}
 #tb tbody tr{animation:plannerRowIn .35s ease both}
 #tb tbody tr:nth-child(2){animation-delay:.03s}
 #tb tbody tr:nth-child(3){animation-delay:.06s}
 #tb tbody tr:nth-child(4){animation-delay:.09s}
 #tb tbody tr:nth-child(5){animation-delay:.12s}
 #tb tbody tr:nth-child(6){animation-delay:.15s}
+.note-item{animation:notePop .24s ease both}
 @media (prefers-reduced-motion:reduce){
   .summary-card,.tools,.sec,#tb tbody tr{animation:none}
 }
