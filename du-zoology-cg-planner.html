@@ -5,7 +5,7 @@
 <meta name="author" content="Abdullah All Munan">
 <meta name="theme-color" content="#0B7A50">
 <link rel="icon" type="image/png" href="icon.png">
-<title>DU Zoology CG Planner | Munan.hub</title>
+<title>DU Zoology CG Planner | Munan.me</title>
 <link rel="canonical" href="https://munan.me/du-zoology-cg-planner.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@ td{padding:7px 8px;border-top:1px solid var(--bd);border-left:1px solid var(--bd
 td:first-child{border-left:0;text-align:left}td.k{background:var(--hl)}
 td input,td select{width:100%;padding:8px 6px;font-size:16px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--in);color:var(--tx)}
 td select{font-weight:700}td input.n{text-align:left;min-width:250px}td input.mx{opacity:.85}td input.fg{font-weight:700}
-.res{font-weight:700}.nt{font-size:14px;color:var(--bad);text-align:left}
+.res{font-weight:700}.nt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:180px;font-size:13px;color:var(--bad);text-align:left}.note-item{display:block;width:100%;padding:6px 9px;border:1px solid color-mix(in srgb,var(--bad) 24%,transparent);border-radius:8px;background:color-mix(in srgb,var(--bad) 8%,transparent);line-height:1.35}
 tfoot td{background:var(--hd);font-weight:700}
 .bar{display:flex;gap:12px;margin:16px 0}
 button{background:var(--ac);color:var(--acx);border:0;border-radius:8px;padding:10px 18px;font-size:16px;font-weight:600;cursor:pointer}
@@ -112,6 +112,48 @@ h1,h2,h3{font-family:var(--display)}
 .summary-card strong{display:block;color:var(--lagoon);font-size:2rem;line-height:1.15}
 .summary-card:nth-child(2){border-top-color:var(--info)}
 @media (max-width:600px){.summary{grid-template-columns:1fr}}
+
+body.v2{background-attachment:fixed}
+.tools,.summary-card,.sec,#tb{background:var(--glass-card);border-color:var(--glass-border);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+.tools{gap:16px;margin-bottom:22px;padding:18px 20px;border-radius:var(--r-card)}
+.summary{gap:20px;margin-bottom:24px}
+.summary-card{padding:20px 24px;border-radius:var(--r-card)}
+#tb{border:1px solid var(--glass-border);border-radius:var(--r-card);overflow:hidden}
+#tb thead th{min-height:72px;padding:15px 10px;vertical-align:middle;line-height:1.3;letter-spacing:.01em;background:color-mix(in srgb,var(--lagoon-tint) 75%,var(--glass-card))}
+#tb tbody tr{transition:background var(--trans),box-shadow var(--trans)}
+#tb tbody tr:hover{box-shadow:inset 4px 0 0 var(--marker),0 6px 18px color-mix(in srgb,var(--lagoon) 10%,transparent)}
+#tb td{height:70px;padding:13px 10px;vertical-align:middle;background:transparent}
+#tb tbody tr:nth-child(even) td,#tb tbody tr:nth-child(even) td.k{background:color-mix(in srgb,var(--lagoon-tint) 34%,transparent)}
+#tb td input,#tb td select{min-height:42px;padding:9px 8px;border-radius:var(--r-input)}
+#tb th:nth-child(1),#tb td:nth-child(1){min-width:280px}
+#tb th:nth-child(2),#tb td:nth-child(2){min-width:78px}
+#tb th:nth-child(3),#tb td:nth-child(3),#tb th:nth-child(4),#tb td:nth-child(4),
+#tb th:nth-child(5),#tb td:nth-child(5),#tb th:nth-child(6),#tb td:nth-child(6),
+#tb th:nth-child(7),#tb td:nth-child(7){min-width:112px}
+#tb th:nth-child(8),#tb td:nth-child(8){min-width:132px}
+#tb th:nth-child(9),#tb td:nth-child(9){width:150px;min-width:150px;white-space:nowrap}
+#tb th:nth-child(10),#tb td:nth-child(10){min-width:105px}
+#tb th:nth-child(11),#tb td:nth-child(11){min-width:180px}
+#tb th:nth-child(12),#tb td:nth-child(12){min-width:54px}
+#tb td:nth-child(9) select{min-width:128px;white-space:nowrap}
+#tb td input:disabled{background:color-mix(in srgb,var(--line) 52%,transparent)}
+.sec{padding:26px 28px;margin-bottom:24px;border-radius:var(--r-card)}
+.sec h2{margin-bottom:18px;padding-bottom:12px}
+.sec h3{margin-top:22px;margin-bottom:9px}
+.sec p,.sec li{line-height:1.7}
+.sec table{margin-top:10px;margin-bottom:12px}
+.sec td,.sec th{padding:10px 12px}
+.bar{gap:16px;margin:18px 0 28px}
+button{transition:transform var(--trans),box-shadow var(--trans),background var(--trans)}
+button:hover{transform:translateY(-1px);box-shadow:var(--glass-shadow-hover)}
+button:active{transform:translateY(0)}
+@media (max-width:600px){
+  .w{padding:28px 14px 48px}
+  .tools{padding:16px;border-radius:18px}
+  .summary-card,.sec{padding:20px}
+  .sec{border-radius:20px}
+  .bar{align-items:flex-start;flex-direction:column}
+}
 </style></head><body class="v2 tool">
 <a class="skip" href="#main">Skip to content</a>
 <main id="main"><div class="w"><section id="calc"><div class="summary" aria-label="Current results"><div class="summary-card"><small>CGPA</small><strong id="cg">–</strong></div><div class="summary-card"><small>Total marks</small><strong id="tm">–</strong></div></div><p class="sub">For each course, either type the final exam marks to see the grade, or select a grade to see the minimum final exam marks needed. The other field updates automatically.</p>
@@ -187,11 +229,14 @@ tr.querySelector("button").onclick=function(){tr.remove();calc()};tb.appendChild
 D.forEach(row);
 document.getElementById("add").onclick=function(){row(["New course",2,2.5,17.5,30]);calc()};
 function syncRowLocks(tr){var attendanceMax=+tr.querySelector(".am").value||0;
+var inCourseMax=+tr.querySelector(".im").value||0,finalExamMax=+tr.querySelector(".fm").value||0;
 tr.querySelector(".n").disabled=!fullMarksUnlocked;
 tr.querySelector(".cr").disabled=!fullMarksUnlocked;
 tr.querySelector(".ag").disabled=attendanceMax<=0;
+tr.querySelector(".ig").disabled=inCourseMax<=0;
+tr.querySelector(".fg").disabled=finalExamMax<=0;
 tr.querySelector(".x").hidden=!fullMarksUnlocked;
-[].forEach.call(tr.querySelectorAll(".mx"),function(x){x.disabled=!fullMarksUnlocked})}
+[].forEach.call(tr.querySelectorAll(".mx"),function(x){x.disabled=!fullMarksUnlocked||(+x.value||0)<=0})}
 function updateMarksLock(){var button=document.getElementById("marksLock"),icon=document.getElementById("marksLockIcon"),text=document.getElementById("marksLockText");
 [].forEach.call(tb.rows,syncRowLocks);
 button.setAttribute("aria-pressed",String(fullMarksUnlocked));button.title=fullMarksUnlocked?"Lock protected fields":"Unlock protected fields";
@@ -202,18 +247,18 @@ function gradeOf(total,max){if(max<=0)return -1;var p=Math.ceil(total-1e-9)/max*
 function minFinal(pre,tot,fm,g,mp){var T=Math.ceil(B[g][0]/100*tot-1e-9),m=Math.floor((T-1-pre)*4+1e-9)/4+0.25;
 m=Math.max(m,Math.ceil(mp/100*fm*4-1e-9)/4,0);return m}
 document.addEventListener("input",function(e){var tr=e.target.closest&&e.target.closest("tr");if(tr&&tr.dataset.mode!==undefined){
-if(e.target.classList.contains("fg"))tr.dataset.mode="marks";else if(e.target.classList.contains("gs"))tr.dataset.mode="grade";if(e.target.classList.contains("am"))syncRowLocks(tr)}calc()});
+if(e.target.classList.contains("fg"))tr.dataset.mode="marks";else if(e.target.classList.contains("gs"))tr.dataset.mode="grade";if(e.target.classList.contains("mx"))syncRowLocks(tr)}calc()});
 document.addEventListener("change",function(e){if(e.target.classList&&e.target.classList.contains("gs")){e.target.closest("tr").dataset.mode="grade";calc()}});
 function calc(){
 var mp=+document.getElementById("mp").value||0,rows=[].slice.call(tb.rows),tc=0,pts=0,tm=0,tmx=0;
 rows.forEach(function(r){var q=function(c){return r.querySelector(c)},v=function(c){return +q(c).value||0};
-var cr=v(".cr"),pre=v(".ag")+v(".ig"),fm=v(".fm"),tot=v(".am")+v(".im")+fm,note="",g;
+var cr=v(".cr"),pre=v(".ag")+v(".ig"),fm=v(".fm"),tot=v(".am")+v(".im")+fm,notes=[],g;
 if(r.dataset.mode==="grade"){g=+q(".gs").value;
 if(g<0){q(".fg").value=0}
-else{var m=minFinal(pre,tot,fm,g,mp);if(m>fm){q(".fg").value=fm;note="Not achievable. Best possible is shown.";}else q(".fg").value=fmt(m)}}
-var fg=v(".fg");if(fg>fm)note="Marks exceed the final exam max.";else if(v(".ag")>v(".am")||v(".ig")>v(".im"))note="Obtained marks exceed the maximum.";r.classList.toggle("over",!!note&&note.indexOf("Not")!==0);
+else{var m=minFinal(pre,tot,fm,g,mp);if(m>fm){q(".fg").value=fm;notes.push("Not achievable. Best possible is shown.");}else q(".fg").value=fmt(m)}}
+var fg=v(".fg"),hasOver=false;if(fg>fm){notes.push("Final marks exceed the maximum.");hasOver=true}if(v(".ag")>v(".am")){notes.push("Attendance marks exceed the maximum.");hasOver=true}if(v(".ig")>v(".im")){notes.push("In-course marks exceed the maximum.");hasOver=true}r.classList.toggle("over",hasOver);
 var total=pre+fg;g=gradeOf(total,tot);q(".gs").value=String(g);q(".gs").dataset.g=g;
-q(".tt").textContent=fmt(total)+" / "+fmt(tot);q(".nt").textContent=note;
+q(".tt").textContent=fmt(total)+" / "+fmt(tot);q(".nt").innerHTML=notes.map(function(message){return '<span class="note-item">'+message+"</span>"}).join("");
 tc+=cr;pts+=(g<0?0:B[g][1])*cr;tm+=total;tmx+=tot});
 document.getElementById("fc").textContent=tc;
 document.getElementById("cg").textContent=tc?(pts/tc).toFixed(2):"–";
