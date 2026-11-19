@@ -1,6 +1,6 @@
 // Floating calculator. Lives on <body> (outside #app) so it stays usable while a sheet is open (z-index --z-calc).
-//  • Icon: tap = open, drag = move. Hold or drag → a ✕ target appears; drop the icon on it to hide it for 10 minutes.
-//  • Window: drag by its header, ✕ closes. Last 25 results are kept. More → "Show calculator" brings the icon back.
+//  â€¢ Icon: tap = open, drag = move. Hold or drag â†’ a âœ• target appears; drop the icon on it to hide it for 10 minutes.
+//  â€¢ Window: drag by its header, âœ• closes. Last 25 results are kept. More â†’ "Show calculator" brings the icon back.
 // Saved in localStorage (this browser only): mt2_calc_icon_v1, mt2_calc_win_v1, mt2_calc_hidden_until_v1, mt2_calc_history_v1.
 import { h } from '../../shared/dom.js';
 import { toast } from '../../shared/toast.js';
@@ -31,7 +31,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   const dropX = h('button', { type: 'button', class: 'calc-drop__x', 'aria-label': 'Hide calculator for 10 minutes', html: icon('close', 24) }), drop = h('div', { class: 'calc-drop', 'aria-hidden': 'true' }, h('div', { class: 'calc-drop__l' }, 'Drop here to hide for 10 min'), dropX);
   const root = h('div', { class: 'calc-root' }, drop, win, fab); document.body.append(root);
 
-  // ── positions: a fraction (0..1) of the free space, so it survives rotation and resizing ──
+  // â”€â”€ positions: a fraction (0..1) of the free space, so it survives rotation and resizing â”€â”€
   const vw = () => document.documentElement.clientWidth, vh = () => window.innerHeight;
   const setDropVisible = visible => {
     drop.classList.toggle('calc-drop--on', visible);
@@ -45,7 +45,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   const layout = () => { put(fab, iconFrac); if (!win.hidden) put(win, winFrac); };
   window.addEventListener('resize', layout);
 
-  // ── display ──
+  // â”€â”€ display â”€â”€
   function render() {
     exprEl.textContent = st.expr ? show(st.expr) : '0'; exprEl.scrollLeft = exprEl.scrollWidth;
     const p = preview(st); resEl.textContent = st.error ? 'Check the expression' : st.done ? '' : p == null ? '\u00A0' : '= ' + fmtNum(p); resEl.classList.toggle('calc__res--err', st.error);
@@ -71,20 +71,20 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
     const k = normalizeKey(e.key); if (k.length === 1 && /[0-9.+\u2212\u00D7\u00F7()=C]/.test(k) || k === '\u232B') { e.preventDefault(); apply(k); }
   });
 
-  // ── open / close ──
+  // â”€â”€ open / close â”€â”€
   function openWin() { if (!win.hidden) return; win.hidden = false; fab.setAttribute('aria-expanded', 'true'); put(win, winFrac); render(); win.focus({ preventScroll: true }); }
   function close() { if (win.hidden) return; win.hidden = true; fab.setAttribute('aria-expanded', 'false'); if (!fab.hidden) fab.focus({ preventScroll: true }); }
   closeBtn.addEventListener('click', close);
   fab.addEventListener('click', () => { if (suppressClick) return; win.hidden ? openWin() : close(); });
 
-  // ── drag helpers (pointer events: mouse, touch and pen) ──
+  // â”€â”€ drag helpers (pointer events: mouse, touch and pen) â”€â”€
   const hot = ev => { const r = dropX.getBoundingClientRect(); return Math.hypot(ev.clientX - (r.left + r.width / 2), ev.clientY - (r.top + r.height / 2)) <= SNAP_PX; };
   function drag(el, e, { onMove, onEnd, hold = false }) {
     if (e.button > 0) return; const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, sx = e.clientX, sy = e.clientY; let moved = false, held = false, timer = null;
     try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     if (hold) timer = setTimeout(() => { held = true; setDropVisible(true); try { navigator.vibrate?.(12); } catch { /* ignore */ } }, HOLD_MS);
     const move = ev => { if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > MOVE_PX) { moved = true; clearTimeout(timer); if (hold) setDropVisible(true); } if (moved) onMove(ev.clientX - dx, ev.clientY - dy, ev); };
-    const up = ev => { clearTimeout(timer); const over = hot(ev);                                  // measured before the ✕ target is hidden again
+    const up = ev => { clearTimeout(timer); const over = hot(ev);                                  // measured before the âœ• target is hidden again
       el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
       setDropVisible(false); drop.classList.remove('calc-drop--hot'); if (moved || held) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 0); } onEnd(over, moved); };
     el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
@@ -95,7 +95,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; drag(head, e, { onMove: (l, t) => { winFrac = dragTo(win, l, t); }, onEnd: (over, moved) => { if (moved) ls.set(K.win, JSON.stringify(winFrac)); } }); });
   head.style.touchAction = 'none'; fab.style.touchAction = 'none';
 
-  // ── hide for 10 minutes / bring back ──
+  // â”€â”€ hide for 10 minutes / bring back â”€â”€
   function schedule() { clearTimeout(hideTimer); const left = (Number(ls.get(K.hide)) || 0) - now();
     fab.hidden = !enabled || left > 0;
     if (left > 0) hideTimer = setTimeout(schedule, Math.min(left, 2147483000)); else if (!fab.hidden) layout(); }
@@ -103,6 +103,7 @@ export function mountCalculator({ now = () => Date.now() } = {}) {
   hideBtn.addEventListener('click', hideIcon);
   dropX.addEventListener('click', hideIcon);
   function restore() { enabled = true; ls.set(K.hide, '0'); schedule(); layout(); openWin(); }
+  enabled = !(Number(ls.get(K.hide)) > now());
   schedule(); layout(); render();
   return { open: openWin, close, restore, isHidden: () => fab.hidden, destroy: () => { clearTimeout(hideTimer); window.removeEventListener('resize', layout); root.remove(); } };
 }

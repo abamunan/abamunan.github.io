@@ -13,6 +13,14 @@ export function todayView(el, app) {
   const alerts = m.budgets.filter(x => x.state !== 'ok');
   const overBudgets = m.budgets.filter(x => x.state === 'over');
   const warnBudgets = m.budgets.filter(x => x.state === 'warn');
+  const lockButton = h('button', {
+    type: 'button',
+    class: 'ui-icon-btn',
+    'aria-label': m.today.locked ? 'Keep day open' : 'Lock day',
+    title: m.today.locked ? 'Keep day open' : 'Lock day',
+    onclick: () => { app.repo.setManualLock(y, m0, d, !m.today.locked); app.refresh(); },
+    html: icon(m.today.locked ? 'unlock' : 'lock', 16)
+  });
 
   let budgetSection;
   if (!b) {
@@ -82,6 +90,6 @@ export function todayView(el, app) {
       h('div', { class: 'stat-cell stat-cell--income' }, h('div', { class: 'stat-label' }, 'Income this month'), h('div', { class: 'num money-in' }, fmt(m.month.totalInc, { sign: true }))),
       h('div', { class: 'stat-cell stat-cell--expense' }, h('div', { class: 'stat-label' }, 'Spent this month'), h('div', { class: 'num money-out' }, fmt(-m.month.totalExp, { sign: true })))),
     budgetSection,
-    h('section', { 'aria-labelledby': 'td-h' }, h('div', { class: 'sechead' }, h('h2', { id: 'td-h' }, 'Today', m.today.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) })),
+    h('section', { 'aria-labelledby': 'td-h' }, h('div', { class: 'sechead' }, h('h2', { id: 'td-h' }, 'Today', m.today.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) }), lockButton),
       h('span', { class: 'num sechead__t' }, m.today.exp ? h('span', { class: 'money-out' }, fmt(-m.today.exp, { sign: true })) : '', ' ', m.today.inc ? h('span', { class: 'money-in' }, fmt(m.today.inc, { sign: true })) : '')), list));
 }

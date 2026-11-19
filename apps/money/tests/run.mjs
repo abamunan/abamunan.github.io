@@ -102,6 +102,7 @@ await t('repo: lock enforced; edit session never rewrites the lock flag', async 
   store.set('mt_2026_10_3', { lunch: 1, locked: false }); await repo.addEntry(2026, 9, 3, { cat: 'lunch', amt: 5 }); assert.equal(store.get('mt_2026_10_3').locked, false);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 5 }); assert.equal('locked' in store.get('mt_2026_10_7'), false);       // today: never auto-locked
   repo.setManualLock(2026, 9, 7, true); await assert.rejects(() => repo.deleteEntry(2026, 9, 7, 'x'), LockedError);
+  repo.setManualLock(2026, 9, 7, false); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 5 }); assert.equal(store.get('mt_2026_10_7').locked, false);
 });
 await t('repo: moveEntry between days (and rollback target on failure)', async () => {
   reset(); const { store, repo } = mk(async () => true); const a = await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 30, note: 'x' });

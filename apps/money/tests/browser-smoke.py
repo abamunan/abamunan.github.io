@@ -54,6 +54,11 @@ with sync_playwright() as p:
     pg.click("#tabbar [data-tab=history]"); pg.wait_for_selector(".dgroup"); txt=pg.inner_text("main")
     ok(pg.locator(".dgroup").count()==2, "history groups 2 days"); ok("adjustment" in txt, "legacy day shows 'adjustment' rows")
     ok(pg.locator(".lockico").count()==1, "legacy day (5 days old) shows lock icon")
+    locked_day = pg.locator(".dgroup").nth(1)
+    locked_day.get_by_role("button", name="Keep day open").click(); pg.wait_for_timeout(200)
+    ok(pg.locator(".lockico").count()==0 and locked_day.get_by_role("button", name="Lock day").count()==1, "manual unlock keeps an old day open")
+    locked_day.get_by_role("button", name="Lock day").click(); pg.wait_for_timeout(200)
+    ok(pg.locator(".lockico").count()==1, "manual lock closes the day again")
     pg.screenshot(path="test-output/3-history.png")
     # locked edit -> unlock confirm -> save -> still locked
     pg.locator(".dgroup").nth(1).locator(".erow").first.click(); pg.wait_for_selector(".ui-sheet"); ok(pg.locator(".add-lock:visible").count()==1, "locked banner in edit sheet")
@@ -63,7 +68,7 @@ with sync_playwright() as p:
     dl.value.save_as("test-output/auto-backup.json")
     pg.wait_for_selector(".ui-confirm:has-text('Safety backup')"); pg.click(".ui-confirm .ui-btn--primary"); pg.wait_for_selector(".ui-sheet", state="detached")
     od=json.loads(pg.evaluate(f"localStorage.getItem('{key(old)}')")); print("   legacy day after edit:", {k3:v for k3,v in od.items() if k3!='entries'})
-    ok(od["lunch"]==160 and "locked" not in od, "legacy day edited; lock flag untouched (auto-lock stays)")
+    ok(od["lunch"]==160 and od["locked"] is True, "legacy day remains manually locked after edit")
     pg.click("#tabbar [data-tab=history]"); ok(pg.locator(".lockico").count()==1, "day is still locked after edit")
     # year mode, filters
     pg.click(".seg__btn:has-text('Year')"); ok(pg.locator(".mrow").count()==12, "year mode: 12 month rows")

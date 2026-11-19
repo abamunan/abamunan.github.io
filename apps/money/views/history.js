@@ -13,6 +13,14 @@ export function historyView(el, app) {
   const step = n => { if (st.mode === 'year') st.y += n; else { st.m0 += n; if (st.m0 < 0) { st.m0 = 11; st.y--; } if (st.m0 > 11) { st.m0 = 0; st.y++; } } rerender(); };
   const title = st.mode === 'year' ? String(st.y) : `${MONTHS[st.m0]} ${st.y}`;
   const searching = st.mode === 'search';
+  const lockButton = g => h('button', {
+    type: 'button',
+    class: 'ui-icon-btn',
+    'aria-label': g.locked ? 'Keep day open' : 'Lock day',
+    title: g.locked ? 'Keep day open' : 'Lock day',
+    onclick: () => { app.repo.setManualLock(g.y, g.m0, g.d, !g.locked); app.refresh(); },
+    html: icon(g.locked ? 'unlock' : 'lock', 16)
+  });
   const nav = h('div', { class: 'hnav' }, h('button', { class: 'ui-icon-btn', type: 'button', 'aria-label': st.mode === 'year' ? 'Previous year' : 'Previous month', html: icon('left'), onclick: () => step(-1) }),
     h('h2', { class: 'hnav__t', 'aria-live': 'polite' }, title), h('button', { class: 'ui-icon-btn', type: 'button', 'aria-label': st.mode === 'year' ? 'Next year' : 'Next month', html: icon('right'), onclick: () => step(1) }));
   const seg = (items, cur, set, label) => h('div', { class: 'seg', role: 'group', 'aria-label': label }, items.map(([k, l]) => h('button', { type: 'button', class: 'seg__btn', 'aria-pressed': String(cur === k), onclick: () => { set(k); rerender(); } }, l)));
@@ -27,7 +35,7 @@ export function historyView(el, app) {
       const groups = r.groups.map(g => {
         const where = { y: g.y, m0: g.m0, d: g.d, locked: g.locked }, date = new Date(g.y, g.m0, g.d);
         return h('section', { class: 'dgroup', 'aria-label': date.toDateString() },
-          h('div', { class: 'sechead' }, h('h3', {}, date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }), g.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) }))),
+          h('div', { class: 'sechead' }, h('h3', {}, date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }), g.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) })), lockButton(g)),
           h('div', { class: 'elist' }, g.entries.map(e => entryRow(e, { onEdit: () => openAddSheet(app.repo, { entry: { ...e, ...where }, onDone: app.refresh }), onDelete: () => deleteWithUndo(app.repo, { ...e, ...where }, app.refresh) }))));
       });
       results.replaceChildren(h('section', { class: 'card card--row', 'aria-label': 'Search totals' }, h('div', {}, h('div', { class: 'card__sub' }, `${r.total} ${r.total === 1 ? 'entry' : 'entries'}`), h('div', { class: 'num' }, `${r.shown < r.total ? `showing ${r.shown}` : 'all shown'}`)),
@@ -66,7 +74,7 @@ export function historyView(el, app) {
     const groups = mm.days.map(g => {
       const where = { y: g.y, m0: g.m0, d: g.d, locked: g.locked }, date = new Date(g.y, g.m0, g.d);
       return h('section', { class: 'dgroup', 'aria-label': date.toDateString() },
-        h('div', { class: 'sechead' }, h('h3', {}, date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), g.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) })),
+        h('div', { class: 'sechead' }, h('h3', {}, date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), g.locked && h('span', { class: 'lockico', title: 'Locked', 'aria-label': 'Locked', html: icon('lock', 16) }), lockButton(g)),
           h('span', { class: 'num sechead__t' }, g.totals.exp ? h('span', { class: 'money-out' }, fmt(-g.totals.exp, { sign: true })) : '', ' ', g.totals.inc ? h('span', { class: 'money-in' }, fmt(g.totals.inc, { sign: true })) : '')),
         h('div', { class: 'elist' }, g.entries.map(e => entryRow(e, { onEdit: () => openAddSheet(app.repo, { entry: { ...e, ...where }, onDone: app.refresh }), onDelete: () => deleteWithUndo(app.repo, { ...e, ...where }, app.refresh) }))));
     });
