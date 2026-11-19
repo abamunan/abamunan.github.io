@@ -57,11 +57,15 @@ with sync_playwright() as p:
     # delete one with no data
     pg.get_by_label("Delete Chai").click(); pg.wait_for_selector(".ui-confirm"); ok("no saved amounts" in pg.inner_text(".ui-confirm"), "unused category says nothing in history changes")
     pg.get_by_role("button", name="Cancel").click(); ok(any(x["label"] == "Chai" for x in exp()), "cancel keeps it")
-    # persists after reload
-    pg.keyboard.press("Escape"); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
+    # archived categories do not expose their templates on the Add sheet
+    pg.keyboard.press("Escape"); active_cat = [x for x in exp() if x["label"] == "Chai"][0]["id"]
+    pg.evaluate("""(cat) => localStorage.setItem('mt2_templates_v1', JSON.stringify([
+      {id:'old-template', label:'Lunch shortcut', cat:'lunch', amt:10, acct:'cash', note:''},
+      {id:'active-template', label:'Chai shortcut', cat:cat, amt:10, acct:'cash', note:''}
+    ]))""", active_cat); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
     ok(any(x["label"] == "Chai" for x in exp()), "changes survive a reload")
     # Today/Add sheet shows the new source & hides deleted category
-    pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); at = pg.inner_text(".ui-sheet"); ok("Chai" in at and "Lunch" not in at and "Old things" not in at, "Add sheet shows the new category and hides archived ones")
+    pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); at = pg.inner_text(".ui-sheet"); ok("Chai" in at and "Lunch" not in at and "Old things" not in at and "Lunch shortcut" not in at and "Chai shortcut" in at, "Add sheet shows active categories and templates only")
     pg.screenshot(path="test-output/manage-1.png")
     ok(not errs, "no console errors: " + "; ".join(errs[:3]))
     b.close()

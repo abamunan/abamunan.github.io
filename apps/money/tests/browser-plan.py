@@ -46,6 +46,11 @@ with sync_playwright() as p:
     sheet_fill("Amount (৳)", "250"); submit()
     lg = ls("mt_ledger_v1"); ok(lg[1]["type"] == "transfer" and lg[1]["fromId"] != lg[1]["toId"] and lg[1]["amount"] == 250, "transfer recorded between two different accounts")
     ok("Total balance" in pg.inner_text("main"), "total balance row present")
+    pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Archive"); pg.wait_for_timeout(300)
+    ok(ls("mt_accounts_v1")[3].get("archived") is True and "Bank (archived)" in pg.inner_text("main"), "account can be archived without changing its balance")
+    go("today"); pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); ok(pg.locator('[aria-label="Account"] button').filter(has_text="Bank").count() == 0, "archived account is hidden from the Add picker"); pg.keyboard.press("Escape")
+    go("accounts"); pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Unarchive"); pg.wait_for_timeout(300)
+    ok(ls("mt_accounts_v1")[3].get("archived") is not True, "account can be unarchived")
     # debts
     go("plan"); click("Add debt or loan"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Person", "Rafi"); sheet_fill("Amount (৳)", "300"); submit()
     d = ls("mt_debts_v1"); ok(len(d) == 1 and d[0]["type"] == "borrowed" and d[0]["person"] == "Rafi" and d[0]["amount"] == 300 and d[0]["settled"] is False, "debt saved with legacy shape")
@@ -57,6 +62,7 @@ with sync_playwright() as p:
     go("accounts"); pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); pg.locator(".ui-sheet").get_by_role("button", name="Delete", exact=True).click(); pg.wait_for_selector(".ui-sheet .chip")
     pg.get_by_role("button", name="Move history & delete account").click(); pg.wait_for_selector(".ui-confirm"); pg.get_by_role("button", name="File saved", exact=False).click(); pg.wait_for_timeout(400)
     ok(len(ls("mt_accounts_v1")) == 3, "account deleted (history moved to Cash)")
+    ok("self-transfer" in pg.inner_text("body"), "delete toast reports dropped self-transfers")
     ok(sum(e["amount"] for e in ls("mt_ledger_v1") if e["type"] == "add") == 1000 and all(e["accountId"] in {a["id"] for a in ls("mt_accounts_v1")} for e in ls("mt_ledger_v1") if e["type"] == "add"), "Add money kept, now on the account it moved to")
     go("plan")
     # reload: everything persisted; today tab uses the new budgets

@@ -42,7 +42,7 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   function paint() {
     seg.replaceChildren(...[['out', 'Expense'], ['in', 'Income']].map(([k, l]) => h('button', { type: 'button', class: 'seg__btn', 'aria-pressed': String(S.kind === k), onclick: () => { if (S.kind === k) return; S.kind = k; S.cat = list()[0].id; if (!S.acctTouched) S.acct = repo.resolveAccount(S.cat); paint(); } }, l)));
     chips.replaceChildren(...list().map(f => h('button', { type: 'button', class: 'chip', 'aria-pressed': String(S.cat === f.id), onclick: () => { S.cat = f.id; if (!S.acctTouched) S.acct = repo.resolveAccount(S.cat); paint(); } }, h('span', { 'aria-hidden': 'true' }, f.icon || ''), ' ' + f.label)));
-    accts.replaceChildren(...repo.settings.accounts.map(a => h('button', { type: 'button', class: 'chip', 'aria-pressed': String(S.acct === a.id), onclick: () => { S.acct = a.id; S.acctTouched = true; paint(); } }, h('span', { 'aria-hidden': 'true' }, a.icon || ''), ' ' + a.label)));
+    accts.replaceChildren(...repo.settings.accounts.filter(a => !a.archived).map(a => h('button', { type: 'button', class: 'chip', 'aria-pressed': String(S.acct === a.id), onclick: () => { S.acct = a.id; S.acctTouched = true; paint(); } }, h('span', { 'aria-hidden': 'true' }, a.icon || ''), ' ' + a.label)));
     paintAmount();
   }
   amount.addEventListener('input', paintAmount);
@@ -94,7 +94,8 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
     else toast(isFuture() ? `Saved \u00B7 ${FUTURE}` : 'Saved');
   }
   // Templates row (Quick templates)
-  const tmplList = repo.listTemplates ? repo.listTemplates() : [];
+  const activeCatIds = new Set([...repo.settings.expense, ...repo.settings.income].filter(f => !f.archived).map(f => f.id));
+  const tmplList = repo.listTemplates ? repo.listTemplates().filter(t => activeCatIds.has(t.cat)) : [];
   const tmplChips = !entry && tmplList.length ? h('div', { class: 'chips chips--scroll', style: 'padding:2px 0 6px', role: 'group', 'aria-label': 'Quick templates' },
     tmplList.map(t => h('button', {
       type: 'button',

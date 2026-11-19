@@ -201,7 +201,7 @@ await t('H3: a category with data is archived, not deleted; totals, balances, CS
   // deleting is refused while data exists (this is what used to turn -800 into -100); the CSV still has the row
   assert.throws(() => repo.deleteCategory('expense', gift.id), /Archive it instead/); assert.equal(total(), -800); assert.ok(csv().includes('Present'));
   // archive: flag set, everything still counts, nothing else changes
-  repo.updateCategory('expense', gift.id, { archived: true }); assert.equal(repo.settings.expense.find(f => f.id === gift.id).archived, true);
+  repo.setBudgets({ [gift.id]: 900 }); repo.updateCategory('expense', gift.id, { archived: true }); assert.equal(repo.settings.expense.find(f => f.id === gift.id).archived, true);
   assert.equal(total(), -800, 'archiving does not change the total'); assert.ok(csv().includes('Present') && !csv().includes(gift.id), 'CSV shows the archived category by name');
   assert.equal(repo.getDay(2026, 9, 7)[gift.id], 700); repo.updateCategory('expense', gift.id, { archived: false }); assert.equal(repo.settings.expense.find(f => f.id === gift.id).archived, undefined);
   // an unused category can still be deleted; the last active one cannot be archived or deleted
@@ -298,6 +298,7 @@ await t('plan domain: budgets, accounts, ledger and debts validate input and nev
   const accts = [{ id: 'cash', label: 'Cash', icon: 'c', opening: 0 }, { id: 'bk', label: 'bKash', icon: 'b', opening: 10 }];
   assert.throws(() => PL.addAccount(accts, { label: '  ' }), /name/); const a2 = PL.addAccount(accts, { label: ' Bank ', icon: '' }, 'abank'); assert.deepEqual(a2[2], { id: 'abank', label: 'Bank', icon: '\u{1F4B0}', opening: 0 }); assert.equal(accts.length, 2);
   assert.equal(PL.updateAccount(accts, 'bk', { opening: -40.5 })[1].opening, -40.5); assert.throws(() => PL.updateAccount(accts, 'bk', { label: '' }), /name/); assert.throws(() => PL.updateAccount(accts, 'zz', {}), /not found/);
+  const archived = PL.setAccountArchived(accts, 'bk', true); assert.equal(archived[1].archived, true); assert.equal(PL.setAccountArchived(archived, 'bk', false)[1].archived, false); assert.throws(() => PL.setAccountArchived([{ id: 'only' }], 'only', true), /active account/); assert.equal(accts[1].archived, undefined);
   const debts = [{ id: 'd1', type: 'lent', person: 'A', amount: 100, accountId: 'bk', settled: false }, { id: 'd2', type: 'borrowed', person: 'B', amount: 40, accountId: 'bk', settled: true }];
   const del = PL.deleteAccount(accts, debts, 'bk', 'cash'); assert.deepEqual([del.accounts.map(a => a.id), del.debts.map(d => d.accountId), del.moved.debts], [['cash'], ['cash', 'cash'], 2]); assert.equal(debts[0].accountId, 'bk');
   assert.throws(() => PL.deleteAccount(accts, debts, 'bk'), /move its history/); assert.throws(() => PL.deleteAccount(accts, debts, 'bk', 'bk'), /move its history/); assert.throws(() => PL.deleteAccount(accts, debts, 'bk', 'zz'), /move its history/);
@@ -333,6 +334,9 @@ await t('repo plan ops persist under the legacy keys; planModel counts listed ac
   assert.deepEqual(store.get('mt_ledger_v1').map(e => [e.type, e.amount]), [['add', 200], ['transfer', 50]]); assert.equal(store.get('mt_ledger_v1')[0].ts, new Date(5000).toISOString());
   repo.addDebt({ type: 'lent', person: 'Rafi', amount: 300, accountId: 'cash' });
   let m = planModel(repo, now); const bal = () => Object.fromEntries(m.accounts.map(a => [a.id, a.balance]));
+  repo.updateCategory('expense', 'lunch', { archived: true });
+  assert.equal(planModel(repo, now).expenseCats.find(f => f.id === 'lunch').archived, true, 'budget rows mark archived categories');
+  repo.updateCategory('expense', 'lunch', { archived: false });
   assert.deepEqual(bal(), { cash: -150, bkash: 0, card: 0, [bank.id]: 1050 }); assert.equal(m.total, 900); assert.deepEqual([m.debts.owe, m.debts.receive, m.debts.lent.length, m.debts.lent[0].acctLabel], [0, 300, 1, 'Cash']);
   const id = store.get('mt_debts_v1')[0].id; repo.setDebtSettled(id, true); m = planModel(repo, now); assert.equal(bal().cash, 150); assert.equal(m.debts.receive, 0); assert.equal(store.get('mt_debts_v1')[0].settledDate, '2026-10-07');
   repo.addDebt({ type: 'borrowed', person: 'Mina', amount: 70, accountId: bank.id }); assert.equal(planModel(repo, now).total, 1270);

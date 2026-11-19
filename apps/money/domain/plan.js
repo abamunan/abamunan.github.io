@@ -27,6 +27,11 @@ export function updateAccount(accounts, id, patch) {
   if (patch.opening !== undefined) next.opening = round2(Number(patch.opening) || 0);      // opening may be negative (overdraft)
   return accounts.map(x => (x.id === id ? next : x));
 }
+export function setAccountArchived(accounts, id, archived) {
+  const a = accounts.find(x => x.id === id); need(a, 'Account not found');
+  need(!archived || accounts.some(x => x.id !== id && !x.archived), 'At least one active account is required');
+  return accounts.map(x => (x.id === id ? { ...x, archived: !!archived } : x));
+}
 export const linkedDebtCount = (debts, id) => debts.filter(d => d.accountId === id && !d.settled).length;
 // Deleting an account never loses money. Its debts and ledger events (Add money / Transfer) move to `moveTo`, and its
 // opening balance is added to moveTo's opening balance, so the total stays exactly the same. A transfer between the

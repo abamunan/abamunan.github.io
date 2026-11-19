@@ -59,7 +59,7 @@ export function planModel(repo, today = new Date()) {
   const sorted = sortDebts(st.debts).map(row);
   return { y, m0, goal: goalProgress({ expenseCats: st.expense, catTotals: month.catTotals, goal: st.goal, y, m0, today }),
     budgets, budgetUsed: round2(budgets.reduce((t, b) => t + b.used, 0)), budgetTotal: round2(budgets.reduce((t, b) => t + b.budget, 0)),
-    expenseCats: st.expense.filter(f => !f.archived || f.budget > 0).map(f => ({ id: f.id, label: f.label, icon: f.icon, budget: f.budget || 0 })),
+    expenseCats: st.expense.filter(f => !f.archived || f.budget > 0).map(f => ({ id: f.id, label: f.label, icon: f.icon, budget: f.budget || 0, archived: !!f.archived })),
     accounts, total: round2(accounts.reduce((t, a) => t + a.balance, 0)),
     debts: { ...debtTotals(st.debts), borrowed: sorted.filter(d => d.type === 'borrowed'), lent: sorted.filter(d => d.type === 'lent') } };
 }

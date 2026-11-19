@@ -33,7 +33,8 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
   load();
 
   const catIds = () => [...s.expense, ...s.income].map(f => f.id);
-  const defaultAcct = () => s.accounts.some(a => a.id === 'cash') ? 'cash' : (s.accounts[0]?.id ?? null);
+  const activeAccounts = () => s.accounts.filter(a => !a.archived);
+  const defaultAcct = () => activeAccounts().some(a => a.id === 'cash') ? 'cash' : (activeAccounts()[0]?.id ?? null);
   const ctx = () => ({ catIds: catIds(), acctIds: s.accounts.map(a => a.id), defaultAcct: defaultAcct(), now: now() });
   const acctOk = id => !!id && s.accounts.some(a => a.id === id);
   // Default account for the Add sheet: the category's own default → last used for it → Cash/first.
@@ -100,6 +101,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     }
   };
   const setManualLock = (y, m0, d, locked) => store.save(dayLocalKey(y, m0, d), { ...getDay(y, m0, d), locked: !!locked }, dayPath(y, m0, d));
+  const setAccountArchived = (id, archived) => saveSettings({ accounts: P.setAccountArchived(s.accounts, id, archived) });
 
   // Plan tab. None of these touch day documents, so no migration backup is needed.
   const plan = {
@@ -183,5 +185,5 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     debts(data) { if (Array.isArray(data.items)) { store.set(K.debts, data.items); load(); } },
     day(id, data) { const p = parseDayKey('mt_' + id); if (p) store.set(dayLocalKey(p.y, p.m, p.d), data); }
   };
-  return { settings: s, load, catIds, defaultAcct, resolveAccount, getDay, listDays, saveSettings, saveLedger, saveDebts, snapshot, ...ops, setManualLock, applyImport, wipeAll, applyRemote: remote, ensureBackup, ...plan, ...cats, ...templates };
+  return { settings: s, load, catIds, defaultAcct, resolveAccount, getDay, listDays, saveSettings, saveLedger, saveDebts, snapshot, ...ops, setManualLock, setAccountArchived, applyImport, wipeAll, applyRemote: remote, ensureBackup, ...plan, ...cats, ...templates };
 }
