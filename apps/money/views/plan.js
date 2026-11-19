@@ -1,12 +1,12 @@
 import { h } from '../../shared/dom.js';
-import { fmt } from '../../shared/fmt.js';
+import { fmt, isoLocal } from '../../shared/fmt.js';
 import { toast } from '../../shared/toast.js';
 import { confirmDialog } from '../../shared/confirm.js';
 import { formSheet } from '../components/form-sheet.js';
 import { planModel } from '../domain/viewmodels.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => isoLocal();
 let debtTab = 'borrowed';                                   // remembered while the app is open
 
 const card = (title, ...kids) => h('section', { class: 'card' }, h('h2', { class: 'card__h' }, title), ...kids);

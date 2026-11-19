@@ -749,6 +749,9 @@ body.money-app-body {
   transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
+.erow--static { cursor: default; touch-action: auto; }
+.erow--static:hover { transform: none; border-color: var(--glass-border); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04); background: var(--glass-card); }
+
 .erow:hover, .mrow:hover, .mrow2:hover {
   background: var(--glass-card-hover);
   border-color: var(--lagoon);

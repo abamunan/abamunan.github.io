@@ -1,7 +1,6 @@
 import { h } from '../../shared/dom.js';
 import { fmt } from '../../shared/fmt.js';
 import { toast } from '../../shared/toast.js';
-import { confirmDialog } from '../../shared/confirm.js';
 import { openSheet } from '../../shared/sheet.js';
 import { formSheet } from '../components/form-sheet.js';
 import { accountModel } from '../domain/viewmodels.js';
@@ -23,12 +22,12 @@ function accountSheet(a, m, app) {
   const editAcct = () => formSheet({ title: 'Edit account', fields: [{ name: 'icon', label: 'Icon', kind: 'text', value: a.icon, max: 4 }, { name: 'label', label: 'Name', kind: 'text', value: a.label, max: 30, autofocus: true },
     { name: 'opening', label: 'Opening balance (৳). Entries and transfers add to this.', kind: 'amount', value: a.opening || '', placeholder: '0' }],
     onSubmit: v => { if (Number.isNaN(v.opening)) throw new Error('Opening balance must be a number'); repo.updateAccount(a.id, { icon: v.icon, label: v.label, opening: v.opening ?? 0 }); app.refresh(); toast('Account updated'); } });
-  const del = async () => {
-    const linked = repo.settings.debts.filter(d => d.accountId === a.id && !d.settled).length;
+  const del = () => {
     if (m.accounts.length <= 1) return toast('At least one account is required', { error: true });
-    const msg = linked ? `${linked} unsettled debt${linked > 1 ? 's are' : ' is'} linked to this account. They stay, but stop affecting any balance. Entries already saved to it stay in your history but no longer count in the total.` : 'Entries already saved to this account stay in your history but no longer count in the total.';
-    if (!await confirmDialog({ title: `Delete ${a.label}?`, message: msg, confirmLabel: 'Delete account', danger: true })) return;
-    try { repo.deleteAccount(a.id); app.refresh(); toast('Account deleted'); } catch (e) { toast(e.message, { error: true }); }
+    const debts = repo.settings.debts.filter(d => d.accountId === a.id).length;
+    const dest = others.find(x => x.id === repo.defaultAcct()) || others[0];
+    formSheet({ title: `Delete ${a.label}?`, submit: 'Move history & delete account', fields: [{ name: 'to', label: `Nothing is lost: its entries, transfers${debts ? ', debts' : ''} and balance move to the account you pick, so your total stays the same.`, kind: 'chips', value: dest.id, options: acctOptions(m.accounts, a.id) }],
+      onSubmit: async v => { const r = await repo.deleteAccount(a.id, v.to); app.refresh(); toast(`Account deleted. ${r.entries} entr${r.entries === 1 ? 'y' : 'ies'} moved to ${m.accounts.find(x => x.id === v.to)?.label}`); } });
   };
   sh.body.replaceChildren(h('div', { class: 'form' }, h('p', { class: 'big num' }, fmt(a.balance)), h('div', { class: 'row-actions' },
     btn('Add money', then(addMoney), 'ui-btn ui-btn--primary'), others.length ? btn('Transfer', then(transfer)) : null, btn('Edit', then(editAcct)), btn('Delete', then(del), 'ui-btn ui-btn--ghost add-del'))));
@@ -63,8 +62,12 @@ export function accountsView(el, app) {
     ['amount-high', 'Amount: high to low'], ['amount-low', 'Amount: low to high']
   ].map(([value, label]) => h('option', { value, selected: st.sort === value }, label)));
 
-  const list = model.entries.length
-    ? h('div', { class: 'account-history-list' }, model.entries.map(entry => h('div', { class: 'account-history-item' },
+  // Add money, transfers and unsettled debts change the balance but are not day entries: shown read-only so the history explains the balance.
+  const moveRow = r => h('div', { class: 'erow erow--static', role: 'group', 'aria-label': `${r.label}, ${r.kind === 'in' ? 'money in' : 'money out'} ${fmt(r.amt)}${r.note ? ', ' + r.note : ''}` },
+    h('span', { class: 'erow__icon', 'aria-hidden': 'true' }, r.icon), h('span', { class: 'erow__main' }, h('span', { class: 'erow__label' }, r.label), r.note && h('span', { class: 'erow__sub' }, r.note)),
+    h('span', { class: 'erow__amt num ' + (r.kind === 'in' ? 'money-in' : 'money-out') }, fmt(r.signed, { sign: true })));
+  const list = model.rows.length
+    ? h('div', { class: 'account-history-list' }, model.rows.map(entry => entry.move ? h('div', { class: 'account-history-item' }, h('div', { class: 'account-history-date' }, dateLabel(entry.y, entry.m0, entry.d)), moveRow(entry)) : h('div', { class: 'account-history-item' },
       h('div', { class: 'account-history-date' }, dateLabel(entry.y, entry.m0, entry.d)),
       entryRow(entry, {
         onEdit: () => openAddSheet(app.repo, { entry: { ...entry, locked: entry.locked }, date: new Date(entry.y, entry.m0, entry.d), onDone: app.refresh }),
@@ -83,8 +86,9 @@ export function accountsView(el, app) {
       h('div', { class: 'account-summary__stats' },
         h('div', {}, h('span', { class: 'stat-label' }, 'Money in'), h('strong', { class: 'num money-in' }, fmt(model.income, { sign: true }))),
         h('div', {}, h('span', { class: 'stat-label' }, 'Money out'), h('strong', { class: 'num money-out' }, fmt(-model.expense, { sign: true }))),
-        h('div', {}, h('span', { class: 'stat-label' }, 'Transactions'), h('strong', { class: 'num' }, String(model.entries.length)))
-      )
+        h('div', {}, h('span', { class: 'stat-label' }, 'Transactions'), h('strong', { class: 'num' }, String(model.rows.length)))
+      ),
+      model.opening ? h('p', { class: 'card__sub' }, `Opening balance ${fmt(model.opening)} + Money in \u2212 Money out = ${fmt(model.balance)}`) : null
     ),
     accountsCard(model, app),
     h('section', { class: 'card account-history', 'aria-labelledby': 'account-history-title' },

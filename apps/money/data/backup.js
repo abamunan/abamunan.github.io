@@ -1,10 +1,12 @@
 // JSON backup (format version 1, identical to the legacy exportAllDataJSON) + import planning.
 import { DAY_RE, parseDayKey } from './keys.js';
-export function buildBackup({ expense, income, goal, accounts, ledger, debts, days, lastAccounts }, now = new Date()) {
+import { isoLocal } from '../../shared/fmt.js';
+export function buildBackup({ expense, income, goal, accounts, ledger, debts, days, lastAccounts, templates }, now = new Date()) {
   return { version: 1, exportedAt: now.toISOString(), categories: { expense, income }, goal, accounts, ledger, debts, days,
-    ...(lastAccounts && Object.keys(lastAccounts).length ? { lastAccounts } : {}) };      // extra key: old import ignores it
+    ...(lastAccounts && Object.keys(lastAccounts).length ? { lastAccounts } : {}),        // extra keys: an old import ignores them
+    ...(Array.isArray(templates) && templates.length ? { templates } : {}) };
 }
-export const backupFileName = (kind, date = new Date()) => `money-tracker-${kind}-${date.toISOString().slice(0, 10)}.json`;
+export const backupFileName = (kind, date = new Date()) => `money-tracker-${kind}-${isoLocal(date)}.json`;   // local date: toISOString() would name a 02:00 Dhaka backup after yesterday
 // kind: 'backup' | 'auto-before-import' | 'auto-before-delete' | 'auto-before-migration'
 
 export function parseBackup(text) {
@@ -22,7 +24,7 @@ const nonEmpty = a => Array.isArray(a) && a.length > 0;
 const mergeById = (a, b) => { const idx = new Map(a.map((x, i) => [x.id, i])); const out = a.slice();
   for (const y of b) { const i = idx.get(y.id); if (i == null) { idx.set(y.id, out.length); out.push(y); } else out[i] = y; } return out; };
 
-// local = {days:{key:doc}, expense, income, accounts, goal, ledger, debts, lastAccounts}
+// local = {days:{key:doc}, expense, income, accounts, goal, ledger, debts, lastAccounts, templates}
 // mode 'merge'  : nothing is deleted; backup wins for days present on both sides; one-sided days untouched.
 // mode 'replace': backup replaces everything; local days and CLOUD days not in the backup are deleted.
 export function planImport({ mode, local, payload, cloudDayIds = [] }) {
@@ -35,6 +37,11 @@ export function planImport({ mode, local, payload, cloudDayIds = [] }) {
     goal: typeof payload.goal === 'number' ? payload.goal : local.goal,
     lastAccounts: merge ? { ...(local.lastAccounts || {}), ...(payload.lastAccounts || {}) } : (payload.lastAccounts || local.lastAccounts || {})
   };
+  const goodT = a => (Array.isArray(a) ? a.filter(t => t && typeof t === 'object' && t.id != null && t.cat) : null);
+  const theirT = goodT(payload.templates), mineT = local.templates || [];
+  const allCats = new Set([...settings.expense, ...settings.income].map(f => f.id));
+  // merge: add/overwrite by id. replace: the file's templates (an old file without the key keeps this device's). A template whose category no longer exists is dropped.
+  settings.templates = (merge ? mergeById(mineT, theirT || []) : (theirT || mineT)).filter(t => allCats.has(t.cat));
   const keys = Object.keys(payload.days || {}), keySet = new Set(keys), localKeys = Object.keys(local.days || {});
   const idOf = k => { const p = parseDayKey(k); return p ? `${p.y}_${p.m + 1}_${p.d}` : k; };
   const idSet = new Set(keys.map(idOf));

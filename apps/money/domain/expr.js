@@ -1,6 +1,11 @@
 // Safe arithmetic for the amount field ("100+50*2", "(20+5)/2"). No eval. Returns a number rounded to 2 dp, or null.
+const GROUPED = /^(?:\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})*,\d{3})$/;   // western (1,234,567) or lakh/crore (12,34,567) digit grouping
 export function evalExpr(input) {
-  const s = String(input ?? '').replace(/[\u00D7x]/g, '*').replace(/\u00F7/g, '/').replace(/\u2212/g, '-').replace(/[,\s]/g, '');
+  const s = String(input ?? '')
+    .replace(/[\u09E6-\u09EF]/g, c => String(c.charCodeAt(0) - 0x09E6))      // Bengali digits ০–৯ → 0–9
+    .replace(/\u09F3/g, '')                                                  // ৳ sign
+    .replace(/\d[\d,]*/g, m => (!m.includes(',') || GROUPED.test(m) ? m.replace(/,/g, '') : m))   // 1,200 and 1,20,000 are fine; 1,5 stays invalid
+    .replace(/[\u00D7x]/g, '*').replace(/\u00F7/g, '/').replace(/\u2212/g, '-').replace(/\s/g, '');
   if (!s || !/^[0-9+\-*/().]+$/.test(s)) return null;
   let i = 0;
   const num = () => { const m = /^\d*\.?\d+|^\d+\.?/.exec(s.slice(i)); if (!m) throw 0; i += m[0].length; return parseFloat(m[0]); };

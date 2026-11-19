@@ -19,8 +19,8 @@ with sync_playwright() as p:
     pg=ctx.new_page(); pg.clock.install(time=datetime.datetime(2026,10,8,12,0,0)); pg.on("pageerror", lambda e: errs.append("pageerror: "+str(e))); pg.on("console", lambda m: errs.append("console."+m.type+": "+m.text) if m.type=="error" else None)
     pg.goto("http://localhost:8123/apps/money/index.html"); pg.wait_for_selector("#splash", state="detached", timeout=8000)
     ok(pg.locator("main#main").count()==1, "main landmark present")
-    ok(pg.locator("#tabbar button").count()==5, "5 tabs")
-    ok(pg.inner_text("#syncState")=="Offline", "offline status shown (no network here): "+pg.inner_text("#syncState"))
+    ok(pg.locator("#tabbar button").count()==6, "6 tabs: Today, History, Insights, Plan, Accounts, More")
+    ok(pg.text_content("#sidebarSyncLabel")=="Local only", "signed-out status shown (no network, no account): "+str(pg.text_content("#sidebarSyncLabel")))
     pg.screenshot(path="test-output/1-today.png")
     # add entry: FAB -> 2 5 0 -> Save
     pg.click("#fab"); pg.wait_for_selector(".ui-sheet"); pg.wait_for_timeout(400); pg.screenshot(path="test-output/2a-add-open.png")

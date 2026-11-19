@@ -1,6 +1,7 @@
 import { h } from '../../shared/dom.js';
 import { toast } from '../../shared/toast.js';
 import { confirmDialog } from '../../shared/confirm.js';
+import { isoLocal } from '../../shared/fmt.js';
 import { icon } from '../icons.js';
 import { parseBackup, planImport, backupFileName } from '../data/backup.js';
 import { cloudDayIds } from '../data/sync.js';
@@ -13,11 +14,14 @@ import { promptInstall } from '../data/pwa.js';
 
 const row = (ic, label, onclick, href) => h(href ? 'a' : 'button', { class: 'mrow2', type: href ? null : 'button', href, onclick }, h('span', { html: icon(ic, 22), 'aria-hidden': 'true' }), h('span', {}, label));
 const save = (name, text, type) => saveBlob(name, text, type);
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => isoLocal();
 
 // Cloud day ids are needed so "replace"/"remove all" also clear the cloud copy; without them old days would come back on the next sync.
+// Not signed in / offline (app.remote unset): there is no cloud copy to list, so carry on with this device only; the confirmation text says so.
+// Signed in but the cloud cannot be reached: still stop, because that is the case where old days would silently come back.
+const NO_CLOUD = ' The cloud copy is NOT changed (not signed in, or offline): days that exist only in the cloud can come back when you sign in. If you use the cloud, sign in and run this again.';
 async function cloudIdsOrAbort(app) {
-  if (!app.remote) { toast('Sign in and go online first, so the cloud copy is changed too.', { error: true }); return null; }
+  if (!app.remote) return [];
   try { return await cloudDayIds(app.remote); } catch { toast('Could not reach the cloud. Nothing was changed.', { error: true }); return null; }
 }
 
@@ -40,10 +44,10 @@ async function importBackup(app, mode) {
     const res = parseBackup(text); if (!res.ok) return toast(res.error, { error: true });
     const cloudIds = replace ? await cloudIdsOrAbort(app) : [];
     if (cloudIds === null) return;
-    const s = repo.settings, local = { days: Object.fromEntries(repo.listDays().map(x => [x.key, x.doc])), expense: s.expense, income: s.income, accounts: s.accounts, goal: s.goal, ledger: s.ledger, debts: s.debts, lastAccounts: s.lastAccounts };
+    const s = repo.settings, local = { days: Object.fromEntries(repo.listDays().map(x => [x.key, x.doc])), expense: s.expense, income: s.income, accounts: s.accounts, goal: s.goal, ledger: s.ledger, debts: s.debts, lastAccounts: s.lastAccounts, templates: s.templates };
     const plan = planImport({ mode, local, payload: res.payload, cloudDayIds: cloudIds }), m = plan.summary;
     const msg = replace
-      ? `Everything is replaced by the file (${m.backupDays} days). ${m.deleteLocal} days on this device and ${m.deleteCloud} in the cloud that are not in the file will be deleted.${res.stats.invalid ? ` ${res.stats.invalid} invalid items in the file are skipped.` : ''}`
+      ? `Everything is replaced by the file (${m.backupDays} days). ${m.deleteLocal} days on this device and ${m.deleteCloud} in the cloud that are not in the file will be deleted.${res.stats.invalid ? ` ${res.stats.invalid} invalid items in the file are skipped.` : ''}${app.remote ? '' : NO_CLOUD}`
       : `${m.newFromBackup} new days are added and ${m.overwritten} existing days are overwritten by the file. Nothing is deleted; ${m.localOnly} days that are only here stay as they are.`;
     if (!await confirmDialog({ title: replace ? 'Replace all data?' : 'Merge backup?', message: msg, confirmLabel: replace ? 'Replace' : 'Merge', danger: replace, typeToConfirm: replace ? 'REPLACE' : null })) return;
     if (!await backupGuard({ kind: 'auto-before-import', payload: repo.snapshot() })) return toast('Cancelled. Nothing was changed.');
@@ -53,7 +57,7 @@ async function importBackup(app, mode) {
 
 async function removeAll(app) {
   const { repo } = app, n = repo.listDays().length;
-  if (!await confirmDialog({ title: 'Remove all data?', message: `All ${n} days, categories, accounts, debts and goal are deleted from this device and the cloud. A backup file is downloaded first.`, confirmLabel: 'Delete everything', danger: true, typeToConfirm: 'DELETE' })) return;
+  if (!await confirmDialog({ title: 'Remove all data?', message: `All ${n} days, categories, accounts, debts and goal are deleted from this device${app.remote ? ' and the cloud' : ''}. A backup file is downloaded first.${app.remote ? '' : NO_CLOUD}`, confirmLabel: 'Delete everything', danger: true, typeToConfirm: 'DELETE' })) return;
   const ids = await cloudIdsOrAbort(app); if (ids === null) return;
   if (!await backupGuard({ kind: 'auto-before-delete', payload: repo.snapshot() })) return toast('Cancelled. Nothing was changed.');
   repo.wipeAll(ids); toast('All data removed'); app.refresh();

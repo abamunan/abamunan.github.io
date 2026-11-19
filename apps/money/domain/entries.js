@@ -15,7 +15,7 @@ export function addEntry(src, e, ctx) {
   if (e.adj) entry.adj = true;
   if (!ctx.catIds.includes(entry.cat)) throw new Error('Unknown category');
   check(entry.amt, entry.adj);
-  (doc.entries ||= []).push(entry); regenFlat(doc, entry.cat);
+  (doc.entries ||= []).push(entry); doc.entries.sort((a, b) => (a.ts || 0) - (b.ts || 0)); regenFlat(doc, entry.cat);   // sorted like reconcile() sorts, so Undo of an older entry does not look like a change
   return { doc, entry };
 }
 export function updateEntry(src, id, patch, ctx) {

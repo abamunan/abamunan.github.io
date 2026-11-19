@@ -34,7 +34,8 @@ with sync_playwright() as p:
     ok("down" in t and "200" in t and "vs Sep" in t, "spending is down ৳200 vs September (worded, not colour only)")
     ok("5 of 8 days with no spending" in t, "no-spend days counted over the 8 elapsed days (spent on days 1, 3, 6)")
     ok("ends near" in t, "month-end pace shown for the current month")
-    ok(pg.locator("main svg[role=img]").count() == 2, "two charts, each with an accessible label")
+    labels = pg.evaluate("[...document.querySelectorAll('main svg[role=img]')].map(s => s.getAttribute('aria-label') || '')")
+    ok(len(labels) == 3 and all(len(x) > 20 for x in labels) and any("Spending per day" in x for x in labels) and any("Sep vs Oct" in x for x in labels) and any("Income and expense by month" in x for x in labels), "three charts (daily, category month-vs-month, 6-month trend), each with a descriptive accessible label")
     pg.screenshot(path="test-output/insights-0.png", full_page=True)
     # drill-down
     pg.get_by_role("button", name="Lunch: ", exact=False).click(); pg.wait_for_selector(".ui-sheet")

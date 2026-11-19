@@ -1,11 +1,11 @@
 // Plan-tab operations on budgets, goal, accounts, ledger and debts. Pure: each takes the current arrays and returns new ones
 // (or throws Error with a message fit for a toast). Shapes are identical to the legacy app (mt.js), so old and new stay compatible.
-import { round2 } from '../../shared/fmt.js';
+import { round2, isoLocal } from '../../shared/fmt.js';
 import { newId } from '../../shared/dom.js';
 
 const money = v => round2(Math.max(0, Number(v) || 0));
 const need = (ok, msg) => { if (!ok) throw new Error(msg); };
-const isoDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const isoDay = isoLocal;
 
 // ── budgets + goal ──
 export function setBudgets(expense, changes) {                       // changes = { categoryId: amount }  (0 clears a budget)
@@ -28,10 +28,35 @@ export function updateAccount(accounts, id, patch) {
   return accounts.map(x => (x.id === id ? next : x));
 }
 export const linkedDebtCount = (debts, id) => debts.filter(d => d.accountId === id && !d.settled).length;
-// Debts keep existing but are unlinked from the deleted account (legacy behaviour).
-export function deleteAccount(accounts, debts, id) {
-  need(accounts.some(a => a.id === id), 'Account not found'); need(accounts.length > 1, 'At least one account is required');
-  return { accounts: accounts.filter(a => a.id !== id), debts: debts.map(d => (d.accountId === id ? { ...d, accountId: null } : d)), unlinked: linkedDebtCount(debts, id) };
+// Deleting an account never loses money. Its debts and ledger events (Add money / Transfer) move to `moveTo`, and its
+// opening balance is added to moveTo's opening balance, so the total stays exactly the same. A transfer between the
+// deleted account and moveTo would become moveTo -> moveTo (no effect on any balance), so it is dropped.
+// Day entries are moved separately with moveDayAccount(). Returns new arrays; the inputs are not touched.
+const LEDGER_ACCT_KEYS = ['accountId', 'fromId', 'toId'];
+export function deleteAccount(accounts, debts, id, moveTo, ledger = []) {
+  const gone = accounts.find(a => a.id === id);
+  need(gone, 'Account not found'); need(accounts.length > 1, 'At least one account is required');
+  need(moveTo && moveTo !== id && accounts.some(a => a.id === moveTo), 'Pick another account to move its history to');
+  const moved = { debts: 0, ledger: 0, dropped: 0 }, nextLedger = [];
+  for (const ev of ledger) {
+    if (!LEDGER_ACCT_KEYS.some(k => ev[k] === id)) { nextLedger.push(ev); continue; }
+    const n = { ...ev }; LEDGER_ACCT_KEYS.forEach(k => { if (n[k] === id) n[k] = moveTo; });
+    if (n.type === 'transfer' && n.fromId === n.toId) { moved.dropped++; continue; }
+    moved.ledger++; nextLedger.push(n);
+  }
+  return {
+    accounts: accounts.filter(a => a.id !== id).map(a => (a.id === moveTo ? { ...a, opening: round2((a.opening || 0) + (gone.opening || 0)) } : a)),
+    debts: debts.map(d => { if (d.accountId !== id) return d; moved.debts++; return { ...d, accountId: moveTo }; }),
+    ledger: nextLedger, moved
+  };
+}
+// One day document: every entry (and the legacy flat acct_<cat> field) that points at `id` now points at `moveTo`.
+// Amounts, notes, dates and the day's locked flag are untouched.
+export function moveDayAccount(doc, id, moveTo) {
+  let entries = 0, flat = 0; const next = { ...doc };
+  if (Array.isArray(doc.entries)) next.entries = doc.entries.map(e => (e && e.acct === id ? (entries++, { ...e, acct: moveTo }) : e));
+  for (const k of Object.keys(doc)) if (k.startsWith('acct_') && doc[k] === id) { next[k] = moveTo; flat++; }
+  return { doc: next, changed: entries + flat > 0, entries: Array.isArray(doc.entries) ? entries : flat };   // old-format day (no entries[]): one per category
 }
 
 // ── ledger (manual Add / Transfer events) ──

@@ -11,6 +11,6 @@ export async function deleteWithUndo(repo, e, onDone) {
     else { toast(err.message, { error: true }); return false; }
   }
   onDone?.();
-  toast('Entry deleted', { action: 'Undo', onAction: async () => { try { await repo.restoreEntry(e.y, e.m0, e.d, removed, { unlocked: true }); onDone?.(); } catch (x) { toast(x.message, { error: true }); } } });
+  toast('Entry deleted', { action: 'Undo', timeout: 10000, onAction: async () => { try { await repo.restoreEntry(e.y, e.m0, e.d, removed, { unlocked: true }); onDone?.(); } catch (x) { toast(x.message, { error: true }); } } });
   return true;
 }

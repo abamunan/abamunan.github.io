@@ -17,9 +17,10 @@ const KEY_LABEL = { '\u232B': 'Backspace', '\u00F7': 'Divide', '\u00D7': 'Multip
 export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = null, onDone } = {}) {
   const S = { kind: entry ? (repo.settings.income.some(f => f.id === entry.cat) ? 'in' : 'out') : kind, cat: entry?.cat, acct: entry?.acct, acctTouched: !!entry,
     date: entry ? new Date(entry.y, entry.m0, entry.d) : new Date(date), unlocked: false, note: entry?.note || '' };
+  const uses = repo.categoryUseCounts();                       // once per sheet: list() runs on every tap and used to re-read every day for every category
   const list = () => {
-    const l = S.kind === 'out' ? repo.settings.expense : repo.settings.income;
-    return l.map((f, index) => ({ f, index, uses: repo.categoryUseCount(f.id) }))
+    const l = (S.kind === 'out' ? repo.settings.expense : repo.settings.income).filter(f => !f.archived || f.id === S.cat);   // archived ones stay editable on entries that already use them
+    return l.map((f, index) => ({ f, index, uses: uses[f.id] || 0 }))
       .sort((a, b) => b.uses - a.uses || Number(b.f.pinned) - Number(a.f.pinned) || a.index - b.index)
       .map(({ f }) => f);
   };
@@ -72,7 +73,10 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   const sum = h('summary', { class: 'add-sum' });
   const noteWrapper = h('div', {}, noteIn, tagChips);
   const more = h('details', { class: 'add-more' }, sum, h('div', { class: 'add-two' }, label('Date', dateIn), label('Note & Tags', noteWrapper)));
-  const paintSum = () => { const t = new Date(), same = S.date.toDateString() === t.toDateString(); sum.textContent = (same ? 'Today' : S.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })) + (S.note ? ' \u00B7 note added' : ' \u00B7 change date or add a note'); };
+  // Every entry counts in the balance straight away, whatever its date, so a future date is called out (summary line + toast after saving).
+  const isFuture = () => { const t = new Date(); return new Date(S.date.getFullYear(), S.date.getMonth(), S.date.getDate()) > new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
+  const FUTURE = 'future date: counts in your balance now';
+  const paintSum = () => { const t = new Date(), same = S.date.toDateString() === t.toDateString(); sum.textContent = (same ? 'Today' : S.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })) + (S.note ? ' \u00B7 note added' : ' \u00B7 change date or add a note') + (isFuture() ? ` \u00B7 ${FUTURE}` : ''); };
   dateIn.addEventListener('change', paintSum); noteIn.addEventListener('input', paintSum); paintSum();
   let sheet;
   const fail = e => toast(e?.message || 'Could not save', { error: true });
@@ -86,8 +90,8 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
     try { res = await run(S.unlocked); }
     catch (e) { if (e instanceof LockedError) { if (!(await confirmUnlock())) return; S.unlocked = true; try { res = await run(true); } catch (e2) { return fail(e2); } } else return fail(e); }
     sheet.close(true); onDone?.();
-    if (!entry && res?.entry) toast('Entry added', { action: 'Undo', onAction: async () => { try { await repo.deleteEntry(y, m0, d, res.entry.id, { unlocked: true }); onDone?.(); } catch (x) { fail(x); } } });
-    else toast('Saved');
+    if (!entry && res?.entry) toast(isFuture() ? `Entry added \u00B7 ${FUTURE}` : 'Entry added', { action: 'Undo', onAction: async () => { try { await repo.deleteEntry(y, m0, d, res.entry.id, { unlocked: true }); onDone?.(); } catch (x) { fail(x); } } });
+    else toast(isFuture() ? `Saved \u00B7 ${FUTURE}` : 'Saved');
   }
   // Templates row (Quick templates)
   const tmplList = repo.listTemplates ? repo.listTemplates() : [];

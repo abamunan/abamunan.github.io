@@ -50,7 +50,9 @@ with sync_playwright() as p:
     hb = box(".calc__head"); pg.mouse.move(hb["x"] + 40, hb["y"] + 15); pg.mouse.down(); pg.mouse.move(hb["x"] + 40, hb["y"] + 150, steps=6); pg.mouse.up()
     wb2 = box(".calc"); ok(wb2["y"] > hb["y"] + 100, "window dragged down by its header")
     w = ls("mt2_calc_win_v1"); ok(w and 0 <= w["fx"] <= 1 and 0 <= w["fy"] <= 1, "window position saved as a fraction")
-    pg.get_by_label("Close calculator").click(); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000); pg.get_by_label("Open calculator").click()
+    pg.get_by_label("Close calculator").click(); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
+    ok(pg.locator(".calc-fab").is_hidden(), "after a reload the icon is hidden again until More → Show calculator (it is not remembered as shown)")
+    pg.goto(URL + "#more"); pg.get_by_role("button", name="Show calculator").click()
     ok(abs(box(".calc")["y"] - wb2["y"]) < 3, "window reopens where it was left after a reload")
     pg.get_by_label("Close calculator").click()
     # drag icon: moves, does not open, saved
@@ -77,7 +79,7 @@ with sync_playwright() as p:
     pg.screenshot(path="test-output/calc-0.png")
     # corrupted saved data must not break anything
     pg2 = newpage(b, "localStorage.setItem('mt2_calc_icon_v1','{\"fx\":\"a\"}');localStorage.setItem('mt2_calc_win_v1','nope');localStorage.setItem('mt2_calc_history_v1','[1,{\"e\":2},{\"e\":\"1+1\",\"r\":\"2\"}]');localStorage.setItem('mt2_calc_hidden_until_v1','abc')")
-    pg2.get_by_label("Open calculator").click(); pg2.get_by_label("History").click(); ok(pg2.locator(".calc__h").count() == 1 and pg2.locator(".calc").is_visible(), "bad saved values fall back to defaults; only the valid history row is kept")
+    pg2.goto(URL + "#more"); pg2.get_by_role("button", name="Show calculator").click(); pg2.get_by_label("History").click(); ok(pg2.locator(".calc__h").count() == 1 and pg2.locator(".calc").is_visible(), "bad saved values fall back to defaults; only the valid history row is kept")
     ok(not errs, "no console errors: " + "; ".join(errs[:3]))
     b.close()
 print("\n%d failed" % len(fails) if fails else "\nall passed"); raise SystemExit(1 if fails else 0)

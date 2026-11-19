@@ -1,6 +1,6 @@
 import { h } from '../../shared/dom.js';
 import { fmt } from '../../shared/fmt.js';
-// Tap = edit. Swipe left (>90px), long-press (550ms) or the Delete key = delete (with Undo toast).
+// Tap = edit. Swipe left (>90px), long-press (550ms) or the Delete key = delete (with Undo toast). Backspace is NOT a shortcut: it is too easy to hit by accident.
 export function entryRow(e, { onEdit, onDelete }) {
   const amount = h('span', { class: 'erow__amt num ' + (e.kind === 'in' ? 'money-in' : 'money-out') }, fmt(e.signed, { sign: true }));
   const sub = [e.acctLabel, e.adj ? 'adjustment' : '', e.note].filter(Boolean).join(' \u00B7 ');
@@ -13,6 +13,6 @@ export function entryRow(e, { onEdit, onDelete }) {
   btn.addEventListener('pointerup', ev => { if (x0 != null && ev.clientX - x0 < -90) { reset(); onDelete(); } else reset(); });
   btn.addEventListener('pointercancel', reset);
   btn.addEventListener('click', () => { if (moved) { moved = false; return; } onEdit(); });
-  btn.addEventListener('keydown', ev => { if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); onDelete(); } });
+  btn.addEventListener('keydown', ev => { if (ev.key === 'Delete') { ev.preventDefault(); onDelete(); } });
   return btn;
 }

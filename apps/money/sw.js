@@ -116,7 +116,7 @@ self.addEventListener('fetch', event => {
       if (res && res.ok) event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(req, res.clone())));
       return res;
     }).catch(() => null);
-    if (cached) { network; return cached; }                       // serve the cached copy now, refresh it in the background
+    if (cached) { event.waitUntil(network); return cached; }       // serve the cached copy now; waitUntil keeps the worker alive until the background refresh is stored
     const fresh = await network;
     if (fresh) return fresh;
     if (req.mode === 'navigate') return (await caches.match(SHELL_FALLBACK)) || Response.error();
