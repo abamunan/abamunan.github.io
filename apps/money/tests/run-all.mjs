@@ -1,5 +1,5 @@
 // Runs every Money test in one go. From the repo root:   node apps/money/tests/run-all.mjs
-//   1. unit tests (run.mjs) and the cloud-sync test (sync-overwrite.mjs): need only Node
+//   1. unit tests (run.mjs) and the cloud-sync tests: need only Node
 //   2. the undefined-name / syntax check (tools/check-names.mjs): needs `npm install` once (TypeScript), or TSC=/path/to/tsc
 //   3. every browser-*.py (real Chromium via Playwright): need Python + `pip install playwright` + `playwright install chromium`
 // If TypeScript, Python or Playwright is missing, that part is skipped with a clear message and the exit code is 2 (not a silent pass).
@@ -15,6 +15,7 @@ const run = (name, cmd, args) => { const r = spawnSync(cmd, args, { cwd: root, e
 
 run('unit tests (run.mjs)', process.execPath, ['apps/money/tests/run.mjs']);
 run('cloud sync (sync-overwrite.mjs)', process.execPath, ['apps/money/tests/sync-overwrite.mjs']);
+run('incremental sync (sync-incremental.mjs)', process.execPath, ['apps/money/tests/sync-incremental.mjs']);
 
 const skips = [];
 const names = spawnSync(process.execPath, ['apps/money/tools/check-names.mjs'], { cwd: root, encoding: 'utf8' });

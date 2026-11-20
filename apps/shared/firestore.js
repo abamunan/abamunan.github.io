@@ -54,6 +54,11 @@ export function firestoreRemote({ overwrite = false } = {}) {
     },
     async del(p) { const { doc, deleteDoc } = await fs(); await deleteDoc(doc(db, ...seg(p))); },
     async get(p) { const { doc, getDoc } = await fs(); const s = await getDoc(doc(db, ...seg(p))); return s.exists() ? s.data() : null; },
-    async list(c) { const { collection, getDocs } = await fs(); return (await getDocs(collection(db, ...seg(c)))).docs.map(d => ({ id: d.id, data: d.data() })); }
+    async list(c, { since } = {}) {
+      const { collection, getDocs, query, where } = await fs();
+      const ref = collection(db, ...seg(c));
+      const snap = await getDocs(since == null ? ref : query(ref, where('updatedAt', '>', since)));
+      return snap.docs.map(d => ({ id: d.id, data: d.data() }));
+    }
   };
 }

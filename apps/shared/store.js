@@ -45,9 +45,12 @@ export function createStore({ outboxKey, remote = null, onState } = {}) {
     pendingCount: () => Object.keys(outbox).length,
     flush,
     setRemote(r) { remote = r; return flush(); },     // attach the cloud adapter after sign-in; queued writes are sent
-    async pullCollection(coll, apply) {
+    async pullCollection(coll, apply, options = {}) {
       if (!remote) return 0; let n = 0;
-      for (const { id, data } of await remote.list(coll)) { if (outbox[`${coll}/${id}`]) continue; apply(id, data); n++; }
+      let docs;
+      try { docs = await remote.list(coll, options); }
+      catch (e) { if (!options.since) throw e; docs = await remote.list(coll); }
+      for (const { id, data } of docs) { if (outbox[`${coll}/${id}`]) continue; apply(id, data); n++; }
       return n;
     },
     async pullDoc(path, apply) {

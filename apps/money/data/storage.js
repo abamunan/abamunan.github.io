@@ -42,6 +42,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     return [f?.defaultAcct, s.lastAccounts[cat]].find(acctOk) || defaultAcct(); };
 
   const getDay = (y, m0, d) => store.get(dayLocalKey(y, m0, d), {}) || {};
+  const saveDay = (key, doc, path) => store.save(key, { ...doc, updatedAt: now() }, path);
   const listDays = () => store.keys(DAY_RE).map(k => { const doc = store.get(k); return doc && typeof doc === 'object' ? { key: k, ...parseDayKey(k), doc, data: doc } : null; })
     .filter(Boolean).sort((a, b) => a.y - b.y || a.m - b.m || a.d - b.d);
 
@@ -84,7 +85,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     if (!unlocked && isDayLocked(y, m0, d, getDay(y, m0, d), today())) throw new LockedError();
     if (reconcile(getDay(y, m0, d), catIds(), ctx()).changed && !(await ensureBackup())) throw new Error('Automatic backup failed \u2014 nothing was changed');
     const res = fn(getDay(y, m0, d), ctx());                    // re-read after the await
-    store.save(dayLocalKey(y, m0, d), res.doc, dayPath(y, m0, d));
+    saveDay(dayLocalKey(y, m0, d), res.doc, dayPath(y, m0, d));
     return res;
   }
   const ops = {
@@ -100,7 +101,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
       try { await ops.deleteEntry(...from, id, o); } catch (err) { await ops.deleteEntry(...to, id, o).catch(() => {}); throw err; }
     }
   };
-  const setManualLock = (y, m0, d, locked) => store.save(dayLocalKey(y, m0, d), { ...getDay(y, m0, d), locked: !!locked }, dayPath(y, m0, d));
+  const setManualLock = (y, m0, d, locked) => saveDay(dayLocalKey(y, m0, d), { ...getDay(y, m0, d), locked: !!locked }, dayPath(y, m0, d));
   const setAccountArchived = (id, archived) => saveSettings({ accounts: P.setAccountArchived(s.accounts, id, archived) });
 
   // Plan tab. None of these touch day documents, so no migration backup is needed.
@@ -116,7 +117,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
       let days = 0, entries = 0;
       for (const { key, y, m, d, doc } of listDays()) {                                    // locked days too: only the account label moves, no amount changes
         const res = P.moveDayAccount(doc, id, moveTo);
-        if (res.changed) { store.save(key, res.doc, dayPath(y, m, d)); days++; entries += res.entries; }
+        if (res.changed) { saveDay(key, res.doc, dayPath(y, m, d)); days++; entries += res.entries; }
       }
       if (r.moved.ledger || r.moved.dropped) saveLedger(r.ledger);
       if (r.moved.debts) saveDebts(r.debts);
@@ -156,7 +157,7 @@ export function createRepo({ store, backupGuard = async () => true, today = () =
     saveLedger(plan.settings.ledger); saveDebts(plan.settings.debts);
     for (const k of plan.deleteLocalDays) { const p = parseDayKey(k); store.drop(k, dayPath(p.y, p.m, p.d)); }
     for (const id of plan.deleteCloudDayIds) store.pushDelete(`moneytracker/${id}`);
-    for (const k of plan.writeDays) { const p = parseDayKey(k); store.save(k, payload.days[k], dayPath(p.y, p.m, p.d)); }
+    for (const k of plan.writeDays) { const p = parseDayKey(k); saveDay(k, payload.days[k], dayPath(p.y, p.m, p.d)); }
   }
   function wipeAll(cloudIds = []) {                              // caller must have downloaded + verified a backup first
     const keys = listDays().map(x => x.key); const done = new Set();

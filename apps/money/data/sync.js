@@ -1,10 +1,16 @@
-import { DAY_COLLECTION, META } from './keys.js';
+import { DAY_COLLECTION, META, NEW_KEYS } from './keys.js';
 // Startup pull. Steps map 1:1 to splash progress. Anything with an unsent local edit is skipped (store.js).
 // Offline / failed steps never throw: the app keeps running on local data and reports the errors.
 export async function initialSync(repo, store, onStep = () => {}) {
   const report = { days: 0, errors: [] };
+  const started = Date.now();
+  const sync = store.get(NEW_KEYS.sync, {});
+  const full = !Number.isFinite(sync.last) || started - sync.last >= 24 * 60 * 60 * 1000;
   const step = async (name, fn) => { try { await fn(); } catch (e) { report.errors.push({ name, error: String(e?.message || e) }); } onStep(name); };
-  await step('days', async () => { report.days = await store.pullCollection(DAY_COLLECTION, (id, d) => repo.applyRemote.day(id, d)); });
+  await step('days', async () => {
+    report.days = await store.pullCollection(DAY_COLLECTION, (id, d) => repo.applyRemote.day(id, d), full ? {} : { since: sync.last });
+    store.set(NEW_KEYS.sync, { last: started });
+  });
   await step('settings', () => store.pullDoc(META.settings, d => repo.applyRemote.settings(d)));
   await step('ledger', () => store.pullDoc(META.ledger, d => repo.applyRemote.ledger(d)));
   await step('debts', () => store.pullDoc(META.debts, d => repo.applyRemote.debts(d)));
