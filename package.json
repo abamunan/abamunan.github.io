@@ -9,6 +9,11 @@
     "test:health": "node apps/health/tests/run.mjs",
     "test:money": "node apps/money/tests/run.mjs",
     "test:diary": "node apps/diary/tests/run.mjs",
-    "test:diary-ui": "npm --prefix apps/diary/tests/ui install --no-audit --no-fund && npm --prefix apps/diary/tests/ui test"
+    "test:diary-ui": "npm --prefix apps/diary/tests/ui install --no-audit --no-fund && npm --prefix apps/diary/tests/ui test",
+    "test:money:all": "node apps/money/tests/run-all.mjs",
+    "lint:names": "node apps/money/tools/check-names.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

@@ -7,7 +7,7 @@ errs, fails = [], []
 def ok(c, m):
     print(("PASS " if c else "FAIL ") + m)
     if not c: fails.append(m)
-seed = {"mt_2026_10_7": {"lunch": 400, "acct_lunch": "cash", "ts_lunch": 1, "self": 5000, "acct_self": "bkash", "ts_self": 1}}
+seed = {"mt_2026_10_7": {"lunch": 400, "acct_lunch": "cash", "ts_lunch": 1, "self": 5000, "acct_self": "bkash", "ts_self": 1}, "mt_2026_10_6": {"oldcat": 90, "acct_oldcat": "cash", "ts_oldcat": 1}}
 with sync_playwright() as p:
     b = p.chromium.launch(); ctx = b.new_context(viewport={"width": 360, "height": 740})
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://localhost:8123") else r.abort())
@@ -43,19 +43,29 @@ with sync_playwright() as p:
     ids = [x["id"] for x in exp()]; pg.get_by_label("Move Chai up").click(); ids2 = [x["id"] for x in exp()]
     ok(ids2[-2] == ids[-1] and ids2[-1] == ids[-2], "move up swaps with the previous row")
     ok(pg.get_by_label("Move Lunch up").count() == 0 or pg.get_by_label("Move Nasta up").is_disabled(), "first row cannot move up")
-    # delete a category that has data → warning mentions the days, data stays
-    pg.get_by_label("Delete Lunch").click(); pg.wait_for_selector(".ui-confirm"); msg = pg.inner_text(".ui-confirm")
-    ok("1 day has saved amounts" in msg and "400" in msg, "delete warns how many days / how much is under the category")
-    pg.get_by_role("button", name="Delete category").click(); pg.wait_for_timeout(300)
-    ok(all(x["id"] != "lunch" for x in exp()) and ls("mt_2026_10_7")["lunch"] == 400, "category removed, saved day untouched")
+    # a category that has data cannot be deleted: it can only be archived (totals do not change)
+    ok(pg.get_by_label("Delete Lunch").count() == 0 and pg.get_by_label("Archive Lunch").count() == 1, "a category with saved data offers Archive, not Delete")
+    pg.get_by_label("Archive Lunch").click(); pg.wait_for_timeout(300)
+    lunch = [x for x in exp() if x["id"] == "lunch"]
+    ok(len(lunch) == 1 and lunch[0].get("archived") is True and ls("mt_2026_10_7")["lunch"] == 400, "Lunch archived: still in the list, saved day untouched")
+    ok(pg.get_by_label("Unarchive Lunch").count() == 1 and "Archived" in pg.inner_text(".ui-sheet"), "archived row says Archived and offers Unarchive")
+    # data left behind by an older version's delete can be restored
+    ok("Data from deleted categories" in pg.inner_text(".ui-sheet") and "oldcat" in pg.inner_text(".ui-sheet"), "orphaned data is listed")
+    pg.get_by_label("Restore oldcat").click(); pg.wait_for_selector(".add-save"); pg.get_by_label("Name").fill("Old things"); submit()
+    r = [x for x in exp() if x["id"] == "oldcat"]; ok(len(r) == 1 and r[0]["label"] == "Old things" and r[0]["archived"] is True, "restored as an archived expense category")
+    ok("Data from deleted categories" not in pg.inner_text(".ui-sheet"), "orphan card disappears after restoring")
     # delete one with no data
     pg.get_by_label("Delete Chai").click(); pg.wait_for_selector(".ui-confirm"); ok("no saved amounts" in pg.inner_text(".ui-confirm"), "unused category says nothing in history changes")
     pg.get_by_role("button", name="Cancel").click(); ok(any(x["label"] == "Chai" for x in exp()), "cancel keeps it")
-    # persists after reload
-    pg.keyboard.press("Escape"); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
+    # archived categories do not expose their templates on the Add sheet
+    pg.keyboard.press("Escape"); active_cat = [x for x in exp() if x["label"] == "Chai"][0]["id"]
+    pg.evaluate("""(cat) => localStorage.setItem('mt2_templates_v1', JSON.stringify([
+      {id:'old-template', label:'Lunch shortcut', cat:'lunch', amt:10, acct:'cash', note:''},
+      {id:'active-template', label:'Chai shortcut', cat:cat, amt:10, acct:'cash', note:''}
+    ]))""", active_cat); pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000)
     ok(any(x["label"] == "Chai" for x in exp()), "changes survive a reload")
     # Today/Add sheet shows the new source & hides deleted category
-    pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); at = pg.inner_text(".ui-sheet"); ok("Chai" in at and "Lunch" not in at, "Add sheet reflects the new list")
+    pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); at = pg.inner_text(".ui-sheet"); ok("Chai" in at and "Lunch" not in at and "Old things" not in at and "Lunch shortcut" not in at and "Chai shortcut" in at, "Add sheet shows active categories and templates only")
     pg.screenshot(path="test-output/manage-1.png")
     ok(not errs, "no console errors: " + "; ".join(errs[:3]))
     b.close()

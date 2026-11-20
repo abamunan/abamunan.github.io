@@ -1,16 +1,16 @@
 import { h } from '../../shared/dom.js';
-import { fmt } from '../../shared/fmt.js';
+import { fmt, isoLocal } from '../../shared/fmt.js';
 import { toast } from '../../shared/toast.js';
 import { confirmDialog } from '../../shared/confirm.js';
 import { formSheet } from '../components/form-sheet.js';
 import { planModel } from '../domain/viewmodels.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => isoLocal();
 let debtTab = 'borrowed';                                   // remembered while the app is open
 
 const card = (title, ...kids) => h('section', { class: 'card' }, h('h2', { class: 'card__h' }, title), ...kids);
-const acctOptions = accts => accts.map(a => ({ value: a.id, label: `${a.icon || ''} ${a.label}`.trim() }));
+const acctOptions = accts => accts.filter(a => !a.archived).map(a => ({ value: a.id, label: `${a.icon || ''} ${a.label}`.trim() }));
 const btn = (label, onclick, cls = 'ui-btn ui-btn--ghost') => h('button', { type: 'button', class: cls, onclick }, label);
 
 // ── Savings goal ──
@@ -27,12 +27,12 @@ function goalCard(m, app) {
 // ── Budgets ──
 function budgetsCard(m, app) {
   const edit = () => formSheet({ title: 'Monthly budgets', full: true, submit: 'Save budgets',
-    fields: m.expenseCats.map(f => ({ name: f.id, label: `${f.icon || ''} ${f.label}`.trim(), kind: 'amount', value: f.budget || '', placeholder: 'No budget' })),
+    fields: m.expenseCats.map(f => ({ name: f.id, label: `${f.icon || ''} ${f.label}${f.archived ? ' (archived)' : ''}`.trim(), kind: 'amount', value: f.budget || '', placeholder: 'No budget' })),
     onSubmit: v => { const changes = {}; for (const f of m.expenseCats) { const n = v[f.id] ?? 0; if (!(n >= 0)) throw new Error(`${f.label}: enter a number of 0 or more`); if ((f.budget || 0) !== n) changes[f.id] = n; } 
       if (!Object.keys(changes).length) return; app.repo.setBudgets(changes); app.refresh(); toast('Budgets saved'); } });
   const rows = m.budgets.map(b => {
     const left = b.budget - b.used, note = b.state === 'over' ? `Over by ${fmt(-left)}` : `${fmt(left)} left${b.onPace ? '' : ' \u00B7 spending faster than the month so far'}`;
-    return h('div', { class: 'brow' }, h('div', { class: 'brow__top' }, h('span', {}, `${b.icon || ''} ${b.label}`), h('span', { class: 'num' }, `${fmt(b.used)} / ${fmt(b.budget)}`)),
+    return h('div', { class: 'brow' }, h('div', { class: 'brow__top' }, h('span', {}, `${b.icon || ''} ${b.label}${b.archived ? ' (archived)' : ''}`), h('span', { class: 'num' }, `${fmt(b.used)} / ${fmt(b.budget)}`)),
       h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(b.pct)), 'aria-label': `${b.label} budget used` }, h('span', { class: 'bar__fill bar__fill--' + b.state, style: `width:${b.pct}%` })),
       h('div', { class: 'card__sub' }, note));
   });

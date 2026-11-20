@@ -102,6 +102,7 @@ await t('repo: lock enforced; edit session never rewrites the lock flag', async 
   store.set('mt_2026_10_3', { lunch: 1, locked: false }); await repo.addEntry(2026, 9, 3, { cat: 'lunch', amt: 5 }); assert.equal(store.get('mt_2026_10_3').locked, false);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 5 }); assert.equal('locked' in store.get('mt_2026_10_7'), false);       // today: never auto-locked
   repo.setManualLock(2026, 9, 7, true); await assert.rejects(() => repo.deleteEntry(2026, 9, 7, 'x'), LockedError);
+  repo.setManualLock(2026, 9, 7, false); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 5 }); assert.equal(store.get('mt_2026_10_7').locked, false);
 });
 await t('repo: moveEntry between days (and rollback target on failure)', async () => {
   reset(); const { store, repo } = mk(async () => true); const a = await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 30, note: 'x' });
@@ -161,6 +162,95 @@ await t('H1: an entry never keeps an account that does not exist (add, update, s
   const { addEntry: rawAdd } = await import('../domain/entries.js'); assert.equal(rawAdd({}, { cat: 'lunch', amt: 5, acct: 'anything' }, { catIds: ['lunch'], defaultAcct: 'cash', now: 1 }).entry.acct, 'anything');
   assert.equal(rawAdd({}, { cat: 'lunch', amt: 5 }, { catIds: ['lunch'], acctIds: ['cash'], defaultAcct: 'cash', now: 1 }).entry.acct, 'cash');
 });
+await t('H2: deleting an account moves its history; the total never changes; failures change nothing', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); let guardCalls = 0, guardOk = true; const { store, repo } = mk(async () => { guardCalls++; return guardOk; });
+  const { accountModel } = await import('../domain/viewmodels.js'); const total = () => accountModel(repo, 'cash').total, bal = id => accountModel(repo, 'cash').accounts.find(a => a.id === id)?.balance;
+  const bank = repo.addAccount({ label: 'Bank', icon: 'b' }); repo.updateAccount('bkash', { opening: 300 });
+  await repo.addEntry(2026, 9, 7, { cat: 'self', amt: 5000, acct: 'bkash' }); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 200, acct: 'cash' });
+  store.set('mt_2026_9_1', { lunch: 40, acct_lunch: 'bkash', ts_lunch: 1, locked: true });                  // old-format, locked day
+  repo.addBalance('bkash', 100); repo.addTransfer('cash', 'bkash', 70); repo.addTransfer('bkash', bank.id, 25); repo.addDebt({ type: 'lent', person: 'Rafi', amount: 60, accountId: 'bkash' });
+  repo.saveSettings({ lastAccounts: { self: 'bkash' }, expense: repo.settings.expense.map(f => (f.id === 'lunch' ? { ...f, defaultAcct: 'bkash' } : f)) }); repo.addTemplate({ label: 'Salary', cat: 'self', amt: 5000, acct: 'bkash' });
+  const cashOpeningBefore = repo.settings.accounts.find(a => a.id === 'cash').opening || 0, before = total(), cashBefore = bal('cash'), bankBefore = bal(bank.id), bkashBefore = bal('bkash'); assert.equal(before, 300 + 5000 - 200 - 40 + 100 - 60);
+  // invalid request: no backup prompt, nothing changes
+  await assert.rejects(() => repo.deleteAccount('bkash', 'bkash'), /move its history/); await assert.rejects(() => repo.deleteAccount('bkash', 'nope'), /move its history/); await assert.rejects(() => repo.deleteAccount('bkash'), /move its history/); assert.equal(guardCalls, 0);
+  // failed safety backup: nothing changes
+  guardOk = false; await assert.rejects(() => repo.deleteAccount('bkash', 'cash'), /backup failed/); assert.equal(repo.settings.accounts.some(a => a.id === 'bkash'), true); assert.equal(total(), before);
+  assert.equal(store.get('mt_2026_10_7').entries.find(e => e.cat === 'self').acct, 'bkash'); assert.equal(store.get('mt_ledger_v1').length, 3);
+  // real delete: bKash -> Cash
+  guardOk = true; guardCalls = 0; const r = await repo.deleteAccount('bkash', 'cash'); assert.equal(guardCalls, 1);
+  assert.deepEqual([r.debts, r.ledger, r.dropped, r.days, r.entries], [1, 2, 1, 2, 2], 'moved: 1 debt, 2 ledger events (add + transfer to bank), 1 cash<->bkash transfer dropped, 2 days, 2 entries');
+  assert.equal(repo.settings.accounts.some(a => a.id === 'bkash'), false); assert.equal(total(), before, 'the total is exactly the same after deleting the account');
+  assert.equal(bal('cash'), round2(cashBefore + bkashBefore), 'cash now holds what cash and bKash held together');
+  assert.equal(bal(bank.id), bankBefore, 'bank balance unchanged');
+  assert.equal(store.get('mt_2026_10_7').entries.find(e => e.cat === 'self').acct, 'cash'); assert.equal(store.get('mt_2026_9_1').acct_lunch, 'cash'); assert.equal(store.get('mt_2026_9_1').locked, true, 'locked day stays locked');
+  assert.deepEqual(store.get('mt_ledger_v1').map(e => [e.type, e.accountId ?? `${e.fromId}>${e.toId}`]), [['add', 'cash'], ['transfer', `cash>${bank.id}`]]);
+  assert.equal(store.get('mt_debts_v1')[0].accountId, 'cash'); assert.equal(repo.settings.accounts.find(a => a.id === 'cash').opening, cashOpeningBefore + 300, "bKash's opening balance was added to Cash");
+  assert.equal(repo.settings.lastAccounts.self, 'cash'); assert.equal(repo.settings.expense.find(f => f.id === 'lunch').defaultAcct, 'cash'); assert.equal(repo.listTemplates()[0].acct, 'cash');
+  // nothing in storage still mentions the deleted account (days, ledger, debts, settings, templates)
+  assert.ok(!Object.keys(mem).filter(k => /^mt_|^mt2_templates/.test(k)).some(k => mem[k].includes('"bkash"')), 'no stored key still references the deleted account');
+  await store.flush(); await settle(); assert.ok(!JSON.stringify(cloud).includes('"bkash"'), 'the cloud copy was updated too');
+  // the last account can never be deleted
+  await repo.deleteAccount('card', 'cash'); await repo.deleteAccount(bank.id, 'cash'); await assert.rejects(() => repo.deleteAccount('cash', 'cash'), /At least one/);
+});
+await t('H3: a category with data is archived, not deleted; totals, balances, CSV agree; old orphans can be restored', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
+  const { accountModel } = await import('../domain/viewmodels.js'); const { entriesToCsv } = await import('../data/export.js'); const CT3 = await import('../domain/categories.js');
+  const total = () => accountModel(repo, 'cash').total, csv = () => entriesToCsv({ days: repo.listDays(), expense: repo.settings.expense, income: repo.settings.income, accounts: repo.settings.accounts, catIds: repo.catIds(), defaultAcct: repo.defaultAcct(), now: 1 });
+  const gift = repo.addCategory('expense', { label: 'Present', icon: 'g' }); await repo.addEntry(2026, 9, 7, { cat: gift.id, amt: 700 }); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 100 });
+  assert.equal(total(), -800);
+  // deleting is refused while data exists (this is what used to turn -800 into -100); the CSV still has the row
+  assert.throws(() => repo.deleteCategory('expense', gift.id), /Archive it instead/); assert.equal(total(), -800); assert.ok(csv().includes('Present'));
+  // archive: flag set, everything still counts, nothing else changes
+  repo.setBudgets({ [gift.id]: 900 }); repo.updateCategory('expense', gift.id, { archived: true }); assert.equal(repo.settings.expense.find(f => f.id === gift.id).archived, true);
+  assert.equal(total(), -800, 'archiving does not change the total'); assert.ok(csv().includes('Present') && !csv().includes(gift.id), 'CSV shows the archived category by name');
+  assert.equal(repo.getDay(2026, 9, 7)[gift.id], 700); repo.updateCategory('expense', gift.id, { archived: false }); assert.equal(repo.settings.expense.find(f => f.id === gift.id).archived, undefined);
+  // an unused category can still be deleted; the last active one cannot be archived or deleted
+  const tmp = repo.addCategory('expense', { label: 'Temp' }); repo.deleteCategory('expense', tmp.id); assert.equal(repo.catIds().includes(tmp.id), false);
+  const incs = repo.settings.income.map(f => f.id); incs.slice(1).forEach(id => repo.updateCategory('income', id, { archived: true })); assert.throws(() => repo.updateCategory('income', incs[0], { archived: true }), /At least one must stay active/); assert.throws(() => repo.deleteCategory('income', incs[0]), /At least one income/);
+  // an archived category can be deleted when it has no data, and never makes the "at least one" rule pass by counting archived ones
+  assert.throws(() => CT3.deleteCategory([{ id: 'a' }, { id: 'b', archived: true }], 'expense', 'a'), /At least one expense/);
+  // old orphans (categories deleted by an older version): found in entries[] and in old-format flat fields, not confused with other fields
+  store.set('mt_2026_9_2', { entries: [{ id: 'e1', cat: 'oldcat', amt: 55, acct: 'cash', note: '', ts: 1 }], oldcat: 55, ts_oldcat: 1, acct_oldcat: 'cash' });
+  store.set('mt_2026_9_3', { flatcat: 25, ts_flatcat: 1, acct_flatcat: 'cash', locked: true, someNumber: 7 }); repo.load();
+  assert.deepEqual(repo.orphanCategories(), [{ id: 'flatcat', days: 1, total: 25 }, { id: 'oldcat', days: 1, total: 55 }], 'orphans found once per day; unrelated numeric fields ignored');
+  assert.equal(total(), -800, 'orphans are invisible before restore');
+  const back = repo.restoreCategory('expense', 'oldcat', 'Old things'); assert.deepEqual([back.archived, back.budget, back.id], [true, 0, 'oldcat']); assert.equal(total(), -855, 'restored data counts again');
+  assert.deepEqual(repo.orphanCategories().map(o => o.id), ['flatcat']); assert.throws(() => repo.restoreCategory('expense', 'flatcat', 'gift'), /already have/); assert.throws(() => repo.restoreCategory('expense', 'oldcat', 'Zzz'), /Already in the list/);
+  // an archived flag survives a backup round trip and an import
+  const parsed = parseBackup(JSON.stringify({ version: 1, exportedAt: 'x', categories: { expense: repo.settings.expense, income: repo.settings.income }, goal: 0, accounts: repo.settings.accounts, ledger: [], debts: [], days: {} })); assert.equal(parsed.ok, true);
+  assert.equal(parsed.payload.categories.expense.find(f => f.id === 'oldcat').archived, true);
+});
+await t('H4: Accounts history explains the balance: opening + Money in - Money out = balance, for every account', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
+  const { accountModel } = await import('../domain/viewmodels.js'); let seed = 7; const rnd = n => (seed = (seed * 1103515245 + 12345) % 2147483648) % n;
+  const bank = repo.addAccount({ label: 'Bank', icon: 'b' }); repo.updateAccount('cash', { opening: 250.5 }); repo.updateAccount('bkash', { opening: -40 });
+  const check = why => { for (const a of repo.settings.accounts) { const m = accountModel(repo, a.id); assert.equal(round2(m.opening + m.income - m.expense), m.balance, `${why}: ${a.id}`); assert.equal(m.rows.length, m.entries.length + m.moves.length); } };
+  check('empty');
+  await repo.addEntry(2026, 9, 7, { cat: 'self', amt: 5000, acct: 'bkash' }); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 200, acct: 'cash' }); await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 33, acct: 'ghost' });   // ghost -> default account
+  repo.addBalance('cash', 1000); repo.addTransfer('cash', 'bkash', 1000); repo.addTransfer('bkash', bank.id, 25.75);
+  repo.addDebt({ type: 'lent', person: 'Rafi', amount: 60, accountId: 'bkash' }); repo.addDebt({ type: 'borrowed', person: 'Mina', amount: 90, accountId: bank.id }); const done = repo.addDebt({ type: 'lent', person: 'Old', amount: 11, accountId: 'cash' });
+  repo.setDebtSettled(repo.settings.debts[2].id, true); check('scenario');
+  const cash = accountModel(repo, 'cash'), bk = accountModel(repo, 'bkash'), bn = accountModel(repo, bank.id);
+  assert.deepEqual(cash.moves.map(x => x.label).sort(), ['Money added', 'Transfer to bKash'], 'Cash: Add money and the outgoing transfer are listed (settled debt is not)');
+  assert.deepEqual(bk.moves.map(x => x.label).sort(), ['Lent to Rafi', 'Transfer from Cash', 'Transfer to Bank'].sort(), 'bKash: transfers both ways and the open loan');
+  assert.deepEqual(bn.moves.map(x => x.label).sort(), ['Borrowed from Mina', 'Transfer from bKash'].sort());
+  assert.ok(cash.moves.every(x => x.move === true && x.id.startsWith('mv_') && Number.isInteger(x.y)));
+  const tr = bk.moves.find(x => x.label === 'Transfer to Bank'); assert.deepEqual([tr.kind, tr.amt, tr.signed], ['out', 25.75, -25.75]); assert.equal(bk.balance, round2(-40 + 5000 + 1000 - 25.75 - 60));
+  assert.equal(cash.rows.length, cash.entries.length + 2, 'rows = entries + moves'); assert.equal(cash.entries.filter(e => e.amt === 33).length, 1, 'the ghost-account entry shows under the default account');
+  for (const sort of ['newest', 'oldest', 'amount-high', 'amount-low']) { const m = accountModel(repo, 'cash', sort); assert.equal(m.rows.length, cash.rows.length); if (sort === 'amount-high') assert.ok(m.rows.every((r, i, a) => !i || Math.abs(a[i - 1].signed) >= Math.abs(r.signed))); }
+  // settling / deleting changes the history and the balance together
+  repo.setDebtSettled(repo.settings.debts[0].id, true); check('settled'); assert.equal(accountModel(repo, 'bkash').moves.some(x => x.label === 'Lent to Rafi'), false); repo.removeDebt(repo.settings.debts[1].id); check('debt removed');
+  // random operations never break the equation
+  for (let i = 0; i < 60; i++) {
+    const ids = repo.settings.accounts.map(a => a.id), pick = () => ids[rnd(ids.length)], op = rnd(5);
+    if (op === 0) await repo.addEntry(2026, 9, 7, { cat: rnd(2) ? 'lunch' : 'self', amt: 1 + rnd(900), acct: rnd(6) ? pick() : 'ghost' });
+    else if (op === 1) repo.addBalance(pick(), 1 + rnd(500)); else if (op === 2) { const a = pick(), b = pick(); if (a !== b) repo.addTransfer(a, b, 1 + rnd(300)); }
+    else if (op === 3) repo.addDebt({ type: rnd(2) ? 'lent' : 'borrowed', person: 'P' + i, amount: 1 + rnd(200), accountId: pick() });
+    else if (repo.settings.debts.length) repo.setDebtSettled(repo.settings.debts[rnd(repo.settings.debts.length)].id, !!rnd(2));
+    if (i % 10 === 9) check('random ' + i);
+  }
+  check('random end'); await repo.deleteAccount(bank.id, 'cash'); check('after deleting an account');
+});
 await t('wipeAll: removes days + meta, resets to defaults, queues cloud deletes', async () => {
   reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 10 }); repo.saveDebts([{ id: 'q' }]); await settle();
@@ -208,9 +298,11 @@ await t('plan domain: budgets, accounts, ledger and debts validate input and nev
   const accts = [{ id: 'cash', label: 'Cash', icon: 'c', opening: 0 }, { id: 'bk', label: 'bKash', icon: 'b', opening: 10 }];
   assert.throws(() => PL.addAccount(accts, { label: '  ' }), /name/); const a2 = PL.addAccount(accts, { label: ' Bank ', icon: '' }, 'abank'); assert.deepEqual(a2[2], { id: 'abank', label: 'Bank', icon: '\u{1F4B0}', opening: 0 }); assert.equal(accts.length, 2);
   assert.equal(PL.updateAccount(accts, 'bk', { opening: -40.5 })[1].opening, -40.5); assert.throws(() => PL.updateAccount(accts, 'bk', { label: '' }), /name/); assert.throws(() => PL.updateAccount(accts, 'zz', {}), /not found/);
+  const archived = PL.setAccountArchived(accts, 'bk', true); assert.equal(archived[1].archived, true); assert.equal(PL.setAccountArchived(archived, 'bk', false)[1].archived, false); assert.throws(() => PL.setAccountArchived([{ id: 'only' }], 'only', true), /active account/); assert.equal(accts[1].archived, undefined);
   const debts = [{ id: 'd1', type: 'lent', person: 'A', amount: 100, accountId: 'bk', settled: false }, { id: 'd2', type: 'borrowed', person: 'B', amount: 40, accountId: 'bk', settled: true }];
-  const del = PL.deleteAccount(accts, debts, 'bk'); assert.deepEqual([del.accounts.map(a => a.id), del.debts.map(d => d.accountId), del.unlinked], [['cash'], [null, null], 1]); assert.equal(debts[0].accountId, 'bk');
-  assert.throws(() => PL.deleteAccount([accts[0]], [], 'cash'), /At least one/);
+  const del = PL.deleteAccount(accts, debts, 'bk', 'cash'); assert.deepEqual([del.accounts.map(a => a.id), del.debts.map(d => d.accountId), del.moved.debts], [['cash'], ['cash', 'cash'], 2]); assert.equal(debts[0].accountId, 'bk');
+  assert.throws(() => PL.deleteAccount(accts, debts, 'bk'), /move its history/); assert.throws(() => PL.deleteAccount(accts, debts, 'bk', 'bk'), /move its history/); assert.throws(() => PL.deleteAccount(accts, debts, 'bk', 'zz'), /move its history/);
+  assert.throws(() => PL.deleteAccount([accts[0]], [], 'cash', 'cash'), /At least one/);
   const lg = PL.addBalance([], accts, 'cash', 25, { now: new Date(0), id: 'x' }); assert.deepEqual(lg, [{ id: 'x', ts: '1970-01-01T00:00:00.000Z', type: 'add', accountId: 'cash', amount: 25 }]);
   assert.throws(() => PL.addBalance([], accts, 'cash', 0), /valid amount/); assert.throws(() => PL.addBalance([], accts, 'zz', 5), /not found/);
   assert.deepEqual(PL.addTransfer([], accts, 'cash', 'bk', 5, { now: new Date(0), id: 't' })[0], { id: 't', ts: '1970-01-01T00:00:00.000Z', type: 'transfer', fromId: 'cash', toId: 'bk', amount: 5 });
@@ -242,16 +334,19 @@ await t('repo plan ops persist under the legacy keys; planModel counts listed ac
   assert.deepEqual(store.get('mt_ledger_v1').map(e => [e.type, e.amount]), [['add', 200], ['transfer', 50]]); assert.equal(store.get('mt_ledger_v1')[0].ts, new Date(5000).toISOString());
   repo.addDebt({ type: 'lent', person: 'Rafi', amount: 300, accountId: 'cash' });
   let m = planModel(repo, now); const bal = () => Object.fromEntries(m.accounts.map(a => [a.id, a.balance]));
+  repo.updateCategory('expense', 'lunch', { archived: true });
+  assert.equal(planModel(repo, now).expenseCats.find(f => f.id === 'lunch').archived, true, 'budget rows mark archived categories');
+  repo.updateCategory('expense', 'lunch', { archived: false });
   assert.deepEqual(bal(), { cash: -150, bkash: 0, card: 0, [bank.id]: 1050 }); assert.equal(m.total, 900); assert.deepEqual([m.debts.owe, m.debts.receive, m.debts.lent.length, m.debts.lent[0].acctLabel], [0, 300, 1, 'Cash']);
   const id = store.get('mt_debts_v1')[0].id; repo.setDebtSettled(id, true); m = planModel(repo, now); assert.equal(bal().cash, 150); assert.equal(m.debts.receive, 0); assert.equal(store.get('mt_debts_v1')[0].settledDate, '2026-10-07');
   repo.addDebt({ type: 'borrowed', person: 'Mina', amount: 70, accountId: bank.id }); assert.equal(planModel(repo, now).total, 1270);
-  const r = repo.deleteAccount(bank.id); assert.equal(r.unlinked, 1); assert.equal(store.get('mt_debts_v1')[1].accountId, null); assert.equal(store.get('mt_accounts_v1').some(a => a.id === bank.id), false);
-  m = planModel(repo, now); assert.equal(m.total, 150); assert.equal(todayModel(repo, now).net, 150);                                                   // deleted account no longer counts anywhere
+  const r = await repo.deleteAccount(bank.id, 'cash'); assert.deepEqual([r.debts, r.ledger, r.dropped], [1, 0, 1]); assert.equal(store.get('mt_debts_v1')[1].accountId, 'cash'); assert.equal(store.get('mt_accounts_v1').some(a => a.id === bank.id), false);
+  m = planModel(repo, now); assert.equal(m.total, 1270, 'deleting an account does not change the total (history moved to Cash)'); assert.equal(todayModel(repo, now).net, 1270);
   assert.equal(m.debts.owe, 70); repo.removeDebt(store.get('mt_debts_v1')[1].id); assert.equal(planModel(repo, now).debts.owe, 0);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 1000 }); m = planModel(repo, now);
   const lunch = m.budgets.find(b => b.id === 'lunch'); assert.deepEqual([lunch.used, lunch.budget, lunch.state, lunch.onPace], [1000, 3100, 'ok', false]); assert.equal(m.budgetUsed, 1000); assert.equal(m.budgetTotal, 3720);
   assert.ok(Math.abs(m.goal.saved - legacyGoalSaved({ expense: repo.settings.expense, catTotals: { lunch: 1000 }, y: 2026, m: 9, today: now })) < 0.006); assert.equal(m.expenseCats.length, repo.settings.expense.length);
-  repo.setGoal(0); assert.equal(planModel(repo, now).goal.hasGoal, false); repo.deleteAccount('cash'); repo.deleteAccount('bkash'); assert.throws(() => repo.deleteAccount('card'), /At least one/); assert.equal(repo.settings.accounts.length, 1);   // the last account can never be deleted
+  repo.setGoal(0); assert.equal(planModel(repo, now).goal.hasGoal, false); await repo.deleteAccount('cash', 'bkash'); await repo.deleteAccount('bkash', 'card'); await assert.rejects(() => repo.deleteAccount('card', 'card'), /At least one/); assert.equal(repo.settings.accounts.length, 1);   // the last account can never be deleted
 });
 await t('insights: month summary, per-day, categories, trend, biggest, forecast (numbers worked out by hand)', async () => {
   reset(); const { store, repo } = mk(async () => true), now = new Date(2026, 9, 7);
@@ -328,7 +423,7 @@ await t('categories & sources: add / edit / pin / default account / reorder / de
   const src = repo.addCategory('income', { label: 'Tuition' }); assert.equal(repo.settings.income.length, ni + 1);
   await repo.addEntry(2026, 9, 7, { cat: c.id, amt: 40, acct: 'bkash', note: 'x' }); assert.equal(repo.categoryUsage(c.id).days, 1);
   const { store: s2, repo: r2 } = mk(async () => true); assert.ok(r2.settings.expense.some(f => f.id === c.id && f.pinned && f.defaultAcct === 'bkash') && r2.settings.income.some(f => f.id === src.id));   // survives a reload
-  repo.deleteCategory('expense', c.id); assert.equal(repo.catIds().includes(c.id), false); assert.equal(repo.getDay(2026, 9, 7)[c.id], 40);                                   // data stays stored
+  assert.throws(() => repo.deleteCategory('expense', c.id), /Archive it instead/); assert.equal(repo.catIds().includes(c.id), true, 'a category with data cannot be deleted');
   assert.throws(() => { repo.settings.income.slice(1).forEach(f => repo.deleteCategory('income', f.id)); repo.deleteCategory('income', repo.settings.income[0].id); }, /At least one income/);
 });
 await t('report: month and year numbers worked out by hand; xlsx is a valid zip; html escapes', async () => {
@@ -371,14 +466,16 @@ await t('pwa: manifest.json is valid and has its own icons/scope; sw.js precache
   const manifest = JSON.parse(nodeFs.readFileSync(new URL('manifest.json', SW_ROOT), 'utf8'));
   assert.deepEqual([manifest.start_url, manifest.scope, manifest.display], ['/apps/money/index.html', '/apps/money/', 'fullscreen']);
   assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 2, 'at least 192 + 512 icons');
-  manifest.icons.forEach(ic => { assert.ok(ic.purpose.includes('maskable'), 'maskable: ' + ic.src); assert.ok(/^\/apps\/money\//.test(ic.src), 'own icon, not the legacy one: ' + ic.src); });
+  manifest.icons.forEach(ic => { assert.ok(/^(any|maskable)$/.test(ic.purpose), 'one purpose per icon entry, not "any maskable": ' + ic.src); assert.ok(/^\/apps\/money\//.test(ic.src), 'own icon, not the legacy one: ' + ic.src); });
+  assert.ok(manifest.icons.some(ic => ic.purpose === 'maskable') && manifest.icons.some(ic => ic.purpose === 'any'), 'both an "any" and a "maskable" icon are declared');
   assert.ok(manifest.id, 'has its own id, so it installs separately from the legacy manifest-moneytracker.json');
   // ---- minimal service-worker-global-scope stub, just enough to exercise sw.js's own install/activate/message/fetch logic ----
   const ORIGIN = 'http://localhost:8123', abs = u => new URL(u, ORIGIN + '/').href;   // the real Cache API always keys by the fully-resolved URL
   const swListeners = {}, swCaches = new Map();   // cacheName -> Map(absoluteUrl -> fake Response)
   const PRECACHE_PATHS = new Set(nodeFs.readFileSync(new URL('sw.js', SW_ROOT), 'utf8').match(/'\/[^']+'/g).map(s => s.slice(1, -1).split('?')[0]));
   let swOffline = false;
-  const swFetch = async req => { if (swOffline) throw new Error('offline'); const url = typeof req === 'string' ? req : req.url, path = new URL(url, ORIGIN + '/').pathname, known = PRECACHE_PATHS.has(path) || path === '/apps/money/sw.js'; return { ok: known, status: known ? 200 : 404, url, clone() { return this; } }; };
+  let swHold = null;     // a promise the fake network waits for, to stop the background refresh finishing early
+  const swFetch = async req => { if (swOffline) throw new Error('offline'); if (swHold) await swHold; const url = typeof req === 'string' ? req : req.url, path = new URL(url, ORIGIN + '/').pathname, known = PRECACHE_PATHS.has(path) || path === '/apps/money/sw.js'; return { ok: known, status: known ? 200 : 404, url, clone() { return this; } }; };
   globalThis.self = { addEventListener: (type, fn) => { (swListeners[type] ||= []).push(fn); }, location: { origin: ORIGIN }, skipWaiting: () => { globalThis.__swSkipped = true; }, clients: { claim: async () => { globalThis.__swClaimed = true; } } };
   globalThis.caches = {
     open: async name => { if (!swCaches.has(name)) swCaches.set(name, new Map()); const m = swCaches.get(name);
@@ -398,15 +495,93 @@ await t('pwa: manifest.json is valid and has its own icons/scope; sw.js precache
   const w2 = []; await swListeners.activate[0]({ waitUntil: p => w2.push(p) }); await Promise.all(w2);
   assert.ok(!swCaches.has('money-shell-v0'), 'stale cache version dropped on activate'); assert.equal(globalThis.__swClaimed, true);
   swListeners.message[0]({ data: { type: 'SKIP_WAITING' } }); assert.equal(globalThis.__swSkipped, true, 'the update-toast Reload action (sw-register.js) can take over immediately');
-  let p1; swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/app.css' }, respondWith: p => { p1 = p; } });
+  let p1, release; const kept = []; swHold = new Promise(r => { release = r; });
+  swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/app.css' }, respondWith: p => { p1 = p; }, waitUntil: p => kept.push(p) });
   const r1 = await p1; assert.equal(new URL(r1.url, ORIGIN + '/').pathname, '/apps/money/app.css', 'cached file served instantly');
+  assert.equal(kept.length, 1, 'L9: the page already has its cached copy, the refresh is still running, and it was handed to event.waitUntil BEFORE the response finished (called later from inside the refresh, waitUntil throws and the cache never updates)');
+  swHold = null; release(); await Promise.all(kept);
   let touched = false;
   swListeners.fetch[0]({ request: { method: 'GET', url: 'https://fonts.googleapis.com/x' }, respondWith: () => { touched = true; } });
   assert.equal(touched, false, 'cross-origin requests (fonts, Firebase) are left alone entirely');
   swListeners.fetch[0]({ request: { method: 'POST', url: ORIGIN + '/apps/money/app.css' }, respondWith: () => { touched = true; } });
   assert.equal(touched, false, 'non-GET requests are left alone entirely');
   swOffline = true;
-  let p2; swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/index.html', mode: 'navigate' }, respondWith: p => { p2 = p; } });
+  let p2; swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/index.html', mode: 'navigate' }, respondWith: p => { p2 = p; }, waitUntil: () => {} });
   const r2 = await p2; assert.equal(new URL(r2.url, ORIGIN + '/').pathname, '/apps/money/index.html', 'offline navigation still gets the app shell from cache');
 });
-console.log(`${n} test groups passed (incl. expr, view-models, plan, insights, search, categories, report, calculator, pwa)`);
+
+// ───────────────────────── audit round 2: H5, H7, H8, H9, L1, L3, L4 ─────────────────────────
+await t('H5: Quick templates travel with the JSON backup; merge adds/overwrites by id, replace uses the file (an old file without the key keeps this device\'s), and a template whose category is gone is dropped', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const a = mk(async () => true).repo;
+  a.addTemplate({ id: 't1', label: 'Rickshaw', cat: 'transport', amt: 30, acct: 'cash' }); a.addTemplate({ id: 't2', label: 'Lunch', cat: 'lunch', amt: 120, acct: 'cash' });
+  const snap = a.snapshot(); assert.deepEqual(snap.templates.map(x => x.label), ['Rickshaw', 'Lunch']);
+  assert.equal('templates' in buildBackup({ ...snap, templates: [] }), false, 'no templates → no key, so files from users without templates look exactly as before');
+  const fresh = () => { reset(); Object.keys(cloud).forEach(k => delete cloud[k]); return mk(async () => true).repo; };
+  const localOf = r => ({ days: {}, expense: r.settings.expense, income: r.settings.income, accounts: r.settings.accounts, goal: 0, ledger: [], debts: [], lastAccounts: {}, templates: r.settings.templates });
+  // replace on a new device
+  let b = fresh(), res = parseBackup(JSON.stringify(snap)); assert.ok(res.ok);
+  b.applyImport(planImport({ mode: 'replace', local: localOf(b), payload: res.payload }), res.payload);
+  assert.deepEqual(b.listTemplates().map(x => x.label), ['Rickshaw', 'Lunch'], 'restored after replace');
+  // an old backup (no templates key) must not wipe this device's templates
+  b = fresh(); b.addTemplate({ id: 'mine', label: 'Mine', cat: 'dinner', amt: 5, acct: 'cash' });
+  const old = { ...snap }; delete old.templates; res = parseBackup(JSON.stringify(old));
+  b.applyImport(planImport({ mode: 'replace', local: localOf(b), payload: res.payload }), res.payload);
+  assert.deepEqual(b.listTemplates().map(x => x.id), ['mine'], 'old file keeps local templates');
+  // merge: by id, backup wins, nothing deleted
+  b = fresh(); b.addTemplate({ id: 't1', label: 'Rickshaw (old)', cat: 'transport', amt: 99, acct: 'cash' }); b.addTemplate({ id: 'mine', label: 'Mine', cat: 'dinner', amt: 5, acct: 'cash' });
+  res = parseBackup(JSON.stringify(snap)); b.applyImport(planImport({ mode: 'merge', local: localOf(b), payload: res.payload }), res.payload);
+  assert.deepEqual(b.listTemplates().map(x => x.id + ':' + x.label), ['t1:Rickshaw', 'mine:Mine', 't2:Lunch']);
+  // category not in the restored categories → template dropped; malformed entries ignored
+  b = fresh(); res = parseBackup(JSON.stringify({ ...snap, templates: [{ id: 'g', label: 'Ghost', cat: 'no-such-category' }, null, { label: 'no id', cat: 'lunch' }, { id: 'ok', label: 'Ok', cat: 'lunch', amt: 1, acct: 'cash' }] }));
+  b.applyImport(planImport({ mode: 'replace', local: localOf(b), payload: res.payload }), res.payload);
+  assert.deepEqual(b.listTemplates().map(x => x.id), ['ok']);
+});
+await t('H7: dates are the LOCAL calendar day (toISOString() is UTC: in Dhaka it names yesterday between 00:00 and 06:00)', async () => {
+  const { spawnSync } = await import('node:child_process'), href = f => JSON.stringify(new URL(f, import.meta.url).href);
+  const code = `const { isoLocal } = await import(${href('../../shared/fmt.js')}); const { backupFileName } = await import(${href('../data/backup.js')});
+    const d = new Date(2026, 10, 15, 2, 0); console.log(JSON.stringify([new Date().getTimezoneOffset(), isoLocal(d), d.toISOString().slice(0, 10), backupFileName('backup', d)]));`;
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', code], { env: { ...process.env, TZ: 'Asia/Dhaka' }, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr); const [off, local, utc, name] = JSON.parse(r.stdout);
+  assert.equal(local, '2026-11-15'); assert.equal(name, 'money-tracker-backup-2026-11-15.json');
+  if (off === -360) assert.equal(utc, '2026-11-14', 'sanity: 02:00 in Dhaka is still the 14th in UTC, the day the old code used'); else console.log('      (TZ=Asia/Dhaka not honoured on this OS: only the local-day part was checked)');
+  const { isoLocal } = await import('../../shared/fmt.js'); assert.equal(isoLocal(new Date(2026, 0, 5, 23, 59)), '2026-01-05'); assert.equal(isoLocal(new Date(2026, 11, 31, 0, 0)), '2026-12-31');
+});
+await t('H8: amounts accept Bengali digits and the Taka sign; a comma only counts as digit grouping (1,5 is rejected, not read as 15)', async () => {
+  const { evalExpr } = await import('../domain/expr.js');
+  assert.equal(evalExpr('\u09EB\u09E6\u09E6'), 500); assert.equal(evalExpr('\u09F3\u09E7,\u09E8\u09E6\u09E6'), 1200); assert.equal(evalExpr('\u09EB + \u09E9'), 8); assert.equal(evalExpr('\u09E7\u09E6\u09E6\u00D7\u09E8'), 200); assert.equal(evalExpr('\u09E8\u09EB.\u09EB'), 25.5);
+  assert.equal(evalExpr('1,200 \u00D7 2'), 2400, 'western grouping'); assert.equal(evalExpr('1,20,000'), 120000, 'lakh grouping, the one the app itself prints'); assert.equal(evalExpr('12,34,567.50'), 1234567.5); assert.equal(evalExpr('1,200,300+1'), 1200301);
+  assert.equal(evalExpr('1,5'), null, 'a decimal comma is a typo here, not 15'); assert.equal(evalExpr('5,'), null); assert.equal(evalExpr('1,2345'), null); assert.equal(evalExpr('12,34'), null);
+  assert.equal(evalExpr('500'), 500); assert.equal(evalExpr('(20+5)/2'), 12.5); assert.equal(evalExpr('abc'), null); assert.equal(evalExpr('5/0'), null);
+});
+await t('H9: CSV keeps a negative adjustment as a number; text cells that look like formulas are still defused', async () => {
+  const { entriesToCsv } = await import('../data/export.js');
+  const day = { lunch: 100, entries: [{ id: 'a', cat: 'lunch', amt: 150, acct: 'cash', note: '=1+1', ts: 1 }, { id: 'adj_lunch', cat: 'lunch', amt: -50, acct: 'cash', note: '-note', ts: 2, adj: true }] };
+  const rows = entriesToCsv({ days: [{ y: 2026, m: 9, d: 7, doc: day }], expense: [{ id: 'lunch', label: 'Lunch' }], income: [], accounts: [{ id: 'cash', label: 'Cash' }], catIds: ['lunch'], defaultAcct: 'cash', now: 0 }).split('\r\n').map(l => l.split(','));
+  assert.deepEqual(rows[0], ['Date', 'Type', 'Category', 'Amount', 'Account', 'Note']);
+  assert.equal(rows[1][3], '150'); assert.equal(rows[2][3], '-50', 'negative Amount stays a plain number (was \'-50, which Excel reads as text)');
+  assert.equal(rows[1][5], "'=1+1", 'a note that starts with = is still defused'); assert.equal(rows[2][5], "'-note");
+});
+await t('L1: categoryUseCounts gives the same numbers as categoryUseCount for every category, in one pass', () => {
+  const days = [{ doc: { lunch: 50, entries: [{ id: '1', cat: 'lunch', amt: 50 }] } }, { doc: { lunch: 30, dinner: 20 } },
+    { doc: { lunch: 15, self: 100, entries: [{ id: 'a', cat: 'lunch', amt: 10 }, { id: 'b', cat: 'lunch', amt: 5 }, { id: 'c', cat: 'self', amt: 100 }] } }, { doc: {} }, { doc: { dinner: 0, entries: [] } }, { doc: null }];
+  const ids = ['lunch', 'dinner', 'transport', 'self'], all = CT.categoryUseCounts(days, ids);
+  ids.forEach(id => assert.equal(all[id], CT.categoryUseCount(days, id), id));
+  assert.deepEqual(all, { lunch: 4, dinner: 1, transport: 0, self: 1 });
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { repo } = mk(async () => true);
+  assert.equal(typeof repo.categoryUseCounts, 'function'); assert.equal(repo.categoryUseCounts().lunch, 0);
+});
+await t('L3: adding an entry with an older time (Undo of a delete) keeps entries in time order, so reconcile() sees no change', () => {
+  const c = { catIds: CATS, defaultAcct: 'cash', now: 1000 };
+  let doc = addEntry({}, { cat: 'lunch', amt: 100, ts: 2000 }, c).doc; doc = addEntry(doc, { cat: 'dinner', amt: 50, ts: 1000 }, c).doc;
+  assert.deepEqual(doc.entries.map(e => e.cat), ['dinner', 'lunch']); assert.equal(reconcile(doc, CATS, c).changed, false, 'no "safety backup" prompt for a pure re-order');
+  const del = deleteEntry(doc, doc.entries[0].id, c); doc = restoreEntry(del.doc, del.removed, c).doc;
+  assert.deepEqual(doc.entries.map(e => e.cat), ['dinner', 'lunch']); assert.equal(reconcile(doc, CATS, c).changed, false);
+});
+await t('L4: worstBudget is the category furthest over its budget, not the first one stuck at 100%', async () => {
+  reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { repo } = mk(async () => true);
+  repo.setBudgets({ lunch: 100, dinner: 100, transport: 100 });
+  await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 150, acct: 'cash' }); await repo.addEntry(2026, 9, 7, { cat: 'dinner', amt: 300, acct: 'cash' }); await repo.addEntry(2026, 9, 7, { cat: 'transport', amt: 20, acct: 'cash' });
+  const td = todayModel(repo, new Date(2026, 9, 7)); assert.equal(td.worstBudget.id, 'dinner', 'dinner is 3x over, lunch 1.5x');
+  assert.equal(td.budgets.find(b => b.id === 'lunch').pct, 100, 'pct itself is still capped at 100 (the bar)');
+});
+console.log(`${n} test groups passed (incl. expr, view-models, plan, insights, search, categories, report, calculator, pwa, audit round 2)`);

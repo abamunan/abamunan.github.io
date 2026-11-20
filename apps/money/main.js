@@ -86,9 +86,12 @@ initPWA(app);   // service worker + install-prompt tracking; never blocks first 
     const user = fsMod && await fsMod.optionalUser();
     if (!user) { say('Local only', 'sync--wait', 'Not signed in \u2014 changes are saved on this device only'); return; }
     app.remote = fsMod.firestoreRemote({ overwrite: true }); await store.setRemote(app.remote); say('Syncing\u2026');
-    const rep = await Promise.race([initialSync(repo, store, name => splash.step(name)), new Promise(r => setTimeout(() => r(null), 6000))]);
-    render(); say(store.pendingCount() ? `${store.pendingCount()} unsynced` : 'Synced', store.pendingCount() ? 'sync--wait' : '');
-    if (rep?.errors?.length) toast('Some data could not be synced. Working from this device.', { error: true });
+    const sync = initialSync(repo, store, name => splash.step(name));
+    const done = rep => { render(); say(store.pendingCount() ? `${store.pendingCount()} unsynced` : 'Synced', store.pendingCount() ? 'sync--wait' : '');
+      if (rep?.errors?.length) toast('Some data could not be synced. Working from this device.', { error: true }); };
+    const rep = await Promise.race([sync, new Promise(r => setTimeout(() => r(null), 6000))]);
+    done(rep);
+    if (rep === null) sync.then(done, () => {});      // slow network: the sync keeps going after the 6 s wait, and the screen is redrawn when it finishes
   } catch (e) { console.warn(e); say('Offline', 'sync--wait', 'Offline \u2014 changes are saved on this device and sync when you are back online'); }
   finally { splash.finish(); }
 })();

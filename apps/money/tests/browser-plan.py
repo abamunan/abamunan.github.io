@@ -21,7 +21,8 @@ with sync_playwright() as p:
     def sheet_fill(label, value): pg.locator(f'.ui-sheet [aria-label="{label}"]').fill(value)
     def click(name, exact=True): pg.get_by_role("button", name=name, exact=exact).first.click()
     def submit(): pg.locator(".ui-sheet .add-save").click(); pg.wait_for_selector(".ui-sheet", state="detached", timeout=3000)
-    ok(pg.get_by_role("heading", name="Savings goal").count() == 1 and pg.get_by_role("heading", name="Accounts").count() == 1 and pg.get_by_role("heading", name="Debts & loans").count() == 1, "all four Plan sections render")
+    ok(pg.get_by_role("heading", name="Savings goal").count() == 1 and pg.get_by_role("heading", name="Debts & loans").count() == 1 and pg.get_by_role("button", name="Set budgets").count() == 1 and pg.get_by_role("heading", name="Accounts").count() == 0, "Plan shows budgets, savings goal and debts (accounts live on the Accounts tab now)")
+    go = lambda tab: (pg.evaluate("t => { location.hash = t }", tab), pg.wait_for_timeout(400))
     pg.screenshot(path="test-output/plan-0-empty.png", full_page=True)
     # budgets
     click("Set budgets"); pg.wait_for_selector(".ui-sheet")
@@ -36,7 +37,7 @@ with sync_playwright() as p:
     click("Set a goal"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Monthly target (৳). 0 removes the goal.", "1500"); submit()
     ok(pg.locator("main").inner_text().count("target") >= 1 and ls("mt_savings_goal_v1") == 1500, "goal saved and progress card shown")
     # account: add, add money, transfer
-    click("Add account"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Name", "Bank"); submit()
+    go("accounts"); click("Add account"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Name", "Bank"); submit()
     ok(len(ls("mt_accounts_v1")) == 4, "account added")
     pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Add money"); pg.wait_for_selector(".ui-sheet")
     sheet_fill("Amount (৳)", "1000"); submit()
@@ -45,16 +46,25 @@ with sync_playwright() as p:
     sheet_fill("Amount (৳)", "250"); submit()
     lg = ls("mt_ledger_v1"); ok(lg[1]["type"] == "transfer" and lg[1]["fromId"] != lg[1]["toId"] and lg[1]["amount"] == 250, "transfer recorded between two different accounts")
     ok("Total balance" in pg.inner_text("main"), "total balance row present")
+    pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Archive"); pg.wait_for_timeout(300)
+    ok(ls("mt_accounts_v1")[3].get("archived") is True and "Bank (archived)" in pg.inner_text("main"), "account can be archived without changing its balance")
+    go("today"); pg.locator("#fab").click(); pg.wait_for_selector(".ui-sheet"); ok(pg.locator('[aria-label="Account"] button').filter(has_text="Bank").count() == 0, "archived account is hidden from the Add picker"); pg.keyboard.press("Escape")
+    go("accounts"); pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Unarchive"); pg.wait_for_timeout(300)
+    ok(ls("mt_accounts_v1")[3].get("archived") is not True, "account can be unarchived")
     # debts
-    click("Add debt or loan"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Person", "Rafi"); sheet_fill("Amount (৳)", "300"); submit()
+    go("plan"); click("Add debt or loan"); pg.wait_for_selector(".ui-sheet"); sheet_fill("Person", "Rafi"); sheet_fill("Amount (৳)", "300"); submit()
     d = ls("mt_debts_v1"); ok(len(d) == 1 and d[0]["type"] == "borrowed" and d[0]["person"] == "Rafi" and d[0]["amount"] == 300 and d[0]["settled"] is False, "debt saved with legacy shape")
     click("Mark repaid"); ok(ls("mt_debts_v1")[0]["settled"] is True and ls("mt_debts_v1")[0]["settledDate"] == "2026-10-08", "debt marked repaid with today's (mocked) date")
     pg.screenshot(path="test-output/plan-1-filled.png", full_page=True)
     pg.get_by_role("button", name="Delete", exact=True).last.click(); pg.wait_for_selector(".ui-confirm"); pg.locator(".ui-confirm .ui-btn--danger").click(); pg.wait_for_timeout(300)
     ok(ls("mt_debts_v1") == [], "debt deleted after confirmation")
-    # delete account (confirm), keep at least one
-    pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); click("Delete"); pg.wait_for_selector(".ui-confirm"); pg.locator(".ui-confirm .ui-btn--danger").click(); pg.wait_for_timeout(300)
-    ok(len(ls("mt_accounts_v1")) == 3, "account deleted")
+    # delete account: choose where its history goes (Cash is pre-selected), confirm the safety backup
+    go("accounts"); pg.get_by_role("button", name="Bank, balance", exact=False).click(); pg.wait_for_selector(".ui-sheet"); pg.locator(".ui-sheet").get_by_role("button", name="Delete", exact=True).click(); pg.wait_for_selector(".ui-sheet .chip")
+    pg.get_by_role("button", name="Move history & delete account").click(); pg.wait_for_selector(".ui-confirm"); pg.get_by_role("button", name="File saved", exact=False).click(); pg.wait_for_timeout(400)
+    ok(len(ls("mt_accounts_v1")) == 3, "account deleted (history moved to Cash)")
+    ok("self-transfer" in pg.inner_text("body"), "delete toast reports dropped self-transfers")
+    ok(sum(e["amount"] for e in ls("mt_ledger_v1") if e["type"] == "add") == 1000 and all(e["accountId"] in {a["id"] for a in ls("mt_accounts_v1")} for e in ls("mt_ledger_v1") if e["type"] == "add"), "Add money kept, now on the account it moved to")
+    go("plan")
     # reload: everything persisted; today tab uses the new budgets
     pg.reload(); pg.wait_for_selector("#splash", state="detached", timeout=10000); ok("3,100" in pg.inner_text("main") or "3100" in pg.inner_text("main"), "budgets survive a reload")
     pg.goto("http://localhost:8123/apps/money/index.html#today"); pg.wait_for_selector("#splash", state="detached", timeout=10000); ok("Budget this month" in pg.inner_text("main") and "No budgets set yet" not in pg.inner_text("main"), "Today tab picks up the budgets")

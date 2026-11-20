@@ -35,6 +35,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dev tools
+        run: npm install --no-audit --no-fund
+      - name: Check for undefined names
+        run: npm run lint:names
       - name: Run unit tests
         run: npm test
       - name: Setup Pages
@@ -52,6 +56,9 @@ jobs:
             --exclude='*.pptx' \
             --exclude='apps/*/tests' \
             --exclude='apps/*/tools' \
+            --exclude='tsconfig.check.json' \
+            --exclude='node_modules' \
+            --exclude='package-lock.json' \
             ./ dist/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

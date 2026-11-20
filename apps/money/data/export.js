@@ -1,9 +1,9 @@
 // CSV of every entry (one row per entry). Pure: no DOM, no storage. Opens cleanly in Excel (BOM added by the caller).
 import { reconcile } from '../domain/reconcile.js';
 const FORMULA_RE = /^[=+\-@\t\r]/;
-const q = v => {
+const q = (v, text = true) => {                              // text=false for the numeric Amount column: a negative adjustment must stay a number
   let s = String(v ?? '');
-  if (FORMULA_RE.test(s)) s = "'" + s;
+  if (text && FORMULA_RE.test(s)) s = "'" + s;
   return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 };
 export function entriesToCsv({ days, expense, income, accounts, catIds, defaultAcct, now }) {
@@ -17,5 +17,5 @@ export function entriesToCsv({ days, expense, income, accounts, catIds, defaultA
       rows.push([date, type, cat, e.amt, acct.get(e.acct) ?? acct.get(defaultAcct) ?? (e.acct || ''), e.note || '']);
     }
   }
-  return rows.map(r => r.map(q).join(',')).join('\r\n');
+  return rows.map((r, i) => r.map((v, c) => q(v, !(i > 0 && c === 3))).join(',')).join('\r\n');   // c === 3 is Amount
 }

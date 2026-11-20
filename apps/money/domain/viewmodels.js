@@ -28,7 +28,7 @@ export function todayModel(repo, today = new Date()) {
   const rows = budgetRows({ expenseCats: repo.settings.expense, catTotals: month.catTotals, y, m0, today });
   const doc = get(y, m0, d);
   return { net: round2(repo.settings.accounts.reduce((s, a) => s + (bal[a.id] || 0), 0)), accounts: repo.settings.accounts.map(a => ({ id: a.id, label: a.label, icon: a.icon, balance: bal[a.id] || 0 })),
-    budgets: rows, worstBudget: [...rows].sort((a, b) => b.pct - a.pct)[0] || null, month, today: { ...dayTotals(doc, exp, inc), locked: isDayLocked(y, m0, d, doc, today), entries: entryRows(repo, doc) } };
+    budgets: rows, worstBudget: [...rows].sort((a, b) => b.used / b.budget - a.used / a.budget)[0] || null /* uncapped ratio: pct stops at 100, so two over-budget rows would tie */, month, today: { ...dayTotals(doc, exp, inc), locked: isDayLocked(y, m0, d, doc, today), entries: entryRows(repo, doc) } };
 }
 
 // filter: {kind:'all'|'in'|'out', cat:string|null}
@@ -59,7 +59,7 @@ export function planModel(repo, today = new Date()) {
   const sorted = sortDebts(st.debts).map(row);
   return { y, m0, goal: goalProgress({ expenseCats: st.expense, catTotals: month.catTotals, goal: st.goal, y, m0, today }),
     budgets, budgetUsed: round2(budgets.reduce((t, b) => t + b.used, 0)), budgetTotal: round2(budgets.reduce((t, b) => t + b.budget, 0)),
-    expenseCats: st.expense.map(f => ({ id: f.id, label: f.label, icon: f.icon, budget: f.budget || 0 })),
+    expenseCats: st.expense.filter(f => !f.archived || f.budget > 0).map(f => ({ id: f.id, label: f.label, icon: f.icon, budget: f.budget || 0, archived: !!f.archived })),
     accounts, total: round2(accounts.reduce((t, a) => t + a.balance, 0)),
     debts: { ...debtTotals(st.debts), borrowed: sorted.filter(d => d.type === 'borrowed'), lent: sorted.filter(d => d.type === 'lent') } };
 }
@@ -101,7 +101,26 @@ export function accountModel(repo, accountId, sort = 'newest') {
       entries.push({ ...entry, y: day.y, m0: day.m, d: day.d, locked: isDayLocked(day.y, day.m, day.d, day.doc) });
     }
   }
-  entries.sort((a, b) => sort === 'oldest'
+  // Money that moved without being a day entry: Add money, transfers and unsettled debts. They change the balance, so they must be in the
+  // history and in Money in / Money out, otherwise opening + in - out would not add up to the balance.
+  const dateOf = v => { const d = typeof v === 'string' && v.length === 10 ? new Date(v + 'T00:00:00') : new Date(v); return Number.isNaN(d.getTime()) ? new Date(0) : d; };
+  const nameOf = id => repo.settings.accounts.find(a => a.id === id)?.label || 'another account';
+  const moves = [], move = (key, kind, icon, label, amt, when, note = '') => {
+    const d = dateOf(when); moves.push({ id: 'mv_' + key, move: true, kind, icon, label, amt, signed: kind === 'in' ? amt : -amt, acctLabel: account.label, note, y: d.getFullYear(), m0: d.getMonth(), d: d.getDate(), ts: d.getTime() });
+  };
+  (repo.settings.ledger || []).forEach((ev, i) => {
+    if (ev.type === 'add' && ev.accountId === account.id) move('a' + i, 'in', '\uFF0B', 'Money added', ev.amount, ev.ts, ev.note || '');
+    else if (ev.type === 'transfer') {
+      if (ev.fromId === account.id) move('o' + i, 'out', '\u2194', `Transfer to ${nameOf(ev.toId)}`, ev.amount, ev.ts, ev.note || '');
+      if (ev.toId === account.id) move('i' + i, 'in', '\u2194', `Transfer from ${nameOf(ev.fromId)}`, ev.amount, ev.ts, ev.note || '');
+    }
+  });
+  (repo.settings.debts || []).forEach((x, i) => {
+    if (x.settled || x.accountId !== account.id || (x.type !== 'lent' && x.type !== 'borrowed')) return;
+    move('d' + i, x.type === 'lent' ? 'out' : 'in', '\u{1F91D}', x.type === 'lent' ? `Lent to ${x.person}` : `Borrowed from ${x.person}`, x.amount, x.date, x.note || '');
+  });
+  const rows = [...entries, ...moves];
+  rows.sort((a, b) => sort === 'oldest'
     ? a.y - b.y || a.m0 - b.m0 || a.d - b.d || a.ts - b.ts
     : sort === 'amount-high'
       ? Math.abs(b.signed) - Math.abs(a.signed) || b.ts - a.ts
@@ -111,9 +130,12 @@ export function accountModel(repo, accountId, sort = 'newest') {
   return {
     account,
     accounts: repo.settings.accounts.map(a => ({ ...a, balance: balances[a.id] || 0 })),
-    entries,
-    income: round2(entries.filter(e => e.kind === 'in').reduce((sum, e) => sum + e.amt, 0)),
-    expense: round2(entries.filter(e => e.kind === 'out').reduce((sum, e) => sum + e.amt, 0)),
+    entries,                                                          // day entries only (editable)
+    moves,                                                            // Add money / transfers / unsettled debts (read-only)
+    rows,                                                             // both, sorted: what the history list shows
+    opening: round2(account.opening || 0),
+    income: round2(rows.filter(e => e.kind === 'in').reduce((sum, e) => sum + e.amt, 0)),
+    expense: round2(rows.filter(e => e.kind === 'out').reduce((sum, e) => sum + e.amt, 0)),   // opening + income - expense = balance
     balance: balances[account.id] || 0,
     total: round2(repo.settings.accounts.reduce((sum, a) => sum + (balances[a.id] || 0), 0))
   };

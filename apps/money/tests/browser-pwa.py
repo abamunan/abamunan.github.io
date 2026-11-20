@@ -25,7 +25,7 @@ with sync_playwright() as p:
     ok(link_href == "/apps/money/manifest.json", "index.html links its own manifest, not the legacy one")
     man = pg.evaluate("async () => (await fetch('/apps/money/manifest.json')).json()")
     ok(man["start_url"] == "/apps/money/index.html" and man["scope"] == "/apps/money/", "manifest start_url/scope point at /apps/money/")
-    ok(all("maskable" in (i.get("purpose") or "") for i in man["icons"]) and len(man["icons"]) >= 2, "icons are maskable, at least 192 + 512")
+    ok(all((i.get("purpose") or "") in ("any", "maskable") for i in man["icons"]) and {(i["sizes"], i["purpose"]) for i in man["icons"]} >= {("192x192", "any"), ("512x512", "any"), ("192x192", "maskable"), ("512x512", "maskable")}, "icons: one purpose per entry; 192 and 512, each as \"any\" and as \"maskable\"")
     for i in man["icons"]:
         st = pg.evaluate("async u => (await fetch(u)).status", i["src"]); ok(st == 200, "icon reachable: " + i["src"])
 
@@ -51,7 +51,7 @@ with sync_playwright() as p:
     pg2.on("pageerror", lambda e: errs.append("offline pageerror: " + str(e)))
     pg2.on("console", lambda m: errs.append("offline console." + m.type + ": " + m.text) if noisy(m) else None)
     pg2.goto(URL); pg2.wait_for_selector("#splash", state="detached", timeout=10000)
-    ok(pg2.locator("#tabbar button").count() == 5 and pg2.get_attribute("#tabbar [data-tab=today]", "aria-current") == "page", "app opens fully offline (app shell served from cache)")
+    ok(pg2.locator("#tabbar button").count() == 6 and pg2.get_attribute("#tabbar [data-tab=today]", "aria-current") == "page", "app opens fully offline (app shell served from cache)")
     pg2.close(); ctx.set_offline(False)
 
     # install prompt: headless Chromium won't fire beforeinstallprompt on its own, so simulate the browser's event
