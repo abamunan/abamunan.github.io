@@ -20,7 +20,7 @@ export function matchEntry(e, dText, tokens) {
     if (NUM.test(t)) {
       return Number(t.replace(/,/g, '')) === e.amt || text.includes(t) || words.includes(t);
     }
-    return text.includes(t) || dText.includes(t);
+    return text.includes(t) || (t.length >= 3 ? dText.includes(t) : words.includes(t));   // 1-2 letters must be a whole date word: "a" no longer matches every month name
   });
 }
 

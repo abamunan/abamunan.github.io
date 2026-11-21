@@ -49,7 +49,7 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   amount.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); save(); } });   // save() evaluates the expression
   const press = k => { if (k === 'C') amount.value = ''; else if (k === '\u232B') amount.value = amount.value.slice(0, -1); else amount.value += k; paintAmount(); };
   const pad_ = h('div', { class: 'keypad' }, KEYS.flat().map(k => h('button', { type: 'button', class: 'key' + ('+\u2212\u00D7\u00F7='.includes(k) || k === '\u232B' ? ' key--op' : ''), 'aria-label': KEY_LABEL[k] || k, onclick: () => press(k) }, k)));
-  const dateIn = h('input', { class: 'ui-input', type: 'date', 'aria-label': 'Date', value: toInput(S.date), onchange: ev => { const [y, m, d] = ev.target.value.split('-').map(Number); if (y) S.date = new Date(y, m - 1, d); } });
+  const dateIn = h('input', { class: 'ui-input', type: 'date', 'aria-label': 'Date', value: toInput(S.date), onchange: ev => { const [y, m, d] = ev.target.value.split('-').map(Number); if (y) S.date = new Date(y, m - 1, d); else { ev.target.value = toInput(S.date); toast('Pick a date', { error: true }); } } });   // a cleared field no longer silently keeps the old date
   const noteIn = h('input', { class: 'ui-input', type: 'text', maxlength: '200', 'aria-label': 'Note (optional)', placeholder: 'e.g. Biryani #lunch', value: S.note, oninput: ev => { S.note = ev.target.value; } });
   
   const existingTags = searchTagsModel(repo);
@@ -80,7 +80,9 @@ export function openAddSheet(repo, { date = new Date(), kind = 'out', entry = nu
   dateIn.addEventListener('change', paintSum); noteIn.addEventListener('input', paintSum); paintSum();
   let sheet;
   const fail = e => toast(e?.message || 'Could not save', { error: true });
-  async function save() {
+  let saving = false;
+  async function save() { if (saving) return; saving = true; saveBtn.disabled = true; try { await saveNow(); } finally { saving = false; saveBtn.disabled = false; } }   // one save at a time: a double tap can never add the entry twice
+  async function saveNow() {
     const amt = evalExpr(amount.value);
     if (amt == null || amt === 0 || (amt < 0 && !entry?.adj)) { toast('Enter an amount greater than 0', { error: true }); amount.focus(); return; }
     const y = S.date.getFullYear(), m0 = S.date.getMonth(), d = S.date.getDate(), body = { cat: S.cat, amt, acct: S.acct, note: S.note };

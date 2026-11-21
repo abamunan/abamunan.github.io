@@ -47,7 +47,7 @@ export function categoryUseCounts(days, ids) {
   for (const { doc } of days) {
     if (!doc || typeof doc !== 'object') continue;
     const per = {};
-    for (const e of Array.isArray(doc.entries) ? doc.entries : []) if (e && e.cat in out) per[e.cat] = (per[e.cat] || 0) + 1;
+    for (const e of Array.isArray(doc.entries) ? doc.entries : []) if (e && Object.hasOwn(out, e.cat)) per[e.cat] = (per[e.cat] || 0) + 1;
     for (const id of ids) { if (per[id]) out[id] += per[id]; else if (Number(doc[id])) out[id] += 1; }
   }
   return out;
@@ -68,18 +68,25 @@ function categoryUsageStats(days, id) {
 }
 
 // Data saved under a category id that is no longer in the list (deleted by an older version). It is invisible in totals, reports and
-// Insights, so it is surfaced here and can be restored. A day counts once per id; flat (old-format) amounts are recognised by their
-// ts_/acct_/note_ companions so that unrelated numeric fields are never mistaken for categories.
-export function orphanCategories(days, knownIds) {
-  const known = new Set(knownIds), out = new Map();
+// Insights, so it is surfaced here and can be restored. A day counts once per id.
+// A flat (old-format) amount is recognised when
+//   1. it has a ts_/acct_/note_ companion (the app always wrote those together), or
+//   2. it has none (very old data) but the id is KNOWN to have been a category: it is in `formerIds` (default ids, ids of removed
+//      categories, ids templates still point at) or it looks like an id this app generated (c + base36 time + random, e.g. cmf3k9x2a1b4).
+// Metadata (updatedAt, locked, ...) and any other number are never taken for a category: they fail all of the above.
+const RESERVED = /^(updatedAt|createdAt|locked|lockedAt|v|version|date|ts|total|schema)$|At$/;
+const GENERATED_ID = /^c[0-9a-z]{11,13}$/;
+export function orphanCategories(days, knownIds, formerIds = []) {
+  const known = new Set(knownIds), former = new Set(formerIds), out = new Map();
   const seen = (id, amt) => { const o = out.get(id) || { id, days: 0, total: 0 }; o.days++; o.total += amt; out.set(id, o); };
+  const evidence = (doc, k) => doc['ts_' + k] !== undefined || doc['acct_' + k] !== undefined || doc['note_' + k] !== undefined || former.has(k) || GENERATED_ID.test(k);
   for (const { doc } of days) {
     if (!doc || typeof doc !== 'object') continue;
     const here = new Map();
     for (const e of Array.isArray(doc.entries) ? doc.entries : []) if (e && e.cat && !known.has(e.cat)) here.set(e.cat, (here.get(e.cat) || 0) + (Number(e.amt) || 0));
     for (const k of Object.keys(doc)) {
-      if (/^(note|acct|ts)_/.test(k) || k === 'entries' || known.has(k) || here.has(k) || typeof doc[k] !== 'number') continue;
-      if (doc['ts_' + k] !== undefined || doc['acct_' + k] !== undefined || doc['note_' + k] !== undefined) here.set(k, Number(doc[k]) || 0);
+      if (/^(note|acct|ts)_/.test(k) || k === 'entries' || known.has(k) || here.has(k) || RESERVED.test(k) || typeof doc[k] !== 'number' || !Number.isFinite(doc[k])) continue;
+      if (doc[k] !== 0 && evidence(doc, k) || doc['ts_' + k] !== undefined || doc['acct_' + k] !== undefined || doc['note_' + k] !== undefined) here.set(k, Number(doc[k]) || 0);
     }
     for (const [id, amt] of here) seen(id, amt);
   }

@@ -69,9 +69,47 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // users — each user can only touch their own subtree
-    match /users/{uid}/{rest=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    // users — each signed-in user can only touch THEIR OWN subtree, and only
+    // the collections the site really uses. The old catch-all
+    // `match /users/{uid}/{rest=**}` was removed on purpose: Firestore ORs every
+    // matching rule, so leaving it in place would make the stricter Money Tracker
+    // rules below useless (anything they refuse, the catch-all would allow).
+    // Anything not listed here is now denied. If you add a new per-user
+    // collection to the site, add a `match` for it in this block.
+    //
+    // Collections in use (grep for 'users', uid):
+    //   moneytracker, moneytracker_meta   apps/money        (checked below)
+    //   healthtracker, healthtracker_meta apps/health
+    //   english_days, english_meta        english-tracker.html
+    //   typemaster                        TypeMaster.html
+    //   duzoology                         du-zoology-cg-planner.html
+    //   profile                           auth.js
+    match /users/{uid}/healthtracker/{id}       { allow read, write: if isUser(uid); }
+    match /users/{uid}/healthtracker_meta/{id}  { allow read, write: if isUser(uid); }
+    match /users/{uid}/english_days/{id}        { allow read, write: if isUser(uid); }
+    match /users/{uid}/english_meta/{id}        { allow read, write: if isUser(uid); }
+    match /users/{uid}/typemaster/{id}          { allow read, write: if isUser(uid); }
+    match /users/{uid}/duzoology/{id}           { allow read, write: if isUser(uid); }
+    match /users/{uid}/profile/{id}             { allow read, write: if isUser(uid); }
+
+    // Money Tracker — one document per day, e.g. moneytracker/2026_10_7.
+    // Writes must look like a day document the app produces: the id is a date,
+    // `updatedAt` is a number (the incremental sync queries on it), `entries`
+    // is a list, `locked` a bool, and the document stays a sane size. Category
+    // amounts are flat fields named after the category id, so other keys are free.
+    match /users/{uid}/moneytracker/{dayId} {
+      allow read, delete: if isUser(uid);
+      allow create, update: if isUser(uid)
+                            && dayId.matches('^[0-9]{4}_[0-9]{1,2}_[0-9]{1,2}$')
+                            && isMoneyDay(request.resource.data);
+    }
+
+    // Money Tracker — the four shared documents. No other id is accepted.
+    match /users/{uid}/moneytracker_meta/{docId} {
+      allow read, delete: if isUser(uid);
+      allow create, update: if isUser(uid)
+                            && docId in ['settings', 'ledger', 'debts', 'deleted_days']
+                            && request.resource.data.keys().size() <= 60;
     }
 
     // passwordResetCooldowns — this flow runs BEFORE login, so request.auth
@@ -136,6 +174,19 @@ service cloud.firestore {
       return request.auth != null
           && request.auth.token.email_verified == true
           && request.auth.token.email.lower() == 'allmunanabdullah@gmail.com';
+    }
+
+    function isUser(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // A Money Tracker day document (see the /moneytracker match above).
+    function isMoneyDay(data) {
+      return data.keys().size() <= 400
+        && data.get('updatedAt', 0) is number
+        && data.get('entries', []) is list
+        && data.get('entries', []).size() <= 1000
+        && data.get('locked', false) is bool;
     }
 
     function isOwner(userId) {
