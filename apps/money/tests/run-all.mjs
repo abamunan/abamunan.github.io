@@ -16,6 +16,7 @@ const run = (name, cmd, args) => { const r = spawnSync(cmd, args, { cwd: root, e
 run('unit tests (run.mjs)', process.execPath, ['apps/money/tests/run.mjs']);
 run('cloud sync (sync-overwrite.mjs)', process.execPath, ['apps/money/tests/sync-overwrite.mjs']);
 run('incremental sync (sync-incremental.mjs)', process.execPath, ['apps/money/tests/sync-incremental.mjs']);
+run('audit fixes (audit-fixes.mjs)', process.execPath, ['apps/money/tests/audit-fixes.mjs']);
 
 const skips = [];
 const names = spawnSync(process.execPath, ['apps/money/tools/check-names.mjs'], { cwd: root, encoding: 'utf8' });

@@ -33,7 +33,7 @@ with sync_playwright() as p:
     ok("1,000" in s and "560" in s, "Money in = 1,000 and Money out = 560 (300 + 60 + 200)")
     ok("Opening balance" in s and "100" in s, "opening balance is shown, so opening + in - out = balance is visible")
     ok("5 transactions" not in s and "4" in s, "Transactions counts every row (4)")
-    ok(pg.locator(".account-history .erow--static").count() == 3 and pg.locator(".account-history button.erow").count() == 1, "moves are read-only rows; the day entry is still a tappable row")
+    ok(pg.locator(".account-history .erow--static").count() == 1 and pg.locator(".account-history button.erow").count() == 3, "Add money / Transfer rows are tappable (edit or delete); the loan row is read-only; the day entry stays tappable")
     pg.screenshot(path="test-output/account-history-cash.png", full_page=True)
     pg.select_option(".account-picker", "bkash"); pg.wait_for_timeout(300)
     ok("Transfer from Cash" in hist(), "bKash history shows the incoming transfer")

@@ -1,4 +1,5 @@
 // Safe arithmetic for the amount field ("100+50*2", "(20+5)/2"). No eval. Returns a number rounded to 2 dp, or null.
+import { round2 } from '../../shared/fmt.js';
 const GROUPED = /^(?:\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})*,\d{3})$/;   // western (1,234,567) or lakh/crore (12,34,567) digit grouping
 export function evalExpr(input) {
   const s = String(input ?? '')
@@ -13,6 +14,6 @@ export function evalExpr(input) {
     if (s[i] === '(') { i++; const v = expr(); if (s[i++] !== ')') throw 0; return v; } return num(); };
   const term = () => { let v = factor(); while (s[i] === '*' || s[i] === '/') { const op = s[i++]; const r = factor(); v = op === '*' ? v * r : v / r; } return v; };
   const expr = () => { let v = term(); while (s[i] === '+' || s[i] === '-') { const op = s[i++]; const r = term(); v = op === '+' ? v + r : v - r; } return v; };
-  try { const v = expr(); if (i !== s.length || !Number.isFinite(v)) return null; return Math.round(v * 100) / 100; } catch { return null; }
+  try { const v = expr(); if (i !== s.length || !Number.isFinite(v)) return null; return round2(v); } catch { return null; }
 }
 export const hasOperator = s => /[+\-*/\u00D7\u00F7\u2212]/.test(String(s).replace(/^-/, ''));

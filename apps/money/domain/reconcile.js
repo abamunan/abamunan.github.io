@@ -20,7 +20,7 @@ export function regenFlat(doc, cat) {
 
 export function reconcile(src, catIds, { defaultAcct = null, now = Date.now() } = {}) {
   const doc = clone(src);
-  let entries = Array.isArray(doc.entries) ? doc.entries.filter(e => e && e.cat && typeof e.amt === 'number') : [];
+  let entries = Array.isArray(doc.entries) ? doc.entries.map(e => (e && typeof e.amt === 'string' && e.amt.trim() !== '' && Number.isFinite(Number(e.amt)) ? { ...e, amt: Number(e.amt) } : e)).filter(e => e && e.cat && typeof e.amt === 'number' && Number.isFinite(e.amt)) : [];   // "100" (text) is read as 100; anything else non-numeric is dropped and the flat total's gap becomes an adjustment
   const adjusted = [];
   for (const cat of catIds) {
     const flat = round2(Number(doc[cat]) || 0);

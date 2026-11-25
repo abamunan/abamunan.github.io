@@ -53,7 +53,7 @@ try {
     const store = createStore({ outboxKey: NEW_KEYS.outbox, remote });
     Date.now = () => 1000; await initialSync(repo, store);
     Date.now = () => 1300; await initialSync(repo, store);
-    assert.deepEqual(calls, [{}, { since: 1000 }]);
+    assert.deepEqual(calls, [{}, { since: 1000 - 15 * 60 * 1000 }]);
     assert.equal(repo.days['2026_10_8'].lunch, 2);
   });
 
@@ -63,7 +63,7 @@ try {
     const store = createStore({ outboxKey: NEW_KEYS.outbox, remote });
     store.set(NEW_KEYS.sync, { last: 1000 }); Date.now = () => 1300;
     const report = await initialSync(repo, store);
-    assert.deepEqual(calls, [{ since: 1000 }, undefined]);
+    assert.deepEqual(calls, [{ since: 1000 - 15 * 60 * 1000 }, undefined]);
     assert.equal(report.errors.length, 0);
     assert.equal(repo.days['2026_10_7'].lunch, 3);
   });

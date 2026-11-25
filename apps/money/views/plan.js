@@ -41,24 +41,34 @@ function budgetsCard(m, app) {
 }
 
 // ── Debts ──
-function debtRow(d, app) {
-  const borrowed = d.type === 'borrowed', sub = [d.date && new Date(d.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), d.acctLabel && `${d.acctIcon || ''} ${d.acctLabel}`.trim(), d.note].filter(Boolean).join(' \u00B7 ');
+function debtRow(d, app, accts) {
+  const borrowed = d.type === 'borrowed', sub = [d.date && new Date(d.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), d.acctLabel && `${d.acctIcon || ''} ${d.acctLabel}`.trim(), d.paid > 0 && `${d.settled ? 'Paid' : 'Paid so far'} ${fmt(d.paid)}`, d.note].filter(Boolean).join(' \u00B7 ');
   const toggle = () => { try { app.repo.setDebtSettled(d.id, !d.settled); app.refresh(); } catch (e) { toast(e.message, { error: true }); } };
+  const payOpts = acctOptions(accts).concat(accts.some(a => a.id === d.accountId && a.archived) ? [{ value: d.accountId, label: `${d.acctIcon || ''} ${d.acctLabel}`.trim() }] : []);
+  const pay = () => formSheet({ title: borrowed ? `Repay ${d.person}` : `Received from ${d.person}`, submit: 'Save', fields: [
+    { name: 'amount', label: `Amount (৳). ${fmt(d.remaining)} is left.`, kind: 'amount', value: d.remaining, autofocus: true }, { name: 'date', label: 'Date', kind: 'date', value: today() },
+    { name: 'accountId', label: 'Account', kind: 'chips', value: d.accountId, options: payOpts }],
+    onSubmit: v => { app.repo.addDebtPayment(d.id, { amount: v.amount, date: v.date, accountId: v.accountId }); app.refresh(); toast(d.remaining - v.amount <= 0.004 ? 'Settled' : 'Payment saved'); } });
+  const edit = () => formSheet({ title: 'Edit entry', submit: 'Save', fields: [
+    { name: 'person', label: 'Person', kind: 'text', value: d.person, max: 40, autofocus: true }, { name: 'amount', label: 'Amount (৳)', kind: 'amount', value: d.amount },
+    { name: 'date', label: 'Date', kind: 'date', value: d.date || today() }, { name: 'note', label: 'Note (optional)', kind: 'text', value: d.note || '', max: 120 },
+    ...(d.paid > 0 ? [] : [{ name: 'accountId', label: 'Account', kind: 'chips', value: d.accountId, options: payOpts }])],
+    onSubmit: v => { app.repo.updateDebt(d.id, { person: v.person, amount: v.amount, date: v.date, note: v.note, ...(d.paid > 0 ? {} : { accountId: v.accountId }) }); app.refresh(); toast('Saved'); } });
   const del = async () => { if (!await confirmDialog({ title: 'Delete this entry?', message: `${d.person} \u00B7 ${fmt(d.amount)}`, confirmLabel: 'Delete', danger: true })) return; try { app.repo.removeDebt(d.id); app.refresh(); toast('Deleted'); } catch (e) { toast(e.message, { error: true }); } };
-  return h('div', { class: 'drow' + (d.settled ? ' drow--done' : '') }, h('div', { class: 'drow__top' }, h('span', { class: 'drow__who' }, d.person), h('span', { class: 'num' }, fmt(d.amount))), sub && h('div', { class: 'card__sub' }, sub),
-    h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'chip', 'aria-pressed': String(d.settled), onclick: toggle }, d.settled ? (borrowed ? '\u2713 Repaid' : '\u2713 Received') : (borrowed ? 'Mark repaid' : 'Mark received')), btn('Delete', del)));
+  return h('div', { class: 'drow' + (d.settled ? ' drow--done' : '') }, h('div', { class: 'drow__top' }, h('span', { class: 'drow__who' }, d.person), h('span', { class: 'num' }, d.paid > 0 && !d.settled ? `${fmt(d.remaining)} / ${fmt(d.amount)}` : fmt(d.amount))), sub && h('div', { class: 'card__sub' }, sub),
+    h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'chip', 'aria-pressed': String(d.settled), onclick: toggle }, d.settled ? (borrowed ? '\u2713 Repaid' : '\u2713 Received') : (borrowed ? 'Mark repaid' : 'Mark received')), !d.settled && btn('Part payment', pay), btn('Edit', edit), btn('Delete', del)));
 }
 function debtsCard(m, app) {
   const D = m.debts, accts = m.accounts;
   const add = () => formSheet({ title: 'Add debt or loan', submit: 'Add', fields: [
     { name: 'type', label: 'Type', kind: 'chips', value: debtTab, options: [{ value: 'borrowed', label: 'I borrowed (I owe)' }, { value: 'lent', label: 'I lent (they owe me)' }] },
     { name: 'person', label: 'Person', kind: 'text', max: 40, placeholder: 'Name', autofocus: true }, { name: 'amount', label: 'Amount (৳)', kind: 'amount', placeholder: '0' },
-    { name: 'accountId', label: 'Account', kind: 'chips', value: accts[0]?.id, options: acctOptions(accts) }, { name: 'date', label: 'Date', kind: 'date', value: today() }, { name: 'note', label: 'Note (optional)', kind: 'text', max: 120 }],
+    { name: 'accountId', label: 'Account', kind: 'chips', value: accts.find(a => !a.archived)?.id, options: acctOptions(accts) }, { name: 'date', label: 'Date', kind: 'date', value: today() }, { name: 'note', label: 'Note (optional)', kind: 'text', max: 120 }],
     onSubmit: v => { app.repo.addDebt({ type: v.type, person: v.person, amount: v.amount, accountId: v.accountId, date: v.date, note: v.note }); debtTab = v.type; app.refresh(); toast(v.type === 'borrowed' ? 'Added \u2014 you owe this' : 'Added \u2014 they owe you'); } });
   const list = D[debtTab];
   const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Debt type' }, [['borrowed', `I owe (${D.borrowed.length})`], ['lent', `Owed to me (${D.lent.length})`]].map(([k, l]) => h('button', { type: 'button', class: 'seg__btn', 'aria-pressed': String(debtTab === k), onclick: () => { debtTab = k; app.refresh(); } }, l)));
   return card('Debts & loans', h('div', { class: 'card--row card__sums' }, h('div', {}, h('div', { class: 'card__sub' }, 'You owe'), h('div', { class: 'num money-out' }, fmt(D.owe))), h('div', {}, h('div', { class: 'card__sub' }, "You'll receive"), h('div', { class: 'num money-in' }, fmt(D.receive)))),
-    seg, list.length ? h('div', { class: 'elist' }, list.map(d => debtRow(d, app))) : h('p', { class: 'empty' }, debtTab === 'borrowed' ? 'Nothing borrowed.' : 'Nothing lent.'), btn('Add debt or loan', add));
+    seg, list.length ? h('div', { class: 'elist' }, list.map(d => debtRow(d, app, accts))) : h('p', { class: 'empty' }, debtTab === 'borrowed' ? 'Nothing borrowed.' : 'Nothing lent.'), btn('Add debt or loan', add));
 }
 
 export function planView(el, app) {

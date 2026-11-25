@@ -1,7 +1,7 @@
 // Screen data, computed from the repo. Views render these and never touch storage.
 import { reconcile } from './reconcile.js';
 import { dayTotals, monthTotals, accountBalances, budgetRows, goalProgress } from './totals.js';
-import { debtTotals, sortDebts } from './plan.js';
+import { debtTotals, sortDebts, debtEffects, debtRemaining, debtPaid } from './plan.js';
 import { buildInsights, categoryDrill } from './insights.js';
 import { searchEntries, collectTags } from './search.js';
 import { isDayLocked } from '../../shared/lock.js';
@@ -56,7 +56,7 @@ export function planModel(repo, today = new Date()) {
   const budgets = budgetRows({ expenseCats: st.expense, catTotals: month.catTotals, y, m0, today });
   const accounts = st.accounts.map(a => ({ id: a.id, label: a.label, icon: a.icon, opening: a.opening || 0, balance: bal[a.id] || 0 }));
   const accts = new Map(st.accounts.map(a => [a.id, a])), row = d => ({ ...d, acctLabel: accts.get(d.accountId)?.label || '', acctIcon: accts.get(d.accountId)?.icon || '' });
-  const sorted = sortDebts(st.debts).map(row);
+  const sorted = sortDebts(st.debts).map(d => ({ ...row(d), remaining: debtRemaining(d), paid: debtPaid(d) }));
   return { y, m0, goal: goalProgress({ expenseCats: st.expense, catTotals: month.catTotals, goal: st.goal, y, m0, today }),
     budgets, budgetUsed: round2(budgets.reduce((t, b) => t + b.used, 0)), budgetTotal: round2(budgets.reduce((t, b) => t + b.budget, 0)),
     expenseCats: st.expense.filter(f => !f.archived || f.budget > 0).map(f => ({ id: f.id, label: f.label, icon: f.icon, budget: f.budget || 0, archived: !!f.archived })),
@@ -105,20 +105,20 @@ export function accountModel(repo, accountId, sort = 'newest') {
   // history and in Money in / Money out, otherwise opening + in - out would not add up to the balance.
   const dateOf = v => { const d = typeof v === 'string' && v.length === 10 ? new Date(v + 'T00:00:00') : new Date(v); return Number.isNaN(d.getTime()) ? new Date(0) : d; };
   const nameOf = id => repo.settings.accounts.find(a => a.id === id)?.label || 'another account';
-  const moves = [], move = (key, kind, icon, label, amt, when, note = '') => {
-    const d = dateOf(when); moves.push({ id: 'mv_' + key, move: true, kind, icon, label, amt, signed: kind === 'in' ? amt : -amt, acctLabel: account.label, note, y: d.getFullYear(), m0: d.getMonth(), d: d.getDate(), ts: d.getTime() });
+  const moves = [], move = (key, kind, icon, label, amt, when, note = '', extra = {}) => {
+    const d = dateOf(when); moves.push({ id: 'mv_' + key, move: true, kind, icon, label, amt, signed: kind === 'in' ? amt : -amt, acctLabel: account.label, note, y: d.getFullYear(), m0: d.getMonth(), d: d.getDate(), ts: d.getTime(), ...extra });
   };
   (repo.settings.ledger || []).forEach((ev, i) => {
-    if (ev.type === 'add' && ev.accountId === account.id) move('a' + i, 'in', '\uFF0B', 'Money added', ev.amount, ev.ts, ev.note || '');
+    if (ev.type === 'add' && ev.accountId === account.id) move('a' + i, 'in', '\uFF0B', 'Money added', ev.amount, ev.ts, ev.note || '', { ledgerId: ev.id, ledgerType: 'add' });
     else if (ev.type === 'transfer') {
-      if (ev.fromId === account.id) move('o' + i, 'out', '\u2194', `Transfer to ${nameOf(ev.toId)}`, ev.amount, ev.ts, ev.note || '');
-      if (ev.toId === account.id) move('i' + i, 'in', '\u2194', `Transfer from ${nameOf(ev.fromId)}`, ev.amount, ev.ts, ev.note || '');
+      if (ev.fromId === account.id) move('o' + i, 'out', '\u2194', `Transfer to ${nameOf(ev.toId)}`, ev.amount, ev.ts, ev.note || '', { ledgerId: ev.id, ledgerType: 'transfer' });
+      if (ev.toId === account.id) move('i' + i, 'in', '\u2194', `Transfer from ${nameOf(ev.fromId)}`, ev.amount, ev.ts, ev.note || '', { ledgerId: ev.id, ledgerType: 'transfer' });
     }
   });
-  (repo.settings.debts || []).forEach((x, i) => {
-    if (x.settled || x.accountId !== account.id || (x.type !== 'lent' && x.type !== 'borrowed')) return;
-    move('d' + i, x.type === 'lent' ? 'out' : 'in', '\u{1F91D}', x.type === 'lent' ? `Lent to ${x.person}` : `Borrowed from ${x.person}`, x.amount, x.date, x.note || '');
-  });
+  (repo.settings.debts || []).forEach((x, i) => debtEffects(x).forEach((ef, j) => {       // the same effects the balance uses, so history and balance always agree
+    if (ef.accountId !== account.id) return; const lent = x.type === 'lent';
+    move(`d${i}_${j}`, ef.delta < 0 ? 'out' : 'in', '\u{1F91D}', ef.payment ? (lent ? `Received from ${x.person}` : `Repaid to ${x.person}`) : (lent ? `Lent to ${x.person}` : `Borrowed from ${x.person}`), Math.abs(ef.delta), ef.date, x.note || '');
+  }));
   const rows = [...entries, ...moves];
   rows.sort((a, b) => sort === 'oldest'
     ? a.y - b.y || a.m0 - b.m0 || a.d - b.d || a.ts - b.ts

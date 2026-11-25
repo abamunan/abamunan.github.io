@@ -2,8 +2,8 @@
 // (see data/pwa.js + ../shared/sw-register.js), so it never touches the old moneytracker.html,
 // healthtracker.html, diary, garments or any other page on the site.
 //
-// Strategy: cache-first app shell, stale-while-revalidate in the background, so the app opens
-// instantly and still picks up changes next time it's online. Offline navigations fall back to
+// Strategy: code is network-first (falls back to the cache offline or after 4 s) so modules never get out of step after a deploy;
+// images are cache-first with a background refresh. Offline navigations fall back to
 // the cached index.html (this is a single-page app: the URL hash picks the tab, not the path).
 //
 // Update flow: a new SW install does NOT auto-activate over an existing one — it waits. When the
@@ -15,7 +15,7 @@
 // Bump CACHE_VERSION whenever a file in PRECACHE is added, removed or renamed, so old caches are
 // dropped on activate instead of lingering. Editing a file's CONTENTS does not need a bump: the
 // stale-while-revalidate fetch handler refreshes it in the background on the next load anyway.
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v15';
 const CACHE_NAME = `money-shell-${CACHE_VERSION}`;
 const SHELL_FALLBACK = '/apps/money/index.html';
 
@@ -110,6 +110,24 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;                // fonts, Firebase SDK, etc. go straight to the network
 
+  // Code (pages, scripts, styles, manifest): network first, so one reload can never mix new and old modules; the cached copy is used when offline or slow.
+  // Everything else (icons, images): cached copy now, refreshed in the background.
+  if (req.mode === 'navigate' || /\.(?:js|css|html|json)$/.test(url.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const res = await Promise.race([fetch(req), new Promise((_, no) => setTimeout(() => no(new Error('slow')), 4000))]);
+        if (res && res.ok) event.waitUntil(cache.put(req, res.clone()));
+        return res;
+      } catch {
+        const hit = await caches.match(req, { ignoreSearch: false });
+        if (hit) return hit;
+        if (req.mode === 'navigate') return (await caches.match(SHELL_FALLBACK)) || Response.error();
+        return Response.error();
+      }
+    })());
+    return;
+  }
   event.respondWith((async () => {
     const cached = await caches.match(req);
     const network = fetch(req).then(res => {

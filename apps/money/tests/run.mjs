@@ -89,7 +89,7 @@ await t('repo: lazy migration asks for a backup once per day; failed backup chan
   ok = true; const r = await repo.addEntry(2026, 9, 7, { cat: 'dinner', amt: 80, acct: 'card' }); assert.equal(calls, 2);
   assert.equal(r.doc.dinner, 80); assert.equal(r.doc.lunch, 150); assert.ok(flatSumOk(r.doc)); assert.equal(repo.settings.lastAccounts.dinner, 'card');
   store.set('mt_2026_10_6', { lunch: 20 }); await repo.addEntry(2026, 9, 6, { cat: 'transport', amt: 10 }); assert.equal(calls, 2);    // same day → no 2nd backup
-  await settle(); assert.ok(cloud['moneytracker/2026_10_7'].entries.length === 2); assert.ok(cloud['moneytracker_meta/settings'].lastAccounts);   // synced + new field only in settings doc
+  await settle(); assert.ok(cloud['moneytracker/2026_10_7'].entries.length === 2); assert.equal(store.get('mt2_last_accounts_v1').dinner, 'card');   // remembered account is saved on this device; it is deliberately NOT pushed alone (a stale device must not overwrite shared settings)
   assert.equal(repo.resolveAccount('dinner'), 'card'); assert.equal(repo.resolveAccount('lunch'), 'cash');
   repo.saveSettings({ expense: repo.settings.expense.map(f => f.id === 'dinner' ? { ...f, defaultAcct: 'bkash' } : f) }); assert.equal(repo.resolveAccount('dinner'), 'bkash');   // category default wins
 });
@@ -114,11 +114,11 @@ await t('import: Merge (backup wins on shared days, one-sided untouched) and Rep
   reset(); Object.keys(cloud).forEach(k => delete cloud[k]); const { store, repo } = mk(async () => true);
   store.set('mt_2026_10_1', { lunch: 10 }); store.set('mt_2026_10_2', { lunch: 20 });
   const legacy = JSON.stringify({ version: 1, exportedAt: 'x', categories: { expense: repo.settings.expense, income: repo.settings.income }, goal: 700, accounts: [...repo.settings.accounts, { id: 'bank', label: 'Bank', icon: 'b', opening: 5 }], ledger: [], debts: [{ id: 'd1', type: 'lent', person: 'A', amount: 5, accountId: 'cash', settled: false }], days: { mt_2026_10_2: { lunch: 99 }, mt_2026_10_3: { lunch: 30 }, bad_key: { lunch: 1 } } });
-  const parsed = parseBackup(legacy); assert.equal(parsed.ok, true); assert.deepEqual(parsed.stats, { days: 2, invalid: 1 });
+  const parsed = parseBackup(legacy); assert.equal(parsed.ok, true); assert.deepEqual(parsed.stats, { days: 2, invalid: 1, repaired: 0 });
   assert.equal(parseBackup('nope').ok, false); assert.equal(parseBackup('[]').ok, false); assert.equal(parseBackup('{"a":1}').ok, false);
   const local = () => ({ days: Object.fromEntries(repo.listDays().map(x => [x.key, x.doc])), ...repo.settings });
   const merge = planImport({ mode: 'merge', local: local(), payload: parsed.payload, cloudDayIds: ['2026_10_1', '2026_10_2', '2026_9_9'] });
-  assert.deepEqual(merge.summary, { mode: 'merge', backupDays: 2, overwritten: 1, newFromBackup: 1, localOnly: 1, deleteLocal: 0, deleteCloud: 0 });
+  assert.deepEqual(merge.summary, { mode: 'merge', backupDays: 2, overwritten: 1, newFromBackup: 1, redirected: 0, localOnly: 1, deleteLocal: 0, deleteCloud: 0 });
   const rep = planImport({ mode: 'replace', local: local(), payload: parsed.payload, cloudDayIds: ['2026_10_1', '2026_10_2', '2026_9_9'] });
   assert.deepEqual([rep.summary.deleteLocal, rep.summary.deleteCloud, rep.deleteCloudDayIds], [1, 2, ['2026_10_1', '2026_9_9']]);
   repo.applyImport(merge, parsed.payload); assert.deepEqual([store.get('mt_2026_10_1').lunch, store.get('mt_2026_10_2').lunch, store.get('mt_2026_10_3').lunch], [10, 99, 30]);
@@ -131,7 +131,7 @@ await t('sync: cloud never overwrites an unsent local edit; offline sync reports
   reset(); Object.keys(cloud).forEach(k => delete cloud[k]); failRemote = true; const { store, repo } = mk(async () => true);
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 100 });                        // stays in the outbox (offline)
   cloud['moneytracker/2026_10_7'] = { lunch: 1 }; cloud['moneytracker/2026_10_8'] = { lunch: 2 }; cloud['moneytracker_meta/debts'] = { items: [{ id: 'z', type: 'lent', amount: 1, person: 'p' }] };
-  const steps = []; const off = await initialSync(repo, store, s => steps.push(s)); assert.equal(off.errors.length, 3); assert.equal(off.errors.some(e => e.name === 'settings'), false);   // settings write is pending → skipped, not pulled assert.deepEqual(steps, ['days', 'settings', 'ledger', 'debts']);
+  const steps = []; const off = await initialSync(repo, store, s => steps.push(s)); assert.equal(off.errors.length, 4);   // days, settings, ledger, debts all fail offline (adding an entry no longer queues a settings write) assert.deepEqual(steps, ['days', 'settings', 'ledger', 'debts']);
   failRemote = false; const on = await initialSync(repo, store, () => {}); assert.equal(on.errors.length, 0);
   assert.equal(store.get('mt_2026_10_7').lunch, 100); assert.equal(store.get('mt_2026_10_8').lunch, 2); assert.equal(repo.settings.debts.length, 1);
   await store.flush(); await settle(); assert.equal(cloud['moneytracker/2026_10_7'].lunch, 100);
@@ -256,7 +256,8 @@ await t('wipeAll: removes days + meta, resets to defaults, queues cloud deletes'
   await repo.addEntry(2026, 9, 7, { cat: 'lunch', amt: 10 }); repo.saveDebts([{ id: 'q' }]); await settle();
   cloud['moneytracker/2020_1_1'] = { lunch: 1 }; const r = repo.wipeAll(['2020_1_1']); await settle();
   assert.deepEqual(r, { localDays: 1, cloudDays: 1 }); assert.equal(repo.listDays().length, 0); assert.equal(repo.settings.debts.length, 0); assert.equal(repo.settings.expense.length, 19);
-  assert.deepEqual(Object.keys(cloud), []);
+  assert.deepEqual(Object.keys(cloud), ['moneytracker_meta/deleted_days']);   // only the record that tells other devices which days were removed
+  assert.deepEqual(Object.keys(cloud['moneytracker_meta/deleted_days'].days).sort(), ['2020_1_1', '2026_10_7']);
 });
 await t('repo: template CRUD and persistence', async () => {
   reset(); const { store, repo } = mk(async () => true);
@@ -314,11 +315,13 @@ await t('plan domain: budgets, accounts, ledger and debts validate input and nev
   assert.deepEqual(PL.debtTotals([...debts, { type: 'borrowed', amount: 5, settled: false }]), { owe: 5, receive: 100 }); assert.equal(PL.removeDebt(debts, 'd1').length, 1); assert.throws(() => PL.removeDebt(debts, 'zz'), /not found/);
   assert.deepEqual(PL.sortDebts([{ id: 'a', settled: true, date: '2026-10-09' }, { id: 'b', settled: false, date: '2026-10-01' }, { id: 'c', settled: false, date: '2026-10-05' }]).map(x => x.id), ['c', 'b', 'a']);
 });
-await t('goal projection equals the legacy formula (current, past, future month; no budgets; negative saved)', () => {
+await t('goal projection = legacy budget headroom minus unbudgeted spending (current, past, future month; no budgets; negative saved)', () => {
   const expense = [{ id: 'lunch', budget: 3100 }, { id: 'transport', budget: 620 }, { id: 'rent', budget: 0 }, { id: 'mobile' }], today = new Date(2026, 9, 7);
   for (const [y, m0, totals] of [[2026, 9, { lunch: 1000, transport: 50, rent: 9999 }], [2026, 9, { lunch: 100 }], [2026, 8, { lunch: 3000, transport: 700 }], [2026, 10, { lunch: 5 }], [2026, 9, {}]]) {
     const g = goalProgress({ expenseCats: expense, catTotals: totals, goal: 1000, y, m0, today });
-    assert.ok(Math.abs(g.saved - legacyGoalSaved({ expense, catTotals: totals, y, m: m0, today })) < 0.006, `${y}-${m0}`);
+    const dim = new Date(y, m0 + 1, 0).getDate(), el = y === 2026 && m0 === 9 ? 7 : (m0 < 9 ? dim : 0), unb = (totals.rent || 0) + (totals.mobile || 0);
+    const expected = legacyGoalSaved({ expense, catTotals: totals, y, m: m0, today }) - (el > 0 ? unb / el * dim : 0);      // legacy budget headroom, minus what was spent on categories without a budget (audit H4)
+    assert.ok(Math.abs(g.saved - expected) < 0.006, `${y}-${m0}`);
     assert.equal(g.pct, Math.max(0, Math.min(100, g.saved / 1000 * 100))); assert.equal(g.hasGoal, true);
   }
   assert.equal(goalProgress({ expenseCats: expense, catTotals: { lunch: 1000 }, goal: 1000, y: 2026, m0: 9, today }).pct, 0);                                // overspent → 0%, not negative
@@ -496,8 +499,8 @@ await t('pwa: manifest.json is valid and has its own icons/scope; sw.js precache
   assert.ok(!swCaches.has('money-shell-v0'), 'stale cache version dropped on activate'); assert.equal(globalThis.__swClaimed, true);
   swListeners.message[0]({ data: { type: 'SKIP_WAITING' } }); assert.equal(globalThis.__swSkipped, true, 'the update-toast Reload action (sw-register.js) can take over immediately');
   let p1, release; const kept = []; swHold = new Promise(r => { release = r; });
-  swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/app.css' }, respondWith: p => { p1 = p; }, waitUntil: p => kept.push(p) });
-  const r1 = await p1; assert.equal(new URL(r1.url, ORIGIN + '/').pathname, '/apps/money/app.css', 'cached file served instantly');
+  swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/icon-192.png' }, respondWith: p => { p1 = p; }, waitUntil: p => kept.push(p) });
+  const r1 = await p1; assert.equal(new URL(r1.url, ORIGIN + '/').pathname, '/apps/money/icon-192.png', 'cached image served instantly (images stay cache-first)');
   assert.equal(kept.length, 1, 'L9: the page already has its cached copy, the refresh is still running, and it was handed to event.waitUntil BEFORE the response finished (called later from inside the refresh, waitUntil throws and the cache never updates)');
   swHold = null; release(); await Promise.all(kept);
   let touched = false;
@@ -506,6 +509,8 @@ await t('pwa: manifest.json is valid and has its own icons/scope; sw.js precache
   swListeners.fetch[0]({ request: { method: 'POST', url: ORIGIN + '/apps/money/app.css' }, respondWith: () => { touched = true; } });
   assert.equal(touched, false, 'non-GET requests are left alone entirely');
   swOffline = true;
+  let p3; swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/app.css' }, respondWith: p => { p3 = p; }, waitUntil: () => {} });
+  const r3 = await p3; assert.equal(new URL(r3.url, ORIGIN + '/').pathname, '/apps/money/app.css', 'code files are network-first and fall back to the cached copy when offline (M6: no mixed old/new modules online)');
   let p2; swListeners.fetch[0]({ request: { method: 'GET', url: ORIGIN + '/apps/money/index.html', mode: 'navigate' }, respondWith: p => { p2 = p; }, waitUntil: () => {} });
   const r2 = await p2; assert.equal(new URL(r2.url, ORIGIN + '/').pathname, '/apps/money/index.html', 'offline navigation still gets the app shell from cache');
 });

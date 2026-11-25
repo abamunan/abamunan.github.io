@@ -1,6 +1,7 @@
 import { h } from '../../shared/dom.js';
 import { fmt } from '../../shared/fmt.js';
 import { toast } from '../../shared/toast.js';
+import { confirmDialog } from '../../shared/confirm.js';
 import { openSheet } from '../../shared/sheet.js';
 import { formSheet } from '../components/form-sheet.js';
 import { accountModel } from '../domain/viewmodels.js';
@@ -24,14 +25,27 @@ function accountSheet(a, m, app) {
     onSubmit: v => { if (Number.isNaN(v.opening)) throw new Error('Opening balance must be a number'); repo.updateAccount(a.id, { icon: v.icon, label: v.label, opening: v.opening ?? 0 }); app.refresh(); toast('Account updated'); } });
   const del = () => {
     if (m.accounts.length <= 1) return toast('At least one account is required', { error: true });
+    if (!others.length) return toast('Add or unarchive another account first: this account\u2019s history needs somewhere to go.', { error: true });   // others = active accounts only
     const debts = repo.settings.debts.filter(d => d.accountId === a.id).length;
     const dest = others.find(x => x.id === repo.defaultAcct()) || others[0];
-    formSheet({ title: `Delete ${a.label}?`, submit: 'Move history & delete account', fields: [{ name: 'to', label: `Nothing is lost: its entries, transfers${debts ? ', debts' : ''} and balance move to the account you pick, so your total stays the same.`, kind: 'chips', value: dest.id, options: acctOptions(m.accounts, a.id) }],
+    formSheet({ title: `Delete ${a.label}?`, submit: 'Move history & delete account', fields: [{ name: 'to', label: `Nothing is lost: its entries, transfers${debts ? ', debts' : ''} and balance move to the account you pick, so your total stays the same.`, kind: 'chips', value: dest.id, options: acctOptions(others, a.id) }],
       onSubmit: async v => { const r = await repo.deleteAccount(a.id, v.to); app.refresh(); toast(`Account deleted. ${r.entries} entr${r.entries === 1 ? 'y' : 'ies'} moved to ${m.accounts.find(x => x.id === v.to)?.label}${r.dropped ? `; ${r.dropped} self-transfer${r.dropped === 1 ? '' : 's'} dropped` : ''}`); } });
   };
   const archive = () => { try { repo.setAccountArchived(a.id, !a.archived); app.refresh(); toast(a.archived ? 'Account unarchived' : 'Account archived'); } catch (e) { toast(e.message, { error: true }); } };
   sh.body.replaceChildren(h('div', { class: 'form' }, h('p', { class: 'big num' }, fmt(a.balance)), h('div', { class: 'row-actions' },
       !a.archived && btn('Add money', then(addMoney), 'ui-btn ui-btn--primary'), !a.archived && others.length ? btn('Transfer', then(transfer)) : null, btn('Edit', then(editAcct)), btn(a.archived ? 'Unarchive' : 'Archive', then(archive)), btn('Delete', then(del), 'ui-btn ui-btn--ghost add-del'))));
+}
+
+// Add money / Transfer rows: tap to change the amount or delete (with Undo), so a typo never stays in the balance for good.
+function ledgerSheet(r, app) {
+  const { repo } = app, sh = openSheet({ title: r.label, content: null }), then = fn => () => { sh.close(); fn(); };
+  const edit = () => formSheet({ title: `Change amount \u2014 ${r.label}`, submit: 'Save', fields: [{ name: 'amt', label: 'Amount (\u09F3)', kind: 'amount', value: r.amt, autofocus: true }],
+    onSubmit: v => { if (v.amt == null || !(v.amt > 0)) throw new Error('Enter a valid amount'); repo.updateLedgerEvent(r.ledgerId, v.amt); app.refresh(); toast('Amount updated'); } });
+  const del = async () => {
+    if (!await confirmDialog({ title: 'Delete this entry?', message: `${r.label} \u00B7 ${fmt(r.amt)}. The balance changes back.`, confirmLabel: 'Delete', danger: true })) return;
+    try { const ev = repo.removeLedgerEvent(r.ledgerId); app.refresh(); toast('Deleted', { action: 'Undo', timeout: 10000, onAction: () => { try { repo.restoreLedgerEvent(ev); app.refresh(); } catch (e) { toast(e.message, { error: true }); } } }); } catch (e) { toast(e.message, { error: true }); }
+  };
+  sh.body.replaceChildren(h('div', { class: 'form' }, h('p', { class: 'big num' }, fmt(r.amt)), h('div', { class: 'row-actions' }, btn('Change amount', then(edit), 'ui-btn ui-btn--primary'), btn('Delete', then(del), 'ui-btn ui-btn--ghost add-del'))));
 }
 
 function accountsCard(m, app) {
@@ -64,7 +78,7 @@ export function accountsView(el, app) {
   ].map(([value, label]) => h('option', { value, selected: st.sort === value }, label)));
 
   // Add money, transfers and unsettled debts change the balance but are not day entries: shown read-only so the history explains the balance.
-  const moveRow = r => h('div', { class: 'erow erow--static', role: 'group', 'aria-label': `${r.label}, ${r.kind === 'in' ? 'money in' : 'money out'} ${fmt(r.amt)}${r.note ? ', ' + r.note : ''}` },
+  const moveRow = r => h(r.ledgerId ? 'button' : 'div', { type: r.ledgerId ? 'button' : null, onclick: r.ledgerId ? () => ledgerSheet(r, app) : null, class: 'erow ' + (r.ledgerId ? '' : 'erow--static'), role: r.ledgerId ? null : 'group', 'aria-label': `${r.label}, ${r.kind === 'in' ? 'money in' : 'money out'} ${fmt(r.amt)}${r.note ? ', ' + r.note : ''}${r.ledgerId ? '. Tap to change or delete.' : ''}` },
     h('span', { class: 'erow__icon', 'aria-hidden': 'true' }, r.icon), h('span', { class: 'erow__main' }, h('span', { class: 'erow__label' }, r.label), r.note && h('span', { class: 'erow__sub' }, r.note)),
     h('span', { class: 'erow__amt num ' + (r.kind === 'in' ? 'money-in' : 'money-out') }, fmt(r.signed, { sign: true })));
   const list = model.rows.length

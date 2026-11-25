@@ -1,6 +1,7 @@
 import { DAY_COLLECTION, META, NEW_KEYS } from './keys.js';
 // Startup pull. Steps map 1:1 to splash progress. Anything with an unsent local edit is skipped (store.js).
 // Offline / failed steps never throw: the app keeps running on local data and reports the errors.
+const SKEW_MS = 15 * 60 * 1000;
 export async function initialSync(repo, store, onStep = () => {}) {
   const report = { days: 0, errors: [] };
   const started = Date.now();
@@ -8,7 +9,9 @@ export async function initialSync(repo, store, onStep = () => {}) {
   const full = !Number.isFinite(sync.last) || started - sync.last >= 24 * 60 * 60 * 1000;
   const step = async (name, fn) => { try { await fn(); } catch (e) { report.errors.push({ name, error: String(e?.message || e) }); } onStep(name); };
   await step('days', async () => {
-    report.days = await store.pullCollection(DAY_COLLECTION, (id, d) => repo.applyRemote.day(id, d), full ? {} : { since: sync.last });
+    // `updatedAt` comes from the clock of the device that wrote the day, so ask for a little before the last sync: a device whose clock runs slow is still picked up.
+    report.days = await store.pullCollection(DAY_COLLECTION, (id, d) => repo.applyRemote.day(id, d), full ? {} : { since: sync.last - SKEW_MS });
+    await store.pullDoc(META.deletedDays, d => { report.removed = repo.applyRemote.deletedDays(d); });   // days another device deleted (Replace / Remove all)
     store.set(NEW_KEYS.sync, { last: started });
   });
   await step('settings', () => store.pullDoc(META.settings, d => repo.applyRemote.settings(d)));

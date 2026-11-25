@@ -52,9 +52,10 @@ export function historyView(el, app) {
       allTags.map(tag => h('button', {
         type: 'button',
         class: 'chip',
-        'aria-pressed': String(st.q.includes(tag)),
+        'aria-pressed': String(st.q.toLowerCase().split(/\s+/).includes(tag)),
         onclick: () => {
-          st.q = st.q.includes(tag) ? st.q.replace(tag, '').replace(/\s+/g, ' ').trim() : (st.q ? `${st.q} ${tag}` : tag);
+          const words = st.q.split(/\s+/).filter(Boolean);                       // whole words: #food never touches #foodie
+          st.q = (words.some(w => w.toLowerCase() === tag) ? words.filter(w => w.toLowerCase() !== tag) : [...words, tag]).join(' ');
           input.value = st.q;
           draw();
         }
